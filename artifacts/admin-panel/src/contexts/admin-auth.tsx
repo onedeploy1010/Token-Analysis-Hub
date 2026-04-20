@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { useLocation } from "wouter";
+import { Redirect } from "wouter";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -64,10 +64,6 @@ export function useAdminAuth() {
 
 export function RequireAdmin({ children }: { children: ReactNode }) {
   const { isLoggedIn } = useAdminAuth();
-  const [, navigate] = useLocation();
-  if (!isLoggedIn) {
-    navigate(`${BASE}/login`);
-    return null;
-  }
+  if (!isLoggedIn) return <Redirect to="/login" />;
   return <>{children}</>;
 }
