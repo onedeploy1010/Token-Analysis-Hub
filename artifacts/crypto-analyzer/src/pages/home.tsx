@@ -216,14 +216,17 @@ export default function Home() {
       <section className="space-y-6">
         <div className="flex items-start justify-between border-b border-border/50 pb-4">
           <div className="border-l-4 border-chart-2 pl-4">
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">热门机会</span>
+              <TrendingUp className="h-3 w-3 text-primary/50" />
+            </div>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
               Trending Opportunities
-              <TrendingUp className="h-5 w-5 text-chart-2" />
             </h2>
-            <p className="text-sm text-muted-foreground mt-0.5">热门机会 · Highest yield changes 24h</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Highest yield changes in 24h</p>
           </div>
           <Link href="/projects" className="text-sm font-medium text-primary hover:underline inline-flex items-center shrink-0 mt-1">
-            View All 查看全部 <ArrowUpRight className="ml-1 h-4 w-4" />
+            View All <ArrowUpRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
 
@@ -312,12 +315,17 @@ export default function Home() {
 
       {/* Top Recommended Projects */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between border-b border-border/50 pb-4">
-          <h2 className="text-2xl font-semibold tracking-tight border-l-4 border-primary pl-4 flex flex-col">
-            <span className="text-foreground">Recommended Projects</span>
-            <span className="text-sm font-normal text-muted-foreground">精选推荐 · Curated for you</span>
-          </h2>
-          <Link href="/projects" className="text-sm font-medium text-primary hover:underline inline-flex items-center shrink-0">
+        <div className="flex items-start justify-between border-b border-border/50 pb-4">
+          <div className="border-l-4 border-primary pl-4">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">精选推荐</span>
+            </div>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
+              Recommended Projects
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Curated for you</p>
+          </div>
+          <Link href="/projects" className="text-sm font-medium text-primary hover:underline inline-flex items-center shrink-0 mt-1">
             View All <ArrowUpRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
