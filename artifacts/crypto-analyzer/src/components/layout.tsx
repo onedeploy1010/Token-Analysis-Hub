@@ -63,21 +63,32 @@ function Navbar() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-stretch h-16 gap-0">
             {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-2 text-sm font-medium transition-colors px-3 py-4 border-b-2",
-                    isActive ? "text-foreground border-primary" : "text-muted-foreground border-transparent hover:text-foreground"
+                    "relative flex flex-col items-center justify-center px-6 transition-all duration-200 group border-b-2",
+                    isActive
+                      ? "border-amber-400 text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/50"
                   )}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.labelZh} {item.label}</span>
+                  <span className={cn(
+                    "text-[13.5px] font-semibold tracking-tight leading-none transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                  )}>
+                    {item.labelZh}
+                  </span>
+                  <span className={cn(
+                    "text-[9.5px] uppercase tracking-[0.12em] mt-[3px] leading-none transition-colors",
+                    isActive ? "text-amber-400/80" : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
+                  )}>
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
