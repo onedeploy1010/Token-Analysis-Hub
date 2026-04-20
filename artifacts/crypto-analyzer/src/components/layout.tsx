@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Activity, Grid, Home, Users, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { LanguageToggle } from "@/components/language-toggle";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -126,14 +127,20 @@ function Navbar() {
             })}
           </nav>
 
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {/* Right controls */}
+          <div className="flex items-center gap-2">
+            {/* Language toggle — always visible */}
+            <LanguageToggle />
+
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+              onClick={() => setMenuOpen(v => !v)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
       </header>
 
