@@ -7,11 +7,36 @@ import { formatPercent } from "@/lib/format";
 import { Activity, ArrowLeft, ExternalLink, ShieldAlert, Star, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/language-context";
+
+/**
+ * Bilingual render helper — mirrors the pattern used across home.tsx / projects.tsx.
+ * For zh/zh-TW we show the localized label followed by " · ENG" so both scripts
+ * appear together. For en we show English only. For ko/ja/th/vi we show only
+ * that language's label.
+ */
+function useBi() {
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
+  const isZh = language === "zh" || language === "zh-TW";
+  return {
+    t,
+    language,
+    isEn,
+    /** localized label, optionally suffixed with " · <ENG>" when rendering zh/zh-TW */
+    bi: (key: string, en: string) => {
+      if (isEn) return en;
+      if (isZh) return `${t(key)} · ${en}`;
+      return t(key);
+    },
+  };
+}
 
 export default function ProjectDetail() {
   const params = useParams();
   const id = parseInt(params.id || "0", 10);
-  
+  const { t, bi, isEn } = useBi();
+
   const { data: project, isLoading, isError } = useGetProject(id, {
     query: {
       enabled: !!id && !isNaN(id),
@@ -37,10 +62,16 @@ export default function ProjectDetail() {
     return (
       <div className="container mx-auto px-4 py-20 text-center animate-slide-up">
         <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Project not found 项目不存在</h1>
-        <p className="text-muted-foreground mb-6">The project you are looking for does not exist or has been removed.<br/>您寻找的项目不存在或已被移除。</p>
+        <h1 className="text-2xl font-bold mb-2">{bi("mr.detail.notFound", "Project not found")}</h1>
+        <p className="text-muted-foreground mb-6">
+          {isEn
+            ? "The project you are looking for does not exist or has been removed."
+            : t("mr.detail.notFoundDesc")}
+        </p>
         <Link href="/projects">
-          <Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects 返回项目库</Button>
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" /> {bi("mr.detail.back", "Back to Projects")}
+          </Button>
         </Link>
       </div>
     );
@@ -49,7 +80,7 @@ export default function ProjectDetail() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8 animate-slide-up">
       <Link href="/projects" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects 返回项目库
+        <ArrowLeft className="mr-2 h-4 w-4" /> {bi("mr.detail.back", "Back to Projects")}
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -64,7 +95,7 @@ export default function ProjectDetail() {
                 </Badge>
                 {project.isRecommended && (
                   <Badge className="bg-primary text-primary-foreground">
-                    <Star className="mr-1 h-3 w-3 fill-current" /> Recommended 精选
+                    <Star className="mr-1 h-3 w-3 fill-current" /> {bi("mr.detail.recommended", "Recommended")}
                   </Badge>
                 )}
               </div>
@@ -75,18 +106,18 @@ export default function ProjectDetail() {
                 </Badge>
                 {project.website && (
                   <a href={project.website} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center">
-                    Official Website <ExternalLink className="ml-1 h-3 w-3" />
+                    {bi("mr.detail.website", "Official Website")} <ExternalLink className="ml-1 h-3 w-3" />
                   </a>
                 )}
               </div>
             </div>
-            
+
             <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 min-w-[200px] text-center md:text-right shadow-[0_4px_15px_rgba(0,0,0,0.2)] border-t-[3px] border-t-chart-2">
               <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium mb-1 flex flex-col md:items-end gap-0.5">
-                <span>Current APY</span>
-                <span className="text-[9px] opacity-70">当前年化收益率</span>
+                <span>{isEn ? "Current APY" : "Current APY"}</span>
+                {!isEn && <span className="text-[9px] opacity-70">{t("mr.detail.currentApy")}</span>}
               </p>
-              <p className="text-4xl font-bold font-mono text-chart-2">
+              <p className="text-4xl font-bold num text-chart-2">
                 {formatPercent(project.apy)}
               </p>
             </div>
@@ -96,13 +127,13 @@ export default function ProjectDetail() {
             <h2 className="text-xl font-semibold flex items-center gap-2 border-l-4 border-primary pl-4">
               <span className="flex flex-col">
                 <span>Intelligence Report</span>
-                <span className="text-sm font-normal text-muted-foreground">项目分析报告</span>
+                {!isEn && <span className="text-sm font-normal text-muted-foreground">{t("mr.detail.report")}</span>}
               </span>
             </h2>
             <div className="prose prose-invert max-w-none text-muted-foreground leading-relaxed text-[15px] bg-card/30 p-6 rounded-xl border border-border/50">
               <p>{project.description}</p>
             </div>
-            
+
             {project.tags && project.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-4">
                 {project.tags.map(tag => (
@@ -120,35 +151,35 @@ export default function ProjectDetail() {
           <Card className="bg-card/80 backdrop-blur border-border shadow-sm">
             <CardHeader className="border-b border-border/50 pb-4 mb-4">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                Key Metrics <span className="text-sm font-normal text-muted-foreground ml-2">核心指标</span>
+                Key Metrics{!isEn && <span className="text-sm font-normal text-muted-foreground ml-2">{t("mr.detail.metrics")}</span>}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-1">
                 <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium flex justify-between">
                   <span>Total Value Locked</span>
-                  <span className="opacity-70">总锁仓量</span>
+                  {!isEn && <span className="opacity-70">{t("mr.detail.tvl")}</span>}
                 </p>
-                <p className="text-2xl font-bold font-mono tracking-tight text-foreground/90">
+                <p className="text-2xl font-bold num tracking-tight text-foreground/90">
                   {project.tvl.startsWith("$") ? project.tvl : `$${project.tvl}`}
                 </p>
               </div>
               <div className="space-y-1">
                 <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium flex justify-between">
                   <span>Market Cap</span>
-                  <span className="opacity-70">市值</span>
+                  {!isEn && <span className="opacity-70">{t("mr.detail.mcap")}</span>}
                 </p>
-                <p className="text-xl font-medium font-mono tracking-tight">
+                <p className="text-xl font-medium num tracking-tight">
                   {project.marketCap.startsWith("$") ? project.marketCap : `$${project.marketCap}`}
                 </p>
               </div>
               <div className="space-y-1">
                 <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium flex justify-between">
                   <span>Terminal Rating</span>
-                  <span className="opacity-70">平台评级</span>
+                  {!isEn && <span className="opacity-70">{t("mr.detail.rating")}</span>}
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold font-mono text-primary">{project.rating.toFixed(1)}</span>
+                  <span className="text-xl num text-primary">{project.rating.toFixed(1)}</span>
                   <span className="text-sm font-medium text-muted-foreground">/ 5.0</span>
                 </div>
               </div>
@@ -159,16 +190,17 @@ export default function ProjectDetail() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" /> Yield Simulator <span className="text-sm font-normal text-muted-foreground ml-2">收益模拟</span>
+                <TrendingUp className="h-4 w-4 text-primary" /> Yield Simulator
+                {!isEn && <span className="text-sm font-normal text-muted-foreground ml-2">{t("mr.detail.simulator")}</span>}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Run advanced return simulations for {project.symbol} using the Terminal Tools.
+                {t("mr.detail.simDesc").replace("{symbol}", project.symbol)}
               </p>
               <Link href="/tools">
                 <Button className="w-full shadow-[0_0_15px_rgba(var(--primary),0.2)] hover:shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-shadow">
-                  Launch Simulator 启动模拟器
+                  {bi("mr.detail.launchSim", "Launch Simulator")}
                 </Button>
               </Link>
             </CardContent>

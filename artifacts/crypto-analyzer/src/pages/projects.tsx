@@ -63,7 +63,7 @@ export default function Projects() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search projects, symbols..."
+              placeholder={isEn ? "Search projects, symbols..." : t("mr.projects.search")}
               className="pl-9 bg-card/50 backdrop-blur-sm border-border w-full focus-visible:ring-primary shadow-sm"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -73,13 +73,13 @@ export default function Projects() {
             <SelectTrigger className="w-full sm:w-[160px] bg-card/50 backdrop-blur-sm border-border shadow-sm">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder={isEn ? "Sort by" : t("mr.projects.sort.trending")} />
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="trending">Trending 热门</SelectItem>
-              <SelectItem value="newest">Newest 最新</SelectItem>
-              <SelectItem value="rating">Rating 评级</SelectItem>
+              <SelectItem value="trending">{isEn ? "Trending" : `Trending · ${t("mr.projects.sort.trending")}`}</SelectItem>
+              <SelectItem value="newest">{isEn ? "Newest" : `Newest · ${t("mr.projects.sort.newest")}`}</SelectItem>
+              <SelectItem value="rating">{isEn ? "Rating" : `Rating · ${t("mr.projects.sort.rating")}`}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -110,18 +110,18 @@ export default function Projects() {
                   <img src="/rune-logo-new.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
                 </div>
                 <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-white leading-tight">
-                  RUNE Protocol <span className="text-primary/70">—</span> <span className="text-primary">深度节点分析</span>
+                  RUNE Protocol <span className="text-primary/70">—</span> <span className="text-primary">{t("mr.projects.rune.subtitle")}</span>
                 </h2>
               </div>
 
               {/* Description */}
               <p className="text-muted-foreground text-sm sm:text-[15px] leading-relaxed max-w-lg">
-                双TOKEN通缩经济模型 · 四级节点收益拆解 · 完整 tokenomics 图表 · 节点 ROI 交互计算器
+                {t("mr.projects.rune.desc")}
               </p>
 
-              {/* Tags */}
+              {/* Tags — keep symbol-like tags as-is across locales */}
               <div className="flex flex-wrap gap-1.5">
-                {["双TOKEN通缩", "节点质押", "AMM设计", "Layer1", "Cross-chain"].map(tag => (
+                {["Dual-Token", "Node Staking", "AMM", "Layer1", "Cross-chain"].map(tag => (
                   <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary/80 font-medium">{tag}</span>
                 ))}
               </div>
@@ -171,7 +171,7 @@ export default function Projects() {
             <SelectTrigger className="w-full bg-card/50 backdrop-blur-sm border-border shadow-sm">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={isEn ? "Category" : t("mr.cat.all")} />
               </div>
             </SelectTrigger>
             <SelectContent>
@@ -237,8 +237,12 @@ export default function Projects() {
             ) : (
               <div className="col-span-full py-20 text-center border border-dashed border-border rounded-xl bg-card/30">
                 <Search className="mx-auto h-10 w-10 text-muted-foreground mb-4 opacity-20" />
-                <h3 className="text-lg font-medium">No projects found 未找到项目</h3>
-                <p className="text-muted-foreground mt-1">Try adjusting your filters or search query.</p>
+                <h3 className="text-lg font-medium">
+                  {isEn ? "No projects found" : `No projects found · ${t("mr.projects.empty")}`}
+                </h3>
+                <p className="text-muted-foreground mt-1">
+                  {isEn ? "Try adjusting your filters or search query." : t("mr.projects.emptyDesc")}
+                </p>
               </div>
             )}
           </AnimatePresence>
