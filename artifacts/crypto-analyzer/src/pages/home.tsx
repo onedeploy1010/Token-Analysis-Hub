@@ -458,7 +458,8 @@ export default function Home() {
           <div className="border-l-[3px] border-primary pl-4">
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">精选推荐</span>
             <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">Recommended Projects</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">Curated high-conviction opportunities · 精选高确信度机会</p>
+            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">Curated high-conviction opportunities</p>
+            <p className="text-xs text-muted-foreground/60 tracking-wide">精选高确信度机会</p>
           </div>
         </div>
 
