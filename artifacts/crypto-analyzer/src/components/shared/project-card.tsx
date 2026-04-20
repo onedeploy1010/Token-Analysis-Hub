@@ -8,6 +8,7 @@ const DEEP_ANALYSIS_ROUTES: Record<string, string> = {
   RUNE: "/projects/rune",
   B18:  "/projects/b18",
   HYPE: "/projects/hyperliquid",
+  ATM:  "/projects/legend-atm",
 };
 
 interface ProjectCardProps {
