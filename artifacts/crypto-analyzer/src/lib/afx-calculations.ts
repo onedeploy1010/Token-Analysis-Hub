@@ -11,11 +11,6 @@ export interface StakingProjection {
   releaseSchedule: { day: number; cumulativeMs: number; cumulativeUsdcValue: number }[];
 }
 
-/**
- * Project MS release schedule for a single staking order.
- * mode: 'gold_standard' — totalUSDC = amount × multiplier, dailyMs = totalUSDC / days / price
- * mode: 'coin_standard' — totalMs = (amount / price) × multiplier, dailyMs = totalMs / days
- */
 export function projectStakingRelease(
   investmentUsdc: number,
   msPrice: number,
@@ -42,13 +37,7 @@ export function projectStakingRelease(
     return { day, cumulativeMs, cumulativeUsdcValue: cumulativeMs * msPrice };
   });
 
-  return {
-    dailyMs,
-    totalMs,
-    totalUsdcValue: totalMs * msPrice,
-    stakingDays,
-    releaseSchedule,
-  };
+  return { dailyMs, totalMs, totalUsdcValue: totalMs * msPrice, stakingDays, releaseSchedule };
 }
 
 // ─── Trading Profit Simulation ───────────────────────────────────────────────
@@ -66,15 +55,6 @@ export interface TradingProfitBreakdown {
   roi: number;
 }
 
-/**
- * Simulate daily trading profit distribution.
- * tradingCapital: USDC value of trading capital
- * dailyVolumePercent: how much of capital is traded daily (%)
- * profitRate: expected daily profit rate (%)
- * feeRate: trading fee as % of gross profit
- * profitSharePercent: user's share of net profit (%)
- * lpRatio, buybackRatio, reserveRatio: fund flow from trading capital (%)
- */
 export function calculateTradingProfitBreakdown(
   tradingCapital: number,
   dailyVolumePercent: number,
@@ -98,15 +78,8 @@ export function calculateTradingProfitBreakdown(
   const reserveAmount = dailyVolume * (reserveRatio / 100);
 
   return {
-    grossProfit,
-    tradingFee,
-    netProfit,
-    userProfit,
-    platformProfit,
-    brokerProfit,
-    lpContributionUsdc,
-    buybackAmount,
-    reserveAmount,
+    grossProfit, tradingFee, netProfit, userProfit, platformProfit, brokerProfit,
+    lpContributionUsdc, buybackAmount, reserveAmount,
     roi: tradingCapital > 0 ? (userProfit / tradingCapital) * 100 : 0,
   };
 }
@@ -131,18 +104,14 @@ export interface AAMDailyPoint {
   cumulativeBuyback: number;
 }
 
-/**
- * Simulate AAM (x*y=k constant product) pool for N days.
- * Each day: optional LP add, secondary market MS sell, buyback.
- */
 export function simulateAAMPoolStandalone(
   initialUsdc: number,
   initialMs: number,
   days: number,
   dailyDepositUsdc: number,
-  lpRatioPct: number,    // % of daily deposit added to LP
-  buybackRatioPct: number, // % of daily deposit used for buyback
-  dailySellPressureMs: number // MS sold to pool each day (secondary market)
+  lpRatioPct: number,
+  buybackRatioPct: number,
+  dailySellPressureMs: number
 ): AAMDailyPoint[] {
   let pool: AAMPoolState = {
     usdcBalance: initialUsdc,
@@ -154,52 +123,35 @@ export function simulateAAMPoolStandalone(
   };
 
   const points: AAMDailyPoint[] = [{
-    day: 0,
-    price: pool.msPrice,
-    usdcBalance: pool.usdcBalance,
-    msBalance: pool.msBalance,
-    tvl: pool.usdcBalance + pool.msBalance * pool.msPrice,
+    day: 0, price: pool.msPrice, usdcBalance: pool.usdcBalance,
+    msBalance: pool.msBalance, tvl: pool.usdcBalance + pool.msBalance * pool.msPrice,
     cumulativeBuyback: 0,
   }];
 
   for (let d = 1; d <= days; d++) {
-    // LP add
     const lpUsdc = dailyDepositUsdc * (lpRatioPct / 100);
     if (lpUsdc > 0) {
-      const msEquiv = lpUsdc / pool.msPrice;
       pool.usdcBalance += lpUsdc;
-      pool.msBalance += msEquiv;
+      pool.msBalance += lpUsdc / pool.msPrice;
     }
-
-    // Secondary market MS sell → price DOWN
     if (dailySellPressureMs > 0) {
-      const usdcOut = dailySellPressureMs * pool.msPrice;
-      const safeOut = Math.min(usdcOut, pool.usdcBalance * 0.99);
-      const msIn = safeOut / pool.msPrice;
-      pool.msBalance += msIn;
-      pool.usdcBalance -= safeOut;
+      const usdcOut = Math.min(dailySellPressureMs * pool.msPrice, pool.usdcBalance * 0.99);
+      pool.msBalance += usdcOut / pool.msPrice;
+      pool.usdcBalance -= usdcOut;
     }
-
-    // Buyback → price UP
     const buybackUsdc = dailyDepositUsdc * (buybackRatioPct / 100);
     if (buybackUsdc > 0 && pool.msBalance > 1) {
       const msBought = Math.min(buybackUsdc / pool.msPrice, pool.msBalance * 0.99);
-      const usdcIn = msBought * pool.msPrice;
-      pool.usdcBalance += usdcIn;
+      pool.usdcBalance += msBought * pool.msPrice;
       pool.msBalance -= msBought;
-      pool.totalBuyback += usdcIn;
+      pool.totalBuyback += msBought * pool.msPrice;
     }
-
     pool.msBalance = Math.max(1, pool.msBalance);
     pool.msPrice = pool.usdcBalance / pool.msBalance;
     pool.lpTokens = Math.sqrt(pool.usdcBalance * pool.msBalance);
-
     points.push({
-      day: d,
-      price: pool.msPrice,
-      usdcBalance: pool.usdcBalance,
-      msBalance: pool.msBalance,
-      tvl: pool.usdcBalance + pool.msBalance * pool.msPrice,
+      day: d, price: pool.msPrice, usdcBalance: pool.usdcBalance,
+      msBalance: pool.msBalance, tvl: pool.usdcBalance + pool.msBalance * pool.msPrice,
       cumulativeBuyback: pool.totalBuyback,
     });
   }
@@ -253,9 +205,6 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-/**
- * Analyze a CLMM position: capital efficiency, fees, IL at boundaries, 90d trajectory.
- */
 export function analyzeCLMMPosition(
   depositX: number,
   depositY: number,
@@ -270,17 +219,11 @@ export function analyzeCLMMPosition(
 ): CLMMAnalysis {
   const priceLower = initialPrice * (1 - rangeWidthPct / 100);
   const priceUpper = initialPrice * (1 + rangeWidthPct / 100);
-
   const L = calcLiquidityStandalone(depositX, depositY, initialPrice, priceLower, priceUpper);
-
-  // Capital efficiency vs full-range v2
   const L_v2 = calcLiquidityStandalone(depositX, depositY, initialPrice, initialPrice * 0.0001, initialPrice * 10000);
   const capitalEfficiency = L_v2 > 0 ? L / L_v2 : 0;
-
-  // Initial HODL value
   const hodlValue = depositX * initialPrice + depositY;
 
-  // IL at price boundaries
   const ilAtLower = (() => {
     const { x, y } = calcTokenAmountsStandalone(L, priceLower, priceLower, priceUpper);
     const posVal = x * priceLower + y;
@@ -295,12 +238,10 @@ export function analyzeCLMMPosition(
     return hodlAtUpper > 0 ? Math.max(0, (hodlAtUpper - posVal) / hodlAtUpper) * 100 : 0;
   })();
 
-  // Price trajectory with GBM
   const seed = Math.round(initialPrice * 31 + rangeWidthPct * 17 + days * 7 + dailyVolatilityPct * 13);
   const rng = mulberry32(seed);
   const vol = dailyVolatilityPct / 100;
   const drift = driftPct / 100;
-
   let price = initialPrice;
   let cumulativeFees = 0;
   const trajectory: CLMMAnalysis['priceTrajectory'] = [];
@@ -312,8 +253,7 @@ export function analyzeCLMMPosition(
     price = price * (1 + drift + vol * z);
     const inRange = price >= priceLower && price <= priceUpper;
     const dailyFee = inRange && totalPoolLiquidity > 0
-      ? (dailyVolume * feeTier) * (L / totalPoolLiquidity)
-      : 0;
+      ? (dailyVolume * feeTier) * (L / totalPoolLiquidity) : 0;
     cumulativeFees += dailyFee;
     const { x, y } = calcTokenAmountsStandalone(L, price, priceLower, priceUpper);
     trajectory.push({ day: d, price, inRange, cumulativeFees, positionValue: x * price + y });
@@ -324,37 +264,76 @@ export function analyzeCLMMPosition(
   const maxIl = Math.max(ilAtLower, ilAtUpper) / 100 * hodlValue;
   const breakEvenDays = feesEarned90d > 0 ? Math.round((maxIl / feesEarned90d) * 90) : 9999;
 
-  return {
-    capitalEfficiency,
-    initialTokenX: depositX,
-    initialTokenY: depositY,
-    feesEarned30d,
-    feesEarned90d,
-    breakEvenDays,
-    ilAtLower,
-    ilAtUpper,
-    priceTrajectory: trajectory,
-  };
+  return { capitalEfficiency, initialTokenX: depositX, initialTokenY: depositY, feesEarned30d, feesEarned90d, breakEvenDays, ilAtLower, ilAtUpper, priceTrajectory: trajectory };
 }
 
-// ─── Broker Layer Calculator ──────────────────────────────────────────────────
+// ─── Broker System Definitions ────────────────────────────────────────────────
 
-export const BROKER_LEVEL_MAX_LAYERS: Record<string, number> = {
-  V1: 5,
-  V2: 8,
-  V3: 12,
-  V4: 15,
-  V5: 18,
-  V6: 20,
-};
-
-// Default layer rates (layer 1-5: 3%, 6-10: 2%, 11-15: 1.5%, 16-20: 1%)
-export function getDefaultLayerRate(layer: number): number {
-  if (layer <= 5) return 3;
-  if (layer <= 10) return 2;
-  if (layer <= 15) return 1.5;
-  return 1;
+export interface BrokerSystem {
+  id: string;
+  name: string;
+  nameZh: string;
+  descriptionZh: string;
+  levels: string[];
+  maxLayersPerLevel: Record<string, number>;
+  layerRates: number[];   // length 20
+  dividendRates: Record<string, number>;
 }
+
+export const BROKER_SYSTEMS: BrokerSystem[] = [
+  {
+    id: "afx_v",
+    name: "AFx V-Level",
+    nameZh: "V级推荐制度",
+    descriptionZh: "6个等级 V1–V6，20层网络，分层费率 3% / 2% / 1.5% / 1%",
+    levels: ["V1", "V2", "V3", "V4", "V5", "V6"],
+    maxLayersPerLevel: { V1: 5, V2: 8, V3: 12, V4: 15, V5: 18, V6: 20 },
+    layerRates: [3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1.5, 1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 1],
+    dividendRates: { V1: 5, V2: 10, V3: 20, V4: 35, V5: 55, V6: 80 },
+  },
+  {
+    id: "three_tier",
+    name: "3-Tier Agency",
+    nameZh: "三级代理制度",
+    descriptionZh: "3个等级 A/B/C，最多10层，统一费率5%，适合中小团队",
+    levels: ["A级", "B级", "C级"],
+    maxLayersPerLevel: { "A级": 3, "B级": 6, "C级": 10 },
+    layerRates: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    dividendRates: { "A级": 10, "B级": 25, "C级": 50 },
+  },
+  {
+    id: "elite_partner",
+    name: "Elite Partner",
+    nameZh: "精英合伙人制度",
+    descriptionZh: "4个等级 Bronze–Platinum，20层，渐进费率 4% / 3% / 2% / 1%",
+    levels: ["Bronze", "Silver", "Gold", "Platinum"],
+    maxLayersPerLevel: { Bronze: 5, Silver: 10, Gold: 15, Platinum: 20 },
+    layerRates: [4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1],
+    dividendRates: { Bronze: 8, Silver: 20, Gold: 40, Platinum: 70 },
+  },
+  {
+    id: "flat",
+    name: "Flat Rate",
+    nameZh: "平层统一制度",
+    descriptionZh: "2个等级 Standard/Pro，20层全开，统一费率2%，结构简单透明",
+    levels: ["Standard", "Pro"],
+    maxLayersPerLevel: { Standard: 10, Pro: 20 },
+    layerRates: Array(20).fill(2) as number[],
+    dividendRates: { Standard: 20, Pro: 50 },
+  },
+  {
+    id: "binary",
+    name: "Binary Matrix",
+    nameZh: "二元矩阵制度",
+    descriptionZh: "每层2个直接位，共7层，费率递减 6% / 4% / 3% / 2% / 1.5% / 1% / 0.5%",
+    levels: ["Entry", "Senior", "Master", "Diamond"],
+    maxLayersPerLevel: { Entry: 2, Senior: 4, Master: 6, Diamond: 7 },
+    layerRates: [6, 4, 3, 2, 1.5, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    dividendRates: { Entry: 5, Senior: 15, Master: 30, Diamond: 55 },
+  },
+];
+
+// ─── Broker Layer Calculator (system-aware) ───────────────────────────────────
 
 export interface BrokerLayerResult {
   layer: number;
@@ -366,15 +345,17 @@ export interface BrokerLayerResult {
 
 export function calculateBrokerLayerBreakdown(
   msPerLayerPerDay: number,
-  brokerLevel: string
+  brokerLevel: string,
+  system?: BrokerSystem
 ): { layers: BrokerLayerResult[]; totalAccessible: number; totalLocked: number } {
-  const maxLayer = BROKER_LEVEL_MAX_LAYERS[brokerLevel] ?? 5;
+  const sys = system ?? BROKER_SYSTEMS[0];
+  const maxLayer = sys.maxLayersPerLevel[brokerLevel] ?? 5;
   const layers: BrokerLayerResult[] = [];
   let totalAccessible = 0;
   let totalLocked = 0;
 
   for (let i = 1; i <= 20; i++) {
-    const rate = getDefaultLayerRate(i);
+    const rate = sys.layerRates[i - 1] ?? 0;
     const earningsPerDay = msPerLayerPerDay * (rate / 100);
     const accessible = i <= maxLayer;
     if (accessible) totalAccessible += earningsPerDay;
@@ -391,6 +372,7 @@ export function calculateBrokerDividendEarnings(
   profitSharePercent: number,
   brokerLevel: string,
   subordinateLevel: string | null,
+  system?: BrokerSystem
 ): {
   userShare: number;
   brokerDividendPool: number;
@@ -400,19 +382,23 @@ export function calculateBrokerDividendEarnings(
   differentialRate: number;
   earnings: number;
 } {
-  const BROKER_DIVIDEND_RATES: Record<string, number> = {
-    V1: 5, V2: 10, V3: 20, V4: 35, V5: 55, V6: 80,
-  };
+  const sys = system ?? BROKER_SYSTEMS[0];
   const tradingFee = grossProfit * (feeRate / 100);
   const netProfit = Math.max(0, grossProfit - tradingFee);
   const userShare = netProfit * (profitSharePercent / 100);
   const remaining = netProfit - userShare;
   const brokerDividendPool = remaining * 0.5;
   const platformShare = remaining * 0.5;
-  const brokerRate = BROKER_DIVIDEND_RATES[brokerLevel] ?? 0;
-  const subRate = subordinateLevel ? (BROKER_DIVIDEND_RATES[subordinateLevel] ?? 0) : 0;
+  const brokerRate = sys.dividendRates[brokerLevel] ?? 0;
+  const subRate = subordinateLevel ? (sys.dividendRates[subordinateLevel] ?? 0) : 0;
   const differentialRate = Math.max(0, brokerRate - subRate);
   const earnings = brokerDividendPool * (differentialRate / 100);
 
   return { userShare, brokerDividendPool, platformShare, brokerRate, subRate, differentialRate, earnings };
+}
+
+// Legacy aliases (kept for backward compat)
+export const BROKER_LEVEL_MAX_LAYERS = BROKER_SYSTEMS[0].maxLayersPerLevel;
+export function getDefaultLayerRate(layer: number): number {
+  return BROKER_SYSTEMS[0].layerRates[layer - 1] ?? 0;
 }
