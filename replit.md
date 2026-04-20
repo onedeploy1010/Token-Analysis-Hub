@@ -23,7 +23,10 @@ A professional DeFi investment analysis platform targeting crypto investors. Fea
 - `/` — Dashboard: Market overview, trending projects, platform stats
 - `/projects` — Project catalog: Filterable grid with risk ratings, APY, TVL
 - `/projects/:id` — Project detail: Full metrics, description, risk analysis
-- `/tools` — Economic Simulators: APY Calculator, Investment Simulator, Impermanent Loss Calculator
+- `/tools` — Economic Simulators (8 tools in 2 groups):
+  - **General DeFi**: APY Calculator, Investment Simulator, Impermanent Loss Calculator
+  - **Protocol Simulators** (from AFx-Simulator): Staking Projector (铸造收益预测), AAM Pool Simulator (流动性池模拟), CLMM Analyzer (集中流动性分析), Trading Profit Calculator (交易分红计算), Broker Earnings Calculator (推荐层级收益)
+  - All protocol simulators have configurable token name + price inputs; pure client-side math via `src/lib/afx-calculations.ts`
 - `/projects/rune` — RUNE Protocol deep analytics: 6 recharts charts (price stages, fund allocation, node returns, deflation, asset breakdown, stage ROI), interactive node-level calculator
 - `/projects/b18` — B18 Token deep analytics: AMM price simulation, staking returns, release tax, V1–V10 reward tiers, 334 protocol, SPP buyback, interactive ROI calculator. Built with recharts using data from b18-shared/schema.ts
 
