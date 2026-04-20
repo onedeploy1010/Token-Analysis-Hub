@@ -15,16 +15,78 @@ const NAV_ITEMS = [
   { href: "/recruit", label: "Recruit", labelZh: "节点招募", icon: Users },
 ];
 
-function RuneLogo({ size = 32 }: { size?: number }) {
+/* ─── Animated Logo ──────────────────────────────────────────────── */
+function AnimatedRuneLogo({ size = 36 }: { size?: number }) {
+  const ring = size + 6;
   return (
-    <div
-      style={{ width: size, height: size }}
-      className="rounded-lg overflow-hidden bg-black border border-white/10 shrink-0"
-    >
-      <img src="/rune-logo.png" alt="MarketRune" className="w-full h-full object-contain" />
+    <div className="relative shrink-0" style={{ width: ring, height: ring }}>
+      {/* spinning conic-gradient ring */}
+      <motion.div
+        className="absolute inset-0 rounded-xl"
+        style={{
+          background: "conic-gradient(from 0deg, transparent 60%, rgba(251,191,36,0.9) 80%, rgba(217,119,6,1) 90%, rgba(251,191,36,0.9) 100%, transparent 140%)",
+          padding: 1.5,
+        }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
+      />
+      {/* static amber outer glow */}
+      <div
+        className="absolute inset-0 rounded-xl"
+        style={{ boxShadow: "0 0 14px 2px rgba(251,191,36,0.22), 0 0 4px 1px rgba(251,191,36,0.12) inset" }}
+      />
+      {/* image */}
+      <div
+        className="absolute rounded-[9px] overflow-hidden bg-black"
+        style={{ inset: 2 }}
+      >
+        <img src="/rune-logo.png" alt="MarketRune" className="w-full h-full object-contain" />
+      </div>
     </div>
   );
 }
+
+/* ─── Shimmer wordmark ───────────────────────────────────────────── */
+function WordmarkRune({ small = false }: { small?: boolean }) {
+  return (
+    <div className="flex flex-col leading-none select-none" style={{ fontFamily: "'Cinzel', serif" }}>
+      <span
+        className={cn(
+          "font-normal tracking-[0.28em] uppercase",
+          small ? "text-[8px]" : "text-[9px] sm:text-[10px]"
+        )}
+        style={{ color: "rgba(251,191,36,0.42)", letterSpacing: "0.26em" }}
+      >
+        MARKET
+      </span>
+      <span
+        className={cn(
+          "font-bold uppercase tracking-[0.14em]",
+          small ? "text-[15px]" : "text-[19px] sm:text-[21px]"
+        )}
+        style={{
+          background: "linear-gradient(100deg, #b45309 0%, #fbbf24 30%, #fef3c7 50%, #fbbf24 70%, #b45309 100%)",
+          backgroundSize: "200% 100%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          animation: "rune-shimmer 3.2s ease-in-out infinite",
+        }}
+      >
+        RUNE
+      </span>
+    </div>
+  );
+}
+
+/* ─── Keyframe injection ─────────────────────────────────────────── */
+const shimmerStyle = `
+@keyframes rune-shimmer {
+  0%   { background-position: 100% 50%; }
+  50%  { background-position:   0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+`;
 
 function Navbar() {
   const [location] = useLocation();
@@ -32,17 +94,24 @@ function Navbar() {
 
   return (
     <>
+      <style>{shimmerStyle}</style>
+
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/90 backdrop-blur-md shadow-sm">
         <div className="container flex h-16 items-center justify-between mx-auto px-4">
 
-          {/* Logo + wordmark — always visible */}
-          <Link href="/" className="flex items-center gap-2.5 group" onClick={() => setMenuOpen(false)}>
-            <div className="shadow-[0_0_12px_rgba(251,191,36,0.18)] group-hover:shadow-[0_0_20px_rgba(251,191,36,0.32)] transition-all duration-300">
-              <RuneLogo size={32} />
-            </div>
-            <span className="leading-none select-none" style={{ fontFamily: "'Cinzel', serif" }}>
-              <span className="text-[13px] sm:text-[14px] font-normal tracking-[0.18em] text-foreground/60 uppercase">Market</span><span className="text-[16px] sm:text-[17px] font-bold tracking-[0.12em] text-amber-400 uppercase">Rune</span>
-            </span>
+          {/* Logo + wordmark */}
+          <Link
+            href="/"
+            className="flex items-center gap-3 group"
+            onClick={() => setMenuOpen(false)}
+          >
+            <motion.div
+              whileHover={{ scale: 1.06 }}
+              transition={{ type: "spring", stiffness: 340, damping: 22 }}
+            >
+              <AnimatedRuneLogo size={34} />
+            </motion.div>
+            <WordmarkRune />
           </Link>
 
           {/* Desktop nav */}
@@ -77,7 +146,7 @@ function Navbar() {
             })}
           </nav>
 
-          {/* Mobile hamburger button */}
+          {/* Mobile hamburger */}
           <button
             className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
             onClick={() => setMenuOpen(v => !v)}
@@ -88,11 +157,10 @@ function Navbar() {
         </div>
       </header>
 
-      {/* Mobile full-screen drawer */}
+      {/* Mobile drawer */}
       <AnimatePresence>
         {menuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               key="backdrop"
               initial={{ opacity: 0 }}
@@ -103,7 +171,6 @@ function Navbar() {
               onClick={() => setMenuOpen(false)}
             />
 
-            {/* Right-side drawer panel */}
             <motion.div
               key="drawer"
               initial={{ x: "100%" }}
@@ -114,11 +181,9 @@ function Navbar() {
             >
               {/* Drawer header */}
               <div className="flex items-center justify-between px-6 h-16 border-b border-border/30 shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <RuneLogo size={26} />
-                  <span style={{ fontFamily: "'Cinzel', serif" }}>
-                    <span className="text-[12px] font-normal tracking-[0.18em] text-foreground/55 uppercase">Market</span><span className="text-[15px] font-bold tracking-[0.12em] text-amber-400 uppercase">Rune</span>
-                  </span>
+                <div className="flex items-center gap-3">
+                  <AnimatedRuneLogo size={28} />
+                  <WordmarkRune small />
                 </div>
                 <button
                   onClick={() => setMenuOpen(false)}
@@ -128,7 +193,7 @@ function Navbar() {
                 </button>
               </div>
 
-              {/* Nav items — large editorial style */}
+              {/* Nav items */}
               <nav className="flex-1 flex flex-col justify-center px-6 gap-1 py-8">
                 {NAV_ITEMS.map((item, i) => {
                   const Icon = item.icon;
@@ -195,6 +260,7 @@ function Navbar() {
 export function AppLayout({ children }: LayoutProps) {
   return (
     <div className="relative flex min-h-screen flex-col bg-background selection:bg-primary/30 selection:text-amber-200">
+      <style>{shimmerStyle}</style>
       <Navbar />
       <main className="flex-1 w-full mx-auto">
         {children}
@@ -202,9 +268,12 @@ export function AppLayout({ children }: LayoutProps) {
       <footer className="py-6 md:px-8 md:py-0 border-t border-border bg-card/30 backdrop-blur-sm">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row mx-auto px-4">
           <div className="flex items-center gap-2.5">
-            <RuneLogo size={18} />
+            <div className="w-[18px] h-[18px] rounded overflow-hidden bg-black border border-white/10 shrink-0">
+              <img src="/rune-logo.png" alt="MarketRune" className="w-full h-full object-contain" />
+            </div>
             <span style={{ fontFamily: "'Cinzel', serif" }}>
-              <span className="text-[10px] font-normal tracking-[0.15em] text-foreground/40 uppercase">Market</span><span className="text-[11px] font-bold tracking-[0.1em] text-amber-500/60 uppercase">Rune</span>
+              <span className="text-[10px] font-normal tracking-[0.15em] text-foreground/40 uppercase">Market</span>
+              <span className="text-[11px] font-bold tracking-[0.1em] text-amber-500/60 uppercase">Rune</span>
             </span>
           </div>
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
