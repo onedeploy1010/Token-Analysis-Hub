@@ -39,8 +39,8 @@ function Navbar() {
             <div className="shadow-[0_0_12px_rgba(251,191,36,0.18)] group-hover:shadow-[0_0_20px_rgba(251,191,36,0.32)] transition-all duration-300">
               <RuneLogo size={32} />
             </div>
-            <span className="text-[16px] sm:text-[17px] tracking-tight leading-none select-none">
-              <span className="font-light text-foreground/85">Market</span><span className="font-bold text-amber-400 tracking-wide">Rune</span>
+            <span className="leading-none select-none" style={{ fontFamily: "'Cinzel', serif" }}>
+              <span className="text-[13px] sm:text-[14px] font-normal tracking-[0.18em] text-foreground/60 uppercase">Market</span><span className="text-[16px] sm:text-[17px] font-bold tracking-[0.12em] text-amber-400 uppercase">Rune</span>
             </span>
           </Link>
 
@@ -115,9 +115,8 @@ function Navbar() {
               <div className="flex items-center justify-between px-6 h-16 border-b border-border/30 shrink-0">
                 <div className="flex items-center gap-2.5">
                   <RuneLogo size={26} />
-                  <span className="text-[15px] tracking-tight">
-                    <span className="font-light text-foreground/70">Market</span>
-                    <span className="font-bold text-amber-400">Rune</span>
+                  <span style={{ fontFamily: "'Cinzel', serif" }}>
+                    <span className="text-[12px] font-normal tracking-[0.18em] text-foreground/55 uppercase">Market</span><span className="text-[15px] font-bold tracking-[0.12em] text-amber-400 uppercase">Rune</span>
                   </span>
                 </div>
                 <button
@@ -203,7 +202,9 @@ export function AppLayout({ children }: LayoutProps) {
         <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row mx-auto px-4">
           <div className="flex items-center gap-2.5">
             <RuneLogo size={18} />
-            <span className="text-xs text-muted-foreground/60 font-light">Market<span className="text-amber-500/70 font-semibold">Rune</span></span>
+            <span style={{ fontFamily: "'Cinzel', serif" }}>
+              <span className="text-[10px] font-normal tracking-[0.15em] text-foreground/40 uppercase">Market</span><span className="text-[11px] font-bold tracking-[0.1em] text-amber-500/60 uppercase">Rune</span>
+            </span>
           </div>
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
             专为机构级投资者打造 · 数据延迟最多15分钟
