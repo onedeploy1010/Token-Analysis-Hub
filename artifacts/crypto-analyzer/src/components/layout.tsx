@@ -45,16 +45,16 @@ function AnimatedRuneLogo({ size = 42 }: { size?: number }) {
 /* ─── Wordmark ───────────────────────────────────────────────────── */
 function WordmarkRune({ small = false }: { small?: boolean }) {
   return (
-    <span
-      className="rune-wordmark select-none"
+    <img
+      src="/rune-wordmark.png"
+      alt="RUNE"
+      className="select-none object-contain"
       style={{
-        fontSize: small ? "15px" : "23px",
-        letterSpacing: "0",
-        paddingRight: "0",
+        height: small ? "20px" : "30px",
+        width: "auto",
       }}
-    >
-      RUNE
-    </span>
+      draggable={false}
+    />
   );
 }
 
