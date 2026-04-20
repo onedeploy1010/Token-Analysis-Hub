@@ -140,7 +140,7 @@ function Navbar() {
                   )}
                 >
                   <span className={cn(
-                    "text-[13.5px] font-semibold tracking-tight leading-none transition-colors",
+                    "text-[13.5px] font-semibold tracking-tight leading-none transition-colors whitespace-nowrap",
                     isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                   )}>
                     {t(`mr.nav.${item.key}`)}
