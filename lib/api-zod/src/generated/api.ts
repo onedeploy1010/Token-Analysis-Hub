@@ -187,6 +187,7 @@ export const GetRuneOverviewResponse = zod.object({
       nameCn: zod.string(),
       investment: zod.number(),
       seats: zod.number(),
+      seatsRemaining: zod.number(),
       privatePrice: zod.number(),
       dailyUsdt: zod.number(),
       weight: zod.number(),

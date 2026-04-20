@@ -12,6 +12,7 @@ export interface RuneNodeDefinition {
   nameCn: string;
   investment: number;
   seats: number;
+  seatsRemaining: number;
   privatePrice: number;
   dailyUsdt: number;
   weight: number;

@@ -12,8 +12,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useGetRuneOverview } from "@workspace/api-client-react";
+import type { RuneNodeDefinition } from "@workspace/api-client-react";
 
-// ─── Node data ────────────────────────────────────────────────────────────────
+// ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
   pioneer:  "from-blue-950/70 to-blue-900/20 border-blue-700/40",
   builder:  "from-green-950/70 to-green-900/20 border-green-700/40",
@@ -51,65 +54,6 @@ const NODE_PROGRESS_BAR: Record<string, string> = {
   strategic:"[&>div]:bg-purple-500",
 };
 
-interface NodeDef {
-  level: string;
-  nameEn: string;
-  nameCn: string;
-  investment: number;
-  seats: number;
-  seatsRemaining: number;
-  privatePrice: number;
-  dailyUsdt: number;
-  airdropPerSeat: number;
-}
-
-const NODES: NodeDef[] = [
-  {
-    level: "pioneer",
-    nameEn: "Pioneer",
-    nameCn: "符胚",
-    investment: 2500,
-    seats: 800,
-    seatsRemaining: 532,
-    privatePrice: 0.026,
-    dailyUsdt: 11.7,
-    airdropPerSeat: 2500,
-  },
-  {
-    level: "builder",
-    nameEn: "Builder",
-    nameCn: "符印",
-    investment: 5000,
-    seats: 400,
-    seatsRemaining: 218,
-    privatePrice: 0.024,
-    dailyUsdt: 23.4,
-    airdropPerSeat: 5750,
-  },
-  {
-    level: "guardian",
-    nameEn: "Guardian",
-    nameCn: "符主",
-    investment: 10000,
-    seats: 200,
-    seatsRemaining: 87,
-    privatePrice: 0.02,
-    dailyUsdt: 46.8,
-    airdropPerSeat: 13500,
-  },
-  {
-    level: "strategic",
-    nameEn: "Strategic",
-    nameCn: "符魂",
-    investment: 50000,
-    seats: 40,
-    seatsRemaining: 11,
-    privatePrice: 0.016,
-    dailyUsdt: 234,
-    airdropPerSeat: 75000,
-  },
-];
-
 const FAQ_ITEMS = [
   {
     q: "节点购买资金如何使用？ / How are node funds used?",
@@ -145,7 +89,7 @@ function fmt(n: number) {
 }
 
 // ─── Purchase dialog ──────────────────────────────────────────────────────────
-function PurchaseDialog({ node, open, onClose }: { node: NodeDef | null; open: boolean; onClose: () => void }) {
+function PurchaseDialog({ node, open, onClose }: { node: RuneNodeDefinition | null; open: boolean; onClose: () => void }) {
   if (!node) return null;
   const accent = NODE_ACCENT[node.level];
   const badgeCls = NODE_BADGE[node.level];
@@ -211,13 +155,48 @@ function PurchaseDialog({ node, open, onClose }: { node: NodeDef | null; open: b
   );
 }
 
+// ─── Node card skeleton ────────────────────────────────────────────────────────
+function NodeCardSkeleton() {
+  return (
+    <div className="relative flex flex-col rounded-2xl border border-white/10 bg-white/5 p-5 animate-pulse">
+      <div className="flex items-start justify-between mb-4">
+        <div className="space-y-1.5">
+          <Skeleton className="h-2.5 w-16 bg-white/10" />
+          <Skeleton className="h-6 w-20 bg-white/10" />
+        </div>
+        <Skeleton className="h-5 w-10 rounded bg-white/10" />
+      </div>
+      <div className="space-y-2.5 flex-1">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex items-center justify-between gap-1">
+            <Skeleton className="h-3 w-20 bg-white/10" />
+            <Skeleton className="h-3 w-16 bg-white/10" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 space-y-1.5">
+        <div className="flex justify-between">
+          <Skeleton className="h-2.5 w-24 bg-white/10" />
+          <Skeleton className="h-2.5 w-8 bg-white/10" />
+        </div>
+        <Skeleton className="h-1.5 w-full bg-white/10 rounded-full" />
+        <Skeleton className="h-2.5 w-20 bg-white/10 ml-auto" />
+      </div>
+      <Skeleton className="mt-4 h-9 w-full rounded-md bg-white/10" />
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Recruit() {
-  const [selectedNode, setSelectedNode] = useState<NodeDef | null>(null);
+  const [selectedNode, setSelectedNode] = useState<RuneNodeDefinition | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  function handleBuy(node: NodeDef) {
+  const { data: overview, isLoading } = useGetRuneOverview();
+  const nodes = overview?.nodes ?? [];
+
+  function handleBuy(node: RuneNodeDefinition) {
     setSelectedNode(node);
     setDialogOpen(true);
   }
@@ -288,69 +267,72 @@ export default function Recruit() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          {NODES.map((node, i) => {
-            const occupiedPct = Math.round(((node.seats - node.seatsRemaining) / node.seats) * 100);
-            const accent = NODE_ACCENT[node.level];
-            const progressCls = NODE_PROGRESS_BAR[node.level];
-            return (
-              <motion.div
-                key={node.level}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: i * 0.1 }}
-                className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[node.level]} ${NODE_GLOW[node.level]}`}
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${accent}`}>
-                      {node.nameEn}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => <NodeCardSkeleton key={i} />)
+            : nodes.map((node, i) => {
+                const occupiedPct = Math.round(((node.seats - node.seatsRemaining) / node.seats) * 100);
+                const accent = NODE_ACCENT[node.level];
+                const progressCls = NODE_PROGRESS_BAR[node.level];
+                return (
+                  <motion.div
+                    key={node.level}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: i * 0.1 }}
+                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[node.level]} ${NODE_GLOW[node.level]}`}
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${accent}`}>
+                          {node.nameEn}
+                        </div>
+                        <div className="text-xl font-bold text-foreground">{node.nameCn}</div>
+                      </div>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[node.level]}`}>
+                        Lv.{i + 1}
+                      </span>
                     </div>
-                    <div className="text-xl font-bold text-foreground">{node.nameCn}</div>
-                  </div>
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[node.level]}`}>
-                    Lv.{i + 1}
-                  </span>
-                </div>
 
-                {/* Stats */}
-                <div className="space-y-2.5 flex-1">
-                  {[
-                    { label: "投资门槛", val: `$${fmt(node.investment)}`, accent: true },
-                    { label: "私募价格", val: `$${node.privatePrice.toFixed(3)}` },
-                    { label: "席位总量", val: `${fmt(node.seats)} 席` },
-                    { label: "每日USDT收益", val: `$${node.dailyUsdt}`, accent: true },
-                    { label: "子TOKEN空投", val: `${fmt(node.airdropPerSeat)} SUB` },
-                  ].map(({ label, val, accent: isAccent }) => (
-                    <div key={label} className="flex items-center justify-between gap-1">
-                      <span className="text-[11px] text-muted-foreground/60">{label}</span>
-                      <span className={`text-sm font-semibold ${isAccent ? accent : "text-foreground/90"}`}>{val}</span>
+                    {/* Stats */}
+                    <div className="space-y-2.5 flex-1">
+                      {[
+                        { label: "投资门槛", val: `$${fmt(node.investment)}`, accent: true },
+                        { label: "私募价格", val: `$${node.privatePrice.toFixed(3)}` },
+                        { label: "席位总量", val: `${fmt(node.seats)} 席` },
+                        { label: "每日USDT收益", val: `$${node.dailyUsdt}`, accent: true },
+                        { label: "子TOKEN空投", val: `${fmt(node.airdropPerSeat)} SUB` },
+                      ].map(({ label, val, accent: isAccent }) => (
+                        <div key={label} className="flex items-center justify-between gap-1">
+                          <span className="text-[11px] text-muted-foreground/60">{label}</span>
+                          <span className={`text-sm font-semibold ${isAccent ? accent : "text-foreground/90"}`}>{val}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                {/* Seat progress */}
-                <div className="mt-4 space-y-1.5">
-                  <div className="flex justify-between text-[10px] text-muted-foreground/50">
-                    <span>席位占用 Occupancy</span>
-                    <span className={accent}>{occupiedPct}%</span>
-                  </div>
-                  <Progress value={occupiedPct} className={`h-1.5 bg-white/5 ${progressCls}`} />
-                  <div className="text-[10px] text-muted-foreground/40 text-right">
-                    剩余 {fmt(node.seatsRemaining)} 席
-                  </div>
-                </div>
+                    {/* Seat progress */}
+                    <div className="mt-4 space-y-1.5">
+                      <div className="flex justify-between text-[10px] text-muted-foreground/50">
+                        <span>席位占用 Occupancy</span>
+                        <span className={accent}>{occupiedPct}%</span>
+                      </div>
+                      <Progress value={occupiedPct} className={`h-1.5 bg-white/5 ${progressCls}`} />
+                      <div className="text-[10px] text-muted-foreground/40 text-right">
+                        剩余 {fmt(node.seatsRemaining)} 席
+                      </div>
+                    </div>
 
-                {/* Buy button */}
-                <Button
-                  onClick={() => handleBuy(node)}
-                  className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[node.level]}`}
-                >
-                  购买节点 · Buy Node
-                </Button>
-              </motion.div>
-            );
-          })}
+                    {/* Buy button */}
+                    <Button
+                      onClick={() => handleBuy(node)}
+                      className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[node.level]}`}
+                    >
+                      购买节点 · Buy Node
+                    </Button>
+                  </motion.div>
+                );
+              })
+          }
         </div>
       </section>
 
