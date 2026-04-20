@@ -89,24 +89,56 @@ export default function Tools() {
   const activeTool = allTools.find(t => t.id === active)!;
 
   return (
-    <div className="min-h-screen animate-slide-up">
-      {/* Header */}
-      <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm px-4 sm:px-6 py-6">
-        <div className="max-w-screen-xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex flex-wrap items-baseline gap-3">
-            Economic Simulators
-            <span className="text-lg sm:text-xl text-muted-foreground font-normal">经济模拟器</span>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Advanced calculators for DeFi yields, liquidity analysis, and protocol-level economic simulation.
-            <span className="hidden sm:inline"> · 高级计算器，涵盖 DeFi 收益、流动性分析及协议经济模拟。</span>
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8 animate-slide-up space-y-6">
+      {/* ── Header ── */}
+      <div className="border-b border-border/50 pb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex flex-wrap items-baseline gap-3">
+          Economic Simulators
+          <span className="text-lg sm:text-xl text-muted-foreground font-normal">经济模拟器</span>
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+          Advanced calculators for DeFi yields, liquidity analysis, and protocol-level economic simulation.
+          <span className="hidden sm:inline"> · 高级计算器，涵盖 DeFi 收益、流动性分析及协议经济模拟。</span>
+        </p>
       </div>
 
-      <div className="max-w-screen-xl mx-auto flex flex-col lg:flex-row">
-        {/* ── Sidebar (desktop) ── */}
-        <aside className="hidden lg:flex flex-col w-56 xl:w-64 shrink-0 border-r border-border/50 py-6 px-4 gap-1 sticky top-0 h-[calc(100vh-120px)] overflow-y-auto">
+      {/* ── Mobile nav ── */}
+      <div className="lg:hidden">
+        <Select value={active} onValueChange={(v) => setActive(v as ToolId)}>
+          <SelectTrigger className="w-full bg-card/50 backdrop-blur-sm border-border shadow-sm h-11">
+            <div className="flex items-center gap-2">
+              <activeTool.Icon className={`h-4 w-4 shrink-0 ${activeTool.color}`} />
+              <span className="font-medium">{activeTool.name}</span>
+              <span className="text-xs text-muted-foreground ml-1">{activeTool.nameZh}</span>
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {CATEGORIES.map(cat => (
+              <div key={cat.id}>
+                <div className="px-2 py-1.5">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+                    {cat.name} · {cat.nameZh}
+                  </p>
+                </div>
+                {cat.tools.map(tool => (
+                  <SelectItem key={tool.id} value={tool.id}>
+                    <span className="flex items-center gap-2">
+                      <tool.Icon className={`h-3.5 w-3.5 ${tool.color}`} />
+                      <span>{tool.name}</span>
+                      <span className="text-xs text-muted-foreground">{tool.nameZh}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </div>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* ── Sidebar + Content ── */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-0">
+        {/* Sidebar (desktop) */}
+        <aside className="hidden lg:flex flex-col w-52 xl:w-60 shrink-0 gap-1 sticky top-20 h-[calc(100vh-160px)] overflow-y-auto pr-4 border-r border-border/50">
           {CATEGORIES.map((cat, ci) => (
             <div key={cat.id} className={ci > 0 ? "mt-5" : ""}>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-2 px-2">
@@ -136,41 +168,8 @@ export default function Tools() {
           ))}
         </aside>
 
-        {/* ── Mobile nav ── */}
-        <div className="lg:hidden px-4 py-4 border-b border-border/50 bg-card/20">
-          <Select value={active} onValueChange={(v) => setActive(v as ToolId)}>
-            <SelectTrigger className="bg-background/60 border-border h-11">
-              <div className="flex items-center gap-2">
-                <activeTool.Icon className={`h-4 w-4 shrink-0 ${activeTool.color}`} />
-                <span className="font-medium">{activeTool.name}</span>
-                <span className="text-xs text-muted-foreground ml-1">{activeTool.nameZh}</span>
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map(cat => (
-                <div key={cat.id}>
-                  <div className="px-2 py-1.5">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-                      {cat.name} · {cat.nameZh}
-                    </p>
-                  </div>
-                  {cat.tools.map(tool => (
-                    <SelectItem key={tool.id} value={tool.id}>
-                      <span className="flex items-center gap-2">
-                        <tool.Icon className={`h-3.5 w-3.5 ${tool.color}`} />
-                        <span>{tool.name}</span>
-                        <span className="text-xs text-muted-foreground">{tool.nameZh}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </div>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* ── Tool content ── */}
-        <main className="flex-1 min-w-0 px-4 sm:px-6 py-6">
+        <main className="flex-1 min-w-0 lg:pl-6">
           {active === "apy" && <ApyCalculator />}
           {active === "investment" && <InvestmentSimulator />}
           {active === "il" && <ImpermanentLossCalculator />}
