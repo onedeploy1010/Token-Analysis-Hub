@@ -935,7 +935,7 @@ function BrokerEarningsCalculator() {
   const [grossProfit, setGrossProfit] = useState(5000);
   const [feeRate, setFeeRate] = useState(15);
   const [profitShare, setProfitShare] = useState(70);
-  const [subLevel, setSubLevel] = useState<string>("V1");
+  const [subLevel, setSubLevel] = useState<string>("none");
 
   const breakdown = useMemo(
     () => calculateBrokerLayerBreakdown(msPerLayer, brokerLevel),
@@ -943,7 +943,7 @@ function BrokerEarningsCalculator() {
   );
 
   const dividend = useMemo(
-    () => calculateBrokerDividendEarnings(grossProfit, feeRate, profitShare, brokerLevel, subLevel),
+    () => calculateBrokerDividendEarnings(grossProfit, feeRate, profitShare, brokerLevel, subLevel === "none" ? null : subLevel),
     [grossProfit, feeRate, profitShare, brokerLevel, subLevel]
   );
 
@@ -994,7 +994,7 @@ function BrokerEarningsCalculator() {
               <Select value={subLevel} onValueChange={setSubLevel}>
                 <SelectTrigger className="bg-background/50 border-border h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (直接下线)</SelectItem>
+                  <SelectItem value="none">None (直接下线)</SelectItem>
                   {Object.keys(BROKER_LEVEL_MAX_LAYERS).map(lvl => (
                     <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
                   ))}
