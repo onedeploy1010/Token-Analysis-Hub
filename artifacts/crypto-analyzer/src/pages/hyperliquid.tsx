@@ -260,13 +260,13 @@ export default function HyperLiquid() {
         {/* Row 1: HYPE K-line chart */}
         <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-green-500/50">
           <CardHeader className="pb-2 border-b border-border/40">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-green-400" />
-                HYPE 价格走势
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                <BarChart2 className="h-4 w-4 text-green-400 shrink-0" />
+                <span>HYPE 价格走势</span>
                 <span className="text-xs text-muted-foreground font-normal">Price Chart</span>
                 {currentPrice > 0 && (
-                  <span className="font-mono font-bold text-foreground ml-2">${fmt(currentPrice)}</span>
+                  <span className="font-mono font-bold text-foreground">${fmt(currentPrice)}</span>
                 )}
                 {priceChange !== 0 && (
                   <span className={`text-xs font-mono ${priceChange >= 0 ? "text-green-400" : "text-red-400"}`}>
@@ -275,7 +275,7 @@ export default function HyperLiquid() {
                 )}
               </CardTitle>
               {/* Interval selector */}
-              <div className="flex gap-1">
+              <div className="flex gap-1 self-start sm:self-auto">
                 {INTERVAL_OPTIONS.map(opt => (
                   <button key={opt.value} onClick={() => setInterval(opt.value)}
                     className={`px-2.5 py-1 rounded text-xs font-mono font-medium transition-all ${interval === opt.value ? "bg-green-500/20 text-green-400 border border-green-500/40" : "text-muted-foreground hover:text-foreground border border-transparent hover:border-border/50"}`}>
@@ -287,9 +287,9 @@ export default function HyperLiquid() {
           </CardHeader>
           <CardContent className="pt-4 pb-2">
             {candleLoading ? (
-              <Skeleton className="h-[300px] w-full" />
+              <Skeleton className="h-[220px] sm:h-[300px] w-full" />
             ) : chartCandles.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={typeof window !== "undefined" && window.innerWidth < 640 ? 220 : 300}>
                 <ComposedChart data={chartCandles} margin={{ top: 4, right: 12, left: -8, bottom: 4 }}>
                   <defs>
                     <linearGradient id="hlCloseGrad" x1="0" y1="0" x2="0" y2="1">
@@ -427,8 +427,8 @@ export default function HyperLiquid() {
               <table className="w-full text-sm">
                 <tbody>
                   {[
-                    { label: "合约地址",    labelEn: "Vault Address",  value: VAULT_ADDRESS,       mono: true,  link: `https://app.hyperliquid.xyz/vaults/${VAULT_ADDRESS}` },
-                    { label: "管理员地址",  labelEn: "Leader",         value: vault.leader,         mono: true,  link: `https://app.hyperliquid.xyz/profile/${vault.leader}` },
+                    { label: "合约地址",    labelEn: "Vault Address",  value: VAULT_ADDRESS,       mono: true,  isAddr: true, link: `https://app.hyperliquid.xyz/vaults/${VAULT_ADDRESS}` },
+                    { label: "管理员地址",  labelEn: "Leader",         value: vault.leader,         mono: true,  isAddr: true, link: `https://app.hyperliquid.xyz/profile/${vault.leader}` },
                     { label: "管理员份额",  labelEn: "Leader Fraction",value: `${(vault.leaderFraction * 100).toFixed(1)}%`, mono: false },
                     { label: "管理员佣金",  labelEn: "Commission",     value: `${(vault.leaderCommission * 100).toFixed(1)}%`, mono: false },
                     { label: "年化收益率",  labelEn: "APR",            value: `${aprPct >= 0 ? "+" : ""}${fmt(aprPct, 3)}%`, mono: false, highlight: true },
@@ -436,17 +436,25 @@ export default function HyperLiquid() {
                     { label: "跟单人数",    labelEn: "Followers",      value: vault.followers.toLocaleString(), mono: false },
                     { label: "今日盈亏",    labelEn: "Day PnL",        value: (vault.dayPnl >= 0 ? "+" : "") + fmtM(vault.dayPnl), mono: true, highlight: true },
                     { label: "历史累计盈亏",labelEn: "All-Time PnL",   value: (vault.allTimePnl >= 0 ? "+" : "") + fmtM(vault.allTimePnl), mono: true, highlight: true },
-                  ].map(({ label, labelEn, value, mono, link, highlight }, i) => (
+                  ].map(({ label, labelEn, value, mono, link, highlight, isAddr }, i) => (
                     <tr key={i} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors">
-                      <td className="py-3 px-5 text-muted-foreground w-40">
-                        {labelEn}
-                        <span className="ml-2 text-[10px] opacity-50">{label}</span>
+                      <td className="py-3 px-3 sm:px-5 text-muted-foreground w-28 sm:w-40 shrink-0">
+                        <span className="hidden sm:inline">{labelEn}</span>
+                        <span className="sm:hidden text-[11px]">{label}</span>
+                        <span className="ml-1.5 text-[10px] opacity-50 hidden sm:inline">{label}</span>
                       </td>
-                      <td className="py-3 px-5 text-right">
+                      <td className="py-3 px-3 sm:px-5 text-right">
                         {link ? (
                           <a href={link} target="_blank" rel="noopener noreferrer"
                             className={`inline-flex items-center gap-1 hover:underline ${mono ? "font-mono" : ""} ${highlight ? "text-green-400 font-semibold" : "text-foreground"}`}>
-                            <span className="truncate max-w-[280px] block">{value}</span>
+                            {isAddr ? (
+                              <>
+                                <span className="hidden sm:inline text-xs">{value}</span>
+                                <span className="sm:hidden text-xs">{shortAddr(value)}</span>
+                              </>
+                            ) : (
+                              <span>{value}</span>
+                            )}
                             <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
                           </a>
                         ) : (

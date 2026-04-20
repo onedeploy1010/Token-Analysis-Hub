@@ -86,7 +86,7 @@ function TrendingRow({ project, rank, delay }: { project: Project; rank: number;
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <Link href={project.symbol === "RUNE" ? "/projects/rune" : project.symbol === "B18" ? "/projects/b18" : `/projects/${project.id}`}>
+      <Link href={project.symbol === "RUNE" ? "/projects/rune" : project.symbol === "B18" ? "/projects/b18" : project.symbol === "HYPE" ? "/projects/hyperliquid" : `/projects/${project.id}`}>
         <div className="group corner-brackets flex items-center gap-4 px-4 py-3.5 rounded-xl border border-border/40 bg-card/50 hover:bg-card/80 hover:border-primary/25 transition-all cursor-pointer hover:shadow-[0_0_20px_rgba(0,0,0,0.3)]">
           {project.symbol === "RUNE" ? (
             <div className="w-9 h-9 rounded-lg overflow-hidden bg-black border border-primary/20 shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.15)]">

@@ -516,7 +516,7 @@ export default function Rune() {
                 {(overview?.priceStages?.length) ? (
                   <div className="space-y-2">
                     <Label className="text-base font-medium text-foreground">目标价格阶段 <span className="text-xs text-muted-foreground font-normal ml-1">Target Stage</span></Label>
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                       {(overview.priceStages ?? []).map((s, i) => (
                         <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
                           className={`text-left p-2.5 rounded-lg border transition-all ${priceStageIndex === i ? "border-primary bg-primary/10" : "border-border/50 hover:border-border"}`}>
