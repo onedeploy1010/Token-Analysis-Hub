@@ -16,67 +16,59 @@ const NAV_ITEMS = [
 ];
 
 /* ─── Animated Logo ──────────────────────────────────────────────── */
-function AnimatedRuneLogo({ size = 36 }: { size?: number }) {
-  const ring = size + 6;
+function AnimatedRuneLogo({ size = 42 }: { size?: number }) {
   return (
-    <div className="relative shrink-0" style={{ width: ring, height: ring }}>
-      {/* spinning conic-gradient ring */}
-      <motion.div
-        className="absolute inset-0 rounded-xl"
-        style={{
-          background: "conic-gradient(from 0deg, transparent 60%, rgba(251,191,36,0.9) 80%, rgba(217,119,6,1) 90%, rgba(251,191,36,0.9) 100%, transparent 140%)",
-          padding: 1.5,
-        }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
+    <motion.div
+      className="relative shrink-0"
+      style={{ width: size, height: size }}
+      animate={{
+        filter: [
+          "drop-shadow(0 0 4px rgba(251,191,36,0.25))",
+          "drop-shadow(0 0 10px rgba(251,191,36,0.55))",
+          "drop-shadow(0 0 4px rgba(251,191,36,0.25))",
+        ],
+      }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <img
+        src="/rune-logo-new.png"
+        alt="RUNE"
+        className="w-full h-full object-contain"
+        style={{ filter: "brightness(1.08) contrast(1.05)" }}
       />
-      {/* static amber outer glow */}
-      <div
-        className="absolute inset-0 rounded-xl"
-        style={{ boxShadow: "0 0 14px 2px rgba(251,191,36,0.22), 0 0 4px 1px rgba(251,191,36,0.12) inset" }}
-      />
-      {/* image */}
-      <div
-        className="absolute rounded-[9px] overflow-hidden bg-black"
-        style={{ inset: 2 }}
-      >
-        <img src="/rune-logo.png" alt="MarketRune" className="w-full h-full object-contain" />
-      </div>
-    </div>
+    </motion.div>
   );
 }
 
-/* ─── Shimmer wordmark ───────────────────────────────────────────── */
+/* ─── Wordmark ───────────────────────────────────────────────────── */
 function WordmarkRune({ small = false }: { small?: boolean }) {
   return (
-    <span
+    <motion.span
       className={cn(
-        "font-bold uppercase tracking-[0.18em] leading-none select-none",
-        small ? "text-[17px]" : "text-[22px] sm:text-[24px]"
+        "font-bold uppercase leading-none select-none",
+        small ? "text-[16px] tracking-[0.16em]" : "text-[26px] sm:text-[28px] tracking-[0.22em]"
       )}
       style={{
         fontFamily: "'Cinzel', serif",
-        background: "linear-gradient(100deg, #b45309 0%, #fbbf24 30%, #fef3c7 50%, #fbbf24 70%, #b45309 100%)",
-        backgroundSize: "200% 100%",
+        background: "linear-gradient(160deg, #fef3c7 0%, #fbbf24 45%, #d97706 100%)",
         WebkitBackgroundClip: "text",
         WebkitTextFillColor: "transparent",
         backgroundClip: "text",
-        animation: "rune-shimmer 3.2s ease-in-out infinite",
       }}
+      animate={{
+        textShadow: [
+          "0 0 0px rgba(251,191,36,0)",
+          "0 0 18px rgba(251,191,36,0.55)",
+          "0 0 0px rgba(251,191,36,0)",
+        ],
+      }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
     >
       RUNE
-    </span>
+    </motion.span>
   );
 }
 
-/* ─── Keyframe injection ─────────────────────────────────────────── */
-const shimmerStyle = `
-@keyframes rune-shimmer {
-  0%   { background-position: 100% 50%; }
-  50%  { background-position:   0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-`;
 
 function Navbar() {
   const [location] = useLocation();
@@ -84,28 +76,26 @@ function Navbar() {
 
   return (
     <>
-      <style>{shimmerStyle}</style>
-
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/90 backdrop-blur-md shadow-sm">
-        <div className="container flex h-16 items-center justify-between mx-auto px-4">
+        <div className="container flex h-[72px] items-center justify-between mx-auto px-6">
 
           {/* Logo + wordmark */}
           <Link
             href="/"
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-4 group"
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
-              whileHover={{ scale: 1.06 }}
-              transition={{ type: "spring", stiffness: 340, damping: 22 }}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <AnimatedRuneLogo size={34} />
+              <AnimatedRuneLogo size={52} />
             </motion.div>
             <WordmarkRune />
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-stretch h-16 gap-0">
+          <nav className="hidden md:flex items-stretch h-[72px] gap-0">
             {NAV_ITEMS.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               return (
@@ -250,7 +240,6 @@ function Navbar() {
 export function AppLayout({ children }: LayoutProps) {
   return (
     <div className="relative flex min-h-screen flex-col bg-background selection:bg-primary/30 selection:text-amber-200">
-      <style>{shimmerStyle}</style>
       <Navbar />
       <main className="flex-1 w-full mx-auto">
         {children}
