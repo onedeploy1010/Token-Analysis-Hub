@@ -625,11 +625,6 @@ export default function LegendATM() {
               </table>
             </div>
 
-            <div className="border border-amber-500/20 bg-amber-950/10 rounded-lg p-4 text-xs text-amber-400/80 space-y-1">
-              <div className="font-semibold text-amber-400">风险提示 Risk Disclosure</div>
-              <div>高收益产品通常对应高风险。ATM腿暴露于代币价格波动，下跌10%将触发燃烧机制。</div>
-              <div>强制复投时限4小时意味着需要主动管理仓位。收益数字基于系统公示参数计算，实际收益可能因市场条件而异。</div>
-            </div>
           </TabsContent>
         </Tabs>
     </div>
