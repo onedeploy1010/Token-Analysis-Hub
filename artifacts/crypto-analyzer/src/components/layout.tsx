@@ -68,8 +68,46 @@ function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/90 backdrop-blur-md shadow-sm">
-        <div className="container flex h-[72px] items-center justify-between mx-auto px-6">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/90 backdrop-blur-md shadow-sm relative overflow-hidden">
+
+        {/* ── Animated background lights ── */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Primary gold orb — left anchor */}
+          <motion.div
+            className="absolute rounded-full"
+            style={{
+              width: 360,
+              height: 360,
+              background: "radial-gradient(circle, rgba(251,191,36,0.13) 0%, rgba(217,119,6,0.06) 45%, transparent 70%)",
+              top: "-160px",
+              left: "-60px",
+            }}
+            animate={{ x: [0, 50, 0], opacity: [0.8, 1, 0.8] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Secondary amber orb — center drift */}
+          <motion.div
+            className="absolute rounded-full"
+            style={{
+              width: 220,
+              height: 220,
+              background: "radial-gradient(circle, rgba(251,191,36,0.07) 0%, transparent 70%)",
+              top: "-100px",
+              left: "38%",
+            }}
+            animate={{ x: [0, -35, 20, 0], opacity: [0.4, 0.75, 0.5, 0.4] }}
+            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+          />
+          {/* Thin horizontal scan line */}
+          <motion.div
+            className="absolute left-0 right-0"
+            style={{ height: "1px", background: "linear-gradient(90deg, transparent 0%, rgba(251,191,36,0.25) 30%, rgba(251,191,36,0.5) 50%, rgba(251,191,36,0.25) 70%, transparent 100%)", top: "50%" }}
+            animate={{ opacity: [0, 0.6, 0], scaleX: [0.6, 1, 0.6] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          />
+        </div>
+
+        <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-6">
 
           {/* Logo + wordmark */}
           <Link
