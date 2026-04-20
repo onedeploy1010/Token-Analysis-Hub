@@ -286,6 +286,7 @@ function EmptyState({ icon, msg, sub }: { icon: React.ReactNode; msg: string; su
 // ─── APY Calculator ───────────────────────────────────────────────────────────
 
 function ApyCalculator() {
+  const showZh = useShowZh();
   const [principal, setPrincipal] = useState(1000);
   const [apy, setApy] = useState(15);
   const [days, setDays] = useState(365);
@@ -358,6 +359,7 @@ function ApyCalculator() {
 // ─── Investment Simulator ─────────────────────────────────────────────────────
 
 function InvestmentSimulator() {
+  const showZh = useShowZh();
   const [initial, setInitial] = useState(10000);
   const [monthly, setMonthly] = useState(500);
   const [apy, setApy] = useState(12);
@@ -420,6 +422,7 @@ function InvestmentSimulator() {
 // ─── Impermanent Loss ─────────────────────────────────────────────────────────
 
 function ImpermanentLossCalculator() {
+  const showZh = useShowZh();
   const [initialPrice, setInitialPrice] = useState(100);
   const [currentPrice, setCurrentPrice] = useState(150);
   const [liquidity, setLiquidity] = useState(1000);
@@ -494,6 +497,7 @@ const STAKING_MODES: { id: StakingMode; name: string; nameZh: string; desc: stri
 ];
 
 function StakingProjector() {
+  const showZh = useShowZh();
   const [mode, setMode] = useState<StakingMode>("gold");
   const [tokenName, setTokenName] = useState("MS");
   const [tokenPrice, setTokenPrice] = useState(0.5);
@@ -1201,6 +1205,7 @@ function CLMMAnalyzer() {
 // ─── Trading Profit Calculator ────────────────────────────────────────────────
 
 function TradingProfitCalculator() {
+  const showZh = useShowZh();
   const [tokenName, setTokenName] = useState("MS");
   const [capital, setCapital] = useState(10000);
   const [volumePct, setVolumePct] = useState(50);
@@ -1322,6 +1327,7 @@ function TradingProfitCalculator() {
 // ─── Broker Earnings Calculator ───────────────────────────────────────────────
 
 function BrokerEarningsCalculator() {
+  const showZh = useShowZh();
   const [tokenName, setTokenName] = useState("MS");
   const [systemId, setSystemId] = useState("afx_v");
   const [brokerLevel, setBrokerLevel] = useState("V3");
