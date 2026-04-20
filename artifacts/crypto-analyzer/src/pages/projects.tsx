@@ -96,11 +96,11 @@ export default function Projects() {
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider">
                 <Zap className="h-3.5 w-3.5" /> 精选推荐 · Featured Analysis
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-black border border-primary/25 shadow-[0_0_20px_rgba(251,191,36,0.2)] shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-black border border-primary/25 shadow-[0_0_20px_rgba(251,191,36,0.2)] shrink-0">
                   <img src="/rune-logo.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
                 </div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
+                <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
                   RUNE Protocol <span className="text-primary/80">—</span> 深度节点分析
                 </h2>
               </div>
@@ -116,11 +116,11 @@ export default function Projects() {
             <div className="flex items-center gap-6 shrink-0">
               <div className="hidden md:block text-right space-y-1">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">APY</p>
-                <p className="text-3xl font-bold font-mono text-primary">18.3%</p>
+                <p className="text-3xl font-bold font-mono num text-primary">18.3%</p>
               </div>
               <div className="hidden md:block text-right space-y-1">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">TVL</p>
-                <p className="text-2xl font-bold font-mono text-foreground/90">$312M</p>
+                <p className="text-2xl font-bold font-mono num text-foreground/90">$312M</p>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <div className="inline-flex items-center text-primary font-semibold text-sm group-hover:underline whitespace-nowrap">
@@ -188,7 +188,7 @@ export default function Projects() {
           ))}
         </div>
       ) : (
-        <motion.div layout className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <motion.div layout className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AnimatePresence>
             {filteredProjects.length > 0 ? (
               filteredProjects.map(project => (

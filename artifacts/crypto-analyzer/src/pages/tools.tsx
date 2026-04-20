@@ -85,8 +85,8 @@ type ToolId = "apy" | "investment" | "il" | "staking" | "pledge" | "aam" | "clmm
 export default function Tools() {
   const [active, setActive] = useState<ToolId>("apy");
 
-  const allTools = CATEGORIES.flatMap(c => c.tools);
-  const activeTool = allTools.find(t => t.id === active)!;
+  const allTools = CATEGORIES.flatMap(c => c.tools as readonly any[]);
+  const activeTool = allTools.find(t => t.id === active) as any;
 
   return (
     <div className="container mx-auto px-4 py-8 animate-slide-up space-y-6">

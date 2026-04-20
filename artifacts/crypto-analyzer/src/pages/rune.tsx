@@ -182,11 +182,11 @@ export default function Rune() {
               <span className="text-[11px] uppercase tracking-widest text-primary font-semibold">母TOKEN · Mother Token</span>
               <Flame className="h-4 w-4 text-primary/60" />
             </div>
-            <p className="text-5xl font-bold tracking-tight mb-2">{overview.motherToken.symbol}</p>
+            <p className="text-4xl sm:text-5xl font-bold tracking-tight mb-2">{overview.motherToken.symbol}</p>
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
               <span>开盘价 <span className="font-mono text-foreground font-semibold">${overview.motherToken.launchPrice}</span></span>
-              <span>发行量 <span className="font-mono text-foreground font-semibold">{(overview.motherToken.totalSupply/1e8).toFixed(1)}亿枚</span></span>
-              <span>日燃烧 <span className="font-mono text-foreground font-semibold">{(overview.motherToken.dailyBurnRate*100).toFixed(1)}%</span></span>
+              <span>发行量 <span className="font-mono text-foreground font-semibold">{((overview.motherToken.totalSupply ?? 0)/1e8).toFixed(1)}亿枚</span></span>
+              <span>日燃烧 <span className="font-mono text-foreground font-semibold">{((overview.motherToken.dailyBurnRate ?? 0)*100).toFixed(1)}%</span></span>
               <span>24M目标 <span className="font-mono text-green-400 font-semibold">${overview.motherToken.targetPriceLow}~${overview.motherToken.targetPriceHigh}</span></span>
             </div>
           </div>
@@ -195,11 +195,11 @@ export default function Rune() {
               <span className="text-[11px] uppercase tracking-widest text-orange-400 font-semibold">子TOKEN · Sub Token</span>
               <TrendingUp className="h-4 w-4 text-orange-400/60" />
             </div>
-            <p className="text-5xl font-bold tracking-tight text-orange-300 mb-2">{overview.subToken.symbol}</p>
+            <p className="text-4xl sm:text-5xl font-bold tracking-tight text-orange-300 mb-2">{overview.subToken.symbol}</p>
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
               <span>初始价 <span className="font-mono text-foreground font-semibold">${overview.subToken.launchPrice}</span></span>
-              <span>发行量 <span className="font-mono text-foreground font-semibold">{(overview.subToken.totalSupply/1e6).toFixed(1)}百万枚</span></span>
-              <span>日燃烧 <span className="font-mono text-foreground font-semibold">{(overview.subToken.dailyBurnRate*100).toFixed(1)}%</span></span>
+              <span>发行量 <span className="font-mono text-foreground font-semibold">{((overview.subToken.totalSupply ?? 0)/1e6).toFixed(1)}百万枚</span></span>
+              <span>日燃烧 <span className="font-mono text-foreground font-semibold">{((overview.subToken.dailyBurnRate ?? 0)*100).toFixed(1)}%</span></span>
               <span>24M目标 <span className="font-mono text-green-400 font-semibold">${overview.subToken.targetPriceLow}~${overview.subToken.targetPriceHigh}</span></span>
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function Rune() {
                           <div className="h-2 w-2 rounded-full" style={{ background: PIE_COLORS[i] }} />
                           <span className="text-muted-foreground">{d.name}</span>
                         </div>
-                        <span className="font-mono font-medium">${(d.value/1e6).toFixed(1)}M</span>
+                        <span className="font-mono font-medium">${((d.value ?? 0)/1e6).toFixed(1)}M</span>
                       </div>
                     ))}
                   </div>

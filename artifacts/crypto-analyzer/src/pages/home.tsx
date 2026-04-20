@@ -99,16 +99,16 @@ function TrendingRow({ project, rank, delay }: { project: Project; rank: number;
           )}
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="font-semibold text-sm text-foreground truncate">{project.name}</span>
-              <span className="text-[11px] font-mono text-muted-foreground border border-border/50 rounded px-1.5 py-px shrink-0">{project.symbol}</span>
+              <span className="text-[10px] sm:text-[11px] font-mono text-muted-foreground border border-border/50 rounded px-1 sm:px-1.5 py-px shrink-0">{project.symbol}</span>
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 hidden sm:inline shrink-0">{project.category}</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
               <RiskDot level={project.riskLevel} />
-              <span className="text-[11px] text-muted-foreground capitalize">{project.riskLevel} risk</span>
+              <span className="text-[10px] sm:text-[11px] text-muted-foreground capitalize">{project.riskLevel} risk</span>
               <span className="text-muted-foreground/40 text-[10px]">·</span>
-              <span className="text-[11px] text-muted-foreground font-mono">TVL {project.tvl}</span>
+              <span className="text-[10px] sm:text-[11px] text-muted-foreground font-mono truncate">TVL {project.tvl}</span>
             </div>
           </div>
 
@@ -137,7 +137,7 @@ export default function Home() {
   };
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } as const }
   };
 
   return (
@@ -160,7 +160,7 @@ export default function Home() {
             </span>
             <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Live Data / 实时数据</span>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight lg:text-6xl text-foreground">
             <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="block">
               Institutional-Grade
             </motion.span>
@@ -192,7 +192,7 @@ export default function Home() {
           <span className="text-foreground">Market Overview</span>
           <span className="text-sm font-normal text-muted-foreground">市场概览 · Global DeFi metrics</span>
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {isSummaryLoading ? (
             Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] w-full rounded-xl bg-card border border-border" />)
           ) : summary ? (

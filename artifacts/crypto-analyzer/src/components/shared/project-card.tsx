@@ -107,7 +107,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 <span>APY</span>
                 <span className="text-[9px] opacity-80">年化收益率</span>
               </p>
-              <p className="text-2xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-br from-primary to-chart-2">
+              <p className="text-2xl font-bold font-mono num bg-clip-text text-transparent bg-gradient-to-br from-primary to-chart-2">
                 {formatPercent(project.apy)}
               </p>
             </div>
