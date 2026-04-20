@@ -24,7 +24,13 @@ router.get("/projects", async (req, res): Promise<void> => {
     query = query.where(eq(projectsTable.category, params.data.category));
   }
 
-  const projects = await query.orderBy(desc(projectsTable.rating));
+  const sortBy = params.data.sortBy ?? "trending";
+  const orderedQuery =
+    sortBy === "newest"  ? query.orderBy(desc(projectsTable.id)) :
+    sortBy === "rating"  ? query.orderBy(desc(projectsTable.rating)) :
+    /* trending / default */ query.orderBy(desc(projectsTable.apy));
+
+  const projects = await orderedQuery;
   const visibleProjects = projects.filter(p => !p.archived);
 
   res.json(ListProjectsResponse.parse(visibleProjects.map(p => ({
