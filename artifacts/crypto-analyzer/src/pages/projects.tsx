@@ -126,23 +126,26 @@ export default function Projects() {
       </Link>
 
       {/* ── Category filter — mobile: Select dropdown / desktop: tab row ── */}
-      <div className="sm:hidden">
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-full bg-card/50 backdrop-blur-sm border-border shadow-sm">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              <SelectValue placeholder="Category" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map(c => (
-              <SelectItem key={c} value={c}>{categoryMap[c] || c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <div className="mt-10">
+        {/* Mobile */}
+        <div className="sm:hidden">
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-full bg-card/50 backdrop-blur-sm border-border shadow-sm">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder="Category" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map(c => (
+                <SelectItem key={c} value={c}>{categoryMap[c] || c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="hidden sm:flex overflow-x-auto pb-2 hide-scrollbar border-b border-border/50">
+        {/* Desktop */}
+        <div className="hidden sm:flex overflow-x-auto pb-2 hide-scrollbar border-b border-border/50">
         <div className="flex space-x-6 min-w-max">
           {categories.map(c => {
             const isActive = category === c;
@@ -166,6 +169,7 @@ export default function Projects() {
               </button>
             );
           })}
+        </div>
         </div>
       </div>
 
