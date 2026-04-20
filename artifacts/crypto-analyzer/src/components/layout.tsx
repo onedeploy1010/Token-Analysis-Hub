@@ -48,9 +48,9 @@ function WordmarkRune({ small = false }: { small?: boolean }) {
     <span
       className="rune-wordmark select-none"
       style={{
-        fontSize: small ? "16px" : "26px",
-        letterSpacing: small ? "0.06em" : "0.08em",
-        paddingRight: small ? "0.06em" : "0.08em",
+        fontSize: small ? "15px" : "23px",
+        letterSpacing: "0",
+        paddingRight: "0",
       }}
     >
       RUNE
@@ -74,7 +74,7 @@ function Navbar() {
           {/* Logo + wordmark */}
           <Link
             href="/"
-            className="flex items-center gap-4 group"
+            className="flex items-center gap-2 group"
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
