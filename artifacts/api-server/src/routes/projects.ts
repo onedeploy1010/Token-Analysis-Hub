@@ -25,8 +25,9 @@ router.get("/projects", async (req, res): Promise<void> => {
   }
 
   const projects = await query.orderBy(desc(projectsTable.rating));
+  const visibleProjects = projects.filter(p => !p.archived);
 
-  res.json(ListProjectsResponse.parse(projects.map(p => ({
+  res.json(ListProjectsResponse.parse(visibleProjects.map(p => ({
     ...p,
     website: p.website ?? undefined,
     riskLevel: p.riskLevel as "low" | "medium" | "high",
@@ -34,7 +35,8 @@ router.get("/projects", async (req, res): Promise<void> => {
 });
 
 router.get("/projects/stats/summary", async (_req, res): Promise<void> => {
-  const projects = await db.select().from(projectsTable);
+  const allProjects = await db.select().from(projectsTable);
+  const projects = allProjects.filter(p => !p.archived);
 
   const totalTvlNum = projects.reduce((acc, p) => {
     const match = p.tvl.replace(/[$,BMK]/g, "");

@@ -490,12 +490,12 @@ export default function Rune() {
                 {/* Seats */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <Label className="text-sm text-muted-foreground">席位数量 <span className="text-xs opacity-60">Seats</span></Label>
-                    <span className="font-mono text-sm font-bold text-primary">{seats} 席</span>
+                    <Label className="text-base font-medium text-foreground">席位数量 <span className="text-xs text-muted-foreground font-normal ml-1">Seats</span></Label>
+                    <span className="font-mono text-lg font-bold text-primary">{seats} 席</span>
                   </div>
                   <Slider value={[seats]} min={1} max={Math.min(selectedNode?.seats ?? 10, 20)} step={1}
                     onValueChange={v => { setSeats(v[0]); calcMutation.reset(); }} className="py-2" />
-                  <p className="text-[10px] text-muted-foreground text-right">
+                  <p className="text-xs text-muted-foreground text-right">
                     总投入 <span className="font-mono text-foreground font-semibold">
                       ${selectedNode ? (selectedNode.investment * seats).toLocaleString() : "—"} USDT
                     </span>
@@ -505,8 +505,8 @@ export default function Rune() {
                 {/* Duration */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <Label className="text-sm text-muted-foreground">持仓周期 <span className="text-xs opacity-60">Duration</span></Label>
-                    <span className="font-mono text-sm font-bold">{durationDays}天 / ≈{Math.round(durationDays/30)}月</span>
+                    <Label className="text-base font-medium text-foreground">持仓周期 <span className="text-xs text-muted-foreground font-normal ml-1">Duration</span></Label>
+                    <span className="font-mono text-lg font-bold">{durationDays}天 / ≈{Math.round(durationDays/30)}月</span>
                   </div>
                   <Slider value={[durationDays]} min={30} max={720} step={30}
                     onValueChange={v => { setDurationDays(v[0]); calcMutation.reset(); }} className="py-2" />
@@ -515,19 +515,19 @@ export default function Rune() {
                 {/* Price stage selector */}
                 {(overview?.priceStages?.length) ? (
                   <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">目标价格阶段 <span className="text-xs opacity-60">Target Stage</span></Label>
+                    <Label className="text-base font-medium text-foreground">目标价格阶段 <span className="text-xs text-muted-foreground font-normal ml-1">Target Stage</span></Label>
                     <div className="grid grid-cols-3 gap-1.5">
                       {(overview.priceStages ?? []).map((s, i) => (
                         <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
-                          className={`text-left p-2 rounded-lg border text-[10px] transition-all ${priceStageIndex === i ? "border-primary bg-primary/10" : "border-border/50 hover:border-border"}`}>
-                          <p className="text-muted-foreground leading-tight">{s.labelCn}</p>
-                          <p className="font-mono font-bold text-foreground">${s.motherPrice}</p>
-                          {s.multiplier > 1 && <p className="text-green-400 font-mono">{s.multiplier}×</p>}
+                          className={`text-left p-2.5 rounded-lg border transition-all ${priceStageIndex === i ? "border-primary bg-primary/10" : "border-border/50 hover:border-border"}`}>
+                          <p className="text-xs text-muted-foreground leading-tight mb-0.5">{s.labelCn}</p>
+                          <p className="font-mono font-bold text-sm text-foreground">${s.motherPrice}</p>
+                          {s.multiplier > 1 && <p className="text-green-400 font-mono text-xs">{s.multiplier}×</p>}
                         </button>
                       ))}
                     </div>
                     {selectedStagePreview && (
-                      <p className="text-[10px] text-muted-foreground px-1">{selectedStagePreview.trigger}</p>
+                      <p className="text-xs text-muted-foreground px-1">{selectedStagePreview.trigger}</p>
                     )}
                   </div>
                 ) : null}

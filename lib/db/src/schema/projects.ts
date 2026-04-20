@@ -17,6 +17,7 @@ export const projectsTable = pgTable("projects", {
   tags: text("tags").array().notNull().default([]),
   isRecommended: boolean("is_recommended").notNull().default(false),
   trending: boolean("trending").notNull().default(false),
+  archived: boolean("archived").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
