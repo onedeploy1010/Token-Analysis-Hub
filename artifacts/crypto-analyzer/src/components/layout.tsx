@@ -49,33 +49,23 @@ function AnimatedRuneLogo({ size = 36 }: { size?: number }) {
 /* ─── Shimmer wordmark ───────────────────────────────────────────── */
 function WordmarkRune({ small = false }: { small?: boolean }) {
   return (
-    <div className="flex flex-col leading-none select-none" style={{ fontFamily: "'Cinzel', serif" }}>
-      <span
-        className={cn(
-          "font-normal tracking-[0.28em] uppercase",
-          small ? "text-[8px]" : "text-[9px] sm:text-[10px]"
-        )}
-        style={{ color: "rgba(251,191,36,0.42)", letterSpacing: "0.26em" }}
-      >
-        MARKET
-      </span>
-      <span
-        className={cn(
-          "font-bold uppercase tracking-[0.14em]",
-          small ? "text-[15px]" : "text-[19px] sm:text-[21px]"
-        )}
-        style={{
-          background: "linear-gradient(100deg, #b45309 0%, #fbbf24 30%, #fef3c7 50%, #fbbf24 70%, #b45309 100%)",
-          backgroundSize: "200% 100%",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          animation: "rune-shimmer 3.2s ease-in-out infinite",
-        }}
-      >
-        RUNE
-      </span>
-    </div>
+    <span
+      className={cn(
+        "font-bold uppercase tracking-[0.18em] leading-none select-none",
+        small ? "text-[17px]" : "text-[22px] sm:text-[24px]"
+      )}
+      style={{
+        fontFamily: "'Cinzel', serif",
+        background: "linear-gradient(100deg, #b45309 0%, #fbbf24 30%, #fef3c7 50%, #fbbf24 70%, #b45309 100%)",
+        backgroundSize: "200% 100%",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        backgroundClip: "text",
+        animation: "rune-shimmer 3.2s ease-in-out infinite",
+      }}
+    >
+      RUNE
+    </span>
   );
 }
 
@@ -272,8 +262,7 @@ export function AppLayout({ children }: LayoutProps) {
               <img src="/rune-logo.png" alt="MarketRune" className="w-full h-full object-contain" />
             </div>
             <span style={{ fontFamily: "'Cinzel', serif" }}>
-              <span className="text-[10px] font-normal tracking-[0.15em] text-foreground/40 uppercase">Market</span>
-              <span className="text-[11px] font-bold tracking-[0.1em] text-amber-500/60 uppercase">Rune</span>
+              <span className="text-[11px] font-bold tracking-[0.18em] text-amber-500/60 uppercase">Rune</span>
             </span>
           </div>
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
