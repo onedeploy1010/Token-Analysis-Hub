@@ -7,6 +7,7 @@ import { Project, ProjectRiskLevel } from "@workspace/api-client-react";
 const DEEP_ANALYSIS_ROUTES: Record<string, string> = {
   RUNE: "/projects/rune",
   B18:  "/projects/b18",
+  HYPE: "/projects/hyperliquid",
 };
 
 interface ProjectCardProps {

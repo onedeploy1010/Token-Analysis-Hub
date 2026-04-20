@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import projectsRouter from "./projects";
 import toolsRouter from "./tools";
 import runeRouter from "./rune";
+import hyperliquidRouter from "./hyperliquid";
 
 const router: IRouter = Router();
 
@@ -10,5 +11,6 @@ router.use(healthRouter);
 router.use(projectsRouter);
 router.use(toolsRouter);
 router.use(runeRouter);
+router.use(hyperliquidRouter);
 
 export default router;
