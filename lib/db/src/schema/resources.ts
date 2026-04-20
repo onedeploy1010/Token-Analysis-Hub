@@ -10,6 +10,7 @@ export const resourcesTable = pgTable("resources", {
   fileType: text("file_type").notNull().default("pdf"),
   fileSize: text("file_size").default(""),
   sortOrder: integer("sort_order").notNull().default(0),
+  previewImageUrl: text("preview_image_url").default(""),
   visible: boolean("visible").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
