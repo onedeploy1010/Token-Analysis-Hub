@@ -58,7 +58,7 @@ export default function AdminLogin() {
               <ShieldAlert className="h-4 w-4 mt-0.5 shrink-0" />
               <span>
                 Supabase env vars are missing. Sign-in is disabled until
-                {" "}<code className="font-mono">VITE_SUPABASE_ANON_KEY</code> is set.
+                {" "}<code className="font-mono">VITE_SUPABASE_PUBLISHABLE_KEY</code> is set.
               </span>
             </div>
           )}

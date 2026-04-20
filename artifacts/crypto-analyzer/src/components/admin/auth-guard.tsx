@@ -24,7 +24,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
           <h1 className="text-xl font-bold">Supabase not configured</h1>
           <p className="text-sm text-muted-foreground">
             Set <code className="font-mono text-foreground">VITE_SUPABASE_URL</code> and
-            {" "}<code className="font-mono text-foreground">VITE_SUPABASE_ANON_KEY</code>
+            {" "}<code className="font-mono text-foreground">VITE_SUPABASE_PUBLISHABLE_KEY</code>
             {" "}in <code className="font-mono text-foreground">.env</code> and restart the dev server.
           </p>
         </div>

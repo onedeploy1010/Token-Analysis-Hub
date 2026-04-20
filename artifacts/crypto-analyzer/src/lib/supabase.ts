@@ -3,17 +3,21 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 /**
  * Supabase client singleton.
  *
- * Reads VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY from Vite's env. If
- * either is missing we export `null` instead of throwing at import time so
- * the rest of the app can still boot; UI should call `isSupabaseConfigured()`
- * before rendering admin features and fall back to a "not configured" screen.
+ * Reads VITE_SUPABASE_URL plus either VITE_SUPABASE_PUBLISHABLE_KEY
+ * (Supabase's new `sb_publishable_…` format) or VITE_SUPABASE_ANON_KEY
+ * (legacy JWT format) — whichever is present. If neither is set we export
+ * `null` instead of throwing at import time so the rest of the app can still
+ * boot; UI should call `isSupabaseConfigured()` before rendering admin
+ * features and fall back to a "not configured" screen.
  */
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const clientKey = publishableKey || anonKey;
 
 export const supabase: SupabaseClient | null =
-  url && anonKey
-    ? createClient(url, anonKey, {
+  url && clientKey
+    ? createClient(url, clientKey, {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
