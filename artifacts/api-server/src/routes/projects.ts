@@ -28,6 +28,7 @@ router.get("/projects", async (req, res): Promise<void> => {
 
   res.json(ListProjectsResponse.parse(projects.map(p => ({
     ...p,
+    website: p.website ?? undefined,
     riskLevel: p.riskLevel as "low" | "medium" | "high",
   }))));
 });
@@ -88,6 +89,7 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
 
   res.json(GetProjectResponse.parse({
     ...project,
+    website: project.website ?? undefined,
     riskLevel: project.riskLevel as "low" | "medium" | "high",
   }));
 });
