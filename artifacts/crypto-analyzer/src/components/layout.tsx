@@ -17,122 +17,57 @@ const NAV_ITEMS = [
   { href: "/recruit", label: "RECRUIT",    key: "recruit",    icon: Users },
 ];
 
-/* ─── SVG Rune Mark ──────────────────────────────────────────────── */
-function RuneMark({ size = 44 }: { size?: number }) {
+/* ─── Animated Logo ──────────────────────────────────────────────── */
+function AnimatedRuneLogo({ size = 42 }: { size?: number }) {
   return (
-    <motion.svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="shrink-0"
+    <motion.div
+      className="relative shrink-0"
+      style={{ width: size, height: size }}
       animate={{
         filter: [
-          "drop-shadow(0 0 3px rgba(251,191,36,0.15))",
+          "drop-shadow(0 0 4px rgba(251,191,36,0.25))",
           "drop-shadow(0 0 10px rgba(251,191,36,0.55))",
-          "drop-shadow(0 0 3px rgba(251,191,36,0.15))",
+          "drop-shadow(0 0 4px rgba(251,191,36,0.25))",
         ],
       }}
-      transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
     >
-      <defs>
-        <linearGradient id="gld-outer" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#fef3c7" />
-          <stop offset="50%"  stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#d97706" />
-        </linearGradient>
-        <linearGradient id="gld-inner" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#fde68a" />
-          <stop offset="100%" stopColor="#b45309" />
-        </linearGradient>
-      </defs>
-
-      {/* Outer hexagon */}
-      <polygon
-        points="24,2 43.5,13 43.5,35 24,46 4.5,35 4.5,13"
-        stroke="url(#gld-outer)"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-        fill="rgba(251,191,36,0.04)"
+      <img
+        src="/rune-logo-new.png"
+        alt="RUNE"
+        className="w-full h-full object-contain"
+        style={{ filter: "brightness(1.08) contrast(1.05)" }}
       />
-
-      {/* Inner thin hexagon ring */}
-      <polygon
-        points="24,7 39,15.5 39,32.5 24,41 9,32.5 9,15.5"
-        stroke="url(#gld-inner)"
-        strokeWidth="0.5"
-        strokeLinejoin="round"
-        fill="none"
-        opacity="0.4"
-      />
-
-      {/* Geometric R — spine */}
-      <line x1="17" y1="14" x2="17" y2="34" stroke="url(#gld-outer)" strokeWidth="1.6" strokeLinecap="round" />
-      {/* R — top arm */}
-      <line x1="17" y1="14" x2="27" y2="14" stroke="url(#gld-outer)" strokeWidth="1.6" strokeLinecap="round" />
-      {/* R — bowl arc */}
-      <path
-        d="M27,14 Q33,14 33,20 Q33,26 27,26 L17,26"
-        stroke="url(#gld-outer)"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* R — diagonal leg */}
-      <line x1="26" y1="26" x2="33" y2="34" stroke="url(#gld-outer)" strokeWidth="1.6" strokeLinecap="round" />
-
-      {/* Corner accent dots */}
-      <circle cx="24" cy="2"  r="1.2" fill="url(#gld-outer)" opacity="0.7" />
-      <circle cx="24" cy="46" r="1.2" fill="url(#gld-outer)" opacity="0.7" />
-    </motion.svg>
+    </motion.div>
   );
 }
 
 /* ─── Wordmark ───────────────────────────────────────────────────── */
 function WordmarkRune({ small = false }: { small?: boolean }) {
   return (
-    <div className="flex flex-col justify-center leading-none select-none gap-[3px]">
-      <motion.span
-        style={{
-          fontFamily: "'Cinzel', serif",
-          fontSize: small ? "17px" : "25px",
-          letterSpacing: small ? "0.28em" : "0.36em",
-          fontWeight: 700,
-          lineHeight: 1,
-          background: "linear-gradient(135deg, #fef3c7 10%, #fbbf24 50%, #d97706 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          paddingRight: small ? "0.28em" : "0.36em",
-        }}
-        animate={{
-          textShadow: [
-            "0 0 0px rgba(251,191,36,0)",
-            "0 0 20px rgba(251,191,36,0.5)",
-            "0 0 0px rgba(251,191,36,0)",
-          ],
-        }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-      >
-        RUNE
-      </motion.span>
-      {!small && (
-        <span
-          style={{
-            fontFamily: "'Cinzel', serif",
-            fontSize: "7.5px",
-            letterSpacing: "0.38em",
-            color: "rgba(251,191,36,0.42)",
-            textTransform: "uppercase",
-            lineHeight: 1,
-            paddingRight: "0.38em",
-          }}
-        >
-          ◆ intelligence
-        </span>
+    <motion.span
+      className={cn(
+        "font-bold uppercase leading-none select-none",
+        small ? "text-[16px] tracking-[0.16em]" : "text-[26px] sm:text-[28px] tracking-[0.22em]"
       )}
-    </div>
+      style={{
+        fontFamily: "'Cinzel', serif",
+        background: "linear-gradient(160deg, #fef3c7 0%, #fbbf24 45%, #d97706 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        backgroundClip: "text",
+      }}
+      animate={{
+        textShadow: [
+          "0 0 0px rgba(251,191,36,0)",
+          "0 0 18px rgba(251,191,36,0.55)",
+          "0 0 0px rgba(251,191,36,0)",
+        ],
+      }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    >
+      RUNE
+    </motion.span>
   );
 }
 
@@ -156,10 +91,10 @@ function Navbar() {
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
-              whileHover={{ scale: 1.06 }}
+              whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <RuneMark size={50} />
+              <AnimatedRuneLogo size={52} />
             </motion.div>
             <WordmarkRune />
           </Link>
@@ -239,7 +174,7 @@ function Navbar() {
               {/* Drawer header */}
               <div className="flex items-center justify-between px-6 h-16 border-b border-border/30 shrink-0">
                 <div className="flex items-center gap-3">
-                  <RuneMark size={28} />
+                  <AnimatedRuneLogo size={28} />
                   <WordmarkRune small />
                 </div>
                 <button
