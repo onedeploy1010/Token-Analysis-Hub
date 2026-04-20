@@ -69,3 +69,14 @@ externalPort = 5173
 [[ports]]
 localPort = 19090
 externalPort = 6800
+
+[[ports]]
+localPort = 20130
+externalPort = 8008
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "marketrune-admin-jwt-secret-x9k2p7q4"
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "MarketRune2024!"

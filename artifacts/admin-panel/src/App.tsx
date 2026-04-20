@@ -1,41 +1,57 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
+import { AdminAuthProvider, RequireAdmin } from "@/contexts/admin-auth";
+import AdminLayout from "@/components/admin-layout";
+import LoginPage from "@/pages/login";
+import Dashboard from "@/pages/dashboard";
+import ResourcesList from "@/pages/resources-list";
+import ResourceForm from "@/pages/resource-form";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 30_000 } },
+});
 
-function Home() {
+function AdminRoutes() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Replit Agent is building...</h1>
-        <p className="mt-2 text-sm text-gray-600">Your app will appear here once it's ready.</p>
-      </div>
-    </div>
+    <RequireAdmin>
+      <AdminLayout>
+        <Switch>
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/resources/new" component={ResourceForm} />
+          <Route path="/resources/:id/edit" component={ResourceForm} />
+          <Route path="/resources" component={ResourcesList} />
+          <Route path="/">
+            <Redirect to="/dashboard" />
+          </Route>
+        </Switch>
+      </AdminLayout>
+    </RequireAdmin>
   );
 }
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
+      <Route path="/login" component={LoginPage} />
+      <Route component={AdminRoutes} />
     </Switch>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <AdminAuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AdminAuthProvider>
   );
 }
 
