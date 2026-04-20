@@ -14,32 +14,14 @@ const NAV_ITEMS = [
   { href: "/tools", label: "Simulators", labelZh: "模拟工具", icon: Activity },
 ];
 
-function AurumLogo({ size = 32 }: { size?: number }) {
+function RuneLogo({ size = 32 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="7" fill="#0b1628"/>
-      <rect x="0.5" y="0.5" width="31" height="31" rx="6.5" stroke="url(#nb)" strokeWidth="1" fill="none"/>
-      <ellipse cx="16" cy="17" rx="10" ry="9" fill="#d97706" fillOpacity="0.08"/>
-      <line x1="16" y1="5" x2="6" y2="27" stroke="url(#nl)" strokeWidth="2.6" strokeLinecap="round"/>
-      <line x1="16" y1="5" x2="26" y2="27" stroke="url(#nl)" strokeWidth="2.6" strokeLinecap="round"/>
-      <line x1="10" y1="19" x2="22" y2="19" stroke="url(#nc)" strokeWidth="2" strokeLinecap="round"/>
-      <circle cx="16" cy="5" r="1.5" fill="#fbbf24" fillOpacity="0.95"/>
-      <defs>
-        <linearGradient id="nl" x1="6" y1="27" x2="26" y2="5" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#92400e"/>
-          <stop offset="50%" stopColor="#d97706"/>
-          <stop offset="100%" stopColor="#fbbf24"/>
-        </linearGradient>
-        <linearGradient id="nc" x1="10" y1="19" x2="22" y2="19" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#b45309"/>
-          <stop offset="100%" stopColor="#fcd34d"/>
-        </linearGradient>
-        <linearGradient id="nb" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.45"/>
-          <stop offset="100%" stopColor="#92400e" stopOpacity="0.1"/>
-        </linearGradient>
-      </defs>
-    </svg>
+    <div
+      style={{ width: size, height: size }}
+      className="rounded-lg overflow-hidden bg-black border border-white/10 shrink-0"
+    >
+      <img src="/rune-logo.png" alt="MarketRune" className="w-full h-full object-contain" />
+    </div>
   );
 }
 
@@ -54,11 +36,11 @@ function Navbar() {
 
           {/* Logo + wordmark — always visible */}
           <Link href="/" className="flex items-center gap-2.5 group" onClick={() => setMenuOpen(false)}>
-            <div className="rounded-lg overflow-hidden shadow-[0_0_12px_rgba(251,191,36,0.18)] group-hover:shadow-[0_0_20px_rgba(251,191,36,0.32)] transition-all duration-300 shrink-0">
-              <AurumLogo size={32} />
+            <div className="shadow-[0_0_12px_rgba(251,191,36,0.18)] group-hover:shadow-[0_0_20px_rgba(251,191,36,0.32)] transition-all duration-300">
+              <RuneLogo size={32} />
             </div>
             <span className="text-[16px] sm:text-[17px] tracking-tight leading-none select-none">
-              <span className="font-light text-foreground/85">Market</span><span className="font-bold text-amber-400 tracking-wide">Aurum</span>
+              <span className="font-light text-foreground/85">Market</span><span className="font-bold text-amber-400 tracking-wide">Rune</span>
             </span>
           </Link>
 
@@ -132,10 +114,10 @@ function Navbar() {
               {/* Drawer header */}
               <div className="flex items-center justify-between px-6 h-16 border-b border-border/30 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <AurumLogo size={26} />
+                  <RuneLogo size={26} />
                   <span className="text-[15px] tracking-tight">
                     <span className="font-light text-foreground/70">Market</span>
-                    <span className="font-bold text-amber-400">Aurum</span>
+                    <span className="font-bold text-amber-400">Rune</span>
                   </span>
                 </div>
                 <button
@@ -220,8 +202,8 @@ export function AppLayout({ children }: LayoutProps) {
       <footer className="py-6 md:px-8 md:py-0 border-t border-border bg-card/30 backdrop-blur-sm">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row mx-auto px-4">
           <div className="flex items-center gap-2.5">
-            <AurumLogo size={18} />
-            <span className="text-xs text-muted-foreground/60 font-light">Market<span className="text-amber-500/70 font-semibold">Aurum</span></span>
+            <RuneLogo size={18} />
+            <span className="text-xs text-muted-foreground/60 font-light">Market<span className="text-amber-500/70 font-semibold">Rune</span></span>
           </div>
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
             专为机构级投资者打造 · 数据延迟最多15分钟 · Built for serious capital.
