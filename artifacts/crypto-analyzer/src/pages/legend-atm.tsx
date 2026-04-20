@@ -6,6 +6,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend as RechartsLegend,
 } from "recharts";
+import { useShowZh } from "@/contexts/language-context";
 
 /* ── constants ── */
 const TIERS = [
@@ -84,6 +85,7 @@ function StatCard({
 
 /* ── main page ── */
 export default function LegendATM() {
+  const showZh = useShowZh();
   /* single calc state */
   const [principal, setPrincipal] = useState(1000);
   const [tierIdx, setTierIdx] = useState<TierIdx>(2);
@@ -128,21 +130,21 @@ export default function LegendATM() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="text-[10px] uppercase tracking-[0.22em] text-primary/60 font-medium mb-1">
-                VAULT · 全民做市商系统
+                {showZh ? "VAULT · 全民做市商系统" : "VAULT · Market-Maker System"}
               </div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
                 LEGEND <span className="text-primary">ATM</span>
               </h1>
               <p className="text-muted-foreground text-sm mt-1">
-                每秒复利 · 非整天结算 · 三档周期可选
+                {showZh ? "每秒复利 · 非整天结算 · 三档周期可选" : "Per-second compounding · Partial-day settlement · 3 tiers"}
               </p>
             </div>
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {TIERS.map((t, i) => (
                 <div key={i} className="text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t.label}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{showZh ? t.label : t.labelEn}</div>
                   <div className="text-lg font-bold num-gold">{(t.monthlyRate * 100).toFixed(2)}%</div>
-                  <div className="text-[10px] text-muted-foreground">月化</div>
+                  {showZh && <div className="text-[10px] text-muted-foreground">月化</div>}
                 </div>
               ))}
             </div>
@@ -150,16 +152,28 @@ export default function LegendATM() {
 
           {/* parameter strip */}
           <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px] text-muted-foreground border-t border-border/30 pt-4">
-            {[
-              ["LP 组成", "50% USDT + 50% ATM"],
-              ["静态收益占比", "65%"],
-              ["动态 BUB 占比", "30%"],
-              ["手续费", "5%"],
-              ["强制复投时限", "4 小时"],
-              ["结算方式", "每秒复利"],
-              ["防暴跌 -5%", "触发救助池"],
-              ["防暴跌 -10%", "触发燃烧机制"],
-            ].map(([k, v]) => (
+            {(showZh
+              ? [
+                  ["LP 组成",       "50% USDT + 50% ATM"],
+                  ["静态收益占比",  "65%"],
+                  ["动态 BUB 占比", "30%"],
+                  ["手续费",        "5%"],
+                  ["强制复投时限",  "4 小时"],
+                  ["结算方式",      "每秒复利"],
+                  ["防暴跌 -5%",    "触发救助池"],
+                  ["防暴跌 -10%",   "触发燃烧机制"],
+                ]
+              : [
+                  ["LP Composition",      "50% USDT + 50% ATM"],
+                  ["Static Ratio",        "65%"],
+                  ["Dynamic BUB Ratio",   "30%"],
+                  ["Fee",                 "5%"],
+                  ["Force-reinvest TTL",  "4 hours"],
+                  ["Settlement",          "Per-second compound"],
+                  ["Bailout trigger",     "Price dip ≥ 5%"],
+                  ["Burn trigger",        "Price dip ≥ 10%"],
+                ]
+            ).map(([k, v]) => (
               <div key={k} className="flex justify-between border border-border/20 rounded px-2 py-1 bg-black/20">
                 <span className="text-muted-foreground/70">{k}</span>
                 <span className="font-medium text-foreground">{v}</span>
@@ -171,10 +185,10 @@ export default function LegendATM() {
         {/* ── tabs ── */}
         <Tabs defaultValue="single">
           <TabsList className="w-full grid grid-cols-4 mb-6">
-            <TabsTrigger value="single">单笔计算</TabsTrigger>
-            <TabsTrigger value="reinvest">复投分析</TabsTrigger>
-            <TabsTrigger value="dual">双币分析</TabsTrigger>
-            <TabsTrigger value="params">参数说明</TabsTrigger>
+            <TabsTrigger value="single">{showZh ? "单笔计算" : "Single"}</TabsTrigger>
+            <TabsTrigger value="reinvest">{showZh ? "复投分析" : "Reinvest"}</TabsTrigger>
+            <TabsTrigger value="dual">{showZh ? "双币分析" : "Dual-Token"}</TabsTrigger>
+            <TabsTrigger value="params">{showZh ? "参数说明" : "Params"}</TabsTrigger>
           </TabsList>
 
           {/* ────────────── TAB 1: Single ────────────── */}
@@ -196,9 +210,9 @@ export default function LegendATM() {
                     {t.labelEn}
                   </div>
                   <div className="text-2xl font-bold num-gold">{(t.dailyRate * 100).toFixed(2)}%</div>
-                  <div className="text-xs text-muted-foreground">日化收益率</div>
+                  {showZh && <div className="text-xs text-muted-foreground">日化收益率</div>}
                   <div className="mt-1 text-sm font-semibold text-primary">
-                    月化 {(t.monthlyRate * 100).toFixed(2)}%
+                    {showZh ? `月化 ${(t.monthlyRate * 100).toFixed(2)}%` : `Monthly ${(t.monthlyRate * 100).toFixed(2)}%`}
                   </div>
                 </button>
               ))}
@@ -207,7 +221,7 @@ export default function LegendATM() {
             {/* principal input */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
               <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">
-                投资本金 Principal (USDT)
+                {showZh ? "投资本金 Principal (USDT)" : "Principal (USDT)"}
               </div>
               <div className="flex items-center gap-3">
                 <Input
@@ -241,17 +255,17 @@ export default function LegendATM() {
             {/* breakdown bar */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4">
               <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
-                收益拆解 Yield Breakdown · 1000U 示例对比
+                {showZh ? "收益拆解 Yield Breakdown · 1000U 示例对比" : "Yield Breakdown · 1000U Reference"}
               </div>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={TIERS.map(t => {
                   const gross = 1000 * t.monthlyRate;
                   const net   = gross * (1 - FEE_RATIO);
                   return {
-                    name: t.label,
-                    静态收益: +(net * STATIC_RATIO).toFixed(2),
-                    BUB动态:  +(net * BUB_RATIO).toFixed(2),
-                    手续费:   +(gross * FEE_RATIO).toFixed(2),
+                    name: showZh ? t.label : t.labelEn,
+                    staticInc: +(net * STATIC_RATIO).toFixed(2),
+                    bubDyn:    +(net * BUB_RATIO).toFixed(2),
+                    fee:       +(gross * FEE_RATIO).toFixed(2),
                   };
                 })}>
                   <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -261,9 +275,9 @@ export default function LegendATM() {
                     formatter={(v: number) => ["$" + fmt(v)]}
                   />
                   <RechartsLegend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="静态收益" stackId="a" fill="hsl(38,92%,50%)" radius={[0,0,0,0]} />
-                  <Bar dataKey="BUB动态"  stackId="a" fill="hsl(38,70%,35%)" />
-                  <Bar dataKey="手续费"   stackId="a" fill="hsl(0,60%,40%)" radius={[4,4,0,0]} />
+                  <Bar dataKey="staticInc" name={showZh ? "静态收益" : "Static"} stackId="a" fill="hsl(38,92%,50%)" radius={[0,0,0,0]} />
+                  <Bar dataKey="bubDyn"    name={showZh ? "BUB动态" : "BUB Dynamic"} stackId="a" fill="hsl(38,70%,35%)" />
+                  <Bar dataKey="fee" name={showZh ? "手续费" : "Fee"}   stackId="a" fill="hsl(0,60%,40%)" radius={[4,4,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -271,19 +285,19 @@ export default function LegendATM() {
             {/* APY reference */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4">
               <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
-                年化参考 Annual Reference · {TIERS[tierIdx].label}档
+                {showZh ? "年化参考" : "Annual Reference"} · {showZh ? `${TIERS[tierIdx].label}档` : `${TIERS[tierIdx].labelEn}`}
               </div>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">日化收益率</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{showZh ? "日化收益率" : "Daily Rate"}</div>
                   <div className="text-2xl font-bold num-gold">{(tier.dailyRate * 100).toFixed(2)}%</div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">月化复利率</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{showZh ? "月化复利率" : "Monthly Compound"}</div>
                   <div className="text-2xl font-bold num-gold">{(tier.monthlyRate * 100).toFixed(2)}%</div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">简单年化估算</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{showZh ? "简单年化估算" : "Simple Annualized"}</div>
                   <div className="text-2xl font-bold num-gold">{annualSimple.toFixed(0)}%</div>
                 </div>
               </div>
@@ -295,7 +309,7 @@ export default function LegendATM() {
             {/* controls */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">初始本金</div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">{showZh ? "初始本金" : "Principal"}</div>
                 <div className="flex items-center gap-2">
                   <Input type="number" value={reinvestPrincipal} min={100} step={100}
                     onChange={e => setReinvestPrincipal(Math.max(0, Number(e.target.value)))}
@@ -308,11 +322,11 @@ export default function LegendATM() {
               </div>
 
               <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">投资周期数 · {periods} 期</div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">{showZh ? `投资周期数 · ${periods} 期` : `Periods · ${periods}`}</div>
                 <Slider min={1} max={24} step={1} value={[periods]}
                   onValueChange={([v]) => setPeriods(v)} />
                 <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>1期</span><span>12期</span><span>24期</span>
+                  {showZh ? <><span>1期</span><span>12期</span><span>24期</span></> : <><span>1</span><span>12</span><span>24</span></>}
                 </div>
               </div>
             </div>
@@ -326,7 +340,7 @@ export default function LegendATM() {
                     }`}
                   >
                     <div className="font-bold num-gold">{(TIERS[i].monthlyRate * 100).toFixed(1)}%</div>
-                    <div className="text-[10px] text-muted-foreground">{t.label}</div>
+                    <div className="text-[10px] text-muted-foreground">{showZh ? t.label : t.labelEn}</div>
                   </button>
                 ))}
               </div>
@@ -335,29 +349,29 @@ export default function LegendATM() {
                   autoReinvest ? "border-primary/60 bg-primary/10 text-primary" : "border-border/30 text-muted-foreground"
                 }`}
               >
-                {autoReinvest ? "自动复投 ON" : "自动复投 OFF"}
+                {showZh ? (autoReinvest ? "自动复投 ON" : "自动复投 OFF") : (autoReinvest ? "Auto-reinvest ON" : "Auto-reinvest OFF")}
               </button>
             </div>
 
             {/* growth chart */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4">
               <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
-                资产增长曲线 · {autoReinvest ? "复利" : "单利"}模式
+                {showZh ? `资产增长曲线 · ${autoReinvest ? "复利" : "单利"}模式` : `Balance Growth · ${autoReinvest ? "Compound" : "Simple"}`}
               </div>
               <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={reinvestRows.map(r => ({ 期: `第${r.period}期`, 资产余额: +r.balance.toFixed(2), 累计盈亏: +r.cumPnl.toFixed(2) }))}>
+                <AreaChart data={reinvestRows.map(r => ({ period: showZh ? `第${r.period}期` : `P${r.period}`, balance: +r.balance.toFixed(2), cumPnl: +r.cumPnl.toFixed(2) }))}>
                   <defs>
                     <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(38,92%,50%)" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="hsl(38,92%,50%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="期" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="period" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => "$" + (v >= 1000 ? (v/1000).toFixed(1)+"K" : v)} />
                   <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6 }}
                     formatter={(v: number) => ["$" + fmt(v)]} />
-                  <Area type="monotone" dataKey="资产余额" stroke="hsl(38,92%,50%)" strokeWidth={2} fill="url(#balGrad)" dot={false} />
-                  <Area type="monotone" dataKey="累计盈亏" stroke="hsl(142,70%,45%)" strokeWidth={1.5} fill="none" dot={false} strokeDasharray="4 2" />
+                  <Area type="monotone" dataKey="balance" name={showZh ? "资产余额" : "Balance"} stroke="hsl(38,92%,50%)" strokeWidth={2} fill="url(#balGrad)" dot={false} />
+                  <Area type="monotone" dataKey="cumPnl" name={showZh ? "累计盈亏" : "Cumulative PnL"} stroke="hsl(142,70%,45%)" strokeWidth={1.5} fill="none" dot={false} strokeDasharray="4 2" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -481,11 +495,11 @@ export default function LegendATM() {
                   </div>
                 </div>
                 <div className="border border-border/20 rounded p-2">
-                  <div className="text-[10px] text-muted-foreground">做市月化</div>
+                  {showZh && <div className="text-[10px] text-muted-foreground">做市月化</div>}
                   <div className="text-lg font-bold num-gold">47.30%</div>
                 </div>
                 <div className="border border-border/20 rounded p-2">
-                  <div className="text-[10px] text-muted-foreground">综合总回报</div>
+                  {showZh && <div className="text-[10px] text-muted-foreground">综合总回报</div>}
                   <div className={`text-lg font-bold num ${totalReturn >= 0 ? "num-gold" : "text-red-400"}`}>
                     {totalReturn >= 0 ? "+" : ""}{((totalReturn / dualPrincipal) * 100).toFixed(2)}%
                   </div>
@@ -599,7 +613,7 @@ export default function LegendATM() {
                     const r = calcSinglePeriod(1000, i as TierIdx);
                     return (
                       <tr key={i} className="border-b border-border/20 hover:bg-white/[0.02]">
-                        <td className="px-4 py-3 font-medium">{t.label}</td>
+                        <td className="px-4 py-3 font-medium">{showZh ? t.label : t.labelEn}</td>
                         <td className="px-4 py-3 num-gold font-bold">{(t.dailyRate * 100).toFixed(2)}%</td>
                         <td className="px-4 py-3 num-gold font-bold">{(t.monthlyRate * 100).toFixed(2)}%</td>
                         <td className="px-4 py-3 num text-green-400 font-semibold">+${fmt(r.net)}</td>

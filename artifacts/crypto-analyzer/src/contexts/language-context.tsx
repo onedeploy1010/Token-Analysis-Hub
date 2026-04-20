@@ -31,6 +31,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, language);
+      // Expose the active locale to CSS so `.zh-only` labels can hide/show
+      // without per-component re-renders.
+      const isZh = language === "zh" || language === "zh-TW";
+      const root = document.documentElement;
+      if (isZh) root.setAttribute("data-zh", "");
+      else root.removeAttribute("data-zh");
+      root.setAttribute("lang", language);
     }
   }, [language]);
 
@@ -66,4 +73,13 @@ export function useLanguage() {
     throw new Error("useLanguage must be used within a LanguageProvider");
   }
   return context;
+}
+
+/**
+ * Convenience hook — true when the active locale is a Chinese variant.
+ * Used by legacy pages that render bilingual "English · 中文" labels.
+ */
+export function useShowZh() {
+  const { language } = useLanguage();
+  return language === "zh" || language === "zh-TW";
 }

@@ -99,10 +99,21 @@ function SectionTitle({ icon: Icon, i18nKey, en }: { icon: React.ElementType; i1
   );
 }
 
+// Fallback English labels for the 6 RUNE price stages (backend only sends labelCn).
+const STAGE_EN_LABELS = ["① Launch", "② Batch 2", "③ Batch 3", "④ Batch 4", "⑤ Target (Low)", "⑥ Target (High)"];
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Rune() {
   const { t, bi, isEn, isZh } = useBi();
   const { data: overview, isLoading } = useGetRuneOverview();
+
+  /** Pick the locale-appropriate stage label. Falls back to the backend's
+   * labelCn when we don't have an English label for that index. */
+  const stageLabel = (s: { labelCn: string }, i: number) =>
+    isEn ? (STAGE_EN_LABELS[i] ?? s.labelCn) : s.labelCn;
+
+  /** Pick the locale-appropriate node tier name. */
+  const nodeName = (n: { nameCn: string; nameEn: string }) => (isEn ? n.nameEn : n.nameCn);
 
   const [nodeLevel, setNodeLevel]   = useState<RuneCalculatorInputNodeLevel>(RuneCalculatorInputNodeLevel.pioneer);
   const [seats,     setSeats]       = useState(1);
@@ -115,28 +126,28 @@ export default function Rune() {
 
   // ── Derived chart data ────────────────────────────────────────────────────
   const priceStageChartData = useMemo(() =>
-    (overview?.priceStages ?? []).map(s => ({
-      label: s.labelCn,
+    (overview?.priceStages ?? []).map((s, i) => ({
+      label: stageLabel(s, i),
       mother: s.motherPrice,
       sub:    s.subPrice,
       mult:   s.multiplier,
-    })), [overview]);
+    })), [overview, isEn]);
 
   const nodeCompareData = useMemo(() => {
     const stages = overview?.priceStages ?? [];
     const nodes  = overview?.nodes       ?? [];
-    return stages.map(stage => {
-      const row: Record<string, string | number> = { label: stage.labelCn };
+    return stages.map((stage, i) => {
+      const row: Record<string, string | number> = { label: stageLabel(stage, i) };
       nodes.forEach(n => {
         const motherVal   = n.motherTokensPerSeat * stage.motherPrice;
         const airdropVal  = n.airdropPerSeat      * stage.subPrice;
         const usdtVal     = n.dailyUsdt * 180;
         const total       = motherVal + airdropVal + usdtVal;
-        row[n.nameCn]     = Math.round(total);
+        row[n.level]      = Math.round(total);
       });
       return row;
     });
-  }, [overview]);
+  }, [overview, isEn]);
 
   const monthSuffix = isEn ? "mo" : t("mr.rune.input.months");
   const deflationData = useMemo(() => {
@@ -433,8 +444,8 @@ export default function Rune() {
                 <ResponsiveContainer width="100%" height={240}>
                   <AreaChart data={nodeCompareData} margin={{ top: 4, right: 12, left: 4, bottom: 4 }}>
                     <defs>
-                      {(["符胚","符印","符主","符魂"] as const).map((name, i) => (
-                        <linearGradient key={name} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                      {(overview?.nodes ?? []).map((n, i) => (
+                        <linearGradient key={n.level} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%"  stopColor={Object.values(C).slice(0,4)[i]} stopOpacity={0.25} />
                           <stop offset="95%" stopColor={Object.values(C).slice(0,4)[i]} stopOpacity={0}    />
                         </linearGradient>
@@ -446,8 +457,8 @@ export default function Rune() {
                       tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v/1e3).toFixed(0)}K` : `$${v}`} />
                     <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, 0)}`, name]} />
                     <Legend wrapperStyle={{ fontSize: 11, color: C.muted }} />
-                    {["符胚","符印","符主","符魂"].map((name, i) => (
-                      <Area key={name} type="monotone" dataKey={name}
+                    {(overview?.nodes ?? []).map((n, i) => (
+                      <Area key={n.level} type="monotone" dataKey={n.level} name={nodeName(n)}
                         stroke={Object.values(C)[i]} strokeWidth={2}
                         fill={`url(#grad-${i})`} dot={false} />
                     ))}
@@ -540,7 +551,7 @@ export default function Rune() {
                         {isOn && <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-60" style={{ color }} />}
 
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color }}>{node.nameCn}</span>
+                          <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color }}>{nodeName(node)}</span>
                           {isOn ? <BadgeCheck className="h-3.5 w-3.5" style={{ color }} /> : <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-medium">{node.nameEn}</span>}
                         </div>
                         <p className="num text-xl mt-0.5">${node.investment.toLocaleString()}</p>
@@ -615,14 +626,14 @@ export default function Rune() {
                       {(overview.priceStages ?? []).map((s, i) => (
                         <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
                           className={`text-left p-2.5 rounded-lg border transition-all active:scale-[0.98] ${priceStageIndex === i ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_4px_14px_-4px_hsl(var(--primary)/0.45)]" : "border-border/50 hover:border-border hover:-translate-y-[1px]"}`}>
-                          <p className="text-xs text-muted-foreground leading-tight mb-0.5">{s.labelCn}</p>
+                          <p className="text-xs text-muted-foreground leading-tight mb-0.5">{stageLabel(s, i)}</p>
                           <p className="num text-sm text-foreground">${s.motherPrice}</p>
                           {s.multiplier > 1 && <p className="text-green-400 num text-xs">{s.multiplier}×</p>}
                         </button>
                       ))}
                     </div>
                     {selectedStagePreview && (
-                      <p className="text-xs text-muted-foreground px-1">{selectedStagePreview.trigger}</p>
+                      {isZh && <p className="text-xs text-muted-foreground px-1">{selectedStagePreview.trigger}</p>}
                     )}
                   </div>
                 ) : null}
@@ -660,7 +671,7 @@ export default function Rune() {
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {overview?.priceStages?.[priceStageIndex]?.labelCn} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(calcMutation.data.investment)}</span>
+                        {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(calcMutation.data.investment)}</span>
                       </p>
                     </div>
                     <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
@@ -729,8 +740,8 @@ export default function Rune() {
                         {selectedNode && (overview?.priceStages?.length) ? (
                           <ResponsiveContainer width="100%" height={200}>
                             <BarChart
-                              data={(overview.priceStages ?? []).map(s => ({
-                                label: s.labelCn,
+                              data={(overview.priceStages ?? []).map((s, i) => ({
+                                label: stageLabel(s, i),
                                 totalAssets: Math.round(
                                   selectedNode.motherTokensPerSeat * seats * s.motherPrice +
                                   selectedNode.airdropPerSeat      * seats * s.subPrice    +
@@ -772,7 +783,7 @@ export default function Rune() {
                             <tr key={i} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors">
                               <td className="py-2.5 px-5 text-muted-foreground">
                                 {item.label}
-                                {item.labelCn && <span className="ml-2 text-[10px] opacity-50">{item.labelCn}</span>}
+                                {isZh && item.labelCn && <span className="ml-2 text-[10px] opacity-50">{item.labelCn}</span>}
                               </td>
                               <td className="py-2.5 px-5 text-right font-mono font-medium">{item.value}</td>
                             </tr>
@@ -852,7 +863,7 @@ export default function Rune() {
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                                <span className="font-medium" style={{ color }}>{node.nameCn}</span>
+                                <span className="font-medium" style={{ color }}>{nodeName(node)}</span>
                                 <span className="text-muted-foreground text-[10px]">{node.nameEn}</span>
                               </div>
                             </td>
@@ -884,7 +895,7 @@ export default function Rune() {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
-                            <span className="font-semibold text-sm" style={{ color }}>{node.nameCn}</span>
+                            <span className="font-semibold text-sm" style={{ color }}>{nodeName(node)}</span>
                             <span className="text-muted-foreground text-[10px] uppercase tracking-wider">{node.nameEn}</span>
                           </div>
                           {isSelected && (

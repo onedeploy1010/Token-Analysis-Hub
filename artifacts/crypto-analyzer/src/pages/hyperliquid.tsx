@@ -14,9 +14,10 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useHLVault, useHLCandles } from "@/hooks/use-hyperliquid";
+import { useShowZh } from "@/contexts/language-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const VAULT_ADDRESS = "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303";
+const VAULT_ADDRESS = "0xd6e56265890b76413d1d527eb9b75e334c0c5b42";
 
 const INTERVAL_OPTIONS = [
   { label: "1H", value: "1h" },
@@ -95,6 +96,7 @@ function CandleShape(props: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function HyperLiquid() {
+  const showZh = useShowZh();
   const { data: vault, isLoading: vaultLoading } = useHLVault();
   const [interval, setInterval] = useState("1d");
   const { data: candleData, isLoading: candleLoading } = useHLCandles(interval);
@@ -129,7 +131,7 @@ export default function HyperLiquid() {
 
       {/* Back link */}
       <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="h-4 w-4" />返回项目库 Back to Projects
+        <ArrowLeft className="h-4 w-4" /><span className="zh-only">返回项目库 · </span>Back to Projects
       </Link>
 
       {/* ── Hero Banner ── */}
@@ -156,13 +158,13 @@ export default function HyperLiquid() {
             </div>
             <div className="flex-1 min-w-0">
               <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-green-400/70 block mb-1">
-                金库实时数据 · Live Vault Intelligence
+                <span className="zh-only">金库实时数据 · </span>Live Vault Intelligence
               </span>
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
                 HyperLiquid HLP
               </h1>
               <p className="text-sm text-muted-foreground mt-1 tracking-wide">
-                Hyperliquidity Provider · 链上永续合约做市金库
+                Hyperliquidity Provider<span className="zh-only"> · 链上永续合约做市金库</span>
               </p>
               {/* Vault address */}
               <div className="mt-2 inline-flex items-center gap-2">
@@ -176,7 +178,7 @@ export default function HyperLiquid() {
                   </a>
                 </div>
                 <Badge variant="outline" className="text-[10px] border-green-500/40 text-green-400 bg-green-500/10">
-                  {vault?.isClosed ? "已关闭" : "运行中"}
+                  {vault?.isClosed ? (showZh ? "已关闭" : "Closed") : (showZh ? "运行中" : "Active")}
                 </Badge>
               </div>
             </div>
@@ -190,28 +192,28 @@ export default function HyperLiquid() {
           ) : vault ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-border/30">
               <div className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">TVL / 总锁仓</div>
+                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">TVL<span className="zh-only"> / 总锁仓</span></div>
                 <div className="text-2xl font-bold num text-foreground">{fmtM(vault.latestEquity)}</div>
-                <div className="text-[10px] text-muted-foreground/70">金库总价值</div>
+                {showZh && <div className="text-[10px] text-muted-foreground/70">金库总价值</div>}
               </div>
               <div className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">APR / 年化</div>
+                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">APR<span className="zh-only"> / 年化</span></div>
                 <div className={`text-2xl font-bold ${aprPct >= 0 ? "text-green-400" : "text-red-400"}`}>
                   {aprPct >= 0 ? "+" : ""}{fmt(aprPct, 2)}%
                 </div>
-                <div className="text-[10px] text-muted-foreground/70">实时年化收益率</div>
+                {showZh && <div className="text-[10px] text-muted-foreground/70">实时年化收益率</div>}
               </div>
               <div className="space-y-1">
                 <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">All-Time PnL</div>
                 <div className={`text-2xl font-bold num ${vault.allTimePnl >= 0 ? "num-gold" : "text-red-400"}`}>
                   {vault.allTimePnl >= 0 ? "+" : ""}{fmtM(vault.allTimePnl)}
                 </div>
-                <div className="text-[10px] text-muted-foreground/70">历史累计盈亏</div>
+                {showZh && <div className="text-[10px] text-muted-foreground/70">历史累计盈亏</div>}
               </div>
               <div className="space-y-1">
                 <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">Followers</div>
                 <div className="text-2xl font-bold text-foreground">{vault.followers.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground/70">跟单用户数</div>
+                {showZh && <div className="text-[10px] text-muted-foreground/70">跟单用户数</div>}
               </div>
             </div>
           ) : null}
@@ -231,13 +233,13 @@ export default function HyperLiquid() {
             const up = value >= 0;
             return (
               <div key={labelEn} className={`p-4 rounded-xl border ${up ? "border-green-800/40 bg-green-950/20" : "border-red-900/40 bg-red-950/20"}`}>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{labelEn} · {label}</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{labelEn}{showZh && ` · ${label}`}</p>
                 <p className={`font-mono text-lg font-bold ${up ? "text-green-400" : "text-red-400"}`}>
                   {up ? "+" : ""}{fmtM(value)}
                 </p>
                 <div className={`flex items-center gap-1 mt-1 ${up ? "text-green-500" : "text-red-500"}`}>
                   {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  <span className="text-[10px]">{up ? "盈利" : "亏损"}</span>
+                  <span className="text-[10px] zh-only">{up ? "盈利" : "亏损"}</span>
                 </div>
               </div>
             );
@@ -251,9 +253,9 @@ export default function HyperLiquid() {
 
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-green-500 pl-4">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5">市场数据</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5 zh-only">市场数据</span>
             <h2 className="text-xl font-bold tracking-tight text-foreground">Market Intelligence</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">HYPE价格K线 · 金库规模 · 累计盈亏走势</p>
+            {showZh && <p className="text-xs text-muted-foreground mt-0.5">HYPE价格K线 · 金库规模 · 累计盈亏走势</p>}
           </div>
         </div>
 
@@ -263,7 +265,7 @@ export default function HyperLiquid() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
                 <BarChart2 className="h-4 w-4 text-green-400 shrink-0" />
-                <span>HYPE 价格走势</span>
+                <span>HYPE<span className="zh-only"> 价格走势</span></span>
                 <span className="text-xs text-muted-foreground font-normal">Price Chart</span>
                 {currentPrice > 0 && (
                   <span className="font-mono font-bold text-foreground">${fmt(currentPrice)}</span>
@@ -309,12 +311,12 @@ export default function HyperLiquid() {
                         <div style={TT.contentStyle} className="space-y-1 p-3">
                           <p style={TT.labelStyle} className="mb-2">{label}</p>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
-                            <span className="text-muted-foreground">开盘 Open</span><span className="font-mono font-medium">${fmt(d.open)}</span>
-                            <span className="text-muted-foreground">收盘 Close</span>
+                            <span className="text-muted-foreground"><span className="zh-only">开盘 · </span>Open</span><span className="font-mono font-medium">${fmt(d.open)}</span>
+                            <span className="text-muted-foreground"><span className="zh-only">收盘 · </span>Close</span>
                             <span className={`font-mono font-bold ${d.isUp ? "text-green-400" : "text-red-400"}`}>${fmt(d.close)}</span>
-                            <span className="text-muted-foreground">最高 High</span><span className="font-mono font-medium text-green-400">${fmt(d.high)}</span>
-                            <span className="text-muted-foreground">最低 Low</span><span className="font-mono font-medium text-red-400">${fmt(d.low)}</span>
-                            <span className="text-muted-foreground">成交量 Vol</span><span className="font-mono">{(d.volume/1e6).toFixed(2)}M</span>
+                            <span className="text-muted-foreground"><span className="zh-only">最高 · </span>High</span><span className="font-mono font-medium text-green-400">${fmt(d.high)}</span>
+                            <span className="text-muted-foreground"><span className="zh-only">最低 · </span>Low</span><span className="font-mono font-medium text-red-400">${fmt(d.low)}</span>
+                            <span className="text-muted-foreground"><span className="zh-only">成交量 · </span>Vol</span><span className="font-mono">{(d.volume/1e6).toFixed(2)}M</span>
                           </div>
                         </div>
                       );
@@ -322,9 +324,9 @@ export default function HyperLiquid() {
                   />
                   {/* Close price area */}
                   <Area type="monotone" dataKey="close" stroke="hsl(142,70%,45%)" strokeWidth={2}
-                    fill="url(#hlCloseGrad)" dot={false} name="收盘价" />
+                    fill="url(#hlCloseGrad)" dot={false} name={(showZh ? "收盘价" : "Close")} />
                   {/* Volume bars at bottom (scaled down visually) */}
-                  <Bar dataKey="volume" yAxisId="vol" name="成交量" maxBarSize={8} opacity={0.35}
+                  <Bar dataKey="volume" yAxisId="vol" name={(showZh ? "成交量" : "Volume")} maxBarSize={8} opacity={0.35}
                     radius={[2, 2, 0, 0]}>
                     {chartCandles.map((c, i) => (
                       <Cell key={i} fill={c.isUp ? "hsl(142,70%,45%)" : "hsl(0,75%,55%)"} />
@@ -334,7 +336,7 @@ export default function HyperLiquid() {
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">暂无数据</div>
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">{showZh ? "暂无数据" : "No data"}</div>
             )}
           </CardContent>
         </Card>
@@ -347,7 +349,7 @@ export default function HyperLiquid() {
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Activity className="h-4 w-4 text-blue-400" />
-                金库规模走势
+                <span className="zh-only">金库规模走势</span>
                 <span className="text-xs text-muted-foreground font-normal">Vault Equity</span>
               </CardTitle>
             </CardHeader>
@@ -365,7 +367,7 @@ export default function HyperLiquid() {
                     <XAxis dataKey="date" tick={{ fill: "hsl(217,20%,40%)", fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                     <YAxis tick={{ fill: "hsl(217,20%,40%)", fontSize: 10 }} axisLine={false} tickLine={false}
                       tickFormatter={v => `$${(v / 1e6).toFixed(0)}M`} width={52} />
-                    <Tooltip {...TT} formatter={(v: number) => [fmtM(v), "金库规模"]} />
+                    <Tooltip {...TT} formatter={(v: number) => [fmtM(v), (showZh ? "金库规模" : "Vault Size")]} />
                     <Area type="monotone" dataKey="equity" stroke="hsl(217,80%,58%)" strokeWidth={2}
                       fill="url(#hlEquityGrad)" dot={false} />
                   </AreaChart>
@@ -379,7 +381,7 @@ export default function HyperLiquid() {
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-amber-400" />
-                历史累计盈亏
+                <span className="zh-only">历史累计盈亏</span>
                 <span className="text-xs text-muted-foreground font-normal">All-Time PnL</span>
               </CardTitle>
             </CardHeader>
@@ -397,7 +399,7 @@ export default function HyperLiquid() {
                     <XAxis dataKey="date" tick={{ fill: "hsl(217,20%,40%)", fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                     <YAxis tick={{ fill: "hsl(217,20%,40%)", fontSize: 10 }} axisLine={false} tickLine={false}
                       tickFormatter={v => `$${(v / 1e6).toFixed(0)}M`} width={52} />
-                    <Tooltip {...TT} formatter={(v: number) => [fmtM(v), "累计盈亏"]} />
+                    <Tooltip {...TT} formatter={(v: number) => [fmtM(v), (showZh ? "累计盈亏" : "Cumulative PnL")]} />
                     <ReferenceLine y={0} stroke="hsl(217,20%,40%)" strokeDasharray="3 3" />
                     <Area type="monotone" dataKey="pnl" stroke="hsl(38,92%,50%)" strokeWidth={2}
                       fill="url(#hlPnlGrad)" dot={false} />
@@ -416,9 +418,9 @@ export default function HyperLiquid() {
 
           <div className="border-b border-border/40 pb-4">
             <div className="border-l-[3px] border-green-500 pl-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5">基本信息</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5 zh-only">基本信息</span>
               <h2 className="text-xl font-bold tracking-tight text-foreground">Vault Details</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">合约地址 · 管理员 · 参数配置</p>
+              {showZh && <p className="text-xs text-muted-foreground mt-0.5">合约地址 · 管理员 · 参数配置</p>}
             </div>
           </div>
 
@@ -440,8 +442,8 @@ export default function HyperLiquid() {
                     <tr key={i} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors">
                       <td className="py-3 px-3 sm:px-5 text-muted-foreground w-28 sm:w-40 shrink-0">
                         <span className="hidden sm:inline">{labelEn}</span>
-                        <span className="sm:hidden text-[11px]">{label}</span>
-                        <span className="ml-1.5 text-[10px] opacity-50 hidden sm:inline">{label}</span>
+                        <span className="sm:hidden text-[11px]">{showZh ? label : labelEn}</span>
+                        {showZh && <span className="ml-1.5 text-[10px] opacity-50 hidden sm:inline">{label}</span>}
                       </td>
                       <td className="py-3 px-3 sm:px-5 text-right">
                         {link ? (
@@ -474,7 +476,7 @@ export default function HyperLiquid() {
           {vault.description && (
             <div className="p-5 rounded-xl border border-border/40 bg-muted/10 space-y-2">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium flex items-center gap-1.5">
-                <Clock className="h-3 w-3" />项目简介 · Description
+                <Clock className="h-3 w-3" /><span className="zh-only">项目简介 · </span>Description
               </p>
               <p className="text-sm text-muted-foreground leading-relaxed">{vault.description}</p>
             </div>
@@ -483,9 +485,9 @@ export default function HyperLiquid() {
           {/* Live data note */}
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground/60">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-live-ping" />
-            <span>数据实时同步自 HyperLiquid 公开 API · 每 2 分钟自动刷新</span>
+            <span><span className="zh-only">数据实时同步自 HyperLiquid 公开 API · 每 2 分钟自动刷新</span></span>
             <Users className="h-3 w-3 ml-auto" />
-            <span>{vault.followers} 跟单用户</span>
+            <span>{vault.followers} {showZh ? "跟单用户" : "followers"}</span>
           </div>
         </motion.div>
       )}

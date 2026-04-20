@@ -339,7 +339,7 @@ export default function Home() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Total Value Locked</span>
-                      <span className="text-[9px] opacity-60 tracking-widest">总锁仓量</span>
+                      <span className="text-[9px] opacity-60 tracking-widest zh-only">总锁仓量</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -355,7 +355,7 @@ export default function Home() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Average Market APY</span>
-                      <span className="text-[9px] opacity-60 tracking-widest">市场平均年化</span>
+                      <span className="text-[9px] opacity-60 tracking-widest zh-only">市场平均年化</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -371,7 +371,7 @@ export default function Home() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Tracked Projects</span>
-                      <span className="text-[9px] opacity-60 tracking-widest">追踪项目数</span>
+                      <span className="text-[9px] opacity-60 tracking-widest zh-only">追踪项目数</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -387,7 +387,7 @@ export default function Home() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Top Category</span>
-                      <span className="text-[9px] opacity-60 tracking-widest">热门赛道</span>
+                      <span className="text-[9px] opacity-60 tracking-widest zh-only">热门赛道</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -440,7 +440,7 @@ export default function Home() {
               <div className="corner-brackets rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">Top APY Snapshot</span>
-                  <span className="text-[9px] text-muted-foreground/50 tracking-wider">最高年化速览</span>
+                  <span className="text-[9px] text-muted-foreground/50 tracking-wider zh-only">最高年化速览</span>
                 </div>
                 {topByApy.map((p, i) => {
                   const change = getSeededChange(p);
@@ -466,7 +466,7 @@ export default function Home() {
               <div className="rounded-xl border border-chart-2/25 bg-chart-2/5 p-5 space-y-3">
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.18em] text-chart-2/70 font-semibold block">24h Yield Activity</span>
-                  <span className="text-[9px] text-muted-foreground/50 tracking-wider">24小时收益变动概览</span>
+                  <span className="text-[9px] text-muted-foreground/50 tracking-wider zh-only">24小时收益变动概览</span>
                 </div>
                 {allProjects && (() => {
                   const changes = allProjects.map(p => getSeededChange(p));

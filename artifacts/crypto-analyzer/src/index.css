@@ -329,6 +329,13 @@
       0 24px 64px -14px rgba(0, 0, 0, 0.85);
   }
 
+  /* ── Chinese-only inline labels ──
+     Legacy pages use inline bilingual "English CHINESE" patterns. Tag the
+     Chinese-side span with .zh-only and it is hidden whenever the active
+     language is not a Chinese variant. LanguageProvider toggles
+     <html data-zh> so CSS can react without re-rendering the tree. */
+  html:not([data-zh]) .zh-only { display: none !important; }
+
   /* Corner bracket decoration — HUD / terminal aesthetic */
   .corner-brackets { position: relative; }
   .corner-brackets::before,

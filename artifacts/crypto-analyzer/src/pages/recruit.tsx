@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRuneOverview } from "@workspace/api-client-react";
 import type { RuneNodeDefinition } from "@workspace/api-client-react";
+import { useShowZh } from "@/contexts/language-context";
 
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
@@ -56,32 +57,42 @@ const NODE_PROGRESS_BAR: Record<string, string> = {
 
 const FAQ_ITEMS = [
   {
-    q: "节点购买资金如何使用？ / How are node funds used?",
-    a: "募集资金按比例分配至 TLP 流动池（40%）、运营资金（25%）、国库储备（25%）及子TOKEN LP（10%），全程链上透明可查。\n\nFunds are allocated: 40% to TLP liquidity pool, 25% operations, 25% treasury, and 10% sub-token LP — all verifiable on-chain.",
+    qEn: "How are node funds used?",
+    qZh: "节点购买资金如何使用？",
+    aEn: "Funds are allocated: 40% to TLP liquidity pool, 25% operations, 25% treasury, and 10% sub-token LP — all verifiable on-chain.",
+    aZh: "募集资金按比例分配至 TLP 流动池（40%）、运营资金（25%）、国库储备（25%）及子TOKEN LP（10%），全程链上透明可查。",
   },
   {
-    q: "每日 USDT 收益如何结算？ / How is daily USDT income settled?",
-    a: "每日 UTC 00:00 按持仓节点等级自动结算至绑定地址，无需手动领取。\n\nSettled automatically to your bound address every day at UTC 00:00 based on your node tier — no manual claim required.",
+    qEn: "How is daily USDT income settled?",
+    qZh: "每日 USDT 收益如何结算？",
+    aEn: "Settled automatically to your bound address every day at UTC 00:00 based on your node tier — no manual claim required.",
+    aZh: "每日 UTC 00:00 按持仓节点等级自动结算至绑定地址，无需手动领取。",
   },
   {
-    q: "子TOKEN空投何时发放？ / When are sub-token airdrops distributed?",
-    a: "主网上线后 30 天内完成首次空投，后续按季度补发。持有节点期间的空投权益实时累计。\n\nFirst airdrop within 30 days of mainnet launch, with quarterly supplements. Airdrop rights accrue in real time while you hold the node.",
+    qEn: "When are sub-token airdrops distributed?",
+    qZh: "子TOKEN空投何时发放？",
+    aEn: "First airdrop within 30 days of mainnet launch, with quarterly supplements. Airdrop rights accrue in real time while you hold the node.",
+    aZh: "主网上线后 30 天内完成首次空投，后续按季度补发。持有节点期间的空投权益实时累计。",
   },
   {
-    q: "节点席位是否可以转让？ / Can node seats be transferred?",
-    a: "当前阶段节点席位不可转让，合约锁定至主网激活。后续治理升级后将开放二级市场流通。\n\nNode seats are non-transferable during the current phase and locked until mainnet activation. Secondary market transfers will open after governance upgrades.",
+    qEn: "Can node seats be transferred?",
+    qZh: "节点席位是否可以转让？",
+    aEn: "Node seats are non-transferable during the current phase and locked until mainnet activation. Secondary market transfers will open after governance upgrades.",
+    aZh: "当前阶段节点席位不可转让，合约锁定至主网激活。后续治理升级后将开放二级市场流通。",
   },
   {
-    q: "年化 170.82% 如何计算？ / How is the 170.82% APY calculated?",
-    a: "以符主节点（$10,000投入）为基准：仅计入180天USDT收益$8,424，折算年化≈170.82%。不含TOKEN空投及母TOKEN市值增长部分。\n\nBased on Guardian node ($10,000): 180-day USDT income of $8,424 annualized ≈ 170.82%. Excludes token airdrops and MOTHER TOKEN appreciation.",
+    qEn: "How is the 170.82% APY calculated?",
+    qZh: "年化 170.82% 如何计算？",
+    aEn: "Based on Guardian node ($10,000): 180-day USDT income of $8,424 annualized ≈ 170.82%. Excludes token airdrops and MOTHER TOKEN appreciation.",
+    aZh: "以符主节点（$10,000投入）为基准：仅计入180天USDT收益$8,424，折算年化≈170.82%。不含TOKEN空投及母TOKEN市值增长部分。",
   },
 ];
 
 const STEPS = [
-  { en: "Choose Tier", zh: "选择节点等级", desc: "根据投资规模选择最适合您的节点等级", descEn: "Select the node tier that matches your investment capacity" },
-  { en: "Complete KYC", zh: "完成 KYC 认证", desc: "提交身份信息，通过合规审核", descEn: "Submit identity documents and pass compliance review" },
-  { en: "Transfer Funds", zh: "划转募集资金", desc: "将 USDT 划转至节点合约地址", descEn: "Transfer USDT to the node contract address" },
-  { en: "Activate Node", zh: "激活节点权柄", desc: "合约确认后节点立即激活，开始产生收益", descEn: "Node activates immediately after contract confirmation" },
+  { en: "Choose Tier",      zh: "选择节点等级",  descEn: "Select the node tier that matches your investment capacity", descZh: "根据投资规模选择最适合您的节点等级" },
+  { en: "Complete KYC",     zh: "完成 KYC 认证", descEn: "Submit identity documents and pass compliance review",      descZh: "提交身份信息，通过合规审核" },
+  { en: "Transfer Funds",   zh: "划转募集资金",  descEn: "Transfer USDT to the node contract address",                descZh: "将 USDT 划转至节点合约地址" },
+  { en: "Activate Node",    zh: "激活节点权柄",  descEn: "Node activates immediately after contract confirmation",   descZh: "合约确认后节点立即激活，开始产生收益" },
 ];
 
 function fmt(n: number) {
@@ -90,6 +101,7 @@ function fmt(n: number) {
 
 // ─── Purchase dialog ──────────────────────────────────────────────────────────
 function PurchaseDialog({ node, open, onClose }: { node: RuneNodeDefinition | null; open: boolean; onClose: () => void }) {
+  const showZh = useShowZh();
   if (!node) return null;
   const accent = NODE_ACCENT[node.level];
   const badgeCls = NODE_BADGE[node.level];
@@ -99,29 +111,29 @@ function PurchaseDialog({ node, open, onClose }: { node: RuneNodeDefinition | nu
         <DialogHeader>
           <div className="flex items-center gap-3 mb-1">
             <span className={`text-xs font-mono uppercase tracking-widest border rounded px-2 py-0.5 ${badgeCls}`}>
-              {node.nameCn} · {node.nameEn}
+              {showZh ? `${node.nameCn} · ${node.nameEn}` : node.nameEn}
             </span>
           </div>
           <DialogTitle className="text-xl font-bold text-foreground">
-            购买节点 · Purchase Node
+            {showZh ? "购买节点 · Purchase Node" : "Purchase Node"}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
-            以下为所选节点详情，确认后可触发合约完成购买。
+            {showZh ? "以下为所选节点详情，确认后可触发合约完成购买。" : "Review the selected node configuration. Confirming will trigger the purchase contract."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 mt-2">
           <div className="rounded-xl border border-border/30 bg-card/30 p-4 space-y-3">
             {[
-              { label: "节点名称 / Node", value: `${node.nameCn} ${node.nameEn}` },
-              { label: "投资门槛 / Investment", value: `$${fmt(node.investment)} USDT`, highlight: true },
-              { label: "私募价格 / Private Price", value: `$${node.privatePrice.toFixed(3)}` },
-              { label: "每日收益 / Daily USDT", value: `$${node.dailyUsdt} USDT`, highlight: true },
-              { label: "子TOKEN空投 / Airdrop", value: `${fmt(node.airdropPerSeat)} SUB` },
-              { label: "180日USDT总收益 / 180-Day Income", value: `$${fmt(node.dailyUsdt * 180)} USDT` },
-            ].map(({ label, value, highlight }) => (
-              <div key={label} className="flex items-center justify-between gap-2">
-                <span className="text-xs text-muted-foreground/70 shrink-0">{label}</span>
+              { labelZh: "节点名称",       labelEn: "Node",             value: showZh ? `${node.nameCn} ${node.nameEn}` : node.nameEn },
+              { labelZh: "投资门槛",       labelEn: "Investment",       value: `$${fmt(node.investment)} USDT`, highlight: true },
+              { labelZh: "私募价格",       labelEn: "Private Price",    value: `$${node.privatePrice.toFixed(3)}` },
+              { labelZh: "每日收益",       labelEn: "Daily USDT",       value: `$${node.dailyUsdt} USDT`, highlight: true },
+              { labelZh: "子TOKEN空投",    labelEn: "Airdrop",          value: `${fmt(node.airdropPerSeat)} SUB` },
+              { labelZh: "180日USDT总收益", labelEn: "180-Day Income",  value: `$${fmt(node.dailyUsdt * 180)} USDT` },
+            ].map(({ labelZh, labelEn, value, highlight }) => (
+              <div key={labelEn} className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted-foreground/70 shrink-0">{showZh ? `${labelZh} / ${labelEn}` : labelEn}</span>
                 <span className={`text-sm font-semibold text-right ${highlight ? accent : "text-foreground"}`}>{value}</span>
               </div>
             ))}
@@ -130,11 +142,13 @@ function PurchaseDialog({ node, open, onClose }: { node: RuneNodeDefinition | nu
           <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 px-4 py-3 flex items-start gap-3">
             <Shield className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
             <p className="text-xs text-amber-200/80 leading-relaxed">
-              <span className="font-semibold text-amber-300">功能暂未开放，敬请期待</span>
-              <br />
-              合约购买通道正在审计中，预计主网上线后开放。
-              <br className="hidden sm:block" />
-              <span className="text-amber-200/50">Contract purchase channel is under audit. Available after mainnet launch.</span>
+              {showZh && <>
+                <span className="font-semibold text-amber-300">功能暂未开放，敬请期待</span>
+                <br />
+                合约购买通道正在审计中，预计主网上线后开放。
+                <br className="hidden sm:block" />
+              </>}
+              <span className={showZh ? "text-amber-200/50" : ""}>Contract purchase channel is under audit. Available after mainnet launch.</span>
             </p>
           </div>
 
@@ -143,11 +157,11 @@ function PurchaseDialog({ node, open, onClose }: { node: RuneNodeDefinition | nu
             className="w-full h-11 font-semibold text-sm gap-2 opacity-50 cursor-not-allowed"
           >
             <Wallet className="h-4 w-4" />
-            连接钱包 / 触发合约
+            {showZh ? "连接钱包 / 触发合约" : "Connect Wallet / Trigger Contract"}
           </Button>
 
           <p className="text-center text-[11px] text-muted-foreground/40">
-            当前阶段仅展示节点参数 · Contract integration coming soon
+            {showZh ? "当前阶段仅展示节点参数 · Contract integration coming soon" : "Contract integration coming soon"}
           </p>
         </div>
       </DialogContent>
@@ -189,6 +203,7 @@ function NodeCardSkeleton() {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Recruit() {
+  const showZh = useShowZh();
   const [selectedNode, setSelectedNode] = useState<RuneNodeDefinition | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -229,10 +244,10 @@ export default function Recruit() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground leading-tight mb-4">
-            符·节点权柄重铸
+            {showZh ? "符·节点权柄重铸" : "Node Tier Reforge"}
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-2">
-            四级节点体系 · 双TOKEN通缩经济 · 机构级收益结构
+            {showZh ? "四级节点体系 · 双TOKEN通缩经济 · 机构级收益结构" : "4-Tier Nodes · Dual-Token Deflation · Institutional Returns"}
           </p>
           <p className="text-sm text-muted-foreground/60 max-w-xl mx-auto">
             RUNE Protocol Node Recruitment · Four-Tier System · Dual-Token Deflationary Economy
@@ -249,7 +264,7 @@ export default function Recruit() {
               <div key={en} className="space-y-1">
                 <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/50 font-medium">{en}</div>
                 <div className={`text-2xl sm:text-3xl font-bold leading-none ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
-                <div className="text-[10px] text-muted-foreground/65">{zh}</div>
+                {showZh && <div className="text-[10px] text-muted-foreground/65">{zh}</div>}
               </div>
             ))}
           </div>
@@ -261,7 +276,7 @@ export default function Recruit() {
         <div className="flex items-center gap-2 mb-6">
           <div className="h-px flex-1 bg-border/30" />
           <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
-            节点等级 · Node Tiers
+            {showZh ? "节点等级 · Node Tiers" : "Node Tiers"}
           </h2>
           <div className="h-px flex-1 bg-border/30" />
         </div>
@@ -287,7 +302,7 @@ export default function Recruit() {
                         <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${accent}`}>
                           {node.nameEn}
                         </div>
-                        <div className="text-xl font-bold text-foreground">{node.nameCn}</div>
+                        <div className="text-xl font-bold text-foreground">{showZh ? node.nameCn : node.nameEn}</div>
                       </div>
                       <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[node.level]}`}>
                         Lv.{i + 1}
@@ -297,14 +312,14 @@ export default function Recruit() {
                     {/* Stats */}
                     <div className="space-y-2.5 flex-1">
                       {[
-                        { label: "投资门槛", val: `$${fmt(node.investment)}`, accent: true },
-                        { label: "私募价格", val: `$${node.privatePrice.toFixed(3)}` },
-                        { label: "席位总量", val: `${fmt(node.seats)} 席` },
-                        { label: "每日USDT收益", val: `$${node.dailyUsdt}`, accent: true },
-                        { label: "子TOKEN空投", val: `${fmt(node.airdropPerSeat)} SUB` },
-                      ].map(({ label, val, accent: isAccent }) => (
-                        <div key={label} className="flex items-center justify-between gap-1">
-                          <span className="text-[11px] text-muted-foreground/60">{label}</span>
+                        { labelZh: "投资门槛",     labelEn: "Investment",  val: `$${fmt(node.investment)}`, accent: true },
+                        { labelZh: "私募价格",     labelEn: "Private",     val: `$${node.privatePrice.toFixed(3)}` },
+                        { labelZh: "席位总量",     labelEn: "Total Seats", val: showZh ? `${fmt(node.seats)} 席` : `${fmt(node.seats)}` },
+                        { labelZh: "每日USDT收益", labelEn: "Daily USDT",  val: `$${node.dailyUsdt}`, accent: true },
+                        { labelZh: "子TOKEN空投",  labelEn: "Airdrop",     val: `${fmt(node.airdropPerSeat)} SUB` },
+                      ].map(({ labelZh, labelEn, val, accent: isAccent }) => (
+                        <div key={labelEn} className="flex items-center justify-between gap-1">
+                          <span className="text-[11px] text-muted-foreground/60">{showZh ? labelZh : labelEn}</span>
                           <span className={`text-sm font-semibold ${isAccent ? accent : "text-foreground/90"}`}>{val}</span>
                         </div>
                       ))}
@@ -313,12 +328,12 @@ export default function Recruit() {
                     {/* Seat progress */}
                     <div className="mt-4 space-y-1.5">
                       <div className="flex justify-between text-[10px] text-muted-foreground/50">
-                        <span>席位占用 Occupancy</span>
+                        <span>{showZh ? "席位占用 Occupancy" : "Occupancy"}</span>
                         <span className={accent}>{occupiedPct}%</span>
                       </div>
                       <Progress value={occupiedPct} className={`h-1.5 bg-white/5 ${progressCls}`} />
                       <div className="text-[10px] text-muted-foreground/40 text-right">
-                        剩余 {fmt(node.seatsRemaining)} 席
+                        {showZh ? `剩余 ${fmt(node.seatsRemaining)} 席` : `${fmt(node.seatsRemaining)} left`}
                       </div>
                     </div>
 
@@ -327,7 +342,7 @@ export default function Recruit() {
                       onClick={() => handleBuy(node)}
                       className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[node.level]}`}
                     >
-                      购买节点 · Buy Node
+                      {showZh ? "购买节点 · Buy Node" : "Buy Node"}
                     </Button>
                   </motion.div>
                 );
@@ -341,7 +356,7 @@ export default function Recruit() {
         <div className="flex items-center gap-2 mb-6">
           <div className="h-px flex-1 bg-border/30" />
           <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
-            为什么选择 RUNE · Why RUNE
+            {showZh ? "为什么选择 RUNE · Why RUNE" : "Why RUNE"}
           </h2>
           <div className="h-px flex-1 bg-border/30" />
         </div>
@@ -379,14 +394,14 @@ export default function Recruit() {
               bg: "from-green-950/50 to-green-900/10",
             },
           ].map(({ icon: Icon, title, titleEn, desc, descEn, accent, border, bg }) => (
-            <div key={title} className={`rounded-2xl border ${border} bg-gradient-to-b ${bg} p-6 space-y-3`}>
+            <div key={titleEn} className={`rounded-2xl border ${border} bg-gradient-to-b ${bg} p-6 space-y-3`}>
               <div className={`flex items-center gap-2 ${accent}`}>
                 <Icon className="h-5 w-5" />
-                <span className="font-bold text-base text-foreground">{title}</span>
+                <span className="font-bold text-base text-foreground">{showZh ? title : titleEn}</span>
               </div>
-              <p className={`text-xs font-mono uppercase tracking-widest ${accent} opacity-70`}>{titleEn}</p>
-              <p className="text-sm text-muted-foreground/80 leading-relaxed">{desc}</p>
-              <p className="text-[11px] text-muted-foreground/40 leading-relaxed">{descEn}</p>
+              {showZh && <p className={`text-xs font-mono uppercase tracking-widest ${accent} opacity-70`}>{titleEn}</p>}
+              <p className="text-sm text-muted-foreground/80 leading-relaxed">{showZh ? desc : descEn}</p>
+              {showZh && <p className="text-[11px] text-muted-foreground/40 leading-relaxed">{descEn}</p>}
             </div>
           ))}
         </div>
@@ -419,10 +434,10 @@ export default function Recruit() {
                   {i + 1}
                 </div>
                 <div>
-                  <div className="font-bold text-foreground text-sm mb-0.5">{step.zh}</div>
-                  <div className="text-[10px] text-amber-400/70 uppercase tracking-wider mb-2">{step.en}</div>
-                  <p className="text-xs text-muted-foreground/70 leading-relaxed">{step.desc}</p>
-                  <p className="text-[11px] text-muted-foreground/40 leading-relaxed mt-1">{step.descEn}</p>
+                  <div className="font-bold text-foreground text-sm mb-0.5">{showZh ? step.zh : step.en}</div>
+                  {showZh && <div className="text-[10px] text-amber-400/70 uppercase tracking-wider mb-2">{step.en}</div>}
+                  <p className="text-xs text-muted-foreground/70 leading-relaxed">{showZh ? step.descZh : step.descEn}</p>
+                  {showZh && <p className="text-[11px] text-muted-foreground/40 leading-relaxed mt-1">{step.descEn}</p>}
                 </div>
               </motion.div>
             ))}
@@ -452,7 +467,7 @@ export default function Recruit() {
                   onClick={() => setOpenFaq(isOpen ? null : i)}
                   className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-white/3 transition-colors"
                 >
-                  <span className="text-sm font-medium text-foreground/90">{item.q}</span>
+                  <span className="text-sm font-medium text-foreground/90">{showZh ? item.qZh : item.qEn}</span>
                   {isOpen
                     ? <ChevronUp className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                     : <ChevronDown className="h-4 w-4 text-muted-foreground/50 shrink-0" />
@@ -469,11 +484,14 @@ export default function Recruit() {
                       className="overflow-hidden"
                     >
                       <div className="px-5 pb-5 pt-1">
-                        {item.a.split("\n\n").map((para, pi) => (
-                          <p key={pi} className={`text-sm leading-relaxed ${pi === 0 ? "text-muted-foreground" : "text-muted-foreground/55 mt-2"}`}>
-                            {para}
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                          {showZh ? item.aZh : item.aEn}
+                        </p>
+                        {showZh && (
+                          <p className="text-sm leading-relaxed text-muted-foreground/55 mt-2">
+                            {item.aEn}
                           </p>
-                        ))}
+                        )}
                       </div>
                     </motion.div>
                   )}

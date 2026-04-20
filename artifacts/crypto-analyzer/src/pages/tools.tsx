@@ -7,6 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useLanguage } from "@/contexts/language-context";
+
+/**
+ * Show Chinese secondary label only when the active language is a Chinese variant.
+ * For en/ko/ja/th/vi the calculator chrome falls back to English labels, which
+ * is acceptable for this technical tools page (the labels are DeFi jargon and
+ * most values are numeric).
+ */
+function useShowZh() {
+  const { language } = useLanguage();
+  return language === "zh" || language === "zh-TW";
+}
 import {
   Activity, TrendingUp, AlertTriangle, Coins, Droplets, BarChart3, Users, Target,
   ChevronRight, Pickaxe,
@@ -84,6 +96,7 @@ type ToolId = "apy" | "investment" | "il" | "staking" | "pledge" | "aam" | "clmm
 
 export default function Tools() {
   const [active, setActive] = useState<ToolId>("apy");
+  const showZh = useShowZh();
 
   const allTools = CATEGORIES.flatMap(c => c.tools as readonly any[]);
   const activeTool = allTools.find(t => t.id === active) as any;
@@ -92,15 +105,17 @@ export default function Tools() {
     <div className="container mx-auto px-4 py-8 animate-slide-up space-y-6">
       {/* ── Header ── */}
       <div className="border-b border-border/50 pb-6">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">经济模拟器</span>
-        </div>
+        {showZh && (
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70 zh-only">经济模拟器</span>
+          </div>
+        )}
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
           Economic Simulators
         </h1>
         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
           Advanced calculators for DeFi yields, liquidity analysis, and protocol-level economic simulation.
-          <span className="hidden sm:inline"> · 高级计算器，涵盖 DeFi 收益、流动性分析及协议经济模拟。</span>
+          {showZh && <span className="hidden sm:inline"> · 高级计算器，涵盖 DeFi 收益、流动性分析及协议经济模拟。</span>}
         </p>
       </div>
 
@@ -111,7 +126,7 @@ export default function Tools() {
             <div className="flex items-center gap-2">
               <activeTool.Icon className={`h-4 w-4 shrink-0 ${activeTool.color}`} />
               <span className="font-medium">{activeTool.name}</span>
-              <span className="text-xs text-muted-foreground ml-1">{activeTool.nameZh}</span>
+              {showZh && <span className="text-xs text-muted-foreground ml-1">{activeTool.nameZh}</span>}
             </div>
           </SelectTrigger>
           <SelectContent>
@@ -119,7 +134,7 @@ export default function Tools() {
               <div key={cat.id}>
                 <div className="px-2 py-1.5">
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-                    {cat.name} · {cat.nameZh}
+                    {cat.name}{showZh && ` · ${cat.nameZh}`}
                   </p>
                 </div>
                 {cat.tools.map(tool => (
@@ -127,7 +142,7 @@ export default function Tools() {
                     <span className="flex items-center gap-2">
                       <tool.Icon className={`h-3.5 w-3.5 ${tool.color}`} />
                       <span>{tool.name}</span>
-                      <span className="text-xs text-muted-foreground">{tool.nameZh}</span>
+                      {showZh && <span className="text-xs text-muted-foreground">{tool.nameZh}</span>}
                     </span>
                   </SelectItem>
                 ))}
@@ -144,7 +159,7 @@ export default function Tools() {
           {CATEGORIES.map((cat, ci) => (
             <div key={cat.id} className={ci > 0 ? "mt-5" : ""}>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-2 px-2">
-                {cat.name}<span className="ml-1 opacity-70">· {cat.nameZh}</span>
+                {cat.name}{showZh && <span className="ml-1 opacity-70">· {cat.nameZh}</span>}
               </p>
               {cat.tools.map(tool => (
                 <button
@@ -161,7 +176,7 @@ export default function Tools() {
                     <p className={`text-sm font-medium leading-tight truncate ${active === tool.id ? tool.color : "text-foreground"}`}>
                       {tool.name}
                     </p>
-                    <p className="text-[10px] text-muted-foreground truncate">{tool.nameZh}</p>
+                    {showZh && <p className="text-[10px] text-muted-foreground truncate">{tool.nameZh}</p>}
                   </div>
                   {active === tool.id && <ChevronRight className={`h-3 w-3 ml-auto shrink-0 ${tool.color}`} />}
                 </button>
@@ -192,25 +207,27 @@ export default function Tools() {
 function ToolHeader({ icon, title, titleZh, desc, descZh }: {
   icon: React.ReactNode; title: string; titleZh: string; desc: string; descZh: string;
 }) {
+  const showZh = useShowZh();
   return (
     <div className="flex items-start gap-3 mb-6 pb-5 border-b border-border/50">
       <div className="p-2 rounded-lg bg-muted/30 border border-border/50 mt-0.5">{icon}</div>
       <div>
         <h2 className="text-lg sm:text-xl font-semibold flex flex-wrap items-baseline gap-2">
-          {title} <span className="text-base font-normal text-muted-foreground">{titleZh}</span>
+          {title}{showZh && <span className="text-base font-normal text-muted-foreground">{titleZh}</span>}
         </h2>
-        <p className="text-sm text-muted-foreground mt-0.5">{desc}<span className="hidden sm:inline"> · {descZh}</span></p>
+        <p className="text-sm text-muted-foreground mt-0.5">{desc}{showZh && <span className="hidden sm:inline"> · {descZh}</span>}</p>
       </div>
     </div>
   );
 }
 
 function ParamsCard({ title, titleZh, children }: { title: string; titleZh: string; children: React.ReactNode }) {
+  const showZh = useShowZh();
   return (
     <Card className="bg-card/70 backdrop-blur border-border shadow-sm h-fit">
       <CardHeader className="pb-4 border-b border-border/50">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          {title} <span className="text-xs font-normal text-muted-foreground">{titleZh}</span>
+          {title}{showZh && <span className="text-xs font-normal text-muted-foreground">{titleZh}</span>}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-5 space-y-5">{children}</CardContent>
@@ -222,11 +239,12 @@ function SliderRow({ label, labelZh, value, set, min, max, step, display }: {
   label: string; labelZh: string; value: number; set: (v: number) => void;
   min: number; max: number; step: number; display: string;
 }) {
+  const showZh = useShowZh();
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <Label className="text-xs text-muted-foreground">{label} <span className="opacity-60">{labelZh}</span></Label>
-        <span className="font-mono text-xs font-bold text-foreground">{display}</span>
+        <Label className="text-xs text-muted-foreground">{label}{showZh && <span className="opacity-60"> {labelZh}</span>}</Label>
+        <span className="num text-xs text-foreground">{display}</span>
       </div>
       <Slider value={[value]} min={min} max={max} step={step} onValueChange={v => set(v[0])} />
     </div>
@@ -234,12 +252,16 @@ function SliderRow({ label, labelZh, value, set, min, max, step, display }: {
 }
 
 function KpiGrid({ items }: { items: { label: string; labelZh: string; value: string; color?: string }[] }) {
+  const showZh = useShowZh();
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {items.map(({ label, labelZh, value, color }) => (
         <div key={label} className="bg-card/60 border border-border rounded-xl p-3 sm:p-4">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 leading-tight">{label}<br /><span className="opacity-60">{labelZh}</span></p>
-          <p className={`text-base sm:text-lg font-bold font-mono mt-1 leading-tight ${color ?? "text-foreground"}`}>{value}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 leading-tight">
+            {label}
+            {showZh && <><br /><span className="opacity-60">{labelZh}</span></>}
+          </p>
+          <p className={`text-base sm:text-lg num mt-1 leading-tight ${color ?? "text-foreground"}`}>{value}</p>
         </div>
       ))}
     </div>
@@ -247,11 +269,15 @@ function KpiGrid({ items }: { items: { label: string; labelZh: string; value: st
 }
 
 function EmptyState({ icon, msg, sub }: { icon: React.ReactNode; msg: string; sub: string }) {
+  const showZh = useShowZh();
   return (
     <div className="h-64 flex items-center justify-center border border-dashed border-border rounded-xl bg-background/20">
       <div className="text-center space-y-3">
         <div className="w-12 h-12 rounded-full bg-muted/20 flex items-center justify-center mx-auto">{icon}</div>
-        <p className="text-sm text-muted-foreground">{msg}<br /><span className="text-xs opacity-70">{sub}</span></p>
+        <p className="text-sm text-muted-foreground">
+          {msg}
+          {showZh && <><br /><span className="text-xs opacity-70">{sub}</span></>}
+        </p>
       </div>
     </div>
   );
@@ -275,24 +301,24 @@ function ApyCalculator() {
           <SliderRow label="Expected APY (%)" labelZh="预期年化" value={apy} set={setApy} min={1} max={200} step={1} display={`${apy}%`} />
           <SliderRow label="Duration (Days)" labelZh="持续时间" value={days} set={setDays} min={7} max={1095} step={7} display={`${days}d`} />
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Compound Frequency <span className="opacity-60">复利频率</span></Label>
+            <Label className="text-xs text-muted-foreground">Compound Frequency <span className="opacity-60 zh-only">复利频率</span></Label>
             <Select value={freq} onValueChange={(v: any) => setFreq(v)}>
               <SelectTrigger className="bg-background/50 border-border h-9"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="daily">Daily 每日</SelectItem>
-                <SelectItem value="weekly">Weekly 每周</SelectItem>
-                <SelectItem value="monthly">Monthly 每月</SelectItem>
-                <SelectItem value="yearly">Yearly 每年</SelectItem>
+                <SelectItem value="daily">Daily<span className="zh-only ml-1">每日</span></SelectItem>
+                <SelectItem value="weekly">Weekly<span className="zh-only ml-1">每周</span></SelectItem>
+                <SelectItem value="monthly">Monthly<span className="zh-only ml-1">每月</span></SelectItem>
+                <SelectItem value="yearly">Yearly<span className="zh-only ml-1">每年</span></SelectItem>
               </SelectContent>
             </Select>
           </div>
           <Button className="w-full" onClick={() => m.mutate({ data: { principal, apy, durationDays: days, compoundFrequency: freq } })} disabled={m.isPending}>
-            {m.isPending ? "Calculating..." : "Run Simulation 运行模拟"}
+            {m.isPending ? "Calculating..." : (showZh ? "Run Simulation · 运行模拟" : "Run Simulation")}
           </Button>
         </ParamsCard>
         <Card className="bg-card/70 border-border shadow-sm">
           <CardHeader className="pb-4 border-b border-border/50">
-            <CardTitle className="text-sm font-semibold">Projection Results <span className="text-xs font-normal text-muted-foreground">预测结果</span></CardTitle>
+            <CardTitle className="text-sm font-semibold">Projection Results <span className="text-xs font-normal text-muted-foreground zh-only">预测结果</span></CardTitle>
           </CardHeader>
           <CardContent className="pt-5 space-y-6">
             {m.data ? (
@@ -348,12 +374,12 @@ function InvestmentSimulator() {
           <SliderRow label="Expected APY (%)" labelZh="预期年化" value={apy} set={setApy} min={1} max={100} step={1} display={`${apy}%`} />
           <SliderRow label="Time Horizon (Years)" labelZh="投资年限" value={years} set={setYears} min={1} max={20} step={1} display={`${years} yr`} />
           <Button className="w-full bg-chart-2 hover:bg-chart-2/90 text-white" onClick={() => m.mutate({ data: { initialInvestment: initial, monthlyContribution: monthly, expectedApy: apy, years } })} disabled={m.isPending}>
-            {m.isPending ? "Simulating..." : "Run Simulation 运行模拟"}
+            {m.isPending ? "Simulating..." : (showZh ? "Run Simulation · 运行模拟" : "Run Simulation")}
           </Button>
         </ParamsCard>
         <Card className="bg-card/70 border-border shadow-sm">
           <CardHeader className="pb-4 border-b border-border/50">
-            <CardTitle className="text-sm font-semibold">Growth Trajectory <span className="text-xs font-normal text-muted-foreground">增长轨迹</span></CardTitle>
+            <CardTitle className="text-sm font-semibold">Growth Trajectory <span className="text-xs font-normal text-muted-foreground zh-only">增长轨迹</span></CardTitle>
           </CardHeader>
           <CardContent className="pt-5 space-y-6">
             {m.data ? (
@@ -401,50 +427,50 @@ function ImpermanentLossCalculator() {
 
   return (
     <div className="space-y-6">
-      <ToolHeader icon={<AlertTriangle className="h-4 w-4 text-destructive" />} title="Impermanent Loss" titleZh="无常损失计算" desc="Quantify LP divergence risk vs holding" descZh="LP 仓位与持有策略的损失对比" />
+      <ToolHeader icon={<AlertTriangle className="h-4 w-4 text-destructive" />} title="Impermanent Loss" titleZh="无常损失计算" desc="Quantify LP divergence risk vs holding" descZh={showZh ? "LP · 仓位与持有策略的损失对比" : "LP"} />
       <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
         <ParamsCard title="Parameters" titleZh="参数设置">
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Initial Asset Price ($) <span className="opacity-60">初始资产价格</span></Label>
+            <Label className="text-xs text-muted-foreground">Initial Asset Price ($) <span className="opacity-60 zh-only">初始资产价格</span></Label>
             <Input type="number" value={initialPrice} onChange={e => setInitialPrice(Number(e.target.value))} className="bg-background/50 border-border font-mono h-9" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Current / Projected Price ($) <span className="opacity-60">当前/预期价格</span></Label>
+            <Label className="text-xs text-muted-foreground">Current / Projected Price ($) <span className="opacity-60 zh-only">当前/预期价格</span></Label>
             <Input type="number" value={currentPrice} onChange={e => setCurrentPrice(Number(e.target.value))} className="bg-background/50 border-border font-mono h-9" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Initial Liquidity Value ($) <span className="opacity-60">初始流动性价值</span></Label>
+            <Label className="text-xs text-muted-foreground">Initial Liquidity Value ($) <span className="opacity-60 zh-only">初始流动性价值</span></Label>
             <Input type="number" value={liquidity} onChange={e => setLiquidity(Number(e.target.value))} className="bg-background/50 border-border font-mono h-9" />
           </div>
           <Button variant="destructive" className="w-full" onClick={() => m.mutate({ data: { initialPrice, currentPrice, liquidityValue: liquidity } })} disabled={m.isPending}>
-            {m.isPending ? "Calculating..." : "Calculate Risk 计算风险"}
+            {m.isPending ? "Calculating..." : (showZh ? "Calculate Risk · 计算风险" : "Calculate Risk")}
           </Button>
         </ParamsCard>
         <Card className="bg-card/70 border-border shadow-sm">
           <CardHeader className="pb-4 border-b border-border/50">
-            <CardTitle className="text-sm font-semibold">Risk Analysis <span className="text-xs font-normal text-muted-foreground">风险分析</span></CardTitle>
+            <CardTitle className="text-sm font-semibold">Risk Analysis <span className="text-xs font-normal text-muted-foreground zh-only">风险分析</span></CardTitle>
           </CardHeader>
           <CardContent className="pt-5 space-y-5">
             {m.data ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-5 bg-destructive/10 border border-destructive/20 rounded-xl text-center">
-                    <p className="text-xs text-destructive uppercase tracking-wider mb-2">IL % <span className="opacity-70">无常损失</span></p>
+                    <p className="text-xs text-destructive uppercase tracking-wider mb-2">IL % <span className="opacity-70 zh-only">无常损失</span></p>
                     <p className="text-3xl font-bold font-mono text-destructive">-{formatPercent(m.data.ilPercent)}</p>
                     <p className="text-xs font-mono text-destructive/80 mt-1">-{formatCurrency(m.data.ilUsd)}</p>
                   </div>
                   <div className="p-5 bg-background/50 border border-border rounded-xl text-center">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">HODL Value <span className="opacity-70">持有价值</span></p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">HODL Value <span className="opacity-70 zh-only">持有价值</span></p>
                     <p className="text-2xl font-bold font-mono">{formatCurrency(m.data.hodlValue)}</p>
                   </div>
                   <div className="p-5 bg-background/50 border border-border rounded-xl text-center">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">LP Value <span className="opacity-70">池内价值</span></p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">LP Value <span className="opacity-70 zh-only">池内价值</span></p>
                     <p className="text-2xl font-bold font-mono">{formatCurrency(m.data.lpValue)}</p>
                   </div>
                 </div>
                 <div className="p-4 bg-card/50 border border-border/50 rounded-xl text-sm text-muted-foreground space-y-1.5">
                   <p>Price <span className="font-mono text-foreground">{formatCurrency(initialPrice)}</span> → <span className="font-mono text-foreground">{formatCurrency(currentPrice)}</span> causes <span className="font-mono text-destructive font-semibold">{formatPercent(m.data.ilPercent)}</span> divergence loss vs HODL.</p>
-                  <p className="text-xs opacity-70">价格从 {formatCurrency(initialPrice)} 变动至 {formatCurrency(currentPrice)}，LP仓位相比持有损失 {formatPercent(m.data.ilPercent)}。</p>
+                  {showZh && <p className="text-xs opacity-70">价格从 {formatCurrency(initialPrice)} 变动至 {formatCurrency(currentPrice)}，LP仓位相比持有损失 {formatPercent(m.data.ilPercent)}。</p>}
                 </div>
               </>
             ) : <EmptyState icon={<AlertTriangle className="h-6 w-6 text-muted-foreground/50" />} msg="Enter prices to calculate IL risk." sub="输入价格以计算无常损失" />}
@@ -610,12 +636,12 @@ function StakingProjector() {
         <ParamsCard title="Parameters" titleZh="参数设置">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60">代币名称</span></Label>
+              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60 zh-only">代币名称</span></Label>
               <Input value={tokenName} onChange={e => setTokenName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
             {(mode === "gold" || mode === "coin") && (
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Token Price ($) <span className="opacity-60">代币价格</span></Label>
+                <Label className="text-xs text-muted-foreground">Token Price ($) <span className="opacity-60 zh-only">代币价格</span></Label>
                 <Input type="number" value={tokenPrice} onChange={e => setTokenPrice(Number(e.target.value))} min={0.0001} step={0.01} className="bg-background/50 border-border font-mono h-9 text-sm" />
               </div>
             )}
@@ -645,11 +671,11 @@ function StakingProjector() {
 
           {/* Mode-specific formula note */}
           <div className="pt-1 p-3 bg-background/30 rounded-lg border border-border/50 text-[10px] text-muted-foreground space-y-1 leading-relaxed">
-            {mode === "gold" && <><p><strong>金本位:</strong> 总释放USDC = 本金 × 倍率</p><p>每日代币 = 总USDC ÷ 天数 ÷ 代币价</p></>}
-            {mode === "coin" && <><p><strong>币本位:</strong> 购入代币 = 本金 ÷ 代币价</p><p>总释放 = 购入量 × 倍率，按天平均</p></>}
-            {mode === "exit" && <><p><strong>倍数出局:</strong> 每日收益 = 本金 × 日收益率</p><p>累计到达 本金 × 出局倍数 时停止</p></>}
-            {mode === "principal_interest" && <><p><strong>本息释放:</strong> 本金 + 利息 每日均匀返还</p><p>本息 = 本金 × (1 + 年化 × 天数/365)</p></>}
-            {mode === "maturity" && <><p><strong>到期还本:</strong> 每日释放利息</p><p>到期日一次性退还全部本金</p></>}
+            {showZh && mode === "gold" && <><p><strong>金本位:</strong> 总释放USDC = 本金 × 倍率</p><p>每日代币 = 总USDC ÷ 天数 ÷ 代币价</p></>}
+            {showZh && mode === "coin" && <><p><strong>币本位:</strong> 购入代币 = 本金 ÷ 代币价</p><p>总释放 = 购入量 × 倍率，按天平均</p></>}
+            {showZh && mode === "exit" && <><p><strong>倍数出局:</strong> 每日收益 = 本金 × 日收益率</p><p>累计到达 本金 × 出局倍数 时停止</p></>}
+            {showZh && mode === "principal_interest" && <><p><strong>本息释放:</strong> 本金 + 利息 每日均匀返还</p><p>本息 = 本金 × (1 + 年化 × 天数/365)</p></>}
+            {showZh && mode === "maturity" && <><p><strong>到期还本:</strong> 每日释放利息</p><p>到期日一次性退还全部本金</p></>}
           </div>
         </ParamsCard>
 
@@ -664,9 +690,13 @@ function StakingProjector() {
                  mode === "principal_interest" ? "Principal vs Interest Release" :
                  "Cumulative Release Curve"}
                 <span className="text-xs font-normal text-muted-foreground ml-2">
-                  {mode === "exit" ? "累计收益 vs 出局目标" :
-                   mode === "maturity" ? "日利息 + 到期还本" :
-                   mode === "principal_interest" ? "本息分解" : "累计释放曲线"}
+                  {(() => {
+                    const [en, zh] = mode === "exit" ? ["Cumulative vs Target", "累计收益 vs 出局目标"] :
+                                     mode === "maturity" ? ["Daily Interest + Principal", "日利息 + 到期还本"] :
+                                     mode === "principal_interest" ? ["P+I Breakdown", "本息分解"] :
+                                     ["Cumulative Release Curve", "累计释放曲线"];
+                    return showZh ? `${en} · ${zh}` : en;
+                  })()}
                 </span>
               </CardTitle>
             </CardHeader>
@@ -693,7 +723,7 @@ function StakingProjector() {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `D${v}`} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `$${fmt(v, 0)}`} />
-                      <Tooltip contentStyle={TS} formatter={(v: number, n: string) => [formatCurrency(v), n === "principal" ? "Principal 本金" : "Interest 利息"]} labelFormatter={l => `Day ${l}`} />
+                      <Tooltip contentStyle={TS} formatter={(v: number, n: string) => [formatCurrency(v), n === "principal" ? (showZh ? "Principal · 本金" : "Principal") : (showZh ? "Interest · 利息" : "Interest")]} labelFormatter={l => `Day ${l}`} />
                       <Area type="monotone" dataKey="principal" stackId="1" stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted-foreground)/0.2)" name="principal" />
                       <Area type="monotone" dataKey="interest" stackId="1" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2)/0.3)" strokeWidth={2} name="interest" />
                     </AreaChart>
@@ -826,27 +856,27 @@ function PledgeMining() {
           <ParamsCard title="Parameters" titleZh="参数设置">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Token <span className="opacity-60">质押代币</span></Label>
+                <Label className="text-xs text-muted-foreground">Token <span className="opacity-60 zh-only">质押代币</span></Label>
                 <Input value={tokenName} onChange={e => setTokenName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Reward Token <span className="opacity-60">奖励代币</span></Label>
+                <Label className="text-xs text-muted-foreground">Reward Token <span className="opacity-60 zh-only">奖励代币</span></Label>
                 <Input value={rewardName} onChange={e => setRewardName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
               </div>
             </div>
             <SliderRow label="USDC Investment" labelZh="USDC投入" value={usdcIn} set={setUsdcIn} min={100} max={100000} step={100} display={formatCurrency(usdcIn)} />
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Buy Price ($) <span className="opacity-60">购入价</span></Label>
+                <Label className="text-xs text-muted-foreground">Buy Price ($) <span className="opacity-60 zh-only">购入价</span></Label>
                 <Input type="number" value={buyPrice} onChange={e => setBuyPrice(Number(e.target.value))} min={0.0001} step={0.01} className="bg-background/50 border-border font-mono h-9 text-sm" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Exit Price ($) <span className="opacity-60">预期退出价</span></Label>
+                <Label className="text-xs text-muted-foreground">Exit Price ($) <span className="opacity-60 zh-only">预期退出价</span></Label>
                 <Input type="number" value={exitPrice} onChange={e => setExitPrice(Number(e.target.value))} min={0.0001} step={0.01} className="bg-background/50 border-border font-mono h-9 text-sm" />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Reward Token Price ($) <span className="opacity-60">奖励代币价</span></Label>
+              <Label className="text-xs text-muted-foreground">Reward Token Price ($) <span className="opacity-60 zh-only">奖励代币价</span></Label>
               <Input type="number" value={rewardPrice} onChange={e => setRewardPrice(Number(e.target.value))} min={0.0001} step={0.01} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
             <SliderRow label="Staking APY %" labelZh="质押年化收益" value={stakingApy} set={setStakingApy} min={1} max={500} step={5} display={`${stakingApy}%`} />
@@ -861,7 +891,7 @@ function PledgeMining() {
             ]} />
             <Card className="bg-card/70 border-border shadow-sm">
               <CardHeader className="pb-3 border-b border-border/50">
-                <CardTitle className="text-sm font-semibold">Cumulative Rewards & Portfolio Value <span className="text-xs font-normal text-muted-foreground ml-1">累计奖励与总价值</span></CardTitle>
+                <CardTitle className="text-sm font-semibold">Cumulative Rewards & Portfolio Value <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">累计奖励与总价值</span></CardTitle>
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
                 <div className="h-[240px]">
@@ -898,11 +928,11 @@ function PledgeMining() {
           <ParamsCard title="Parameters" titleZh="参数设置">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Token <span className="opacity-60">挖矿代币</span></Label>
+                <Label className="text-xs text-muted-foreground">Token <span className="opacity-60 zh-only">挖矿代币</span></Label>
                 <Input value={minerTokenName} onChange={e => setMinerTokenName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Token Price ($) <span className="opacity-60">代币价格</span></Label>
+                <Label className="text-xs text-muted-foreground">Token Price ($) <span className="opacity-60 zh-only">代币价格</span></Label>
                 <Input type="number" value={mineTokenPrice} onChange={e => setMineTokenPrice(Number(e.target.value))} min={0.001} step={100} className="bg-background/50 border-border font-mono h-9 text-sm" />
               </div>
             </div>
@@ -922,7 +952,7 @@ function PledgeMining() {
             ]} />
             <Card className="bg-card/70 border-border shadow-sm">
               <CardHeader className="pb-3 border-b border-border/50">
-                <CardTitle className="text-sm font-semibold">Cumulative Profit Trajectory <span className="text-xs font-normal text-muted-foreground ml-1">累计利润曲线（含难度增长）</span></CardTitle>
+                <CardTitle className="text-sm font-semibold">Cumulative Profit Trajectory <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">累计利润曲线（含难度增长）</span></CardTitle>
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
                 <div className="h-[240px]">
@@ -989,11 +1019,11 @@ function AAMPoolSimulator() {
         <ParamsCard title="Parameters" titleZh="参数设置">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60">代币名称</span></Label>
+              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60 zh-only">代币名称</span></Label>
               <Input value={tokenName} onChange={e => setTokenName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Sim Days <span className="opacity-60">模拟天数</span></Label>
+              <Label className="text-xs text-muted-foreground">Sim Days <span className="opacity-60 zh-only">模拟天数</span></Label>
               <Input type="number" value={days} onChange={e => setDays(Math.max(1, Number(e.target.value)))} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
           </div>
@@ -1013,7 +1043,7 @@ function AAMPoolSimulator() {
           ]} />
           <Card className="bg-card/70 border-border shadow-sm">
             <CardHeader className="pb-3 border-b border-border/50">
-              <CardTitle className="text-sm font-semibold">{tokenName} Price Trajectory <span className="text-xs font-normal text-muted-foreground ml-1">价格走势</span></CardTitle>
+              <CardTitle className="text-sm font-semibold">{tokenName} Price Trajectory <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">价格走势</span></CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-5">
               <div className="h-[180px] sm:h-[200px]">
@@ -1082,32 +1112,32 @@ function CLMMAnalyzer() {
         <ParamsCard title="Parameters" titleZh="参数设置">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60">代币名称</span></Label>
+              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60 zh-only">代币名称</span></Label>
               <Input value={tokenName} onChange={e => setTokenName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Token Price ($) <span className="opacity-60">代币价格</span></Label>
+              <Label className="text-xs text-muted-foreground">Token Price ($) <span className="opacity-60 zh-only">代币价格</span></Label>
               <Input type="number" value={tokenPrice} onChange={e => setTokenPrice(Number(e.target.value))} min={0.0001} step={0.01} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Deposit {tokenName} <span className="opacity-60">代币数量</span></Label>
+              <Label className="text-xs text-muted-foreground">Deposit {tokenName} <span className="opacity-60 zh-only">代币数量</span></Label>
               <Input type="number" value={depositX} onChange={e => setDepositX(Number(e.target.value))} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Deposit USDC <span className="opacity-60">USDC数量</span></Label>
+              <Label className="text-xs text-muted-foreground">Deposit USDC <span className="opacity-60 zh-only">USDC数量</span></Label>
               <Input type="number" value={depositY} onChange={e => setDepositY(Number(e.target.value))} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Fee Tier <span className="opacity-60">手续费档位</span></Label>
+            <Label className="text-xs text-muted-foreground">Fee Tier <span className="opacity-60 zh-only">手续费档位</span></Label>
             <Select value={String(feeTier)} onValueChange={v => setFeeTier(Number(v))}>
               <SelectTrigger className="bg-background/50 border-border h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="0.0005">0.05% 稳定对</SelectItem>
-                <SelectItem value="0.003">0.3% 标准</SelectItem>
-                <SelectItem value="0.01">1% 高波动</SelectItem>
+                <SelectItem value="0.0005">0.05%<span className="zh-only ml-1">稳定对</span></SelectItem>
+                <SelectItem value="0.003">0.3%<span className="zh-only ml-1">标准</span></SelectItem>
+                <SelectItem value="0.01">1%<span className="zh-only ml-1">高波动</span></SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1126,12 +1156,12 @@ function CLMMAnalyzer() {
           ]} />
           <div className="grid grid-cols-2 gap-4">
             <Card className="bg-card/60 border-border p-4">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">IL at Lower <span className="opacity-60">下界</span></p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">IL at Lower <span className="opacity-60 zh-only">下界</span></p>
               <p className="text-xl font-bold font-mono text-destructive">-{analysis.ilAtLower.toFixed(2)}%</p>
               <p className="text-xs text-muted-foreground mt-1">${priceLower.toFixed(4)}</p>
             </Card>
             <Card className="bg-card/60 border-border p-4">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">IL at Upper <span className="opacity-60">上界</span></p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">IL at Upper <span className="opacity-60 zh-only">上界</span></p>
               <p className="text-xl font-bold font-mono text-destructive">-{analysis.ilAtUpper.toFixed(2)}%</p>
               <p className="text-xs text-muted-foreground mt-1">${priceUpper.toFixed(4)}</p>
             </Card>
@@ -1139,7 +1169,7 @@ function CLMMAnalyzer() {
           <Card className="bg-card/70 border-border shadow-sm">
             <CardHeader className="pb-3 border-b border-border/50">
               <CardTitle className="text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
-                <span>Price + Cumulative Fees <span className="text-xs font-normal text-muted-foreground">价格 & 累计手续费</span></span>
+                <span>Price + Cumulative Fees <span className="text-xs font-normal text-muted-foreground zh-only">价格 & 累计手续费</span></span>
                 <Badge variant="outline" className="text-[10px] border-chart-5/40 text-chart-5">${priceLower.toFixed(3)} – ${priceUpper.toFixed(3)}</Badge>
               </CardTitle>
             </CardHeader>
@@ -1184,10 +1214,10 @@ function TradingProfitCalculator() {
   const daily = useMemo(() => calculateTradingProfitBreakdown(capital, volumePct, profitRate, feeRate, profitShare, lpRatio, buybackRatio, reserveRatio), [capital, volumePct, profitRate, feeRate, profitShare, lpRatio, buybackRatio, reserveRatio]);
 
   const pieData = [
-    { name: `User 用户`, value: daily.userProfit, color: "hsl(var(--chart-2))" },
-    { name: "Platform 平台", value: daily.platformProfit, color: "hsl(var(--primary))" },
-    { name: "Broker 推荐商", value: daily.brokerProfit, color: "hsl(var(--chart-3))" },
-    { name: "Fee 手续费", value: daily.tradingFee, color: "hsl(var(--muted-foreground))" },
+    { name: (showZh ? "User · 用户" : "User"), value: daily.userProfit, color: "hsl(var(--chart-2))" },
+    { name: (showZh ? "Platform · 平台" : "Platform"), value: daily.platformProfit, color: "hsl(var(--primary))" },
+    { name: (showZh ? "Broker · 推荐商" : "Broker"), value: daily.brokerProfit, color: "hsl(var(--chart-3))" },
+    { name: (showZh ? "Fee · 手续费" : "Fee"), value: daily.tradingFee, color: "hsl(var(--muted-foreground))" },
   ].filter(d => d.value > 0);
 
   const flowData = [
@@ -1203,11 +1233,11 @@ function TradingProfitCalculator() {
         <ParamsCard title="Parameters" titleZh="参数设置">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60">代币</span></Label>
+              <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60 zh-only">代币</span></Label>
               <Input value={tokenName} onChange={e => setTokenName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Trading Capital (USDC) <span className="opacity-60">交易资本</span></Label>
+              <Label className="text-xs text-muted-foreground">Trading Capital (USDC) <span className="opacity-60 zh-only">交易资本</span></Label>
               <Input type="number" value={capital} onChange={e => setCapital(Number(e.target.value))} className="bg-background/50 border-border font-mono h-9 text-sm" />
             </div>
           </div>
@@ -1216,7 +1246,7 @@ function TradingProfitCalculator() {
           <SliderRow label="Trading Fee %" labelZh="手续费率%" value={feeRate} set={setFeeRate} min={0} max={50} step={1} display={`${feeRate}%`} />
           <SliderRow label="User Profit Share %" labelZh="用户分润%" value={profitShare} set={setProfitShare} min={50} max={90} step={5} display={`${profitShare}%`} />
           <Separator />
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Fund Flow 资金流向</p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Fund Flow<span className="zh-only ml-1">资金流向</span></p>
           <SliderRow label="LP Pool %" labelZh="注入流动池" value={lpRatio} set={setLpRatio} min={0} max={80} step={5} display={`${lpRatio}%`} />
           <SliderRow label="Buyback %" labelZh="回购比例" value={buybackRatio} set={setBuybackRatio} min={0} max={80} step={5} display={`${buybackRatio}%`} />
           <SliderRow label="Reserve %" labelZh="储备金" value={reserveRatio} set={setReserveRatio} min={0} max={80} step={5} display={`${reserveRatio}%`} />
@@ -1230,7 +1260,7 @@ function TradingProfitCalculator() {
           ]} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <Card className="bg-card/70 border-border shadow-sm">
-              <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Daily Profit Split <span className="text-xs font-normal text-muted-foreground ml-1">每日收益分配</span></CardTitle></CardHeader>
+              <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Daily Profit Split <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">每日收益分配</span></CardTitle></CardHeader>
               <CardContent className="pt-4">
                 <div className="h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1246,7 +1276,7 @@ function TradingProfitCalculator() {
               </CardContent>
             </Card>
             <Card className="bg-card/70 border-border shadow-sm">
-              <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Fund Flow Allocation <span className="text-xs font-normal text-muted-foreground ml-1">资金流向</span></CardTitle></CardHeader>
+              <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Fund Flow Allocation <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">资金流向</span></CardTitle></CardHeader>
               <CardContent className="pt-4">
                 <div className="h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1265,7 +1295,7 @@ function TradingProfitCalculator() {
             </Card>
           </div>
           <Card className="bg-card/70 border-border shadow-sm">
-            <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Monthly Summary <span className="text-xs font-normal text-muted-foreground ml-1">月度汇总</span></CardTitle></CardHeader>
+            <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Monthly Summary <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">月度汇总</span></CardTitle></CardHeader>
             <CardContent className="pt-4">
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {[
@@ -1343,11 +1373,11 @@ function BrokerEarningsCalculator() {
       <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
         <ParamsCard title="Parameters" titleZh="参数设置">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60">代币名称</span></Label>
+            <Label className="text-xs text-muted-foreground">Token Name <span className="opacity-60 zh-only">代币名称</span></Label>
             <Input value={tokenName} onChange={e => setTokenName(e.target.value)} className="bg-background/50 border-border font-mono h-9 text-sm" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Your Broker Level <span className="opacity-60">推荐商等级</span></Label>
+            <Label className="text-xs text-muted-foreground">Your Broker Level <span className="opacity-60 zh-only">推荐商等级</span></Label>
             <Select value={validLevel} onValueChange={v => { setBrokerLevel(v); setSubLevel("none"); }}>
               <SelectTrigger className="bg-background/50 border-border h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -1359,13 +1389,13 @@ function BrokerEarningsCalculator() {
           </div>
           <SliderRow label={`${tokenName}/Layer/Day`} labelZh="每层每日释放量" value={msPerLayer} set={setMsPerLayer} min={10} max={5000} step={50} display={`${fmt(msPerLayer)}`} />
           <Separator />
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Dividend Pool 分红池</p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Dividend Pool<span className="zh-only ml-1">分红池</span></p>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Subordinate Level <span className="opacity-60">下级推荐商</span></Label>
+            <Label className="text-xs text-muted-foreground">Subordinate Level <span className="opacity-60 zh-only">下级推荐商</span></Label>
             <Select value={subLevel} onValueChange={setSubLevel}>
               <SelectTrigger className="bg-background/50 border-border h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None — 直接下线</SelectItem>
+                <SelectItem value="none">None <span className="zh-only">— 直接下线</span></SelectItem>
                 {system.levels.map(lvl => (
                   <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
                 ))}
@@ -1387,7 +1417,7 @@ function BrokerEarningsCalculator() {
 
           {/* Layer rate info */}
           <Card className="bg-card/60 border-border p-4">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">Layer Rate Schedule <span className="opacity-70">层级费率表</span></p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">Layer Rate Schedule <span className="opacity-70 zh-only">层级费率表</span></p>
             <div className="flex flex-wrap gap-2">
               {system.layerRates.filter((r, i) => r > 0 || i < maxLayer).map((rate, i) => (
                 <div key={i} className={`px-2 py-1 rounded text-[10px] font-mono border ${i < maxLayer ? "bg-chart-2/15 border-chart-2/30 text-chart-2" : "bg-muted/20 border-border text-muted-foreground/50"}`}>
@@ -1401,10 +1431,10 @@ function BrokerEarningsCalculator() {
           <Card className="bg-card/70 border-border shadow-sm">
             <CardHeader className="pb-3 border-b border-border/50">
               <CardTitle className="text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
-                <span>20-Layer Breakdown <span className="text-xs font-normal text-muted-foreground ml-1">层级收益明细</span></span>
+                <span>20-Layer Breakdown <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">层级收益明细</span></span>
                 <div className="flex gap-2">
-                  <Badge className="text-[10px] bg-chart-2/20 text-chart-2 border-chart-2/30 border">Accessible 已开放</Badge>
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground/50">Locked 未开放</Badge>
+                  <Badge className="text-[10px] bg-chart-2/20 text-chart-2 border-chart-2/30 border">Accessible<span className="zh-only ml-1">已开放</span></Badge>
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground/50">Locked<span className="zh-only ml-1">未开放</span></Badge>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1427,7 +1457,7 @@ function BrokerEarningsCalculator() {
 
           {/* Dividend details */}
           <Card className="bg-card/70 border-border shadow-sm">
-            <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Dividend System <span className="text-xs font-normal text-muted-foreground ml-1">分红池级差计算</span></CardTitle></CardHeader>
+            <CardHeader className="pb-3 border-b border-border/50"><CardTitle className="text-sm font-semibold">Dividend System <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">分红池级差计算</span></CardTitle></CardHeader>
             <CardContent className="pt-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
@@ -1446,7 +1476,7 @@ function BrokerEarningsCalculator() {
                 {validLevel} has <span className="font-mono text-foreground">{maxLayer}</span> accessible layers.
                 Dividend rate: <span className="font-mono text-primary">{dividend.brokerRate}%</span>
                 {subLevel !== "none" ? ` — Sub ${subLevel}: ${dividend.subRate}%, differential: ${dividend.differentialRate}%` : " (no sub-broker)"}. Daily dividend: <span className="font-mono text-chart-2 font-semibold">{formatCurrency(dividend.earnings)}</span>
-                <span className="block opacity-70 mt-1">{validLevel} 可访问 {maxLayer} 层，分红率 {dividend.brokerRate}%，级差 {dividend.differentialRate}%，每日分红 {formatCurrency(dividend.earnings)}。</span>
+                {showZh && <span className="block opacity-70 mt-1">{validLevel} 可访问 {maxLayer} 层，分红率 {dividend.brokerRate}%，级差 {dividend.differentialRate}%，每日分红 {formatCurrency(dividend.earnings)}。</span>}
               </p>
             </CardContent>
           </Card>
