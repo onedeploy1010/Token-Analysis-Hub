@@ -1,8 +1,8 @@
-# Workspace
+# Crypto Project Analyzer (CryptTerm)
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+A professional DeFi investment analysis platform targeting crypto investors. Features project discovery, economic simulation tools, and dedicated RUNE token analysis. Dark terminal aesthetic with electric cyan accents — Bloomberg meets DeFi.
 
 ## Stack
 
@@ -10,11 +10,34 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **API framework**: Express 5
+- **Frontend**: React + Vite (artifacts/crypto-analyzer), Tailwind CSS, shadcn/ui, Recharts, Framer Motion, Wouter
+- **API framework**: Express 5 (artifacts/api-server)
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+
+## Features
+
+### Pages
+- `/` — Dashboard: Market overview, trending projects, platform stats
+- `/projects` — Project catalog: Filterable grid with risk ratings, APY, TVL
+- `/projects/:id` — Project detail: Full metrics, description, risk analysis
+- `/tools` — Economic Simulators: APY Calculator, Investment Simulator, Impermanent Loss Calculator
+- `/rune` — RUNE Analytics: Token overview + Bond/Pool/LP calculator
+
+### API Routes
+- `GET /api/projects` — List all projects (filter by category, sort)
+- `GET /api/projects/stats/summary` — Market summary stats
+- `GET /api/projects/:id` — Single project details
+- `POST /api/tools/apy-calculator` — APY compounding calculator
+- `POST /api/tools/investment-simulator` — Multi-year investment projection
+- `POST /api/tools/impermanent-loss` — IL calculator for LP positions
+- `GET /api/rune/overview` — RUNE token key metrics
+- `POST /api/rune/calculator` — RUNE yield calculator (Bond/Pool/LP modes)
+
+## Database Tables
+- `projects` — Crypto project catalog with ratings, APY, TVL, risk levels
 
 ## Key Commands
 
@@ -23,5 +46,11 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
+
+## Notes
+
+- RUNE calculator is using mock data — user will provide real tokenomics formulas and data to update
+- All calculator tools (APY, Investment Simulator, IL) are fully functional with real math
+- Project data seeded with 12 real DeFi protocols
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
