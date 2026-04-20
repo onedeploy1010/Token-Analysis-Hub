@@ -4,16 +4,17 @@ import { Activity, Grid, Home, Users, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/contexts/language-context";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", labelZh: "仪表盘", icon: Home },
-  { href: "/projects", label: "Projects", labelZh: "项目库", icon: Grid },
-  { href: "/tools", label: "Simulators", labelZh: "模拟工具", icon: Activity },
-  { href: "/recruit", label: "Recruit", labelZh: "节点招募", icon: Users },
+  { href: "/",        label: "DASHBOARD",  key: "dashboard",  icon: Home },
+  { href: "/projects",label: "PROJECTS",   key: "projects",   icon: Grid },
+  { href: "/tools",   label: "SIMULATORS", key: "simulators", icon: Activity },
+  { href: "/recruit", label: "RECRUIT",    key: "recruit",    icon: Users },
 ];
 
 /* ─── Animated Logo ──────────────────────────────────────────────── */
@@ -74,6 +75,9 @@ function WordmarkRune({ small = false }: { small?: boolean }) {
 function Navbar() {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t, language } = useLanguage();
+
+  const isEn = language === "en";
 
   return (
     <>
@@ -114,14 +118,16 @@ function Navbar() {
                     "text-[13.5px] font-semibold tracking-tight leading-none transition-colors",
                     isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                   )}>
-                    {item.labelZh}
+                    {t(`mr.nav.${item.key}`)}
                   </span>
-                  <span className={cn(
-                    "text-[9.5px] uppercase tracking-[0.12em] mt-[3px] leading-none transition-colors",
-                    isActive ? "text-amber-400/80" : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
-                  )}>
-                    {item.label}
-                  </span>
+                  {!isEn && (
+                    <span className={cn(
+                      "text-[9.5px] uppercase tracking-[0.12em] mt-[3px] leading-none transition-colors",
+                      isActive ? "text-amber-400/80" : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
+                    )}>
+                      {item.label}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -129,7 +135,6 @@ function Navbar() {
 
           {/* Right controls */}
           <div className="flex items-center gap-2">
-            {/* Language toggle — always visible */}
             <LanguageToggle />
 
             {/* Mobile hamburger */}
@@ -211,14 +216,16 @@ function Navbar() {
                             "text-xl font-bold tracking-tight leading-none",
                             isActive ? "text-primary" : "text-foreground/70 group-hover:text-foreground transition-colors"
                           )}>
-                            {item.labelZh}
+                            {t(`mr.nav.${item.key}`)}
                           </p>
-                          <p className={cn(
-                            "text-[11px] mt-1 tracking-widest uppercase",
-                            isActive ? "text-primary/60" : "text-muted-foreground/40"
-                          )}>
-                            {item.label}
-                          </p>
+                          {!isEn && (
+                            <p className={cn(
+                              "text-[11px] mt-1 tracking-widest uppercase",
+                              isActive ? "text-primary/60" : "text-muted-foreground/40"
+                            )}>
+                              {item.label}
+                            </p>
+                          )}
                         </div>
                         <Icon className={cn(
                           "h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5",
@@ -233,7 +240,7 @@ function Navbar() {
               {/* Drawer footer */}
               <div className="px-6 py-5 border-t border-border/20 shrink-0">
                 <p className="text-[10px] text-muted-foreground/30 uppercase tracking-widest">
-                  机构级 DeFi 研究平台
+                  {t("mr.footer.tagline")}
                 </p>
               </div>
             </motion.div>
@@ -245,6 +252,8 @@ function Navbar() {
 }
 
 export function AppLayout({ children }: LayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="relative flex min-h-screen flex-col bg-background selection:bg-primary/30 selection:text-amber-200">
       <Navbar />
@@ -262,7 +271,7 @@ export function AppLayout({ children }: LayoutProps) {
             </span>
           </div>
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            专为机构级投资者打造 · 数据延迟最多15分钟
+            {t("mr.footer.tagline")}
           </p>
         </div>
       </footer>

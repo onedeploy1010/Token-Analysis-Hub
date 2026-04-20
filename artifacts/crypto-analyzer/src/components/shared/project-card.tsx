@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { ArrowUpRight, FlaskConical, ShieldCheck, ShieldAlert, Shield } from "lucide-react";
 import { formatPercent } from "@/lib/format";
 import { Project, ProjectRiskLevel } from "@workspace/api-client-react";
+import { useLanguage } from "@/contexts/language-context";
 
 const DEEP_ANALYSIS_ROUTES: Record<string, string> = {
   RUNE: "/projects/rune",
@@ -31,23 +32,37 @@ function getCategoryMeta(category: string) {
   return CATEGORY_META[category.toLowerCase()] ?? CATEGORY_META.dex;
 }
 
+const RISK_ENGLISH: Record<ProjectRiskLevel, string> = {
+  low: "LOW",
+  medium: "MED",
+  high: "HIGH",
+};
+
 export function RiskBadge({ level }: { level: ProjectRiskLevel }) {
-  const config: Record<ProjectRiskLevel, { label: string; labelZh: string; color: string; icon: typeof ShieldCheck }> = {
-    low:    { label: "Low",    labelZh: "低风险", color: "text-emerald-400", icon: ShieldCheck },
-    medium: { label: "Medium", labelZh: "中风险", color: "text-amber-400",   icon: Shield },
-    high:   { label: "High",   labelZh: "高风险", color: "text-rose-400",    icon: ShieldAlert },
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
+
+  const config: Record<ProjectRiskLevel, { key: string; color: string; icon: typeof ShieldCheck }> = {
+    low:    { key: "mr.risk.low",    color: "text-emerald-400", icon: ShieldCheck },
+    medium: { key: "mr.risk.medium", color: "text-amber-400",   icon: Shield },
+    high:   { key: "mr.risk.high",   color: "text-rose-400",    icon: ShieldAlert },
   };
-  const { label, labelZh, color, icon: Icon } = config[level];
+  const { key, color, icon: Icon } = config[level];
+
   return (
     <div className={`flex items-center gap-1.5 ${color}`}>
       <Icon className="h-3 w-3" />
-      <span className="text-[10px] font-semibold uppercase tracking-widest">{label}</span>
-      <span className="text-[9px] opacity-50">{labelZh}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-widest">{t(key)}</span>
+      {!isEn && (
+        <span className="text-[9px] opacity-50">{RISK_ENGLISH[level]}</span>
+      )}
     </div>
   );
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
   const href = DEEP_ANALYSIS_ROUTES[project.symbol] ?? `/projects/${project.id}`;
   const hasDeepAnalysis = project.symbol in DEEP_ANALYSIS_ROUTES;
   const meta = getCategoryMeta(project.category);
@@ -127,7 +142,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {/* ── APY hero block ── */}
         <div className={`mx-5 rounded-xl px-4 py-5 ${meta.bg} border border-white/[0.05] flex flex-col items-center justify-center text-center`}>
           <p className="text-[9px] uppercase tracking-[0.25em] text-white/35 font-semibold mb-1.5">
-            年化收益率 · APY
+            {t("mr.metric.apy.label")}
           </p>
           <p
             className={`text-[42px] font-bold leading-none tracking-tight ${meta.color}`}
@@ -142,7 +157,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-semibold mb-0.5">
-                锁仓总量 · TVL
+                {t("mr.metric.tvl.label")}
               </p>
               <p className="text-xl font-bold text-white/75 tracking-tight"
                 style={{ fontVariantNumeric: "tabular-nums" }}>
@@ -159,7 +174,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
             <RiskBadge level={project.riskLevel} />
             <span className={`text-[10px] font-semibold tracking-wider ${meta.dimColor}`}>
-              {hasDeepAnalysis ? "深度分析" : "查看分析"}
+              {hasDeepAnalysis ? t("mr.action.deepAnalysis") : t("mr.action.viewAnalysis")}
             </span>
           </div>
         </div>
