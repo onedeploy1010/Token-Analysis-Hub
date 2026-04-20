@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import CountUp from "react-countup";
 import {
   useGetRuneOverview,
   useCalculateRuneReturns,
@@ -190,53 +191,104 @@ export default function Rune() {
           {/* Stat strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-border/30">
             {[
-              { labelEn: "USDT APY",    labelCn: "纯USDT年化",  value: "170.82%", highlight: true },
-              { labelEn: "TVL",         labelCn: "总锁仓量",    value: "$312M",   highlight: false },
-              { labelEn: "Node Tiers",  labelCn: "节点等级数",  value: "4",       highlight: false },
-              { labelEn: "Price Stages",labelCn: "价格阶段",    value: "6",       highlight: false },
-            ].map(({ labelEn, labelCn, value, highlight }) => (
-              <div key={labelEn} className="space-y-1">
+              { labelEn: "USDT APY",    labelCn: "纯USDT年化",  end: 170.82, decimals: 2, prefix: "",  suffix: "%", highlight: true,  shimmer: true  },
+              { labelEn: "TVL",         labelCn: "总锁仓量",    end: 312,    decimals: 0, prefix: "$", suffix: "M", highlight: true,  shimmer: false },
+              { labelEn: "Node Tiers",  labelCn: "节点等级数",  end: 4,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
+              { labelEn: "Price Stages",labelCn: "价格阶段",    end: 6,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
+            ].map(({ labelEn, labelCn, end, decimals, prefix, suffix, highlight, shimmer }, i) => (
+              <motion.div
+                key={labelEn}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.25 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="space-y-1"
+              >
                 <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">{labelEn}</div>
-                <div className={`text-2xl font-bold leading-none ${highlight ? "num-gold" : "num text-foreground"}`}>{value}</div>
+                <div className={`text-2xl leading-none ${shimmer ? "num-shimmer" : highlight ? "num-gold" : "num text-foreground"}`}>
+                  <CountUp end={end} decimals={decimals} duration={1.4} prefix={prefix} suffix={suffix} separator="," preserveValue />
+                </div>
                 <div className="text-[10px] text-muted-foreground/70">{labelCn}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </motion.div>
 
-      {/* ── Token Info ── */}
+      {/* ── Token Info — 3D raised buttons ── */}
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-4"><Skeleton className="h-28 rounded-xl" /><Skeleton className="h-28 rounded-xl" /></div>
+        <div className="grid grid-cols-2 gap-4"><Skeleton className="h-36 rounded-2xl" /><Skeleton className="h-36 rounded-2xl" /></div>
       ) : (overview?.motherToken && overview?.subToken) ? (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_20px_hsl(217,80%,58%,0.08)]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] uppercase tracking-widest text-primary font-semibold">母TOKEN · Mother Token</span>
-              <Flame className="h-4 w-4 text-primary/60" />
-            </div>
-            <p className="text-4xl sm:text-5xl font-bold tracking-tight mb-2">{overview.motherToken.symbol}</p>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
-              <span>开盘价 <span className="font-mono text-foreground font-semibold num">${overview.motherToken.launchPrice}</span></span>
-              <span>发行量 <span className="font-mono text-foreground font-semibold">{((overview.motherToken.totalSupply ?? 0)/1e8).toFixed(1)}亿枚</span></span>
-              <span>日燃烧 <span className="font-mono text-foreground font-semibold">{((overview.motherToken.dailyBurnRate ?? 0)*100).toFixed(1)}%</span></span>
-              <span>24M目标 <span className="font-mono font-bold num-gold">${overview.motherToken.targetPriceLow}~${overview.motherToken.targetPriceHigh}</span></span>
-            </div>
-          </div>
-          <div className="p-5 rounded-xl border border-orange-800/30 bg-gradient-to-br from-orange-950/40 to-transparent">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] uppercase tracking-widest text-orange-400 font-semibold">子TOKEN · Sub Token</span>
-              <TrendingUp className="h-4 w-4 text-orange-400/60" />
-            </div>
-            <p className="text-4xl sm:text-5xl font-bold tracking-tight text-orange-300 mb-2">{overview.subToken.symbol}</p>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
-              <span>初始价 <span className="font-mono text-foreground font-semibold num">${overview.subToken.launchPrice}</span></span>
-              <span>发行量 <span className="font-mono text-foreground font-semibold">{((overview.subToken.totalSupply ?? 0)/1e6).toFixed(1)}百万枚</span></span>
-              <span>日燃烧 <span className="font-mono text-foreground font-semibold">{((overview.subToken.dailyBurnRate ?? 0)*100).toFixed(1)}%</span></span>
-              <span>24M目标 <span className="font-mono font-bold num-gold">${overview.subToken.targetPriceLow}~${overview.subToken.targetPriceHigh}</span></span>
-            </div>
-          </div>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {([
+            {
+              kind: "mother" as const,
+              labelCn: "母TOKEN",
+              labelEn: "Mother Token",
+              symbol: overview.motherToken.symbol,
+              tintVars: "[--token-tint:217_80%_58%] [--token-border:217_80%_48%]",
+              labelColor: "text-sky-300",
+              symbolColor: "text-sky-200",
+              Icon: Flame,
+              rows: [
+                { k: "开盘价",  v: `$${overview.motherToken.launchPrice}`, accent: false },
+                { k: "发行量",  v: `${((overview.motherToken.totalSupply ?? 0)/1e8).toFixed(1)}亿`, accent: false },
+                { k: "日燃烧",  v: `${((overview.motherToken.dailyBurnRate ?? 0)*100).toFixed(1)}%`, accent: false },
+                { k: "24M目标", v: `$${overview.motherToken.targetPriceLow}~${overview.motherToken.targetPriceHigh}`, accent: true },
+              ],
+            },
+            {
+              kind: "sub" as const,
+              labelCn: "子TOKEN",
+              labelEn: "Sub Token",
+              symbol: overview.subToken.symbol,
+              tintVars: "[--token-tint:30_92%_58%] [--token-border:30_92%_48%]",
+              labelColor: "text-orange-300",
+              symbolColor: "text-orange-200",
+              Icon: TrendingUp,
+              rows: [
+                { k: "初始价",  v: `$${overview.subToken.launchPrice}`, accent: false },
+                { k: "发行量",  v: `${((overview.subToken.totalSupply ?? 0)/1e6).toFixed(1)}百万`, accent: false },
+                { k: "日燃烧",  v: `${((overview.subToken.dailyBurnRate ?? 0)*100).toFixed(1)}%`, accent: false },
+                { k: "24M目标", v: `$${overview.subToken.targetPriceLow}~${overview.subToken.targetPriceHigh}`, accent: true },
+              ],
+            },
+          ]).map(({ kind, labelCn, labelEn, symbol, tintVars, labelColor, symbolColor, Icon, rows }, i) => (
+            <motion.button
+              key={kind}
+              type="button"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.15 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              whileTap={{ scale: 0.985 }}
+              onClick={(e) => {
+                const el = e.currentTarget;
+                el.classList.remove("haptic-pulse");
+                // force reflow so animation can replay
+                void el.offsetWidth;
+                el.classList.add("haptic-pulse");
+              }}
+              className={`token-card-3d ${tintVars} text-left p-5 w-full`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className={`text-[11px] uppercase tracking-[0.22em] font-semibold ${labelColor}`}>
+                  {labelCn} · <span className="opacity-70">{labelEn}</span>
+                </span>
+                <Icon className={`h-4 w-4 ${labelColor} opacity-70`} />
+              </div>
+              <p className={`num text-5xl sm:text-6xl leading-none mb-4 ${symbolColor}`}>
+                {symbol}
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                {rows.map((r) => (
+                  <div key={r.k} className="flex items-baseline justify-between gap-2 text-sm">
+                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70">{r.k}</span>
+                    <span className={r.accent ? "num num-gold text-base" : "num text-foreground text-base"}>{r.v}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.button>
+          ))}
         </motion.div>
       ) : null}
 
@@ -459,17 +511,17 @@ export default function Rune() {
                           <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color }}>{node.nameCn}</span>
                           {isOn ? <BadgeCheck className="h-3.5 w-3.5" style={{ color }} /> : <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-medium">{node.nameEn}</span>}
                         </div>
-                        <p className="font-mono text-xl font-bold mt-0.5">${node.investment.toLocaleString()}</p>
+                        <p className="num text-xl mt-0.5">${node.investment.toLocaleString()}</p>
 
                         {/* APY badge */}
-                        <div className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold font-mono border" style={{ color, borderColor: `${color}40`, background: `${color}12` }}>
+                        <div className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 num-sm border" style={{ color, borderColor: `${color}40`, background: `${color}12` }}>
                           APY {apy}%
                         </div>
 
                         <div className="mt-2 pt-2 border-t border-white/10 grid grid-cols-2 gap-x-2 gap-y-0.5">
-                          <p className="text-[10px] text-muted-foreground">日USDT <span className="font-mono font-semibold" style={{ color }}>${node.dailyUsdt}</span></p>
-                          <p className="text-[10px] text-muted-foreground">席位 <span className="font-mono text-foreground">{node.seats}</span></p>
-                          <p className="text-[10px] text-muted-foreground col-span-2">私募价 <span className="font-mono text-foreground">${node.privatePrice}</span></p>
+                          <p className="text-[10px] text-muted-foreground">日USDT <span className="num num-sm" style={{ color }}>${node.dailyUsdt}</span></p>
+                          <p className="text-[10px] text-muted-foreground">席位 <span className="num num-sm text-foreground">{node.seats}</span></p>
+                          <p className="text-[10px] text-muted-foreground col-span-2">私募价 <span className="num num-sm text-foreground">${node.privatePrice}</span></p>
                         </div>
                       </button>
                     );
@@ -491,12 +543,12 @@ export default function Rune() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label className="text-base font-medium text-foreground">席位数量 <span className="text-xs text-muted-foreground font-normal ml-1">Seats</span></Label>
-                    <span className="font-mono text-lg font-bold text-primary">{seats} 席</span>
+                    <span className="num text-lg text-primary">{seats} 席</span>
                   </div>
                   <Slider value={[seats]} min={1} max={Math.min(selectedNode?.seats ?? 10, 20)} step={1}
                     onValueChange={v => { setSeats(v[0]); calcMutation.reset(); }} className="py-2" />
                   <p className="text-xs text-muted-foreground text-right">
-                    总投入 <span className="font-mono text-foreground font-semibold">
+                    总投入 <span className="num text-foreground">
                       ${selectedNode ? (selectedNode.investment * seats).toLocaleString() : "—"} USDT
                     </span>
                   </p>
@@ -506,7 +558,7 @@ export default function Rune() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label className="text-base font-medium text-foreground">持仓周期 <span className="text-xs text-muted-foreground font-normal ml-1">Duration</span></Label>
-                    <span className="font-mono text-lg font-bold">{durationDays}天 / ≈{Math.round(durationDays/30)}月</span>
+                    <span className="num text-lg">{durationDays}天 / ≈{Math.round(durationDays/30)}月</span>
                   </div>
                   <Slider value={[durationDays]} min={30} max={720} step={30}
                     onValueChange={v => { setDurationDays(v[0]); calcMutation.reset(); }} className="py-2" />
@@ -519,10 +571,10 @@ export default function Rune() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                       {(overview.priceStages ?? []).map((s, i) => (
                         <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
-                          className={`text-left p-2.5 rounded-lg border transition-all ${priceStageIndex === i ? "border-primary bg-primary/10" : "border-border/50 hover:border-border"}`}>
+                          className={`text-left p-2.5 rounded-lg border transition-all active:scale-[0.98] ${priceStageIndex === i ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_4px_14px_-4px_hsl(var(--primary)/0.45)]" : "border-border/50 hover:border-border hover:-translate-y-[1px]"}`}>
                           <p className="text-xs text-muted-foreground leading-tight mb-0.5">{s.labelCn}</p>
-                          <p className="font-mono font-bold text-sm text-foreground">${s.motherPrice}</p>
-                          {s.multiplier > 1 && <p className="text-green-400 font-mono text-xs">{s.multiplier}×</p>}
+                          <p className="num text-sm text-foreground">${s.motherPrice}</p>
+                          {s.multiplier > 1 && <p className="text-green-400 num text-xs">{s.multiplier}×</p>}
                         </button>
                       ))}
                     </div>
@@ -554,30 +606,30 @@ export default function Rune() {
                     <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-green-700/40 bg-gradient-to-br from-green-950/50 to-transparent shadow-[0_0_24px_hsl(142,70%,45%,0.1)]">
                       <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold mb-1">总资产 Total Assets</p>
                       <div className="flex items-end gap-4 flex-wrap">
-                        <p className="text-4xl font-bold font-mono num-gold">${fmt(calcMutation.data.totalAssets)}</p>
+                        <p className="num-shimmer text-4xl">${fmt(calcMutation.data.totalAssets)}</p>
                         <div className="mb-1 flex gap-3 flex-wrap">
-                          <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full font-mono font-semibold">ROI {fmt(calcMutation.data.roi)}%</span>
-                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full font-mono font-semibold">{fmt(calcMutation.data.roiMultiplier)}× 本金</span>
+                          <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(calcMutation.data.roi)}%</span>
+                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(calcMutation.data.roiMultiplier)}× 本金</span>
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {overview?.priceStages?.[priceStageIndex]?.labelCn} 阶段 · 投入 ${fmt(calcMutation.data.investment)}
+                        {overview?.priceStages?.[priceStageIndex]?.labelCn} 阶段 · 投入 <span className="num">${fmt(calcMutation.data.investment)}</span>
                       </p>
                     </div>
                     <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
                       <p className="text-[10px] text-primary uppercase tracking-wider mb-1">母TOKEN市值</p>
-                      <p className="font-mono text-lg font-bold">${fmt(calcMutation.data.motherTokenValue)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{calcMutation.data.motherTokens.toLocaleString()} 枚</p>
+                      <p className="num text-lg">${fmt(calcMutation.data.motherTokenValue)}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> 枚</p>
                     </div>
                     <div className="p-4 rounded-xl border border-orange-800/30 bg-orange-950/20">
                       <p className="text-[10px] text-orange-400 uppercase tracking-wider mb-1">子TOKEN空投</p>
-                      <p className="font-mono text-lg font-bold text-orange-300">${fmt(calcMutation.data.airdropTokenValue)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{calcMutation.data.airdropTokens.toLocaleString()} 枚</p>
+                      <p className="num text-lg text-orange-300">${fmt(calcMutation.data.airdropTokenValue)}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> 枚</p>
                     </div>
                     <div className="p-4 rounded-xl border border-green-800/30 bg-green-950/20">
                       <p className="text-[10px] text-green-400 uppercase tracking-wider mb-1">USDT收益</p>
-                      <p className="font-mono text-lg font-bold text-green-300">${fmt(calcMutation.data.totalUsdtIncome)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">${fmt(calcMutation.data.dailyUsdt)}/天 × {calcMutation.data.durationDays}天</p>
+                      <p className="num text-lg text-green-300">${fmt(calcMutation.data.totalUsdtIncome)}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">${fmt(calcMutation.data.dailyUsdt)}</span>/天 × <span className="num">{calcMutation.data.durationDays}</span>天</p>
                     </div>
                   </div>
 
