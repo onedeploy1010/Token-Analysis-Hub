@@ -150,23 +150,57 @@ export default function Rune() {
         <ArrowLeft className="h-4 w-4" />返回项目库 Back to Projects
       </Link>
 
-      {/* ── Header ── */}
-      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
-        className="border-b border-border/50 pb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-14 h-14 rounded-xl overflow-hidden border border-primary/20 shadow-[0_0_18px_rgba(251,191,36,0.2)] shrink-0 bg-black">
-            <img src="/rune-logo.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">节点收益深度分析</span>
+      {/* ── Header Banner ── */}
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+        className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md px-6 py-8 md:px-10 shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
+
+        {/* Backgrounds */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute -top-28 -right-28 w-72 h-72 bg-primary/14 rounded-full blur-[90px] pointer-events-none animate-orb-drift" />
+        <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-chart-2/8 rounded-full blur-[60px] pointer-events-none animate-float-y" />
+
+        {/* Scan line */}
+        <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-scan-line pointer-events-none" style={{ top: 0 }} />
+
+        {/* Corner accents */}
+        <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-primary/45 rounded-tl pointer-events-none" />
+        <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-primary/45 rounded-tr pointer-events-none" />
+        <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-primary/45 rounded-bl pointer-events-none" />
+        <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-primary/45 rounded-br pointer-events-none" />
+
+        <div className="relative z-10">
+          {/* Logo + title */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/25 shadow-[0_0_24px_rgba(251,191,36,0.25)] shrink-0 bg-black">
+              <img src="/rune-logo.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
-              RUNE Protocol
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              双TOKEN通缩经济模型 · 四级节点产品 · 六阶价格路线图
-            </p>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60 block mb-1">
+                节点收益深度分析 · Deep Node Analysis
+              </span>
+              <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
+                RUNE Protocol
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1 tracking-wide">
+                双TOKEN通缩经济模型 · 四级节点产品 · 六阶价格路线图
+              </p>
+            </div>
+          </div>
+
+          {/* Stat strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-border/30">
+            {[
+              { labelEn: "USDT APY",    labelCn: "纯USDT年化",  value: "170.82%", highlight: true },
+              { labelEn: "TVL",         labelCn: "总锁仓量",    value: "$312M",   highlight: false },
+              { labelEn: "Node Tiers",  labelCn: "节点等级数",  value: "4",       highlight: false },
+              { labelEn: "Price Stages",labelCn: "价格阶段",    value: "6",       highlight: false },
+            ].map(({ labelEn, labelCn, value, highlight }) => (
+              <div key={labelEn} className="space-y-1">
+                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">{labelEn}</div>
+                <div className={`text-2xl font-bold leading-none ${highlight ? "num-gold" : "num text-foreground"}`}>{value}</div>
+                <div className="text-[10px] text-muted-foreground/70">{labelCn}</div>
+              </div>
+            ))}
           </div>
         </div>
       </motion.div>
@@ -212,9 +246,12 @@ export default function Rune() {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.15 }}
         className="space-y-8">
 
-        <div className="flex items-center gap-3 pb-2 border-b border-border/40">
-          <Activity className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold">深度分析 · Market Analysis</h2>
+        <div className="border-b border-border/40 pb-4">
+          <div className="border-l-[3px] border-primary pl-4">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">深度分析</span>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Market Analysis</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">价格走势 · 资金分配 · 节点收益对比 · 通缩曲线</p>
+          </div>
         </div>
 
         {/* Row 1: Price Stages + Fund Allocation */}
@@ -388,9 +425,12 @@ export default function Rune() {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.25 }}
         className="space-y-6">
 
-        <div className="flex items-center gap-3 pb-2 border-b border-border/40">
-          <BarChart2 className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold">节点收益模拟器 · Node Yield Simulator</h2>
+        <div className="border-b border-border/40 pb-4">
+          <div className="border-l-[3px] border-primary pl-4">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">收益模拟器</span>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Node Yield Simulator</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">选择节点等级 · 配置参数 · 查看预期回报</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
