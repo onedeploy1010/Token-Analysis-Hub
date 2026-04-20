@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Activity, Grid, Home, Users, X, Menu } from "lucide-react";
+import { Activity, Grid, Users, X, Menu, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -11,10 +11,10 @@ interface LayoutProps {
 }
 
 const NAV_ITEMS = [
-  { href: "/",        label: "DASHBOARD",  key: "dashboard",  icon: Home },
-  { href: "/projects",label: "PROJECTS",   key: "projects",   icon: Grid },
-  { href: "/tools",   label: "SIMULATORS", key: "simulators", icon: Activity },
-  { href: "/recruit", label: "RECRUIT",    key: "recruit",    icon: Users },
+  { href: "/projects",  label: "PROJECTS",   key: "projects",   icon: Grid },
+  { href: "/tools",     label: "SIMULATORS", key: "simulators", icon: Activity },
+  { href: "/resources", label: "LIBRARY",    key: "library",    icon: BookOpen },
+  { href: "/recruit",   label: "RECRUIT",    key: "recruit",    icon: Users },
 ];
 
 /* ─── Animated Logo ──────────────────────────────────────────────── */
@@ -118,12 +118,14 @@ function Navbar() {
                 </Link>
               );
             })}
+            {/* Language toggle — desktop only, inline with nav */}
+            <div className="hidden md:flex items-center h-[72px] pl-3 ml-2 border-l border-border/30">
+              <LanguageToggle />
+            </div>
           </nav>
 
-          {/* Right controls */}
+          {/* Right controls — mobile only */}
           <div className="flex items-center gap-2">
-            <LanguageToggle />
-
             {/* Mobile hamburger */}
             <button
               className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
