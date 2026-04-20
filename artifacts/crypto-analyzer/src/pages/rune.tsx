@@ -22,6 +22,29 @@ import {
   Activity,
 } from "lucide-react";
 import { Link } from "wouter";
+import { useLanguage } from "@/contexts/language-context";
+
+/**
+ * Bilingual render helper — zh/zh-TW render "LOCAL · ENG" together,
+ * en renders English only, ko/ja/th/vi render only their native label.
+ */
+function useBi() {
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
+  const isZh = language === "zh" || language === "zh-TW";
+  return {
+    t,
+    language,
+    isEn,
+    isZh,
+    /** localized label, optionally suffixed with " · <ENG>" for zh/zh-TW */
+    bi: (key: string, en: string) => {
+      if (isEn) return en;
+      if (isZh) return `${t(key)} · ${en}`;
+      return t(key);
+    },
+  };
+}
 
 // ─── Color palette ────────────────────────────────────────────────────────────
 const C = {
@@ -65,17 +88,20 @@ function fmt(n: number, d = 2) {
 }
 
 // ─── Sub-component: Section Header ───────────────────────────────────────────
-function SectionTitle({ icon: Icon, en, cn }: { icon: React.ElementType; en: string; cn: string }) {
+function SectionTitle({ icon: Icon, i18nKey, en }: { icon: React.ElementType; i18nKey: string; en: string }) {
+  const { t, isEn, isZh } = useBi();
   return (
     <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
       <Icon className="h-4 w-4 text-primary" />
-      {cn} · <span className="text-muted-foreground/60">{en}</span>
+      {isEn ? en : t(i18nKey)}
+      {isZh && <> · <span className="text-muted-foreground/60">{en}</span></>}
     </h2>
   );
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Rune() {
+  const { t, bi, isEn, isZh } = useBi();
   const { data: overview, isLoading } = useGetRuneOverview();
 
   const [nodeLevel, setNodeLevel]   = useState<RuneCalculatorInputNodeLevel>(RuneCalculatorInputNodeLevel.pioneer);
@@ -91,9 +117,9 @@ export default function Rune() {
   const priceStageChartData = useMemo(() =>
     (overview?.priceStages ?? []).map(s => ({
       label: s.labelCn,
-      母TOKEN: s.motherPrice,
-      子TOKEN: s.subPrice,
-      倍数: s.multiplier,
+      mother: s.motherPrice,
+      sub:    s.subPrice,
+      mult:   s.multiplier,
     })), [overview]);
 
   const nodeCompareData = useMemo(() => {
@@ -112,32 +138,33 @@ export default function Rune() {
     });
   }, [overview]);
 
+  const monthSuffix = isEn ? "mo" : t("mr.rune.input.months");
   const deflationData = useMemo(() => {
     const total      = overview?.subToken?.totalSupply ?? 13_100_000;
     const burnRate   = overview?.subToken?.dailyBurnRate ?? 0.002;
     const months     = [0,1,2,3,4,5,6,9,12,15,18,21,24];
     return months.map(m => ({
-      month: `${m}月`,
-      流通量: Math.round(total * Math.pow(1 - burnRate, m * 30)),
-      燃烧量: Math.round(total - total * Math.pow(1 - burnRate, m * 30)),
+      month: `${m}${monthSuffix}`,
+      circulating: Math.round(total * Math.pow(1 - burnRate, m * 30)),
+      burned:      Math.round(total - total * Math.pow(1 - burnRate, m * 30)),
     }));
-  }, [overview]);
+  }, [overview, monthSuffix]);
 
   const fundAllocData = useMemo(() => {
     const f = overview?.fundraising;
     if (!f) return [];
     return [
-      { name: "TLP流动池",  value: f.tlpPool,    label: "TLP 母TOKEN底池" },
-      { name: "运营资金",    value: f.operations, label: "日常运营" },
-      { name: "国库资金",    value: f.treasury,   label: "战略储备" },
-      { name: "子TOKEN LP", value: f.subTokenLP,  label: "子币流动性" },
+      { name: isEn ? "TLP Pool"       : "TLP流动池",  value: f.tlpPool    },
+      { name: isEn ? "Operations"     : "运营资金",    value: f.operations },
+      { name: isEn ? "Treasury"       : "国库资金",    value: f.treasury   },
+      { name: isEn ? "Sub-Token LP"   : "子TOKEN LP", value: f.subTokenLP },
     ];
-  }, [overview]);
+  }, [overview, isEn]);
 
   const resultPieData = calcMutation.data ? [
-    { name: "母TOKEN市值",  value: calcMutation.data.motherTokenValue  },
-    { name: "子TOKEN空投",  value: calcMutation.data.airdropTokenValue },
-    { name: "USDT收益",     value: calcMutation.data.totalUsdtIncome   },
+    { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: calcMutation.data.motherTokenValue  },
+    { name: isEn ? "Sub Token Airdrop"  : t("mr.rune.kpi.airdropValue"), value: calcMutation.data.airdropTokenValue },
+    { name: isEn ? "USDT Income"        : t("mr.rune.kpi.usdtIncome"),   value: calcMutation.data.totalUsdtIncome   },
   ] : [];
 
   const RESULT_COLORS = [C.mother, C.sub, C.usdt];
@@ -148,7 +175,7 @@ export default function Rune() {
 
       {/* Back link */}
       <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="h-4 w-4" />返回项目库 Back to Projects
+        <ArrowLeft className="h-4 w-4" />{bi("mr.detail.back", "Back to Projects")}
       </Link>
 
       {/* ── Header Banner ── */}
@@ -177,13 +204,13 @@ export default function Rune() {
             </div>
             <div>
               <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60 block mb-1">
-                节点收益深度分析 · Deep Node Analysis
+                {bi("mr.rune.deepAnalysis", "Deep Node Analysis")}
               </span>
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
                 RUNE Protocol
               </h1>
               <p className="text-sm text-muted-foreground mt-1 tracking-wide">
-                双TOKEN通缩经济模型 · 四级节点产品 · 六阶价格路线图
+                {t("mr.rune.heroTagline")}
               </p>
             </div>
           </div>
@@ -191,11 +218,11 @@ export default function Rune() {
           {/* Stat strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-border/30">
             {[
-              { labelEn: "USDT APY",    labelCn: "纯USDT年化",  end: 170.82, decimals: 2, prefix: "",  suffix: "%", highlight: true,  shimmer: true  },
-              { labelEn: "TVL",         labelCn: "总锁仓量",    end: 312,    decimals: 0, prefix: "$", suffix: "M", highlight: true,  shimmer: false },
-              { labelEn: "Node Tiers",  labelCn: "节点等级数",  end: 4,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
-              { labelEn: "Price Stages",labelCn: "价格阶段",    end: 6,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
-            ].map(({ labelEn, labelCn, end, decimals, prefix, suffix, highlight, shimmer }, i) => (
+              { labelEn: "USDT APY",    i18nKey: "mr.rune.stat.apy",         end: 170.82, decimals: 2, prefix: "",  suffix: "%", highlight: true,  shimmer: true  },
+              { labelEn: "TVL",         i18nKey: "mr.rune.stat.tvl",         end: 312,    decimals: 0, prefix: "$", suffix: "M", highlight: true,  shimmer: false },
+              { labelEn: "Node Tiers",  i18nKey: "mr.rune.stat.nodeTiers",   end: 4,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
+              { labelEn: "Price Stages",i18nKey: "mr.rune.stat.priceStages", end: 6,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
+            ].map(({ labelEn, i18nKey, end, decimals, prefix, suffix, highlight, shimmer }, i) => (
               <motion.div
                 key={labelEn}
                 initial={{ opacity: 0, y: 10 }}
@@ -207,7 +234,7 @@ export default function Rune() {
                 <div className={`text-2xl leading-none ${shimmer ? "num-shimmer" : highlight ? "num-gold" : "num text-foreground"}`}>
                   <CountUp end={end} decimals={decimals} duration={1.4} prefix={prefix} suffix={suffix} separator="," preserveValue />
                 </div>
-                <div className="text-[10px] text-muted-foreground/70">{labelCn}</div>
+                {!isEn && <div className="text-[10px] text-muted-foreground/70">{t(i18nKey)}</div>}
               </motion.div>
             ))}
           </div>
@@ -223,7 +250,7 @@ export default function Rune() {
           {([
             {
               kind: "mother" as const,
-              labelCn: "母TOKEN",
+              labelKey: "mr.rune.token.mother",
               labelEn: "Mother Token",
               symbol: overview.motherToken.symbol,
               tintVars: "[--token-tint:217_80%_58%] [--token-border:217_80%_48%]",
@@ -231,15 +258,15 @@ export default function Rune() {
               symbolColor: "text-sky-200",
               Icon: Flame,
               rows: [
-                { k: "开盘价",  v: `$${overview.motherToken.launchPrice}`, accent: false },
-                { k: "发行量",  v: `${((overview.motherToken.totalSupply ?? 0)/1e8).toFixed(1)}亿`, accent: false },
-                { k: "日燃烧",  v: `${((overview.motherToken.dailyBurnRate ?? 0)*100).toFixed(1)}%`, accent: false },
-                { k: "24M目标", v: `$${overview.motherToken.targetPriceLow}~${overview.motherToken.targetPriceHigh}`, accent: true },
+                { kKey: "mr.rune.token.open",      kEn: "Open",        v: `$${overview.motherToken.launchPrice}`, accent: false },
+                { kKey: "mr.rune.token.supply",    kEn: "Supply",      v: `${((overview.motherToken.totalSupply ?? 0)/1e8).toFixed(1)}${isEn ? "B" : t("mr.rune.kpi.tokensUnit")}`, accent: false },
+                { kKey: "mr.rune.token.dailyBurn", kEn: "Daily Burn",  v: `${((overview.motherToken.dailyBurnRate ?? 0)*100).toFixed(1)}%`, accent: false },
+                { kKey: "mr.rune.token.target24M", kEn: "24M Target",  v: `$${overview.motherToken.targetPriceLow}~${overview.motherToken.targetPriceHigh}`, accent: true },
               ],
             },
             {
               kind: "sub" as const,
-              labelCn: "子TOKEN",
+              labelKey: "mr.rune.token.sub",
               labelEn: "Sub Token",
               symbol: overview.subToken.symbol,
               tintVars: "[--token-tint:30_92%_58%] [--token-border:30_92%_48%]",
@@ -247,13 +274,13 @@ export default function Rune() {
               symbolColor: "text-orange-200",
               Icon: TrendingUp,
               rows: [
-                { k: "初始价",  v: `$${overview.subToken.launchPrice}`, accent: false },
-                { k: "发行量",  v: `${((overview.subToken.totalSupply ?? 0)/1e6).toFixed(1)}百万`, accent: false },
-                { k: "日燃烧",  v: `${((overview.subToken.dailyBurnRate ?? 0)*100).toFixed(1)}%`, accent: false },
-                { k: "24M目标", v: `$${overview.subToken.targetPriceLow}~${overview.subToken.targetPriceHigh}`, accent: true },
+                { kKey: "mr.rune.token.initial",   kEn: "Initial",     v: `$${overview.subToken.launchPrice}`, accent: false },
+                { kKey: "mr.rune.token.supply",    kEn: "Supply",      v: `${((overview.subToken.totalSupply ?? 0)/1e6).toFixed(1)}M`, accent: false },
+                { kKey: "mr.rune.token.dailyBurn", kEn: "Daily Burn",  v: `${((overview.subToken.dailyBurnRate ?? 0)*100).toFixed(1)}%`, accent: false },
+                { kKey: "mr.rune.token.target24M", kEn: "24M Target",  v: `$${overview.subToken.targetPriceLow}~${overview.subToken.targetPriceHigh}`, accent: true },
               ],
             },
-          ]).map(({ kind, labelCn, labelEn, symbol, tintVars, labelColor, symbolColor, Icon, rows }, i) => (
+          ]).map(({ kind, labelKey, labelEn, symbol, tintVars, labelColor, symbolColor, Icon, rows }, i) => (
             <motion.button
               key={kind}
               type="button"
@@ -272,7 +299,8 @@ export default function Rune() {
             >
               <div className="flex items-center justify-between mb-3">
                 <span className={`text-[11px] uppercase tracking-[0.22em] font-semibold ${labelColor}`}>
-                  {labelCn} · <span className="opacity-70">{labelEn}</span>
+                  {isEn ? labelEn : t(labelKey)}
+                  {isZh && <> · <span className="opacity-70">{labelEn}</span></>}
                 </span>
                 <Icon className={`h-4 w-4 ${labelColor} opacity-70`} />
               </div>
@@ -281,8 +309,8 @@ export default function Rune() {
               </p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 {rows.map((r) => (
-                  <div key={r.k} className="flex items-baseline justify-between gap-2 text-sm">
-                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70">{r.k}</span>
+                  <div key={r.kKey} className="flex items-baseline justify-between gap-2 text-sm">
+                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70">{isEn ? r.kEn : t(r.kKey)}</span>
                     <span className={r.accent ? "num num-gold text-base" : "num text-foreground text-base"}>{r.v}</span>
                   </div>
                 ))}
@@ -300,9 +328,11 @@ export default function Rune() {
 
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-primary pl-4">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">深度分析</span>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">Market Analysis</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">价格走势 · 资金分配 · 节点收益对比 · 通缩曲线</p>
+            {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.analysis.eyebrow")}</span>}
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              {isEn ? "Market Analysis" : isZh ? `${t("mr.rune.section.analysis.title")} · Market Analysis` : t("mr.rune.section.analysis.title")}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("mr.rune.section.analysis.desc")}</p>
           </div>
         </div>
 
@@ -314,8 +344,8 @@ export default function Rune() {
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <BarChart2 className="h-4 w-4 text-primary" />
-                价格阶段走势图
-                <span className="text-xs text-muted-foreground font-normal ml-1">Price Stage Progression</span>
+                {isEn ? "Price Stage Progression" : t("mr.rune.chart.priceStages")}
+                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Price Stage Progression</span>}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 pb-2">
@@ -328,8 +358,8 @@ export default function Rune() {
                       tickFormatter={v => v >= 1 ? `$${v}` : `$${v}`} />
                     <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 4 : 2)}`, name]} />
                     <Legend wrapperStyle={{ fontSize: 11, color: C.muted }} />
-                    <Bar dataKey="母TOKEN" fill={C.mother} radius={[4,4,0,0]} maxBarSize={40} />
-                    <Bar dataKey="子TOKEN" fill={C.sub}    radius={[4,4,0,0]} maxBarSize={40} />
+                    <Bar dataKey="mother" name={isEn ? "Mother Token" : t("mr.rune.token.mother")} fill={C.mother} radius={[4,4,0,0]} maxBarSize={40} />
+                    <Bar dataKey="sub"    name={isEn ? "Sub Token"    : t("mr.rune.token.sub")}    fill={C.sub}    radius={[4,4,0,0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -345,8 +375,8 @@ export default function Rune() {
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <PieIcon className="h-4 w-4 text-primary" />
-                资金分配结构
-                <span className="text-xs text-muted-foreground font-normal ml-1">Fund Allocation</span>
+                {isEn ? "Fund Allocation" : t("mr.rune.chart.fundAlloc")}
+                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Fund Allocation</span>}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 pb-2">
@@ -393,10 +423,10 @@ export default function Rune() {
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                各节点阶段总资产对比
-                <span className="text-xs text-muted-foreground font-normal ml-1">Node Returns / Stage</span>
+                {isEn ? "Node Returns / Stage" : t("mr.rune.chart.nodeCompare")}
+                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Node Returns / Stage</span>}
               </CardTitle>
-              <p className="text-[10px] text-muted-foreground">基于1席 · 180天USDT收益</p>
+              <p className="text-[10px] text-muted-foreground">{t("mr.rune.chart.nodeCompare.sub")}</p>
             </CardHeader>
             <CardContent className="pt-4 pb-2">
               {nodeCompareData.length > 0 ? (
@@ -434,10 +464,10 @@ export default function Rune() {
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-400" />
-                子TOKEN通缩曲线
-                <span className="text-xs text-muted-foreground font-normal ml-1">Deflation Curve</span>
+                {isEn ? "Deflation Curve" : t("mr.rune.chart.deflation")}
+                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Deflation Curve</span>}
               </CardTitle>
-              <p className="text-[10px] text-muted-foreground">日燃烧率 0.2% · 24个月通缩进程</p>
+              <p className="text-[10px] text-muted-foreground">{t("mr.rune.chart.deflation.sub")}</p>
             </CardHeader>
             <CardContent className="pt-4 pb-2">
               {deflationData.length > 0 ? (
@@ -457,10 +487,10 @@ export default function Rune() {
                     <XAxis dataKey="month" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
                       tickFormatter={v => `${(v/1e6).toFixed(1)}M`} />
-                    <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`${(v/1e6).toFixed(3)}M 枚`, name]} />
+                    <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`${(v/1e6).toFixed(3)}M ${isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}`, name]} />
                     <Legend wrapperStyle={{ fontSize: 11, color: C.muted }} />
-                    <Area type="monotone" dataKey="流通量" stroke={C.sub} strokeWidth={2} fill="url(#gradCirc)" dot={false} />
-                    <Area type="monotone" dataKey="燃烧量" stroke="hsl(0,80%,55%)" strokeWidth={1.5} fill="url(#gradBurn)" dot={false} strokeDasharray="4 2" />
+                    <Area type="monotone" dataKey="circulating" name={isEn ? "Circulating" : (t("metrics.circulation") || "Circulating")} stroke={C.sub} strokeWidth={2} fill="url(#gradCirc)" dot={false} />
+                    <Area type="monotone" dataKey="burned"      name={isEn ? "Burned"      : (t("metrics.burned")      || "Burned")}      stroke="hsl(0,80%,55%)" strokeWidth={1.5} fill="url(#gradBurn)" dot={false} strokeDasharray="4 2" />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
@@ -479,9 +509,11 @@ export default function Rune() {
 
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-primary pl-4">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">收益模拟器</span>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">Node Yield Simulator</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">选择节点等级 · 配置参数 · 查看预期回报</p>
+            {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.simulator.eyebrow")}</span>}
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              {isEn ? "Node Yield Simulator" : isZh ? `${t("mr.rune.section.simulator.title")} · Node Yield Simulator` : t("mr.rune.section.simulator.title")}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("mr.rune.section.simulator.desc")}</p>
           </div>
         </div>
 
@@ -493,7 +525,7 @@ export default function Rune() {
             {/* Node tier selection */}
             {(overview?.nodes?.length) ? (
               <div>
-                <SectionTitle icon={Coins} en="Select Node Tier" cn="选择节点等级" />
+                <SectionTitle icon={Coins} i18nKey="mr.rune.select.node" en="Select Node Tier" />
                 <div className="grid grid-cols-2 gap-3">
                   {(overview.nodes ?? []).map(node => {
                     const color  = (C as Record<string,string>)[node.level] ?? C.pioneer;
@@ -519,9 +551,9 @@ export default function Rune() {
                         </div>
 
                         <div className="mt-2 pt-2 border-t border-white/10 grid grid-cols-2 gap-x-2 gap-y-0.5">
-                          <p className="text-[10px] text-muted-foreground">日USDT <span className="num num-sm" style={{ color }}>${node.dailyUsdt}</span></p>
-                          <p className="text-[10px] text-muted-foreground">席位 <span className="num num-sm text-foreground">{node.seats}</span></p>
-                          <p className="text-[10px] text-muted-foreground col-span-2">私募价 <span className="num num-sm text-foreground">${node.privatePrice}</span></p>
+                          <p className="text-[10px] text-muted-foreground">{isEn ? "Daily USDT" : t("mr.rune.table.dailyUsdt")} <span className="num num-sm" style={{ color }}>${node.dailyUsdt}</span></p>
+                          <p className="text-[10px] text-muted-foreground">{isEn ? "Seats" : t("mr.rune.table.seats")} <span className="num num-sm text-foreground">{node.seats}</span></p>
+                          <p className="text-[10px] text-muted-foreground col-span-2">{isEn ? "Private" : t("mr.rune.table.privatePrice")} <span className="num num-sm text-foreground">${node.privatePrice}</span></p>
                         </div>
                       </button>
                     );
@@ -534,7 +566,9 @@ export default function Rune() {
             <Card className="bg-card/80 backdrop-blur border-border shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-primary" />模拟参数 · Parameters
+                  <Activity className="h-4 w-4 text-primary" />
+                  {isEn ? "Parameters" : t("mr.rune.select.params")}
+                  {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">· Parameters</span>}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -542,13 +576,16 @@ export default function Rune() {
                 {/* Seats */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium text-foreground">席位数量 <span className="text-xs text-muted-foreground font-normal ml-1">Seats</span></Label>
-                    <span className="num text-lg text-primary">{seats} 席</span>
+                    <Label className="text-base font-medium text-foreground">
+                      {isEn ? "Seats" : t("mr.rune.input.seats")}
+                      {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Seats</span>}
+                    </Label>
+                    <span className="num text-lg text-primary">{seats} {isEn ? "seats" : t("mr.rune.input.seatsUnit")}</span>
                   </div>
                   <Slider value={[seats]} min={1} max={Math.min(selectedNode?.seats ?? 10, 20)} step={1}
                     onValueChange={v => { setSeats(v[0]); calcMutation.reset(); }} className="py-2" />
                   <p className="text-xs text-muted-foreground text-right">
-                    总投入 <span className="num text-foreground">
+                    {isEn ? "Total Investment" : t("mr.rune.input.totalInvest")} <span className="num text-foreground">
                       ${selectedNode ? (selectedNode.investment * seats).toLocaleString() : "—"} USDT
                     </span>
                   </p>
@@ -557,8 +594,11 @@ export default function Rune() {
                 {/* Duration */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium text-foreground">持仓周期 <span className="text-xs text-muted-foreground font-normal ml-1">Duration</span></Label>
-                    <span className="num text-lg">{durationDays}天 / ≈{Math.round(durationDays/30)}月</span>
+                    <Label className="text-base font-medium text-foreground">
+                      {isEn ? "Duration" : t("mr.rune.input.duration")}
+                      {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Duration</span>}
+                    </Label>
+                    <span className="num text-lg">{durationDays}{isEn ? "d" : t("mr.rune.kpi.daysUnit")} / ≈{Math.round(durationDays/30)}{isEn ? "mo" : t("mr.rune.input.months")}</span>
                   </div>
                   <Slider value={[durationDays]} min={30} max={720} step={30}
                     onValueChange={v => { setDurationDays(v[0]); calcMutation.reset(); }} className="py-2" />
@@ -567,7 +607,10 @@ export default function Rune() {
                 {/* Price stage selector */}
                 {(overview?.priceStages?.length) ? (
                   <div className="space-y-2">
-                    <Label className="text-base font-medium text-foreground">目标价格阶段 <span className="text-xs text-muted-foreground font-normal ml-1">Target Stage</span></Label>
+                    <Label className="text-base font-medium text-foreground">
+                      {isEn ? "Target Stage" : t("mr.rune.input.targetStage")}
+                      {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Target Stage</span>}
+                    </Label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                       {(overview.priceStages ?? []).map((s, i) => (
                         <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
@@ -587,7 +630,9 @@ export default function Rune() {
                 <Button className="w-full font-bold tracking-wide shadow-[0_0_28px_hsl(38,92%,50%,0.35)] bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/80 text-primary-foreground"
                   onClick={() => calcMutation.mutate({ data: { nodeLevel, seats, durationDays, priceStageIndex } })}
                   disabled={calcMutation.isPending}>
-                  {calcMutation.isPending ? "计算中…" : "开始模拟 Run Simulation"}
+                  {calcMutation.isPending
+                    ? (isEn ? "Calculating…" : t("mr.rune.btn.simulating"))
+                    : bi("mr.rune.btn.simulate", "Run Simulation")}
                   {!calcMutation.isPending && <ChevronRight className="h-4 w-4 ml-1" />}
                 </Button>
               </CardContent>
@@ -604,32 +649,36 @@ export default function Rune() {
                   {/* KPI cards */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-green-700/40 bg-gradient-to-br from-green-950/50 to-transparent shadow-[0_0_24px_hsl(142,70%,45%,0.1)]">
-                      <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold mb-1">总资产 Total Assets</p>
+                      <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold mb-1">
+                        {bi("mr.rune.kpi.totalAssets", "Total Assets")}
+                      </p>
                       <div className="flex items-end gap-4 flex-wrap">
                         <p className="num-shimmer text-4xl">${fmt(calcMutation.data.totalAssets)}</p>
                         <div className="mb-1 flex gap-3 flex-wrap">
                           <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(calcMutation.data.roi)}%</span>
-                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(calcMutation.data.roiMultiplier)}× 本金</span>
+                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(calcMutation.data.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {overview?.priceStages?.[priceStageIndex]?.labelCn} 阶段 · 投入 <span className="num">${fmt(calcMutation.data.investment)}</span>
+                        {overview?.priceStages?.[priceStageIndex]?.labelCn} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(calcMutation.data.investment)}</span>
                       </p>
                     </div>
                     <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
-                      <p className="text-[10px] text-primary uppercase tracking-wider mb-1">母TOKEN市值</p>
+                      <p className="text-[10px] text-primary uppercase tracking-wider mb-1">{isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue")}</p>
                       <p className="num text-lg">${fmt(calcMutation.data.motherTokenValue)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> 枚</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-orange-800/30 bg-orange-950/20">
-                      <p className="text-[10px] text-orange-400 uppercase tracking-wider mb-1">子TOKEN空投</p>
+                      <p className="text-[10px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Sub Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
                       <p className="num text-lg text-orange-300">${fmt(calcMutation.data.airdropTokenValue)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> 枚</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-green-800/30 bg-green-950/20">
-                      <p className="text-[10px] text-green-400 uppercase tracking-wider mb-1">USDT收益</p>
+                      <p className="text-[10px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "USDT Income" : t("mr.rune.kpi.usdtIncome")}</p>
                       <p className="num text-lg text-green-300">${fmt(calcMutation.data.totalUsdtIncome)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">${fmt(calcMutation.data.dailyUsdt)}</span>/天 × <span className="num">{calcMutation.data.durationDays}</span>天</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        <span className="num">${fmt(calcMutation.data.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{calcMutation.data.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}
+                      </p>
                     </div>
                   </div>
 
@@ -638,7 +687,9 @@ export default function Rune() {
                     {/* Asset breakdown pie */}
                     <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
                       <CardHeader className="pb-2 border-b border-border/40">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">资产构成 Asset Breakdown</CardTitle>
+                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          {bi("mr.rune.chart.assetBreakdown", "Asset Breakdown")}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-3 pb-2">
                         <ResponsiveContainer width="100%" height={160}>
@@ -670,7 +721,9 @@ export default function Rune() {
                     {/* Stage ROI bar chart: show all stages for this node */}
                     <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
                       <CardHeader className="pb-2 border-b border-border/40">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">各阶段总资产预测</CardTitle>
+                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          {bi("mr.rune.chart.stageForecast", "Stage Forecast")}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-3 pb-2">
                         {selectedNode && (overview?.priceStages?.length) ? (
@@ -678,7 +731,7 @@ export default function Rune() {
                             <BarChart
                               data={(overview.priceStages ?? []).map(s => ({
                                 label: s.labelCn,
-                                总资产: Math.round(
+                                totalAssets: Math.round(
                                   selectedNode.motherTokensPerSeat * seats * s.motherPrice +
                                   selectedNode.airdropPerSeat      * seats * s.subPrice    +
                                   selectedNode.dailyUsdt           * seats * durationDays
@@ -690,8 +743,8 @@ export default function Rune() {
                               <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false} />
                               <YAxis tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false}
                                 tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${(v/1e3).toFixed(0)}K`} />
-                              <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, "总资产"]} />
-                              <Bar dataKey="总资产" radius={[4,4,0,0]}>
+                              <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")]} />
+                              <Bar dataKey="totalAssets" name={isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")} radius={[4,4,0,0]}>
                                 {(overview.priceStages ?? []).map((_, i) => (
                                   <Cell key={i} fill={i === priceStageIndex ? C.mother : "hsl(217,50%,35%)"} />
                                 ))}
@@ -707,7 +760,9 @@ export default function Rune() {
                   <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
                     <div className="bg-muted/20 border-b border-border/50 px-5 py-3">
                       <h3 className="font-semibold text-sm flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-primary" />明细拆解 · Full Breakdown
+                        <Layers className="h-4 w-4 text-primary" />
+                        {isEn ? "Full Breakdown" : t("mr.rune.table.breakdown")}
+                        {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">· Full Breakdown</span>}
                       </h3>
                     </div>
                     <CardContent className="p-0">
@@ -735,14 +790,18 @@ export default function Rune() {
                         <BarChart2 className="h-9 w-9 opacity-20" />
                       </div>
                       <div className="space-y-1">
-                        <p className="font-medium text-foreground/60">选择节点和参数后点击模拟</p>
-                        <p className="text-sm opacity-60">Select node tier and parameters, then run simulation</p>
+                        <p className="font-medium text-foreground/60">{t("mr.rune.placeholder.title")}</p>
+                        {isZh && <p className="text-sm opacity-60">Select node tier and parameters, then run simulation</p>}
                       </div>
                       <div className="grid grid-cols-3 gap-6 mt-2 text-center">
-                        {["选择节点", "设定参数", "查看图表"].map((s, i) => (
-                          <div key={i}>
-                            <p className="text-xs text-muted-foreground">第{["一","二","三"][i]}步</p>
-                            <p className="text-xs font-semibold mt-0.5">{s}</p>
+                        {[
+                          { key: "mr.rune.placeholder.stepTier",   en: "Pick Tier"   },
+                          { key: "mr.rune.placeholder.stepParams", en: "Set Params" },
+                          { key: "mr.rune.placeholder.stepCharts", en: "View Charts" },
+                        ].map((s, i) => (
+                          <div key={s.key}>
+                            <p className="text-xs text-muted-foreground">{isEn ? `Step ${i + 1}` : `${t("mr.rune.placeholder.stepLabel")} ${i + 1}`}</p>
+                            <p className="text-xs font-semibold mt-0.5">{isEn ? s.en : t(s.key)}</p>
                           </div>
                         ))}
                       </div>
@@ -757,7 +816,9 @@ export default function Rune() {
               <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
                 <div className="bg-muted/20 border-b border-border/50 px-5 py-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-primary" />节点参数总表 · Node Parameters
+                    <Layers className="h-4 w-4 text-primary" />
+                    {isEn ? "Node Parameters" : t("mr.rune.table.nodeParams")}
+                    {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">· Node Parameters</span>}
                   </h3>
                 </div>
 
@@ -766,8 +827,18 @@ export default function Rune() {
                   <table className="w-full text-xs min-w-[560px]">
                     <thead>
                       <tr className="border-b border-border/50 bg-muted/10">
-                        {["节点","投资额","私募价","母TOKEN","子TOKEN空投","日USDT","席位"].map(h => (
-                          <th key={h} className={`py-2.5 px-4 text-muted-foreground font-medium tracking-wider text-[10px] uppercase ${h === "节点" ? "text-left" : "text-right"}`}>{h}</th>
+                        {[
+                          { key: "mr.rune.table.node",         en: "Node",         align: "left"  as const },
+                          { key: "mr.rune.table.invest",       en: "Investment",   align: "right" as const },
+                          { key: "mr.rune.table.privatePrice", en: "Private",      align: "right" as const },
+                          { key: "mr.rune.token.mother",       en: "Mother Token", align: "right" as const },
+                          { key: "mr.rune.table.airdrop",      en: "Airdrop",      align: "right" as const },
+                          { key: "mr.rune.table.dailyUsdt",    en: "Daily USDT",   align: "right" as const },
+                          { key: "mr.rune.table.seats",        en: "Seats",        align: "right" as const },
+                        ].map(h => (
+                          <th key={h.key} className={`py-2.5 px-4 text-muted-foreground font-medium tracking-wider text-[10px] uppercase ${h.align === "left" ? "text-left" : "text-right"}`}>
+                            {isEn ? h.en : t(h.key)}
+                          </th>
                         ))}
                       </tr>
                     </thead>
@@ -817,39 +888,41 @@ export default function Rune() {
                             <span className="text-muted-foreground text-[10px] uppercase tracking-wider">{node.nameEn}</span>
                           </div>
                           {isSelected && (
-                            <span className="text-[9px] uppercase tracking-widest text-primary border border-primary/30 rounded px-1.5 py-0.5">已选</span>
+                            <span className="text-[9px] uppercase tracking-widest text-primary border border-primary/30 rounded px-1.5 py-0.5">
+                              {isEn ? "Selected" : t("mr.rune.table.selected")}
+                            </span>
                           )}
                         </div>
 
                         {/* Primary metrics row */}
                         <div className="grid grid-cols-3 gap-2 mb-2">
                           <div className="bg-muted/20 rounded-lg px-3 py-2">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">投资额</div>
-                            <div className="font-mono font-bold text-sm text-foreground">${node.investment.toLocaleString()}</div>
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Investment" : t("mr.rune.table.invest")}</div>
+                            <div className="num text-sm text-foreground">${node.investment.toLocaleString()}</div>
                           </div>
                           <div className="bg-muted/20 rounded-lg px-3 py-2">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">日USDT</div>
-                            <div className="font-mono font-bold text-sm" style={{ color }}>${node.dailyUsdt}</div>
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Daily USDT" : t("mr.rune.table.dailyUsdt")}</div>
+                            <div className="num text-sm" style={{ color }}>${node.dailyUsdt}</div>
                           </div>
                           <div className="bg-muted/20 rounded-lg px-3 py-2">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">席位</div>
-                            <div className="font-mono font-bold text-sm text-foreground">{node.seats}</div>
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Seats" : t("mr.rune.table.seats")}</div>
+                            <div className="num text-sm text-foreground">{node.seats}</div>
                           </div>
                         </div>
 
                         {/* Secondary metrics row */}
                         <div className="grid grid-cols-3 gap-2">
                           <div className="px-3 py-1.5 border border-border/30 rounded-lg">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">私募价</div>
-                            <div className="font-mono text-xs text-muted-foreground">${node.privatePrice}</div>
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Private" : t("mr.rune.table.privatePrice")}</div>
+                            <div className="num text-xs text-muted-foreground">${node.privatePrice}</div>
                           </div>
                           <div className="px-3 py-1.5 border border-border/30 rounded-lg">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">母TOKEN</div>
-                            <div className="font-mono text-xs text-muted-foreground">{node.motherTokensPerSeat.toLocaleString()}</div>
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Mother Token" : t("mr.rune.token.mother")}</div>
+                            <div className="num text-xs text-muted-foreground">{node.motherTokensPerSeat.toLocaleString()}</div>
                           </div>
                           <div className="px-3 py-1.5 border border-border/30 rounded-lg">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">空投</div>
-                            <div className="font-mono text-xs text-muted-foreground">{node.airdropPerSeat.toLocaleString()}</div>
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Airdrop" : t("mr.rune.table.airdrop")}</div>
+                            <div className="num text-xs text-muted-foreground">{node.airdropPerSeat.toLocaleString()}</div>
                           </div>
                         </div>
                       </div>
