@@ -112,56 +112,103 @@ export interface ImpermanentLossResult {
   priceChangePercent: number;
 }
 
-export type RuneOverviewKeyMetricsItem = {
-  label?: string;
-  value?: string;
-  description?: string;
+export interface RuneNodeDefinition {
+  level: string;
+  nameEn: string;
+  nameCn: string;
+  investment: number;
+  seats: number;
+  privatePrice: number;
+  dailyUsdt: number;
+  weight: number;
+  airdropTotal: number;
+  airdropPerSeat: number;
+  motherTokensPerSeat: number;
+}
+
+export interface RunePriceStage {
+  index: number;
+  label: string;
+  labelCn: string;
+  trigger: string;
+  motherPrice: number;
+  subPrice: number;
+  multiplier: number;
+}
+
+export type RuneOverviewMotherToken = {
+  symbol?: string;
+  launchPrice?: number;
+  totalSupply?: number;
+  dailyBurnRate?: number;
+  targetPriceLow?: number;
+  targetPriceHigh?: number;
+};
+
+export type RuneOverviewSubToken = {
+  symbol?: string;
+  launchPrice?: number;
+  totalSupply?: number;
+  dailyBurnRate?: number;
+  targetPriceLow?: number;
+  targetPriceHigh?: number;
+};
+
+export type RuneOverviewFundraising = {
+  total?: number;
+  tlpPool?: number;
+  subTokenLP?: number;
+  operations?: number;
+  treasury?: number;
 };
 
 export interface RuneOverview {
-  price: number;
-  marketCap: string;
-  tvl: string;
-  totalSupply: number;
-  circulatingSupply: number;
-  bondedAmount: number;
-  pooledAmount: number;
-  currentApr: number;
-  nodesCount: number;
-  poolsCount: number;
-  keyMetrics: RuneOverviewKeyMetricsItem[];
+  protocolName: string;
+  motherToken: RuneOverviewMotherToken;
+  subToken: RuneOverviewSubToken;
+  fundraising: RuneOverviewFundraising;
+  priceStages: RunePriceStage[];
+  nodes: RuneNodeDefinition[];
 }
 
-export type RuneCalculatorInputMode =
-  (typeof RuneCalculatorInputMode)[keyof typeof RuneCalculatorInputMode];
+export type RuneCalculatorInputNodeLevel =
+  (typeof RuneCalculatorInputNodeLevel)[keyof typeof RuneCalculatorInputNodeLevel];
 
-export const RuneCalculatorInputMode = {
-  bond: "bond",
-  pool: "pool",
-  lp: "lp",
+export const RuneCalculatorInputNodeLevel = {
+  pioneer: "pioneer",
+  builder: "builder",
+  guardian: "guardian",
+  strategic: "strategic",
 } as const;
 
 export interface RuneCalculatorInput {
-  runeAmount: number;
-  mode: RuneCalculatorInputMode;
-  runePrice?: number;
+  nodeLevel: RuneCalculatorInputNodeLevel;
+  seats: number;
   durationDays: number;
-  pairedAssetSymbol?: string;
+  priceStageIndex: number;
 }
 
 export type RuneCalculatorResultBreakdownItem = {
   label?: string;
+  labelCn?: string;
   value?: string;
 };
 
 export interface RuneCalculatorResult {
-  inputAmount: number;
-  inputUsdValue: number;
-  estimatedReturn: number;
-  estimatedReturnUsd: number;
-  apyPercent: number;
+  investment: number;
+  privatePrice: number;
+  motherTokens: number;
+  airdropTokens: number;
+  dailyUsdt: number;
+  durationDays: number;
+  totalUsdtIncome: number;
+  selectedStage: RunePriceStage;
+  motherTokenValue: number;
+  airdropTokenValue: number;
+  totalAssets: number;
+  roi: number;
+  roiMultiplier: number;
   breakdown: RuneCalculatorResultBreakdownItem[];
-  warnings: string[];
 }
 
 export type ListProjectsParams = {

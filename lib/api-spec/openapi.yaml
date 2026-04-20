@@ -387,84 +387,180 @@ components:
         - lpValue
         - priceChangePercent
 
+    RuneNodeDefinition:
+      type: object
+      properties:
+        level:
+          type: string
+        nameEn:
+          type: string
+        nameCn:
+          type: string
+        investment:
+          type: number
+        seats:
+          type: integer
+        privatePrice:
+          type: number
+        dailyUsdt:
+          type: number
+        weight:
+          type: number
+        airdropTotal:
+          type: integer
+        airdropPerSeat:
+          type: integer
+        motherTokensPerSeat:
+          type: number
+      required:
+        - level
+        - nameEn
+        - nameCn
+        - investment
+        - seats
+        - privatePrice
+        - dailyUsdt
+        - weight
+        - airdropTotal
+        - airdropPerSeat
+        - motherTokensPerSeat
+
+    RunePriceStage:
+      type: object
+      properties:
+        index:
+          type: integer
+        label:
+          type: string
+        labelCn:
+          type: string
+        trigger:
+          type: string
+        motherPrice:
+          type: number
+        subPrice:
+          type: number
+        multiplier:
+          type: number
+      required:
+        - index
+        - label
+        - labelCn
+        - trigger
+        - motherPrice
+        - subPrice
+        - multiplier
+
     RuneOverview:
       type: object
       properties:
-        price:
-          type: number
-        marketCap:
+        protocolName:
           type: string
-        tvl:
-          type: string
-        totalSupply:
-          type: number
-        circulatingSupply:
-          type: number
-        bondedAmount:
-          type: number
-        pooledAmount:
-          type: number
-        currentApr:
-          type: number
-        nodesCount:
-          type: integer
-        poolsCount:
-          type: integer
-        keyMetrics:
+        motherToken:
+          type: object
+          properties:
+            symbol:
+              type: string
+            launchPrice:
+              type: number
+            totalSupply:
+              type: number
+            dailyBurnRate:
+              type: number
+            targetPriceLow:
+              type: number
+            targetPriceHigh:
+              type: number
+        subToken:
+          type: object
+          properties:
+            symbol:
+              type: string
+            launchPrice:
+              type: number
+            totalSupply:
+              type: number
+            dailyBurnRate:
+              type: number
+            targetPriceLow:
+              type: number
+            targetPriceHigh:
+              type: number
+        fundraising:
+          type: object
+          properties:
+            total:
+              type: number
+            tlpPool:
+              type: number
+            subTokenLP:
+              type: number
+            operations:
+              type: number
+            treasury:
+              type: number
+        priceStages:
           type: array
           items:
-            type: object
-            properties:
-              label:
-                type: string
-              value:
-                type: string
-              description:
-                type: string
+            $ref: "#/components/schemas/RunePriceStage"
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuneNodeDefinition"
       required:
-        - price
-        - marketCap
-        - tvl
-        - totalSupply
-        - circulatingSupply
-        - bondedAmount
-        - pooledAmount
-        - currentApr
-        - nodesCount
-        - poolsCount
-        - keyMetrics
+        - protocolName
+        - motherToken
+        - subToken
+        - fundraising
+        - priceStages
+        - nodes
 
     RuneCalculatorInput:
       type: object
       properties:
-        runeAmount:
-          type: number
-        mode:
+        nodeLevel:
           type: string
-          enum: [bond, pool, lp]
-        runePrice:
-          type: number
+          enum: [pioneer, builder, guardian, strategic]
+        seats:
+          type: integer
         durationDays:
           type: integer
-        pairedAssetSymbol:
-          type: string
+        priceStageIndex:
+          type: integer
       required:
-        - runeAmount
-        - mode
+        - nodeLevel
+        - seats
         - durationDays
+        - priceStageIndex
 
     RuneCalculatorResult:
       type: object
       properties:
-        inputAmount:
+        investment:
           type: number
-        inputUsdValue:
+        privatePrice:
           type: number
-        estimatedReturn:
+        motherTokens:
           type: number
-        estimatedReturnUsd:
+        airdropTokens:
+          type: integer
+        dailyUsdt:
           type: number
-        apyPercent:
+        durationDays:
+          type: integer
+        totalUsdtIncome:
+          type: number
+        selectedStage:
+          $ref: "#/components/schemas/RunePriceStage"
+        motherTokenValue:
+          type: number
+        airdropTokenValue:
+          type: number
+        totalAssets:
+          type: number
+        roi:
+          type: number
+        roiMultiplier:
           type: number
         breakdown:
           type: array
@@ -473,17 +569,22 @@ components:
             properties:
               label:
                 type: string
+              labelCn:
+                type: string
               value:
                 type: string
-        warnings:
-          type: array
-          items:
-            type: string
       required:
-        - inputAmount
-        - inputUsdValue
-        - estimatedReturn
-        - estimatedReturnUsd
-        - apyPercent
+        - investment
+        - privatePrice
+        - motherTokens
+        - airdropTokens
+        - dailyUsdt
+        - durationDays
+        - totalUsdtIncome
+        - selectedStage
+        - motherTokenValue
+        - airdropTokenValue
+        - totalAssets
+        - roi
+        - roiMultiplier
         - breakdown
-        - warnings

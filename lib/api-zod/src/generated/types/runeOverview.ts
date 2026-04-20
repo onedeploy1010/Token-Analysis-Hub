@@ -5,18 +5,17 @@
  * Crypto Project Analyzer API
  * OpenAPI spec version: 0.1.0
  */
-import type { RuneOverviewKeyMetricsItem } from "./runeOverviewKeyMetricsItem";
+import type { RuneNodeDefinition } from "./runeNodeDefinition";
+import type { RuneOverviewFundraising } from "./runeOverviewFundraising";
+import type { RuneOverviewMotherToken } from "./runeOverviewMotherToken";
+import type { RuneOverviewSubToken } from "./runeOverviewSubToken";
+import type { RunePriceStage } from "./runePriceStage";
 
 export interface RuneOverview {
-  price: number;
-  marketCap: string;
-  tvl: string;
-  totalSupply: number;
-  circulatingSupply: number;
-  bondedAmount: number;
-  pooledAmount: number;
-  currentApr: number;
-  nodesCount: number;
-  poolsCount: number;
-  keyMetrics: RuneOverviewKeyMetricsItem[];
+  protocolName: string;
+  motherToken: RuneOverviewMotherToken;
+  subToken: RuneOverviewSubToken;
+  fundraising: RuneOverviewFundraising;
+  priceStages: RunePriceStage[];
+  nodes: RuneNodeDefinition[];
 }

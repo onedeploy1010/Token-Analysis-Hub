@@ -145,21 +145,54 @@ export const CalculateImpermanentLossResponse = zod.object({
  * @summary Get RUNE token overview and key metrics
  */
 export const GetRuneOverviewResponse = zod.object({
-  price: zod.number(),
-  marketCap: zod.string(),
-  tvl: zod.string(),
-  totalSupply: zod.number(),
-  circulatingSupply: zod.number(),
-  bondedAmount: zod.number(),
-  pooledAmount: zod.number(),
-  currentApr: zod.number(),
-  nodesCount: zod.number(),
-  poolsCount: zod.number(),
-  keyMetrics: zod.array(
+  protocolName: zod.string(),
+  motherToken: zod.object({
+    symbol: zod.string().optional(),
+    launchPrice: zod.number().optional(),
+    totalSupply: zod.number().optional(),
+    dailyBurnRate: zod.number().optional(),
+    targetPriceLow: zod.number().optional(),
+    targetPriceHigh: zod.number().optional(),
+  }),
+  subToken: zod.object({
+    symbol: zod.string().optional(),
+    launchPrice: zod.number().optional(),
+    totalSupply: zod.number().optional(),
+    dailyBurnRate: zod.number().optional(),
+    targetPriceLow: zod.number().optional(),
+    targetPriceHigh: zod.number().optional(),
+  }),
+  fundraising: zod.object({
+    total: zod.number().optional(),
+    tlpPool: zod.number().optional(),
+    subTokenLP: zod.number().optional(),
+    operations: zod.number().optional(),
+    treasury: zod.number().optional(),
+  }),
+  priceStages: zod.array(
     zod.object({
-      label: zod.string().optional(),
-      value: zod.string().optional(),
-      description: zod.string().optional(),
+      index: zod.number(),
+      label: zod.string(),
+      labelCn: zod.string(),
+      trigger: zod.string(),
+      motherPrice: zod.number(),
+      subPrice: zod.number(),
+      multiplier: zod.number(),
+    }),
+  ),
+  nodes: zod.array(
+    zod.object({
+      level: zod.string(),
+      nameEn: zod.string(),
+      nameCn: zod.string(),
+      investment: zod.number(),
+      seats: zod.number(),
+      privatePrice: zod.number(),
+      dailyUsdt: zod.number(),
+      weight: zod.number(),
+      airdropTotal: zod.number(),
+      airdropPerSeat: zod.number(),
+      motherTokensPerSeat: zod.number(),
     }),
   ),
 });
@@ -168,24 +201,39 @@ export const GetRuneOverviewResponse = zod.object({
  * @summary Calculate RUNE staking/LP returns
  */
 export const CalculateRuneReturnsBody = zod.object({
-  runeAmount: zod.number(),
-  mode: zod.enum(["bond", "pool", "lp"]),
-  runePrice: zod.number().optional(),
+  nodeLevel: zod.enum(["pioneer", "builder", "guardian", "strategic"]),
+  seats: zod.number(),
   durationDays: zod.number(),
-  pairedAssetSymbol: zod.string().optional(),
+  priceStageIndex: zod.number(),
 });
 
 export const CalculateRuneReturnsResponse = zod.object({
-  inputAmount: zod.number(),
-  inputUsdValue: zod.number(),
-  estimatedReturn: zod.number(),
-  estimatedReturnUsd: zod.number(),
-  apyPercent: zod.number(),
+  investment: zod.number(),
+  privatePrice: zod.number(),
+  motherTokens: zod.number(),
+  airdropTokens: zod.number(),
+  dailyUsdt: zod.number(),
+  durationDays: zod.number(),
+  totalUsdtIncome: zod.number(),
+  selectedStage: zod.object({
+    index: zod.number(),
+    label: zod.string(),
+    labelCn: zod.string(),
+    trigger: zod.string(),
+    motherPrice: zod.number(),
+    subPrice: zod.number(),
+    multiplier: zod.number(),
+  }),
+  motherTokenValue: zod.number(),
+  airdropTokenValue: zod.number(),
+  totalAssets: zod.number(),
+  roi: zod.number(),
+  roiMultiplier: zod.number(),
   breakdown: zod.array(
     zod.object({
       label: zod.string().optional(),
+      labelCn: zod.string().optional(),
       value: zod.string().optional(),
     }),
   ),
-  warnings: zod.array(zod.string()),
 });

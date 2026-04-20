@@ -5,12 +5,11 @@
  * Crypto Project Analyzer API
  * OpenAPI spec version: 0.1.0
  */
-import type { RuneCalculatorInputMode } from "./runeCalculatorInputMode";
+import type { RuneCalculatorInputNodeLevel } from "./runeCalculatorInputNodeLevel";
 
 export interface RuneCalculatorInput {
-  runeAmount: number;
-  mode: RuneCalculatorInputMode;
-  runePrice?: number;
+  nodeLevel: RuneCalculatorInputNodeLevel;
+  seats: number;
   durationDays: number;
-  pairedAssetSymbol?: string;
+  priceStageIndex: number;
 }

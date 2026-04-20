@@ -6,13 +6,21 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { RuneCalculatorResultBreakdownItem } from "./runeCalculatorResultBreakdownItem";
+import type { RunePriceStage } from "./runePriceStage";
 
 export interface RuneCalculatorResult {
-  inputAmount: number;
-  inputUsdValue: number;
-  estimatedReturn: number;
-  estimatedReturnUsd: number;
-  apyPercent: number;
+  investment: number;
+  privatePrice: number;
+  motherTokens: number;
+  airdropTokens: number;
+  dailyUsdt: number;
+  durationDays: number;
+  totalUsdtIncome: number;
+  selectedStage: RunePriceStage;
+  motherTokenValue: number;
+  airdropTokenValue: number;
+  totalAssets: number;
+  roi: number;
+  roiMultiplier: number;
   breakdown: RuneCalculatorResultBreakdownItem[];
-  warnings: string[];
 }

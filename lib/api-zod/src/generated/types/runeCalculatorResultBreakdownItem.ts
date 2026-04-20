@@ -8,5 +8,6 @@
 
 export type RuneCalculatorResultBreakdownItem = {
   label?: string;
+  labelCn?: string;
   value?: string;
 };
