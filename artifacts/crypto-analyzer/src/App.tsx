@@ -8,6 +8,7 @@ import Projects from "@/pages/projects";
 import ProjectDetail from "@/pages/project-detail";
 import Tools from "@/pages/tools";
 import Rune from "@/pages/rune";
+import B18 from "@/pages/b18";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -26,6 +27,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/projects" component={Projects} />
         <Route path="/projects/rune" component={Rune} />
+        <Route path="/projects/b18" component={B18} />
         <Route path="/projects/:id" component={ProjectDetail} />
         <Route path="/tools" component={Tools} />
         <Route component={NotFound} />

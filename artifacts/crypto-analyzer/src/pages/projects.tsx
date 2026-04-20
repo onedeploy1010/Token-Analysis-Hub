@@ -3,7 +3,7 @@ import { useListProjects } from "@workspace/api-client-react";
 import { ProjectCard } from "@/components/shared/project-card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, SlidersHorizontal, ArrowRight, Zap } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, Zap, BarChart3 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
@@ -79,33 +79,43 @@ export default function Projects() {
         </div>
       </div>
 
-      <Link href="/projects/rune">
-        <div className="relative w-full overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-background via-[#0f172a] to-[#1e1b4b] p-8 md:p-10 cursor-pointer group hover:border-primary/60 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/30 transition-colors duration-700 -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.05)_50%,transparent_100%)] -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-          
-          <div className="absolute -right-10 -bottom-20 text-[180px] font-black italic text-white/[0.03] select-none pointer-events-none leading-none tracking-tighter">
-            RUNE
-          </div>
-          
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-4">
-              <Zap className="h-3.5 w-3.5" /> Featured 精选推荐
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              THORChain (RUNE) <span className="text-primary/80">—</span> 深度分析
-            </h2>
-            <p className="text-muted-foreground text-lg mb-6 max-w-2xl font-medium">
-              Featured Research Report. Comprehensive analysis of network security, economic models, and yield generation strategies.
-            </p>
-            
-            <div className="inline-flex items-center text-primary font-semibold group-hover:underline">
-              Read Analysis Report 阅读报告 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link href="/projects/rune">
+          <div className="relative w-full h-full overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-background via-[#0f172a] to-[#1e1b4b] p-8 cursor-pointer group hover:border-primary/60 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/20 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/30 transition-colors duration-700 -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.05)_50%,transparent_100%)] -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <div className="absolute -right-6 -bottom-14 text-[120px] font-black italic text-white/[0.03] select-none pointer-events-none leading-none tracking-tighter">RUNE</div>
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-4">
+                <Zap className="h-3.5 w-3.5" /> 精选推荐 Featured
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">RUNE Protocol <span className="text-primary/80">—</span> 节点分析</h2>
+              <p className="text-muted-foreground mb-5 max-w-lg">双TOKEN通缩经济 · 四级节点收益 · 深度tokenomics图表分析</p>
+              <div className="inline-flex items-center text-primary font-semibold group-hover:underline">
+                查看完整分析 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
             </div>
           </div>
-        </div>
-      </Link>
+        </Link>
+
+        <Link href="/projects/b18">
+          <div className="relative w-full h-full overflow-hidden rounded-2xl border border-purple-700/30 bg-gradient-to-r from-background via-[#0d0a1f] to-[#1a0f3d] p-8 cursor-pointer group hover:border-purple-600/60 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-700/15 rounded-full blur-[100px] pointer-events-none group-hover:bg-purple-600/25 transition-colors duration-700 -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.03)_50%,transparent_100%)] -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <div className="absolute -right-6 -bottom-14 text-[120px] font-black italic text-white/[0.025] select-none pointer-events-none leading-none tracking-tighter">B18</div>
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-800/30 border border-purple-700/40 text-purple-400 text-xs font-bold uppercase tracking-wider mb-4">
+                <BarChart3 className="h-3.5 w-3.5" /> 模拟器 Simulator
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">B18 Protocol <span className="text-purple-500/80">—</span> 收益模拟器</h2>
+              <p className="text-muted-foreground mb-5 max-w-lg">质押/LP/动态奖励完整模拟 · AMM定价 · SPP护盘机制 · 六步交互演示</p>
+              <div className="inline-flex items-center text-purple-400 font-semibold group-hover:underline">
+                启动模拟器 Launch Simulator <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
 
       <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar border-b border-border/50">
         <div className="flex space-x-6 min-w-max">

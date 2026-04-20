@@ -24,7 +24,8 @@ A professional DeFi investment analysis platform targeting crypto investors. Fea
 - `/projects` — Project catalog: Filterable grid with risk ratings, APY, TVL
 - `/projects/:id` — Project detail: Full metrics, description, risk analysis
 - `/tools` — Economic Simulators: APY Calculator, Investment Simulator, Impermanent Loss Calculator
-- `/rune` — RUNE Analytics: Token overview + Bond/Pool/LP calculator
+- `/projects/rune` — RUNE Protocol deep analytics: 6 recharts charts (price stages, fund allocation, node returns, deflation, asset breakdown, stage ROI), interactive node-level calculator
+- `/projects/b18` — B18 Token deep analytics: AMM price simulation, staking returns, release tax, V1–V10 reward tiers, 334 protocol, SPP buyback, interactive ROI calculator. Built with recharts using data from b18-shared/schema.ts
 
 ### API Routes
 - `GET /api/projects` — List all projects (filter by category, sort)
