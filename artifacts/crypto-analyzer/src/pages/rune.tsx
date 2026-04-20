@@ -659,12 +659,14 @@ export default function Rune() {
                     <Layers className="h-4 w-4 text-primary" />节点参数总表 · Node Parameters
                   </h3>
                 </div>
-                <CardContent className="p-0 overflow-x-auto">
+
+                {/* ── Desktop table (md+) ── */}
+                <CardContent className="p-0 overflow-x-auto hidden md:block">
                   <table className="w-full text-xs min-w-[560px]">
                     <thead>
                       <tr className="border-b border-border/50 bg-muted/10">
                         {["节点","投资额","私募价","母TOKEN","子TOKEN空投","日USDT","席位"].map(h => (
-                          <th key={h} className={`py-2.5 px-4 text-muted-foreground font-medium ${h === "节点" ? "text-left" : "text-right"}`}>{h}</th>
+                          <th key={h} className={`py-2.5 px-4 text-muted-foreground font-medium tracking-wider text-[10px] uppercase ${h === "节点" ? "text-left" : "text-right"}`}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -694,6 +696,65 @@ export default function Rune() {
                     </tbody>
                   </table>
                 </CardContent>
+
+                {/* ── Mobile cards (< md) ── */}
+                <div className="md:hidden divide-y divide-border/30">
+                  {(overview.nodes ?? []).map(node => {
+                    const color = (C as Record<string,string>)[node.level] ?? C.pioneer;
+                    const isSelected = nodeLevel === node.level;
+                    return (
+                      <div
+                        key={node.level}
+                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
+                        className={`px-4 py-4 cursor-pointer transition-colors ${isSelected ? "bg-primary/5" : "hover:bg-muted/10"}`}
+                      >
+                        {/* Node name header */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
+                            <span className="font-semibold text-sm" style={{ color }}>{node.nameCn}</span>
+                            <span className="text-muted-foreground text-[10px] uppercase tracking-wider">{node.nameEn}</span>
+                          </div>
+                          {isSelected && (
+                            <span className="text-[9px] uppercase tracking-widest text-primary border border-primary/30 rounded px-1.5 py-0.5">已选</span>
+                          )}
+                        </div>
+
+                        {/* Primary metrics row */}
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                          <div className="bg-muted/20 rounded-lg px-3 py-2">
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">投资额</div>
+                            <div className="font-mono font-bold text-sm text-foreground">${node.investment.toLocaleString()}</div>
+                          </div>
+                          <div className="bg-muted/20 rounded-lg px-3 py-2">
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">日USDT</div>
+                            <div className="font-mono font-bold text-sm" style={{ color }}>${node.dailyUsdt}</div>
+                          </div>
+                          <div className="bg-muted/20 rounded-lg px-3 py-2">
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">席位</div>
+                            <div className="font-mono font-bold text-sm text-foreground">{node.seats}</div>
+                          </div>
+                        </div>
+
+                        {/* Secondary metrics row */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="px-3 py-1.5 border border-border/30 rounded-lg">
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">私募价</div>
+                            <div className="font-mono text-xs text-muted-foreground">${node.privatePrice}</div>
+                          </div>
+                          <div className="px-3 py-1.5 border border-border/30 rounded-lg">
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">母TOKEN</div>
+                            <div className="font-mono text-xs text-muted-foreground">{node.motherTokensPerSeat.toLocaleString()}</div>
+                          </div>
+                          <div className="px-3 py-1.5 border border-border/30 rounded-lg">
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">空投</div>
+                            <div className="font-mono text-xs text-muted-foreground">{node.airdropPerSeat.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </Card>
             ) : null}
           </div>
