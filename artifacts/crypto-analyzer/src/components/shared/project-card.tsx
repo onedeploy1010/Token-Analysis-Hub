@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ArrowUpRight, FlaskConical, ShieldCheck, ShieldAlert, Shield } from "lucide-react";
 import { formatPercent } from "@/lib/format";
 import { Project, ProjectRiskLevel } from "@workspace/api-client-react";
@@ -15,14 +14,17 @@ interface ProjectCardProps {
   project: Project;
 }
 
-const CATEGORY_META: Record<string, { color: string; bg: string; glow: string; border: string }> = {
-  vault:          { color: "text-purple-400",  bg: "bg-purple-500",       glow: "group-hover:shadow-[0_8px_32px_rgba(168,85,247,0.18)]",  border: "group-hover:border-purple-500/40" },
-  dex:            { color: "text-amber-400",   bg: "bg-amber-500",        glow: "group-hover:shadow-[0_8px_32px_rgba(245,158,11,0.18)]",  border: "group-hover:border-amber-500/40" },
-  lending:        { color: "text-emerald-400", bg: "bg-emerald-500",      glow: "group-hover:shadow-[0_8px_32px_rgba(52,211,153,0.15)]",  border: "group-hover:border-emerald-500/40" },
-  yield:          { color: "text-sky-400",     bg: "bg-sky-500",          glow: "group-hover:shadow-[0_8px_32px_rgba(56,189,248,0.15)]",  border: "group-hover:border-sky-500/40" },
-  derivatives:    { color: "text-rose-400",    bg: "bg-rose-500",         glow: "group-hover:shadow-[0_8px_32px_rgba(244,63,94,0.15)]",   border: "group-hover:border-rose-500/40" },
-  staking:        { color: "text-indigo-400",  bg: "bg-indigo-500",       glow: "group-hover:shadow-[0_8px_32px_rgba(99,102,241,0.15)]",  border: "group-hover:border-indigo-500/40" },
-  infrastructure: { color: "text-amber-400",   bg: "bg-amber-500",        glow: "group-hover:shadow-[0_8px_32px_rgba(245,158,11,0.18)]",  border: "group-hover:border-amber-500/40" },
+const CATEGORY_META: Record<string, {
+  color: string; dimColor: string; bg: string;
+  barColor: string; glowRgb: string;
+}> = {
+  vault:          { color: "text-purple-300",  dimColor: "text-purple-400/60", bg: "bg-purple-500/12",  barColor: "bg-purple-400",  glowRgb: "168,85,247" },
+  dex:            { color: "text-amber-300",   dimColor: "text-amber-400/60",  bg: "bg-amber-500/12",   barColor: "bg-amber-400",   glowRgb: "245,158,11" },
+  lending:        { color: "text-emerald-300", dimColor: "text-emerald-400/60",bg: "bg-emerald-500/12", barColor: "bg-emerald-400", glowRgb: "52,211,153" },
+  yield:          { color: "text-sky-300",     dimColor: "text-sky-400/60",    bg: "bg-sky-500/12",     barColor: "bg-sky-400",     glowRgb: "56,189,248" },
+  derivatives:    { color: "text-rose-300",    dimColor: "text-rose-400/60",   bg: "bg-rose-500/12",    barColor: "bg-rose-400",    glowRgb: "244,63,94"  },
+  staking:        { color: "text-indigo-300",  dimColor: "text-indigo-400/60", bg: "bg-indigo-500/12",  barColor: "bg-indigo-400",  glowRgb: "99,102,241" },
+  infrastructure: { color: "text-amber-300",   dimColor: "text-amber-400/60",  bg: "bg-amber-500/12",   barColor: "bg-amber-400",   glowRgb: "245,158,11" },
 };
 
 function getCategoryMeta(category: string) {
@@ -37,10 +39,10 @@ export function RiskBadge({ level }: { level: ProjectRiskLevel }) {
   };
   const { label, labelZh, color, icon: Icon } = config[level];
   return (
-    <div className={`flex items-center gap-1 ${color}`}>
+    <div className={`flex items-center gap-1.5 ${color}`}>
       <Icon className="h-3 w-3" />
-      <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
-      <span className="text-[9px] opacity-60">{labelZh}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-widest">{label}</span>
+      <span className="text-[9px] opacity-50">{labelZh}</span>
     </div>
   );
 }
@@ -52,112 +54,116 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <Link href={href}>
-      <Card className={`
-        corner-brackets h-full bg-card/70 backdrop-blur-sm border-border/60
-        hover:bg-card/90 hover:-translate-y-1.5 cursor-pointer overflow-hidden
-        group flex flex-col transition-all duration-300
-        ${meta.glow} ${meta.border}
-      `}>
+      <div
+        className="relative h-full flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b1120]/80 backdrop-blur-sm cursor-pointer group transition-all duration-350"
+        style={{
+          boxShadow: "0 2px 20px rgba(0,0,0,0.35)",
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLDivElement).style.boxShadow =
+            `0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(${meta.glowRgb},0.25), 0 0 30px rgba(${meta.glowRgb},0.1)`;
+          (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 20px rgba(0,0,0,0.35)";
+          (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+        }}
+      >
+        {/* Top accent line */}
+        <div className={`h-[2px] w-full ${meta.barColor} opacity-50 group-hover:opacity-90 transition-opacity duration-300`} />
 
-        {/* Top accent bar */}
-        <div className={`h-[2px] w-full ${meta.bg} opacity-60 group-hover:opacity-100 transition-opacity duration-300`} />
+        {/* Subtle background glow */}
+        <div
+          className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{ background: `rgba(${meta.glowRgb},0.08)` }}
+        />
 
-        <CardHeader className="pb-3 pt-5 px-5">
-          <div className="flex justify-between items-start gap-2">
+        {/* Watermark symbol */}
+        <div className="absolute bottom-2 right-3 text-[64px] font-black text-white/[0.028] select-none pointer-events-none leading-none tracking-tighter">
+          {project.symbol}
+        </div>
 
-            {/* Left: logo + name + badges */}
-            <div className="flex items-start gap-2.5 min-w-0 flex-1">
-              {project.symbol === "RUNE" ? (
-                <div className="w-9 h-9 rounded-lg overflow-hidden bg-black border border-primary/25 shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.15)]">
-                  <img src="/rune-logo.png" alt="RUNE" className="w-full h-full object-contain" />
-                </div>
-              ) : (
-                <div className={`w-9 h-9 rounded-lg ${meta.bg} bg-opacity-15 border border-current/10 shrink-0 flex items-center justify-center`}>
-                  <span className={`text-xs font-bold font-mono ${meta.color}`}>
-                    {project.symbol.slice(0, 2)}
-                  </span>
-                </div>
+        {/* ── Header: logo + name ── */}
+        <div className="px-5 pt-5 pb-4 flex items-center gap-3">
+          {project.symbol === "RUNE" ? (
+            <div className="w-11 h-11 rounded-xl overflow-hidden bg-black border border-primary/30 shrink-0 shadow-[0_0_12px_rgba(251,191,36,0.2)]">
+              <img src="/rune-logo-new.png" alt="RUNE" className="w-full h-full object-contain" />
+            </div>
+          ) : (
+            <div className={`w-11 h-11 rounded-xl shrink-0 flex items-center justify-center border border-white/[0.08] ${meta.bg}`}>
+              <span className={`text-sm font-bold font-mono tracking-wide ${meta.color}`}>
+                {project.symbol.slice(0, 2)}
+              </span>
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <h3 className={`font-bold text-[15px] leading-tight tracking-tight text-white/90 group-hover:${meta.color} transition-colors truncate`}>
+              {project.name}
+            </h3>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] font-mono text-white/35 tracking-widest">{project.symbol}</span>
+              <span className="text-white/20 text-[10px]">·</span>
+              <span className={`text-[9px] font-bold uppercase tracking-[0.14em] ${meta.dimColor}`}>
+                {project.category}
+              </span>
+              {hasDeepAnalysis && (
+                <span className="inline-flex items-center gap-0.5 text-[8px] px-1.5 py-px rounded-full bg-primary/10 border border-primary/20 text-primary/80 font-semibold tracking-wider ml-0.5">
+                  <FlaskConical className="h-2 w-2" /> DEEP
+                </span>
               )}
-
-              <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-base leading-tight tracking-tight group-hover:text-primary transition-colors truncate">
-                  {project.name}
-                </h3>
-                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                  <span className="text-[10px] font-mono font-semibold text-muted-foreground tracking-widest">
-                    {project.symbol}
-                  </span>
-                  <span className="text-muted-foreground/30 text-[10px]">·</span>
-                  <span className={`inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.12em] px-1.5 py-0.5 rounded ${meta.color} bg-current/10`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${meta.bg}`} />
-                    {project.category}
-                  </span>
-                  {hasDeepAnalysis && (
-                    <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary font-semibold tracking-wider">
-                      <FlaskConical className="h-2.5 w-2.5" /> ANALYSIS
-                    </span>
-                  )}
-                </div>
-              </div>
             </div>
-
-            {/* Right: recommended star */}
-            {project.isRecommended && (
-              <div className="shrink-0">
-                <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <svg className="w-3 h-3 fill-primary text-primary" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </div>
-              </div>
-            )}
           </div>
-        </CardHeader>
 
-        <CardContent className="flex-1 pb-4 px-5">
-          {/* Description */}
-          <p className="text-xs text-muted-foreground/80 line-clamp-2 mb-5 leading-relaxed">
-            {project.description}
+          {project.isRecommended && (
+            <div className="w-5 h-5 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+              <svg className="w-2.5 h-2.5 fill-primary" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+          )}
+        </div>
+
+        {/* ── APY hero block ── */}
+        <div className={`mx-5 rounded-xl px-4 py-5 ${meta.bg} border border-white/[0.05] flex flex-col items-center justify-center text-center`}>
+          <p className="text-[9px] uppercase tracking-[0.25em] text-white/35 font-semibold mb-1.5">
+            年化收益率 · APY
           </p>
+          <p
+            className={`text-[42px] font-bold leading-none tracking-tight ${meta.color}`}
+            style={{ fontVariantNumeric: "tabular-nums", fontFamily: "'Inter', 'SF Pro Display', system-ui, sans-serif" }}
+          >
+            {formatPercent(project.apy)}
+          </p>
+        </div>
 
-          {/* APY + TVL metrics */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* APY */}
-            <div className="relative rounded-lg bg-muted/20 border border-border/40 px-3 py-2.5 group-hover:border-primary/20 transition-colors">
-              <div className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1 flex items-center gap-1">
-                APY
-                <span className="opacity-50">·</span>
-                <span className="opacity-60">年化</span>
-              </div>
-              <div className="text-2xl font-bold num-gold leading-none">
-                {formatPercent(project.apy)}
-              </div>
-            </div>
-
-            {/* TVL */}
-            <div className="rounded-lg bg-muted/20 border border-border/40 px-3 py-2.5 group-hover:border-border/60 transition-colors">
-              <div className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1 flex items-center gap-1">
-                TVL
-                <span className="opacity-50">·</span>
-                <span className="opacity-60">锁仓</span>
-              </div>
-              <div className="text-lg font-semibold font-mono text-foreground/90 leading-none num">
+        {/* ── TVL + footer ── */}
+        <div className="px-5 pt-4 pb-5 flex-1 flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-semibold mb-0.5">
+                锁仓总量 · TVL
+              </p>
+              <p className="text-xl font-bold text-white/75 tracking-tight"
+                style={{ fontVariantNumeric: "tabular-nums" }}>
                 {project.tvl.startsWith("$") ? project.tvl : `$${project.tvl}`}
-              </div>
+              </p>
+            </div>
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center border border-white/[0.08] ${meta.bg} group-hover:scale-110 transition-transform duration-200`}
+            >
+              <ArrowUpRight className={`h-4 w-4 ${meta.color} group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform`} />
             </div>
           </div>
-        </CardContent>
 
-        <CardFooter className="px-5 pb-4 pt-0">
-          <div className="w-full flex items-center justify-between pt-3 border-t border-border/40">
+          <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
             <RiskBadge level={project.riskLevel} />
-            <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground/60 group-hover:text-primary transition-colors">
+            <span className={`text-[10px] font-semibold tracking-wider ${meta.dimColor}`}>
               {hasDeepAnalysis ? "深度分析" : "查看分析"}
-              <ArrowUpRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </div>
+            </span>
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }
