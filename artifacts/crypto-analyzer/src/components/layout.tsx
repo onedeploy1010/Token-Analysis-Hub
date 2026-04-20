@@ -19,26 +19,90 @@ const NAV_ITEMS = [
 
 /* ─── Animated Logo ──────────────────────────────────────────────── */
 function AnimatedRuneLogo({ size = 42 }: { size?: number }) {
+  const pad = size * 1.6;
   return (
-    <motion.div
-      className="relative shrink-0"
-      style={{ width: size, height: size }}
-      animate={{
-        filter: [
-          "drop-shadow(0 0 4px rgba(251,191,36,0.25))",
-          "drop-shadow(0 0 10px rgba(251,191,36,0.55))",
-          "drop-shadow(0 0 4px rgba(251,191,36,0.25))",
-        ],
-      }}
-      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <img
+    <div className="relative shrink-0 flex items-center justify-center" style={{ width: size, height: size }}>
+
+      {/* Outer slow-pulse ring */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: pad * 0.95, height: pad * 0.95,
+          background: "radial-gradient(circle, rgba(251,191,36,0.18) 0%, rgba(217,119,6,0.08) 50%, transparent 72%)",
+        }}
+        animate={{ scale: [0.85, 1.05, 0.85], opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      {/* Fast expanding ring — ripple */}
+      <motion.div
+        className="absolute rounded-full border border-amber-400/30"
+        style={{ width: size * 0.9, height: size * 0.9 }}
+        animate={{ scale: [1, 2.2], opacity: [0.7, 0] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut", repeatDelay: 0.4 }}
+      />
+
+      {/* Second ripple — offset delay */}
+      <motion.div
+        className="absolute rounded-full border border-amber-300/20"
+        style={{ width: size * 0.9, height: size * 0.9 }}
+        animate={{ scale: [1, 2.0], opacity: [0.5, 0] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut", delay: 1.1, repeatDelay: 0.4 }}
+      />
+
+      {/* Rotating arc halo */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: size * 1.25, height: size * 1.25,
+          border: "1.5px solid transparent",
+          borderTopColor: "rgba(251,191,36,0.55)",
+          borderRightColor: "rgba(251,191,36,0.25)",
+        }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Counter-rotating arc — opposite direction */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: size * 1.05, height: size * 1.05,
+          border: "1px solid transparent",
+          borderBottomColor: "rgba(217,119,6,0.4)",
+          borderLeftColor: "rgba(217,119,6,0.15)",
+        }}
+        animate={{ rotate: -360 }}
+        transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Inner glow disc */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: size * 0.75, height: size * 0.75,
+          background: "radial-gradient(circle, rgba(251,191,36,0.22) 0%, transparent 70%)",
+        }}
+        animate={{ opacity: [0.6, 1, 0.6], scale: [0.92, 1.08, 0.92] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      {/* Logo image */}
+      <motion.img
         src="/rune-logo-new.png"
         alt="RUNE"
-        className="w-full h-full object-contain"
-        style={{ filter: "brightness(1.08) contrast(1.05)" }}
+        className="relative z-10 object-contain"
+        style={{ width: size, height: size, filter: "brightness(1.12) contrast(1.05)" }}
+        animate={{
+          filter: [
+            "brightness(1.05) contrast(1.05) drop-shadow(0 0 5px rgba(251,191,36,0.3))",
+            "brightness(1.2)  contrast(1.08) drop-shadow(0 0 14px rgba(251,191,36,0.7))",
+            "brightness(1.05) contrast(1.05) drop-shadow(0 0 5px rgba(251,191,36,0.3))",
+          ],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       />
-    </motion.div>
+    </div>
   );
 }
 
