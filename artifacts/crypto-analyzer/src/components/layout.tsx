@@ -94,7 +94,7 @@ function Navbar() {
         </div>
       </header>
 
-      {/* Mobile full-screen menu */}
+      {/* Mobile full-screen drawer */}
       <AnimatePresence>
         {menuOpen && (
           <>
@@ -104,77 +104,92 @@ function Navbar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
+              transition={{ duration: 0.22 }}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md md:hidden"
               onClick={() => setMenuOpen(false)}
             />
 
-            {/* Drawer */}
+            {/* Right-side drawer panel */}
             <motion.div
               key="drawer"
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-[65px] left-0 right-0 z-50 md:hidden mx-4"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed top-0 right-0 bottom-0 z-50 md:hidden w-[78vw] max-w-[300px] flex flex-col bg-[#080f1e] border-l border-border/40 shadow-[-20px_0_60px_rgba(0,0,0,0.6)]"
             >
-              <div className="rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] overflow-hidden">
-                {/* Brand header inside drawer */}
-                <div className="px-5 py-4 border-b border-border/40 flex items-center gap-3">
-                  <AurumLogo size={28} />
-                  <div>
-                    <p className="text-sm font-light text-foreground/70">
-                      Market<span className="font-bold text-amber-400">Aurum</span>
-                    </p>
-                    <p className="text-[11px] text-muted-foreground/50">DeFi Intelligence Platform</p>
-                  </div>
+              {/* Drawer header */}
+              <div className="flex items-center justify-between px-6 h-16 border-b border-border/30 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <AurumLogo size={26} />
+                  <span className="text-[15px] tracking-tight">
+                    <span className="font-light text-foreground/70">Market</span>
+                    <span className="font-bold text-amber-400">Aurum</span>
+                  </span>
                 </div>
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
 
-                {/* Nav items */}
-                <nav className="p-3 space-y-1">
-                  {NAV_ITEMS.map((item, i) => {
-                    const Icon = item.icon;
-                    const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-                    return (
-                      <motion.div
-                        key={item.href}
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.06, duration: 0.2 }}
+              {/* Nav items — large editorial style */}
+              <nav className="flex-1 flex flex-col justify-center px-6 gap-1 py-8">
+                {NAV_ITEMS.map((item, i) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                  return (
+                    <motion.div
+                      key={item.href}
+                      initial={{ opacity: 0, x: 24 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.07 + 0.1, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <Link
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={cn(
+                          "group flex items-center gap-5 py-5 border-b transition-all",
+                          isActive ? "border-primary/30" : "border-border/20 hover:border-border/40"
+                        )}
                       >
-                        <Link
-                          href={item.href}
-                          onClick={() => setMenuOpen(false)}
-                          className={cn(
-                            "flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all",
-                            isActive
-                              ? "bg-primary/10 border border-primary/25 text-foreground"
-                              : "text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent"
-                          )}
-                        >
-                          <div className={cn(
-                            "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-                            isActive ? "bg-primary/20" : "bg-muted/40"
+                        <span className={cn(
+                          "text-[11px] font-mono tabular-nums w-5 shrink-0",
+                          isActive ? "text-primary/80" : "text-muted-foreground/40"
+                        )}>
+                          0{i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn(
+                            "text-xl font-bold tracking-tight leading-none",
+                            isActive ? "text-primary" : "text-foreground/70 group-hover:text-foreground transition-colors"
                           )}>
-                            <Icon className={cn("h-4.5 w-4.5", isActive ? "text-primary" : "text-muted-foreground")} />
-                          </div>
-                          <div>
-                            <p className={cn("text-sm font-semibold", isActive && "text-primary")}>{item.labelZh}</p>
-                            <p className="text-[11px] text-muted-foreground/60">{item.label}</p>
-                          </div>
-                          {isActive && (
-                            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
-                          )}
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </nav>
+                            {item.labelZh}
+                          </p>
+                          <p className={cn(
+                            "text-[11px] mt-1 tracking-widest uppercase",
+                            isActive ? "text-primary/60" : "text-muted-foreground/40"
+                          )}>
+                            {item.label}
+                          </p>
+                        </div>
+                        <Icon className={cn(
+                          "h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5",
+                          isActive ? "text-primary" : "text-muted-foreground/30"
+                        )} />
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </nav>
 
-                {/* Footer inside drawer */}
-                <div className="px-5 py-3 border-t border-border/40">
-                  <p className="text-[11px] text-muted-foreground/40 text-center">专为机构级投资者打造 · Built for serious capital</p>
-                </div>
+              {/* Drawer footer */}
+              <div className="px-6 py-5 border-t border-border/20 shrink-0">
+                <p className="text-[10px] text-muted-foreground/30 uppercase tracking-widest">
+                  机构级 DeFi 研究平台
+                </p>
               </div>
             </motion.div>
           </>
