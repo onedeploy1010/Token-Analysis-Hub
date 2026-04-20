@@ -7,19 +7,23 @@ import { Search, SlidersHorizontal, ArrowRight, Zap } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
-
-const categoryMap: Record<string, string> = {
-  "all": "All Categories 全部",
-  "Vault": "Vault 金库铸造",
-  "DEX": "DEX 去中心化交易所",
-  "Lending": "Lending 借贷",
-  "Yield": "Yield 收益",
-  "Derivatives": "Derivatives 衍生品",
-  "Staking": "Staking 质押",
-  "Infrastructure": "Infrastructure 基础设施",
-};
+import { useLanguage } from "@/contexts/language-context";
 
 export default function Projects() {
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
+
+  const categoryMap: Record<string, () => string> = {
+    "all": () => `${t("mr.cat.all")}${!isEn ? " · ALL" : ""}`,
+    "Vault": () => `Vault${!isEn ? ` · ${t("mr.cat.vault")}` : ""}`,
+    "DEX": () => `DEX${!isEn ? ` · ${t("mr.cat.dex")}` : ""}`,
+    "Lending": () => `Lending${!isEn ? ` · ${t("mr.cat.lending")}` : ""}`,
+    "Yield": () => `Yield${!isEn ? ` · ${t("mr.cat.yield")}` : ""}`,
+    "Derivatives": () => `Derivatives${!isEn ? ` · ${t("mr.cat.derivatives")}` : ""}`,
+    "Staking": () => `Staking${!isEn ? ` · ${t("mr.cat.staking")}` : ""}`,
+    "Infrastructure": () => `Infrastructure`,
+  };
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("trending");
@@ -47,12 +51,12 @@ export default function Projects() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border/50 pb-6">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">项目分析库</span>
+            {!isEn && <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">PROJECT INTELLIGENCE</span>}
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
-            Project Intelligence
+            {t("mr.projects.label")}
           </h1>
-          <p className="text-sm text-muted-foreground pt-1">金库铸造、DeFi协议深度 tokenomics 分析与收益模拟。</p>
+          <p className="text-sm text-muted-foreground pt-1">{t("mr.projects.sub")}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
           <div className="relative w-full sm:w-64">
@@ -97,7 +101,7 @@ export default function Projects() {
             <div className="flex-1 p-6 sm:p-8 space-y-4">
               {/* Badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/30 text-primary text-[11px] font-bold uppercase tracking-wider">
-                <Zap className="h-3 w-3" /> 精选推荐 · Featured Analysis
+                <Zap className="h-3 w-3" /> {t("mr.projects.featured")}{!isEn && " · FEATURED ANALYSIS"}
               </div>
 
               {/* Logo + title */}
@@ -134,7 +138,7 @@ export default function Projects() {
                   <p className="text-xl font-bold font-mono text-foreground/80">$312M</p>
                 </div>
                 <div className="ml-auto inline-flex items-center gap-1.5 text-primary text-sm font-semibold">
-                  查看完整分析 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  {t("mr.action.viewFull")}{!isEn && " · FULL ANALYSIS"} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>
@@ -142,16 +146,16 @@ export default function Projects() {
             {/* ── Right: stats panel (desktop only) ── */}
             <div className="hidden md:flex flex-col items-center justify-center gap-6 px-10 border-l border-primary/15 shrink-0 min-w-[200px] bg-white/[0.018]">
               <div className="text-center space-y-1">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">年化收益 APY</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.apy.label")}</p>
                 <p className="text-4xl font-bold font-mono text-primary leading-none">170.82%</p>
               </div>
               <div className="w-10 h-px bg-primary/20" />
               <div className="text-center space-y-1">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">锁仓总量 TVL</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.tvl.label")}</p>
                 <p className="text-3xl font-bold font-mono text-foreground/80 leading-none">$312M</p>
               </div>
               <div className="mt-2 inline-flex items-center gap-2 text-primary font-semibold text-sm group-hover:gap-3 transition-all whitespace-nowrap">
-                查看完整分析 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                {t("mr.action.viewFull")}{!isEn && " · FULL ANALYSIS"} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
@@ -172,7 +176,7 @@ export default function Projects() {
             </SelectTrigger>
             <SelectContent>
               {categories.map(c => (
-                <SelectItem key={c} value={c}>{categoryMap[c] || c}</SelectItem>
+                <SelectItem key={c} value={c}>{categoryMap[c]?.() || c}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -191,7 +195,7 @@ export default function Projects() {
                   isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {categoryMap[c] || c}
+                {categoryMap[c]?.() || c}
                 {isActive && (
                   <motion.div
                     layoutId="activeCategory"

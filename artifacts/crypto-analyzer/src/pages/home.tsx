@@ -2,12 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { useGetProjectsSummary, useListProjects } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { ArrowUpRight, ArrowUp, ArrowDown, TrendingUp, Minus } from "lucide-react";
 import { ProjectCard } from "@/components/shared/project-card";
 import { Link } from "wouter";
 import { motion, useInView } from "framer-motion";
 import type { Project } from "@workspace/api-client-react";
+import { useLanguage } from "@/contexts/language-context";
 
 function AnimatedCounter({ value, isCurrency = false, isPercent = false, isInteger = false }: { value: number | string, isCurrency?: boolean, isPercent?: boolean, isInteger?: boolean }) {
   const ref = useRef(null);
@@ -134,6 +134,10 @@ const cardItem = {
 };
 
 export default function Home() {
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
+  const isZh = language === "zh" || language === "zh-TW";
+
   const { data: summary, isLoading: isSummaryLoading } = useGetProjectsSummary();
   const { data: allProjects, isLoading: isTrendingLoading } = useListProjects({ sortBy: "trending" });
 
@@ -184,46 +188,101 @@ export default function Home() {
               <span className="animate-live-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            <span className="text-[11px] font-semibold text-muted-foreground tracking-widest uppercase">Live Data · 实时数据</span>
+            <span className="text-[11px] font-semibold text-muted-foreground tracking-widest uppercase">
+              {isEn ? "LIVE DATA" : `${t("mr.home.badge.live")} · LIVE DATA`}
+            </span>
           </div>
 
           {/* Main heading */}
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight lg:text-6xl text-foreground">
-            <motion.span
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.18, duration: 0.55, ease: [0.16,1,0.3,1] }}
-              className="block text-foreground/80"
-            >
-              Institutional-Grade
-            </motion.span>
-            <motion.span
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.55, ease: [0.16,1,0.3,1] }}
-              className="block mt-1"
-              style={{
-                background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 45%, #d97706 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              DeFi Analysis
-            </motion.span>
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.48, duration: 0.55 }}
-              className="block mt-3"
-            >
-              <span className="block text-2xl lg:text-3xl text-foreground/75 font-semibold tracking-tight">
-                机构级 DeFi 分析
-              </span>
-              <span className="block text-lg lg:text-xl text-muted-foreground/70 font-medium mt-1 tracking-wide">
-                智能体金融衍生品一体化平台
-              </span>
-            </motion.span>
+            {isEn ? (
+              <>
+                <motion.span
+                  initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.18, duration: 0.55, ease: [0.16,1,0.3,1] }}
+                  className="block text-foreground/80"
+                >
+                  Institutional-Grade
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.55, ease: [0.16,1,0.3,1] }}
+                  className="block mt-1"
+                  style={{ background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 45%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                >
+                  DeFi Analysis
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  transition={{ delay: 0.48, duration: 0.55 }}
+                  className="block mt-3"
+                >
+                  <span className="block text-2xl lg:text-3xl text-foreground/75 font-semibold tracking-tight">
+                    {t("mr.home.hero.sub")}
+                  </span>
+                </motion.span>
+              </>
+            ) : isZh ? (
+              <>
+                <motion.span
+                  initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.18, duration: 0.55, ease: [0.16,1,0.3,1] }}
+                  className="block text-foreground/80"
+                >
+                  Institutional-Grade
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.55, ease: [0.16,1,0.3,1] }}
+                  className="block mt-1"
+                  style={{ background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 45%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                >
+                  DeFi Analysis
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  transition={{ delay: 0.48, duration: 0.55 }}
+                  className="block mt-3"
+                >
+                  <span className="block text-2xl lg:text-3xl text-foreground/75 font-semibold tracking-tight">
+                    {t("mr.home.hero.title")}
+                  </span>
+                  <span className="block text-lg lg:text-xl text-muted-foreground/70 font-medium mt-1 tracking-wide">
+                    {t("mr.home.hero.sub")}
+                  </span>
+                </motion.span>
+              </>
+            ) : (
+              <>
+                <motion.span
+                  initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.18, duration: 0.55, ease: [0.16,1,0.3,1] }}
+                  className="block"
+                  style={{ background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 45%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                >
+                  {t("mr.home.hero.title")}
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.55, ease: [0.16,1,0.3,1] }}
+                  className="block mt-1 text-foreground/40 text-2xl lg:text-3xl"
+                >
+                  DeFi Analysis
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  transition={{ delay: 0.48, duration: 0.55 }}
+                  className="block mt-3"
+                >
+                  <span className="block text-2xl lg:text-3xl text-foreground/75 font-semibold tracking-tight">
+                    {t("mr.home.hero.sub")}
+                  </span>
+                  <span className="block text-sm text-muted-foreground/50 font-medium mt-2 tracking-widest uppercase">
+                    Institutional-Grade · DeFi Analysis
+                  </span>
+                </motion.span>
+              </>
+            )}
           </h1>
 
           {/* Description */}
@@ -233,8 +292,7 @@ export default function Home() {
             transition={{ delay: 0.6, duration: 0.5 }}
             className="text-base text-muted-foreground max-w-2xl leading-relaxed"
           >
-            Discover, analyze, and simulate returns for high-yield DeFi projects. Real-time APY tracking, risk scoring, and AI-driven derivative analytics built for institutional capital.
-            <span className="text-sm mt-2 block opacity-70">发现、分析并模拟高收益 DeFi 项目回报。专为机构资本打造的实时年化追踪、风险评估与智能衍生品分析体系。</span>
+            {t("mr.home.hero.desc")}
           </motion.p>
 
           {/* CTA */}
@@ -245,10 +303,10 @@ export default function Home() {
             className="flex flex-wrap gap-4 pt-2"
           >
             <Link href="/projects" className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-[0_0_24px_rgba(245,158,11,0.35)] transition-all hover:bg-primary/90 hover:shadow-[0_0_32px_rgba(245,158,11,0.55)] hover:-translate-y-0.5 active:translate-y-0">
-              探索项目 Explore
+              {t("mr.home.hero.btn.explore")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">EXPLORE</span>}
             </Link>
             <Link href="/tools" className="inline-flex h-12 items-center justify-center rounded-md border border-border/60 bg-background/50 backdrop-blur px-8 text-sm font-medium shadow-sm transition-all hover:bg-card hover:border-primary/30 hover:-translate-y-0.5 active:translate-y-0">
-              启动模拟器 Simulators
+              {t("mr.home.hero.btn.simulators")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">SIMULATORS</span>}
             </Link>
           </motion.div>
         </div>
@@ -258,9 +316,11 @@ export default function Home() {
       <section className="space-y-6">
         <div className="flex items-end gap-4 border-l-[3px] border-primary pl-4">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-primary/60 font-semibold">市场概览</span>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">Market Overview</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">Global DeFi metrics · 全球去中心化金融指标</p>
+            {!isEn && <span className="text-[10px] uppercase tracking-[0.2em] text-primary/60 font-semibold">MARKET OVERVIEW</span>}
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">{t("mr.section.market")}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">
+              {isEn ? "Global DeFi metrics" : `Global DeFi metrics · ${t("mr.section.market")}`}
+            </p>
           </div>
         </div>
 
@@ -347,13 +407,15 @@ export default function Home() {
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-chart-2 pl-4">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60">热门机会</span>
+              {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60">TRENDING OPPORTUNITIES</span>}
               <TrendingUp className="h-3 w-3 text-primary/40" />
             </div>
             <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
-              Trending Opportunities
+              {t("mr.section.trending")}
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">Highest yield changes in 24h · 24小时最高收益变动</p>
+            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">
+              {isEn ? "Highest yield changes in 24h" : `${t("mr.section.trending.sub")} · TRENDING`}
+            </p>
           </div>
         </div>
 
@@ -446,7 +508,7 @@ export default function Home() {
         {/* View All — bottom of trending */}
         <div className="flex justify-end pt-1">
           <Link href="/projects" className="group inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 rounded-lg px-4 py-2 bg-card/40 hover:bg-card/80 transition-all duration-200">
-            查看全部项目 View All Projects
+            {t("mr.action.viewFull")}{!isEn && " · VIEW ALL"}
             <ArrowUpRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
@@ -456,10 +518,13 @@ export default function Home() {
       <section className="space-y-6">
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-primary pl-4">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">精选推荐</span>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">Recommended Projects</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">Curated high-conviction opportunities</p>
-            <p className="text-xs text-muted-foreground/60 tracking-wide">精选高确信度机会</p>
+            {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">FEATURED ANALYSIS</span>}
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
+              {t("mr.projects.featured")}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">
+              {isEn ? "Curated high-conviction opportunities" : `Curated opportunities · ${t("mr.projects.featured")}`}
+            </p>
           </div>
         </div>
 
@@ -490,7 +555,7 @@ export default function Home() {
         {/* View All — bottom of recommended */}
         <div className="flex justify-end pt-1">
           <Link href="/projects" className="group inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 rounded-lg px-4 py-2 bg-card/40 hover:bg-card/80 transition-all duration-200">
-            查看全部项目 View All Projects
+            {t("mr.action.viewFull")}{!isEn && " · VIEW ALL"}
             <ArrowUpRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
