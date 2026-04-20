@@ -13,8 +13,8 @@ interface LayoutProps {
 const NAV_ITEMS = [
   { href: "/projects",  label: "PROJECTS",   key: "projects",   icon: Grid },
   { href: "/tools",     label: "SIMULATORS", key: "simulators", icon: Activity },
-  { href: "/resources", label: "LIBRARY",    key: "library",    icon: BookOpen },
   { href: "/recruit",   label: "RECRUIT",    key: "recruit",    icon: Users },
+  { href: "/resources", label: "LIBRARY",    key: "library",    icon: BookOpen },
 ];
 
 /* ─── Animated Logo ──────────────────────────────────────────────── */
