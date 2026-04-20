@@ -45,29 +45,45 @@ function AnimatedRuneLogo({ size = 42 }: { size?: number }) {
 /* ─── Wordmark ───────────────────────────────────────────────────── */
 function WordmarkRune({ small = false }: { small?: boolean }) {
   return (
-    <motion.span
-      className={cn(
-        "font-bold uppercase leading-none select-none",
-        small ? "text-[16px] tracking-[0.16em]" : "text-[26px] sm:text-[28px] tracking-[0.22em]"
+    <div className="flex flex-col items-center select-none" style={{ gap: "4px" }}>
+      {!small && (
+        <div style={{
+          height: "1px",
+          width: "100%",
+          background: "linear-gradient(90deg, transparent 0%, rgba(251,191,36,0.55) 50%, transparent 100%)",
+        }} />
       )}
-      style={{
-        fontFamily: "'Cinzel', serif",
-        background: "linear-gradient(160deg, #fef3c7 0%, #fbbf24 45%, #d97706 100%)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        backgroundClip: "text",
-      }}
-      animate={{
-        textShadow: [
-          "0 0 0px rgba(251,191,36,0)",
-          "0 0 18px rgba(251,191,36,0.55)",
-          "0 0 0px rgba(251,191,36,0)",
-        ],
-      }}
-      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-    >
-      RUNE
-    </motion.span>
+      <motion.span
+        className="font-bold uppercase leading-none"
+        style={{
+          fontFamily: "'Cinzel', serif",
+          fontSize: small ? "15px" : "21px",
+          letterSpacing: small ? "0.38em" : "0.48em",
+          paddingRight: small ? "0.38em" : "0.48em",
+          background: "linear-gradient(160deg, #fffbeb 0%, #fbbf24 42%, #b45309 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+        animate={{
+          textShadow: [
+            "0 0 0px rgba(251,191,36,0)",
+            "0 0 16px rgba(251,191,36,0.5)",
+            "0 0 0px rgba(251,191,36,0)",
+          ],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      >
+        RUNE
+      </motion.span>
+      {!small && (
+        <div style={{
+          height: "1px",
+          width: "100%",
+          background: "linear-gradient(90deg, transparent 0%, rgba(251,191,36,0.3) 50%, transparent 100%)",
+        }} />
+      )}
+    </div>
   );
 }
 
