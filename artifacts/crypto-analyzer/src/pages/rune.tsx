@@ -154,8 +154,8 @@ export default function Rune() {
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
         className="border-b border-border/50 pb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="bg-primary/10 p-2.5 rounded-xl border border-primary/20 shadow-[0_0_18px_hsl(217,80%,58%,0.18)]">
-            <Coins className="h-6 w-6 text-primary" />
+          <div className="w-14 h-14 rounded-xl overflow-hidden border border-primary/20 shadow-[0_0_18px_rgba(251,191,36,0.2)] shrink-0 bg-black">
+            <img src="/rune-logo.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-0.5">

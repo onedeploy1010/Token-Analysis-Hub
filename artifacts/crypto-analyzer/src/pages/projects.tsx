@@ -96,9 +96,14 @@ export default function Projects() {
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider">
                 <Zap className="h-3.5 w-3.5" /> 精选推荐 · Featured Analysis
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
-                RUNE Protocol <span className="text-primary/80">—</span> 深度节点分析
-              </h2>
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-black border border-primary/25 shadow-[0_0_20px_rgba(251,191,36,0.2)] shrink-0">
+                  <img src="/rune-logo.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
+                  RUNE Protocol <span className="text-primary/80">—</span> 深度节点分析
+                </h2>
+              </div>
               <p className="text-muted-foreground text-sm sm:text-base max-w-xl">
                 双TOKEN通缩经济模型 · 四级节点收益拆解 · 完整 tokenomics 图表 · 节点 ROI 交互计算器
               </p>

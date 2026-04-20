@@ -63,7 +63,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <CardHeader className="pb-4 relative">
           <div className={`absolute top-0 left-0 w-full h-1 ${getCategoryColor(project.category)} opacity-70`} />
           <div className="flex justify-between items-start gap-2 pt-2">
-            <div className="space-y-1 min-w-0">
+            <div className="space-y-1 min-w-0 flex items-start gap-2.5">
+              {project.symbol === "RUNE" && (
+                <div className="w-8 h-8 rounded-lg overflow-hidden bg-black border border-primary/20 shrink-0 mt-0.5">
+                  <img src="/rune-logo.png" alt="RUNE" className="w-full h-full object-contain" />
+                </div>
+              )}
+              <div className="min-w-0">
               <h3 className="font-bold text-lg leading-none tracking-tight group-hover:text-primary transition-colors truncate">
                 {project.name}
               </h3>
@@ -80,6 +86,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                     <FlaskConical className="h-2.5 w-2.5" /> Analysis
                   </span>
                 )}
+              </div>
               </div>
             </div>
             {project.isRecommended && (
