@@ -632,8 +632,8 @@ export default function Rune() {
                         </button>
                       ))}
                     </div>
-                    {selectedStagePreview && (
-                      {isZh && <p className="text-xs text-muted-foreground px-1">{selectedStagePreview.trigger}</p>}
+                    {selectedStagePreview && isZh && (
+                      <p className="text-xs text-muted-foreground px-1">{selectedStagePreview.trigger}</p>
                     )}
                   </div>
                 ) : null}
