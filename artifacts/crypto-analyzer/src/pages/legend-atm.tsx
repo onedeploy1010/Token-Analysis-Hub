@@ -1,12 +1,20 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { Copy, Check } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend as RechartsLegend,
 } from "recharts";
 import { useShowZh } from "@/contexts/language-context";
+
+/* ── contract addresses ── */
+const CONTRACTS = [
+  { labelZh: "代币合约", labelEn: "Token",   addr: "0x986058ec93756E57b4e55b406dD0BeE24bcD95e3" },
+  { labelZh: "质押合约", labelEn: "Staking", addr: "0xa479bdcd0eed3a776a4fefe5e13899bab567f263" },
+  { labelZh: "交易对",   labelEn: "Pair",    addr: "0x659b44d603052132fd36cf048d9e0ba1e307ae3a" },
+] as const;
 
 /* ── constants ── */
 const TIERS = [
@@ -66,6 +74,25 @@ function buildReinvestRows(
 }
 
 /* ── sub-components ── */
+function CopyAddress({ addr }: { addr: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(addr).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  }, [addr]);
+  return (
+    <button
+      onClick={handleCopy}
+      className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all shrink-0"
+      title="Copy address"
+    >
+      {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
+    </button>
+  );
+}
+
 function StatCard({
   label, labelEn, value, sub, highlight = false,
 }: { label: string; labelEn: string; value: string; sub?: string; highlight?: boolean }) {
@@ -177,6 +204,21 @@ export default function LegendATM() {
               <div key={k} className="flex justify-between border border-border/20 rounded px-2 py-1 bg-black/20">
                 <span className="text-muted-foreground/70">{k}</span>
                 <span className="font-medium text-foreground">{v}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* ── contract addresses ── */}
+          <div className="mt-4 pt-4 border-t border-border/20 grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {CONTRACTS.map(({ labelZh, labelEn, addr }) => (
+              <div key={addr} className="flex items-center gap-2 rounded-lg border border-border/25 bg-black/20 px-3 py-2">
+                <span className="text-[10px] uppercase tracking-[0.15em] text-primary/60 font-semibold shrink-0 w-16">
+                  {showZh ? labelZh : labelEn}
+                </span>
+                <span className="font-mono text-[10px] text-muted-foreground/70 truncate flex-1">
+                  {addr.slice(0, 6)}…{addr.slice(-6)}
+                </span>
+                <CopyAddress addr={addr} />
               </div>
             ))}
           </div>
