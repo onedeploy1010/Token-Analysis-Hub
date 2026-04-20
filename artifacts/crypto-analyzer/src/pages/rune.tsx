@@ -11,7 +11,7 @@ import {
   PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // still used by calculator section below
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,6 +96,152 @@ function SectionTitle({ icon: Icon, i18nKey, en }: { icon: React.ElementType; i1
       {isEn ? en : t(i18nKey)}
       {isZh && <> · <span className="text-muted-foreground/60">{en}</span></>}
     </h2>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TechChartCard — high-tech "HUD" wrapper for each analytical chart.
+   Adds:
+     • Hexa-corner brackets that pulse on mount
+     • Animated top accent (gradient sweep)
+     • Hover-reveal radial glow
+     • Diagonal scan line (slow loop)
+     • Live "STREAM" indicator
+══════════════════════════════════════════════════════════════════════════════ */
+interface TechChartCardProps {
+  icon: React.ElementType;
+  title: string;
+  subtitle?: string;
+  accent?: string;            // tailwind color class fragment (e.g. "primary", "amber-500")
+  delay?: number;
+  className?: string;
+  children: React.ReactNode;
+}
+
+function TechChartCard({
+  icon: Icon, title, subtitle,
+  accent = "primary", delay = 0,
+  className = "", children,
+}: TechChartCardProps) {
+
+  // map "primary" / shadcn token → CSS hsl(var)
+  const accentVar = accent === "primary" ? "var(--primary)" : undefined;
+  const accentColorClass =
+    accent === "primary" ? "text-primary"
+    : accent.startsWith("amber") ? "text-amber-400"
+    : accent.startsWith("orange") ? "text-orange-400"
+    : accent.startsWith("chart-1") ? "text-sky-400"
+    : "text-primary";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -3 }}
+      className={`group relative rounded-xl border border-border/50 bg-gradient-to-br from-card/85 via-card/70 to-card/40 backdrop-blur-md overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.35)] ${className}`}
+    >
+      {/* Top accent gradient sweep */}
+      <motion.div
+        className="absolute left-0 right-0 top-0 h-[2px] pointer-events-none z-20"
+        style={{
+          background: `linear-gradient(90deg, transparent 0%, ${accentVar ? `hsl(${accentVar})` : "rgba(251,191,36,0.7)"} 25%, ${accentVar ? `hsl(${accentVar})` : "rgba(251,191,36,1)"} 50%, ${accentVar ? `hsl(${accentVar})` : "rgba(251,191,36,0.7)"} 75%, transparent 100%)`,
+        }}
+        initial={{ scaleX: 0, opacity: 0 }}
+        animate={{ scaleX: 1, opacity: [0, 1, 0.5] }}
+        transition={{ duration: 1.2, delay: delay + 0.2, ease: "easeOut" }}
+      />
+
+      {/* Subtle holographic radial glow on hover */}
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-700`}
+        style={{
+          background: `radial-gradient(600px circle at var(--mx,50%) var(--my,0%), ${accentVar ? `hsl(${accentVar} / 0.08)` : "rgba(251,191,36,0.08)"}, transparent 40%)`,
+        }}
+      />
+
+      {/* Diagonal scan line — slow infinite loop */}
+      <motion.div
+        className="absolute inset-y-0 -left-1/3 w-1/3 pointer-events-none z-10"
+        style={{
+          background: "linear-gradient(115deg, transparent 0%, transparent 35%, rgba(255,255,255,0.025) 50%, transparent 65%, transparent 100%)",
+        }}
+        animate={{ x: ["0%", "400%"] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "linear", delay: delay + 1.5 }}
+      />
+
+      {/* HUD corner brackets — 4 corners */}
+      {[
+        { pos: "top-2 left-2",     border: "border-t border-l", corner: "rounded-tl" },
+        { pos: "top-2 right-2",    border: "border-t border-r", corner: "rounded-tr" },
+        { pos: "bottom-2 left-2",  border: "border-b border-l", corner: "rounded-bl" },
+        { pos: "bottom-2 right-2", border: "border-b border-r", corner: "rounded-br" },
+      ].map((c, i) => (
+        <motion.span
+          key={i}
+          className={`absolute ${c.pos} w-3 h-3 ${c.border} ${c.corner} pointer-events-none ${accentColorClass} opacity-50`}
+          style={{ borderColor: "currentColor" }}
+          initial={{ opacity: 0, scale: 0.4 }}
+          animate={{ opacity: [0, 0.8, 0.5], scale: 1 }}
+          transition={{ duration: 0.6, delay: delay + 0.4 + i * 0.05 }}
+        />
+      ))}
+
+      {/* Header */}
+      <div className="relative z-20 flex items-center justify-between px-5 pt-4 pb-3 border-b border-border/30">
+        <div className="flex items-start gap-3 min-w-0">
+          {/* Glowing icon block */}
+          <motion.div
+            className={`relative shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${accentColorClass}`}
+            style={{
+              background: `linear-gradient(135deg, currentColor 0%, transparent 100%)`,
+              backgroundColor: "rgba(255,255,255,0.02)",
+            }}
+            animate={{
+              boxShadow: [
+                `0 0 0 0 currentColor`,
+                `0 0 14px 2px currentColor`,
+                `0 0 0 0 currentColor`,
+              ],
+            }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay }}
+          >
+            <Icon className="h-4 w-4 relative z-10" />
+            {/* Inner glow */}
+            <span className="absolute inset-0 rounded-lg bg-current opacity-[0.08]" />
+          </motion.div>
+
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <h3 className="text-sm font-semibold text-foreground tracking-tight leading-tight truncate">
+                {title}
+              </h3>
+            </div>
+            {subtitle && (
+              <p className="text-[10px] text-muted-foreground/70 mt-0.5 leading-tight tracking-wide">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Live data indicator */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <motion.span
+            className={`block h-1.5 w-1.5 rounded-full ${accentColorClass} bg-current`}
+            animate={{ opacity: [1, 0.3, 1], scale: [1, 0.85, 1] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50 font-medium hidden sm:inline">
+            LIVE
+          </span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="relative z-20 px-3 pt-4 pb-3">
+        {children}
+      </div>
+    </motion.div>
   );
 }
 
@@ -339,13 +485,50 @@ export default function Rune() {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.15 }}
         className="space-y-8">
 
-        <div className="border-b border-border/40 pb-4">
-          <div className="border-l-[3px] border-primary pl-4">
-            {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.analysis.eyebrow")}</span>}
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              {isEn ? "Market Analysis" : isZh ? `${t("mr.rune.section.analysis.title")} · Market Analysis` : t("mr.rune.section.analysis.title")}
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">{t("mr.rune.section.analysis.desc")}</p>
+        {/* Tech-style section header */}
+        <div className="relative pb-4">
+          {/* Animated underline */}
+          <motion.div
+            className="absolute left-0 right-0 bottom-0 h-px pointer-events-none"
+            style={{ background: "linear-gradient(90deg, hsl(var(--primary)/0.5) 0%, hsl(var(--primary)/0.2) 30%, transparent 100%)" }}
+            initial={{ scaleX: 0, originX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
+          />
+          <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div className="flex items-stretch gap-4 min-w-0">
+              {/* Glowing accent bar */}
+              <motion.div
+                className="w-[3px] rounded-full bg-gradient-to-b from-primary via-primary/80 to-primary/20"
+                initial={{ scaleY: 0, originY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                style={{ boxShadow: "0 0 12px hsl(var(--primary)/0.6)" }}
+              />
+              <div>
+                {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.analysis.eyebrow")}</span>}
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                  {isEn ? "Market Analysis" : isZh ? `${t("mr.rune.section.analysis.title")} · Market Analysis` : t("mr.rune.section.analysis.title")}
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">{t("mr.rune.section.analysis.desc")}</p>
+              </div>
+            </div>
+
+            {/* Live status badge */}
+            <motion.div
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 backdrop-blur-sm"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.18em] text-primary/80 font-semibold">
+                Real-time Data Stream
+              </span>
+            </motion.div>
           </div>
         </div>
 
@@ -353,54 +536,72 @@ export default function Rune() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Chart 1: Price Stage Progression – 2/3 width */}
-          <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-primary/50">
-            <CardHeader className="pb-2 border-b border-border/40">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-primary" />
-                {isEn ? "Price Stage Progression" : t("mr.rune.chart.priceStages")}
-                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Price Stage Progression</span>}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 pb-2">
-              {priceStageChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={priceStageChartData} margin={{ top: 4, right: 12, left: -8, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={C.grid} />
-                    <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
-                      tickFormatter={v => v >= 1 ? `$${v}` : `$${v}`} />
-                    <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 4 : 2)}`, name]} />
-                    <Legend wrapperStyle={{ fontSize: 11, color: C.muted }} />
-                    <Bar dataKey="mother" name={isEn ? "Mother Token" : t("mr.rune.token.mother")} fill={C.mother} radius={[4,4,0,0]} maxBarSize={40} />
-                    <Bar dataKey="sub"    name={isEn ? "Sub Token"    : t("mr.rune.token.sub")}    fill={C.sub}    radius={[4,4,0,0]} maxBarSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[220px] flex items-center justify-center">
-                  <Skeleton className="h-full w-full" />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <TechChartCard
+            icon={BarChart2}
+            title={isEn ? "Price Stage Progression" : `${t("mr.rune.chart.priceStages")}${isZh ? " · Price Stage Progression" : ""}`}
+            accent="primary"
+            delay={0.05}
+            className="lg:col-span-2"
+          >
+            {priceStageChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={priceStageChartData} margin={{ top: 8, right: 12, left: -8, bottom: 4 }}>
+                  <defs>
+                    <linearGradient id="barMother" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"  stopColor={C.mother} stopOpacity={1} />
+                      <stop offset="100%" stopColor={C.mother} stopOpacity={0.35} />
+                    </linearGradient>
+                    <linearGradient id="barSub" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"  stopColor={C.sub} stopOpacity={1} />
+                      <stop offset="100%" stopColor={C.sub} stopOpacity={0.35} />
+                    </linearGradient>
+                    <filter id="barGlow">
+                      <feGaussianBlur stdDeviation="2.5" result="b" />
+                      <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
+                  <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                    tickFormatter={v => `$${v}`} />
+                  <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 4 : 2)}`, name]} animationDuration={180} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 8 }} iconType="circle" />
+                  <Bar dataKey="mother" name={isEn ? "Mother Token" : t("mr.rune.token.mother")} fill="url(#barMother)" radius={[6,6,0,0]} maxBarSize={36} animationDuration={1100} animationBegin={200} />
+                  <Bar dataKey="sub"    name={isEn ? "Sub Token"    : t("mr.rune.token.sub")}    fill="url(#barSub)"    radius={[6,6,0,0]} maxBarSize={36} animationDuration={1100} animationBegin={400} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[240px] flex items-center justify-center">
+                <Skeleton className="h-full w-full" />
+              </div>
+            )}
+          </TechChartCard>
 
           {/* Chart 2: Fund Allocation – 1/3 width */}
-          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-chart-1/50">
-            <CardHeader className="pb-2 border-b border-border/40">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <PieIcon className="h-4 w-4 text-primary" />
-                {isEn ? "Fund Allocation" : t("mr.rune.chart.fundAlloc")}
-                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Fund Allocation</span>}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 pb-2">
-              {fundAllocData.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={160}>
+          <TechChartCard
+            icon={PieIcon}
+            title={isEn ? "Fund Allocation" : `${t("mr.rune.chart.fundAlloc")}${isZh ? " · Fund Allocation" : ""}`}
+            accent="chart-1"
+            delay={0.15}
+          >
+            {fundAllocData.length > 0 ? (
+              <>
+                <div className="relative">
+                  <ResponsiveContainer width="100%" height={170}>
                     <PieChart>
-                      <Pie data={fundAllocData} cx="50%" cy="50%" innerRadius={45} outerRadius={70}
-                        dataKey="value" nameKey="name" paddingAngle={3}>
+                      <defs>
+                        {PIE_COLORS.map((c, i) => (
+                          <radialGradient key={i} id={`pieGrad-${i}`} cx="50%" cy="50%" r="50%">
+                            <stop offset="0%"  stopColor={c} stopOpacity={1}    />
+                            <stop offset="100%" stopColor={c} stopOpacity={0.6} />
+                          </radialGradient>
+                        ))}
+                      </defs>
+                      <Pie data={fundAllocData} cx="50%" cy="50%" innerRadius={48} outerRadius={75}
+                        dataKey="value" nameKey="name" paddingAngle={4} stroke="hsl(230,30%,8%)" strokeWidth={2}
+                        animationDuration={1000} animationBegin={200}>
                         {fundAllocData.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                          <Cell key={i} fill={`url(#pieGrad-${i})`} />
                         ))}
                       </Pie>
                       <Tooltip
@@ -409,108 +610,136 @@ export default function Rune() {
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="space-y-1.5 mt-2">
-                    {fundAllocData.map((d, i) => (
-                      <div key={i} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <div className="h-2 w-2 rounded-full" style={{ background: PIE_COLORS[i] }} />
-                          <span className="text-muted-foreground">{d.name}</span>
-                        </div>
-                        <span className="font-mono font-medium">${((d.value ?? 0)/1e6).toFixed(1)}M</span>
+                  {/* Center total */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                      <div className="text-[8px] uppercase tracking-widest text-muted-foreground/60">Total</div>
+                      <div className="num text-sm text-foreground/90">
+                        ${(fundAllocData.reduce((s, d) => s + (d.value ?? 0), 0) / 1e6).toFixed(1)}M
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </>
-              ) : (
-                <Skeleton className="h-[220px] w-full" />
-              )}
-            </CardContent>
-          </Card>
+                </div>
+                <div className="space-y-1.5 mt-3">
+                  {fundAllocData.map((d, i) => {
+                    const total = fundAllocData.reduce((s, x) => s + (x.value ?? 0), 0) || 1;
+                    const pct   = ((d.value ?? 0) / total) * 100;
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.6 + i * 0.08 }}
+                        className="flex items-center justify-between text-xs gap-2"
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="h-2 w-2 rounded-full shrink-0 shadow-[0_0_6px_currentColor]" style={{ background: PIE_COLORS[i], color: PIE_COLORS[i] }} />
+                          <span className="text-muted-foreground truncate">{d.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[10px] text-muted-foreground/60 num tabular-nums">{pct.toFixed(0)}%</span>
+                          <span className="num font-medium text-foreground/90 tabular-nums">${((d.value ?? 0)/1e6).toFixed(1)}M</span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <Skeleton className="h-[220px] w-full" />
+            )}
+          </TechChartCard>
         </div>
 
         {/* Row 2: Node Comparison + Deflation Curve */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Chart 3: Node Returns by Stage */}
-          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-amber-500/50">
-            <CardHeader className="pb-2 border-b border-border/40">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                {isEn ? "Node Returns / Stage" : t("mr.rune.chart.nodeCompare")}
-                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Node Returns / Stage</span>}
-              </CardTitle>
-              <p className="text-[10px] text-muted-foreground">{t("mr.rune.chart.nodeCompare.sub")}</p>
-            </CardHeader>
-            <CardContent className="pt-4 pb-2">
-              {nodeCompareData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={240}>
-                  <AreaChart data={nodeCompareData} margin={{ top: 4, right: 12, left: 4, bottom: 4 }}>
-                    <defs>
-                      {(overview?.nodes ?? []).map((n, i) => (
-                        <linearGradient key={n.level} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor={Object.values(C).slice(0,4)[i]} stopOpacity={0.25} />
-                          <stop offset="95%" stopColor={Object.values(C).slice(0,4)[i]} stopOpacity={0}    />
-                        </linearGradient>
-                      ))}
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={C.grid} />
-                    <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
-                      tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v/1e3).toFixed(0)}K` : `$${v}`} />
-                    <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, 0)}`, name]} />
-                    <Legend wrapperStyle={{ fontSize: 11, color: C.muted }} />
+          <TechChartCard
+            icon={TrendingUp}
+            title={isEn ? "Node Returns / Stage" : `${t("mr.rune.chart.nodeCompare")}${isZh ? " · Node Returns / Stage" : ""}`}
+            subtitle={t("mr.rune.chart.nodeCompare.sub")}
+            accent="amber-500"
+            delay={0.25}
+          >
+            {nodeCompareData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={nodeCompareData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+                  <defs>
                     {(overview?.nodes ?? []).map((n, i) => (
-                      <Area key={n.level} type="monotone" dataKey={n.level} name={nodeName(n)}
-                        stroke={Object.values(C)[i]} strokeWidth={2}
-                        fill={`url(#grad-${i})`} dot={false} />
+                      <linearGradient key={n.level} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor={Object.values(C).slice(0,4)[i]} stopOpacity={0.32} />
+                        <stop offset="95%" stopColor={Object.values(C).slice(0,4)[i]} stopOpacity={0}    />
+                      </linearGradient>
                     ))}
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <Skeleton className="h-[240px] w-full" />
-              )}
-            </CardContent>
-          </Card>
+                    <filter id="lineGlow">
+                      <feGaussianBlur stdDeviation="1.4" result="b" />
+                      <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
+                  <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                    tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v/1e3).toFixed(0)}K` : `$${v}`} />
+                  <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, 0)}`, name]} animationDuration={180} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 4 }} iconType="circle" />
+                  {(overview?.nodes ?? []).map((n, i) => (
+                    <Area key={n.level} type="monotone" dataKey={n.level} name={nodeName(n)}
+                      stroke={Object.values(C)[i]} strokeWidth={2.2}
+                      fill={`url(#grad-${i})`} dot={false}
+                      style={{ filter: "url(#lineGlow)" }}
+                      animationDuration={1300} animationBegin={i * 120 + 200} />
+                  ))}
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <Skeleton className="h-[260px] w-full" />
+            )}
+          </TechChartCard>
 
           {/* Chart 4: Sub-token Deflation Curve */}
-          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-orange-500/50">
-            <CardHeader className="pb-2 border-b border-border/40">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Flame className="h-4 w-4 text-orange-400" />
-                {isEn ? "Deflation Curve" : t("mr.rune.chart.deflation")}
-                {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Deflation Curve</span>}
-              </CardTitle>
-              <p className="text-[10px] text-muted-foreground">{t("mr.rune.chart.deflation.sub")}</p>
-            </CardHeader>
-            <CardContent className="pt-4 pb-2">
-              {deflationData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={240}>
-                  <AreaChart data={deflationData} margin={{ top: 4, right: 12, left: 4, bottom: 4 }}>
-                    <defs>
-                      <linearGradient id="gradCirc"  x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor={C.sub}    stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={C.sub}    stopOpacity={0}   />
-                      </linearGradient>
-                      <linearGradient id="gradBurn"  x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor="hsl(0,80%,55%)" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="hsl(0,80%,55%)" stopOpacity={0}   />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={C.grid} />
-                    <XAxis dataKey="month" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
-                      tickFormatter={v => `${(v/1e6).toFixed(1)}M`} />
-                    <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`${(v/1e6).toFixed(3)}M ${isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}`, name]} />
-                    <Legend wrapperStyle={{ fontSize: 11, color: C.muted }} />
-                    <Area type="monotone" dataKey="circulating" name={isEn ? "Circulating" : (t("metrics.circulation") || "Circulating")} stroke={C.sub} strokeWidth={2} fill="url(#gradCirc)" dot={false} />
-                    <Area type="monotone" dataKey="burned"      name={isEn ? "Burned"      : (t("metrics.burned")      || "Burned")}      stroke="hsl(0,80%,55%)" strokeWidth={1.5} fill="url(#gradBurn)" dot={false} strokeDasharray="4 2" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <Skeleton className="h-[240px] w-full" />
-              )}
-            </CardContent>
-          </Card>
+          <TechChartCard
+            icon={Flame}
+            title={isEn ? "Deflation Curve" : `${t("mr.rune.chart.deflation")}${isZh ? " · Deflation Curve" : ""}`}
+            subtitle={t("mr.rune.chart.deflation.sub")}
+            accent="orange-500"
+            delay={0.35}
+          >
+            {deflationData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={deflationData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+                  <defs>
+                    <linearGradient id="gradCirc"  x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor={C.sub}    stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={C.sub}    stopOpacity={0}   />
+                    </linearGradient>
+                    <linearGradient id="gradBurn"  x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="hsl(0,80%,55%)" stopOpacity={0.28} />
+                      <stop offset="95%" stopColor="hsl(0,80%,55%)" stopOpacity={0}   />
+                    </linearGradient>
+                    <filter id="burnGlow">
+                      <feGaussianBlur stdDeviation="1.4" result="b" />
+                      <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
+                  <XAxis dataKey="month" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                    tickFormatter={v => `${(v/1e6).toFixed(1)}M`} />
+                  <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`${(v/1e6).toFixed(3)}M ${isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}`, name]} animationDuration={180} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 4 }} iconType="circle" />
+                  <Area type="monotone" dataKey="circulating" name={isEn ? "Circulating" : (t("metrics.circulation") || "Circulating")} stroke={C.sub} strokeWidth={2.4} fill="url(#gradCirc)" dot={false}
+                    style={{ filter: "url(#burnGlow)" }}
+                    animationDuration={1400} animationBegin={200} />
+                  <Area type="monotone" dataKey="burned"      name={isEn ? "Burned"      : (t("metrics.burned")      || "Burned")}      stroke="hsl(0,80%,55%)" strokeWidth={1.8} fill="url(#gradBurn)" dot={false} strokeDasharray="4 2"
+                    style={{ filter: "url(#burnGlow)" }}
+                    animationDuration={1400} animationBegin={400} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <Skeleton className="h-[260px] w-full" />
+            )}
+          </TechChartCard>
         </div>
       </motion.div>
 
