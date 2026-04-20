@@ -11,6 +11,7 @@ import Rune from "@/pages/rune";
 import B18 from "@/pages/b18";
 import HyperLiquid from "@/pages/hyperliquid";
 import LegendATM from "@/pages/legend-atm";
+import Recruit from "@/pages/recruit";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -34,6 +35,7 @@ function Router() {
         <Route path="/projects/legend-atm" component={LegendATM} />
         <Route path="/projects/:id" component={ProjectDetail} />
         <Route path="/tools" component={Tools} />
+        <Route path="/recruit" component={Recruit} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

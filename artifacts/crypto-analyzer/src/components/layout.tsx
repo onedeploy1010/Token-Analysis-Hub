@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Activity, Grid, Home, X, Menu } from "lucide-react";
+import { Activity, Grid, Home, Users, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Dashboard", labelZh: "仪表盘", icon: Home },
   { href: "/projects", label: "Projects", labelZh: "项目库", icon: Grid },
   { href: "/tools", label: "Simulators", labelZh: "模拟工具", icon: Activity },
+  { href: "/recruit", label: "Recruit", labelZh: "节点招募", icon: Users },
 ];
 
 function RuneLogo({ size = 32 }: { size?: number }) {
