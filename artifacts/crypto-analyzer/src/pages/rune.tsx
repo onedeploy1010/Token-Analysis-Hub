@@ -218,10 +218,10 @@ export default function Rune() {
             </div>
             <p className="text-4xl sm:text-5xl font-bold tracking-tight mb-2">{overview.motherToken.symbol}</p>
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
-              <span>开盘价 <span className="font-mono text-foreground font-semibold">${overview.motherToken.launchPrice}</span></span>
+              <span>开盘价 <span className="font-mono text-foreground font-semibold num">${overview.motherToken.launchPrice}</span></span>
               <span>发行量 <span className="font-mono text-foreground font-semibold">{((overview.motherToken.totalSupply ?? 0)/1e8).toFixed(1)}亿枚</span></span>
               <span>日燃烧 <span className="font-mono text-foreground font-semibold">{((overview.motherToken.dailyBurnRate ?? 0)*100).toFixed(1)}%</span></span>
-              <span>24M目标 <span className="font-mono text-green-400 font-semibold">${overview.motherToken.targetPriceLow}~${overview.motherToken.targetPriceHigh}</span></span>
+              <span>24M目标 <span className="font-mono font-bold num-gold">${overview.motherToken.targetPriceLow}~${overview.motherToken.targetPriceHigh}</span></span>
             </div>
           </div>
           <div className="p-5 rounded-xl border border-orange-800/30 bg-gradient-to-br from-orange-950/40 to-transparent">
@@ -231,10 +231,10 @@ export default function Rune() {
             </div>
             <p className="text-4xl sm:text-5xl font-bold tracking-tight text-orange-300 mb-2">{overview.subToken.symbol}</p>
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
-              <span>初始价 <span className="font-mono text-foreground font-semibold">${overview.subToken.launchPrice}</span></span>
+              <span>初始价 <span className="font-mono text-foreground font-semibold num">${overview.subToken.launchPrice}</span></span>
               <span>发行量 <span className="font-mono text-foreground font-semibold">{((overview.subToken.totalSupply ?? 0)/1e6).toFixed(1)}百万枚</span></span>
               <span>日燃烧 <span className="font-mono text-foreground font-semibold">{((overview.subToken.dailyBurnRate ?? 0)*100).toFixed(1)}%</span></span>
-              <span>24M目标 <span className="font-mono text-green-400 font-semibold">${overview.subToken.targetPriceLow}~${overview.subToken.targetPriceHigh}</span></span>
+              <span>24M目标 <span className="font-mono font-bold num-gold">${overview.subToken.targetPriceLow}~${overview.subToken.targetPriceHigh}</span></span>
             </div>
           </div>
         </motion.div>
@@ -258,7 +258,7 @@ export default function Rune() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Chart 1: Price Stage Progression – 2/3 width */}
-          <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
+          <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-primary/50">
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <BarChart2 className="h-4 w-4 text-primary" />
@@ -289,7 +289,7 @@ export default function Rune() {
           </Card>
 
           {/* Chart 2: Fund Allocation – 1/3 width */}
-          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
+          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-chart-1/50">
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <PieIcon className="h-4 w-4 text-primary" />
@@ -337,7 +337,7 @@ export default function Rune() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Chart 3: Node Returns by Stage */}
-          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
+          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-amber-500/50">
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
@@ -378,7 +378,7 @@ export default function Rune() {
           </Card>
 
           {/* Chart 4: Sub-token Deflation Curve */}
-          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
+          <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden border-t-2 border-t-orange-500/50">
             <CardHeader className="pb-2 border-b border-border/40">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-400" />
@@ -446,21 +446,30 @@ export default function Rune() {
                   {(overview.nodes ?? []).map(node => {
                     const color  = (C as Record<string,string>)[node.level] ?? C.pioneer;
                     const isOn   = nodeLevel === node.level;
+                    const apy    = ((node.dailyUsdt * 365) / node.investment * 100).toFixed(2);
                     return (
                       <button key={node.level}
                         onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
-                        className={`text-left p-4 rounded-xl border bg-gradient-to-br transition-all ${NODE_BG[node.level]} ${isOn ? `ring-2 ${NODE_RING[node.level]}` : ""}`}
+                        className={`relative text-left p-4 rounded-xl border bg-gradient-to-br transition-all duration-200 overflow-hidden ${NODE_BG[node.level]} ${isOn ? `ring-2 ${NODE_RING[node.level]} shadow-lg` : "hover:brightness-110"}`}
                       >
+                        {/* Selected glow line */}
+                        {isOn && <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-60" style={{ color }} />}
+
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color }}>{node.nameCn}</span>
-                          {isOn && <BadgeCheck className="h-3.5 w-3.5" style={{ color }} />}
+                          {isOn ? <BadgeCheck className="h-3.5 w-3.5" style={{ color }} /> : <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-medium">{node.nameEn}</span>}
                         </div>
-                        <p className="font-semibold text-sm">{node.nameEn}</p>
-                        <p className="font-mono text-xl font-bold mt-1">${node.investment.toLocaleString()}</p>
-                        <div className="mt-2 pt-2 border-t border-white/10 space-y-0.5">
-                          <p className="text-[10px] text-muted-foreground">私募价 <span className="font-mono text-foreground">${node.privatePrice}</span></p>
+                        <p className="font-mono text-xl font-bold mt-0.5">${node.investment.toLocaleString()}</p>
+
+                        {/* APY badge */}
+                        <div className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold font-mono border" style={{ color, borderColor: `${color}40`, background: `${color}12` }}>
+                          APY {apy}%
+                        </div>
+
+                        <div className="mt-2 pt-2 border-t border-white/10 grid grid-cols-2 gap-x-2 gap-y-0.5">
                           <p className="text-[10px] text-muted-foreground">日USDT <span className="font-mono font-semibold" style={{ color }}>${node.dailyUsdt}</span></p>
-                          <p className="text-[10px] text-muted-foreground">剩余席位 <span className="font-mono text-foreground">{node.seats}</span></p>
+                          <p className="text-[10px] text-muted-foreground">席位 <span className="font-mono text-foreground">{node.seats}</span></p>
+                          <p className="text-[10px] text-muted-foreground col-span-2">私募价 <span className="font-mono text-foreground">${node.privatePrice}</span></p>
                         </div>
                       </button>
                     );
@@ -523,10 +532,10 @@ export default function Rune() {
                   </div>
                 ) : null}
 
-                <Button className="w-full font-semibold shadow-[0_0_18px_hsl(217,80%,58%,0.25)]"
+                <Button className="w-full font-bold tracking-wide shadow-[0_0_28px_hsl(38,92%,50%,0.35)] bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/80 text-primary-foreground"
                   onClick={() => calcMutation.mutate({ data: { nodeLevel, seats, durationDays, priceStageIndex } })}
                   disabled={calcMutation.isPending}>
-                  {calcMutation.isPending ? "计算中..." : "开始模拟 Run Simulation"}
+                  {calcMutation.isPending ? "计算中…" : "开始模拟 Run Simulation"}
                   {!calcMutation.isPending && <ChevronRight className="h-4 w-4 ml-1" />}
                 </Button>
               </CardContent>
@@ -545,7 +554,7 @@ export default function Rune() {
                     <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-green-700/40 bg-gradient-to-br from-green-950/50 to-transparent shadow-[0_0_24px_hsl(142,70%,45%,0.1)]">
                       <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold mb-1">总资产 Total Assets</p>
                       <div className="flex items-end gap-4 flex-wrap">
-                        <p className="text-4xl font-bold font-mono text-green-300">${fmt(calcMutation.data.totalAssets)}</p>
+                        <p className="text-4xl font-bold font-mono num-gold">${fmt(calcMutation.data.totalAssets)}</p>
                         <div className="mb-1 flex gap-3 flex-wrap">
                           <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full font-mono font-semibold">ROI {fmt(calcMutation.data.roi)}%</span>
                           <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full font-mono font-semibold">{fmt(calcMutation.data.roiMultiplier)}× 本金</span>
