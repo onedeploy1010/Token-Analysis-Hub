@@ -25,9 +25,9 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/projects" component={Projects} />
+        <Route path="/projects/rune" component={Rune} />
         <Route path="/projects/:id" component={ProjectDetail} />
         <Route path="/tools" component={Tools} />
-        <Route path="/rune" component={Rune} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
