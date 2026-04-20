@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useAdminAuth } from "@/contexts/admin-auth";
 import { apiFetch } from "@/lib/api";
-import { Plus, Trash2, Pencil, Eye, EyeOff, FileText } from "lucide-react";
+import { Plus, Trash2, Pencil, Eye, EyeOff, FileText, Download } from "lucide-react";
 
 type Resource = {
   id: number; language: string; category: string; title: string;
@@ -171,6 +171,18 @@ export default function ResourcesList() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 justify-end">
+                      {r.fileUrl && (
+                        <a
+                          href={r.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10 transition-colors"
+                          title="下载文件"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </a>
+                      )}
                       <Link href={`/resources/${r.id}/edit`}
                         className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                       >
