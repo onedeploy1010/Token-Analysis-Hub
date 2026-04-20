@@ -62,8 +62,8 @@ export default function Rune() {
 
   const calcMutation = useCalculateRuneReturns();
 
-  const selectedNode = overview?.nodes.find((n) => n.level === nodeLevel);
-  const selectedStagePreview = overview?.priceStages[priceStageIndex];
+  const selectedNode = overview?.nodes?.find((n) => n.level === nodeLevel);
+  const selectedStagePreview = overview?.priceStages?.[priceStageIndex];
 
   const handleCalculate = () => {
     calcMutation.mutate({
@@ -117,7 +117,7 @@ export default function Rune() {
               <Skeleton key={i} className="h-24 rounded-xl" />
             ))}
         </div>
-      ) : overview ? (
+      ) : (overview?.motherToken && overview?.subToken) ? (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -207,7 +207,7 @@ export default function Rune() {
       ) : null}
 
       {/* Price Stage Progression */}
-      {overview && (
+      {(overview?.priceStages?.length) && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -218,7 +218,7 @@ export default function Rune() {
             价格阶段路线图 · Price Stage Roadmap
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {overview.priceStages.map((stage, i) => (
+            {(overview.priceStages ?? []).map((stage, i) => (
               <div
                 key={i}
                 className={`relative p-3 rounded-xl border transition-all cursor-pointer ${
@@ -261,14 +261,14 @@ export default function Rune() {
         {/* Left: Node Selection + Inputs */}
         <div className="lg:col-span-2 space-y-6">
           {/* Node Tier Cards */}
-          {overview && (
+          {(overview?.nodes?.length) && (
             <div>
               <h2 className="text-base font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Coins className="h-4 w-4 text-primary" />
                 选择节点等级 · Select Node Tier
               </h2>
               <div className="grid grid-cols-2 gap-3">
-                {overview.nodes.map((node) => {
+                {(overview.nodes ?? []).map((node) => {
                   const isActive = nodeLevel === node.level;
                   const color = NODE_COLORS[node.level];
                   return (
@@ -616,7 +616,7 @@ export default function Rune() {
           </AnimatePresence>
 
           {/* Node Comparison Table */}
-          {overview && (
+          {(overview?.nodes?.length) && (
             <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
               <div className="bg-muted/20 border-b border-border/50 px-5 py-3">
                 <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -652,7 +652,7 @@ export default function Rune() {
                     </tr>
                   </thead>
                   <tbody>
-                    {overview.nodes.map((node) => {
+                    {(overview.nodes ?? []).map((node) => {
                       const color = NODE_COLORS[node.level];
                       const isActive = nodeLevel === node.level;
                       return (
