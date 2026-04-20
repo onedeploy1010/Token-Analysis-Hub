@@ -206,7 +206,7 @@ export function AppLayout({ children }: LayoutProps) {
             <span className="text-xs text-muted-foreground/60 font-light">Market<span className="text-amber-500/70 font-semibold">Rune</span></span>
           </div>
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            专为机构级投资者打造 · 数据延迟最多15分钟 · Built for serious capital.
+            专为机构级投资者打造 · 数据延迟最多15分钟
           </p>
         </div>
       </footer>
