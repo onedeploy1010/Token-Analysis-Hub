@@ -107,13 +107,14 @@ export default function Rune() {
   const { t, bi, isEn, isZh } = useBi();
   const { data: overview, isLoading } = useGetRuneOverview();
 
-  /** Pick the locale-appropriate stage label. Falls back to the backend's
-   * labelCn when we don't have an English label for that index. */
+  /** Pick the locale-appropriate stage label. zh/zh-TW get the backend's
+   * labelCn; every other locale gets the English fallback list. */
   const stageLabel = (s: { labelCn: string }, i: number) =>
-    isEn ? (STAGE_EN_LABELS[i] ?? s.labelCn) : s.labelCn;
+    isZh ? s.labelCn : (STAGE_EN_LABELS[i] ?? s.labelCn);
 
-  /** Pick the locale-appropriate node tier name. */
-  const nodeName = (n: { nameCn: string; nameEn: string }) => (isEn ? n.nameEn : n.nameCn);
+  /** Pick the locale-appropriate node tier name. zh/zh-TW get nameCn,
+   * every other locale gets nameEn. */
+  const nodeName = (n: { nameCn: string; nameEn: string }) => (isZh ? n.nameCn : n.nameEn);
 
   const [nodeLevel, setNodeLevel]   = useState<RuneCalculatorInputNodeLevel>(RuneCalculatorInputNodeLevel.pioneer);
   const [seats,     setSeats]       = useState(1);
@@ -164,13 +165,14 @@ export default function Rune() {
   const fundAllocData = useMemo(() => {
     const f = overview?.fundraising;
     if (!f) return [];
+    // zh / zh-TW see the Chinese label; all other locales (en, ko, ja, th, vi) fall through to English.
     return [
-      { name: isEn ? "TLP Pool"       : "TLP流动池",  value: f.tlpPool    },
-      { name: isEn ? "Operations"     : "运营资金",    value: f.operations },
-      { name: isEn ? "Treasury"       : "国库资金",    value: f.treasury   },
-      { name: isEn ? "Sub-Token LP"   : "子TOKEN LP", value: f.subTokenLP },
+      { name: isZh ? "TLP流动池" : "TLP Pool",     value: f.tlpPool    },
+      { name: isZh ? "运营资金"   : "Operations",   value: f.operations },
+      { name: isZh ? "国库资金"   : "Treasury",     value: f.treasury   },
+      { name: isZh ? "子TOKEN LP" : "Sub-Token LP", value: f.subTokenLP },
     ];
-  }, [overview, isEn]);
+  }, [overview, isZh]);
 
   const resultPieData = calcMutation.data ? [
     { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: calcMutation.data.motherTokenValue  },
