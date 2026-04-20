@@ -49,8 +49,8 @@ function WordmarkRune({ small = false }: { small?: boolean }) {
       className="rune-wordmark select-none"
       style={{
         fontSize: small ? "16px" : "26px",
-        letterSpacing: small ? "0.18em" : "0.24em",
-        paddingRight: small ? "0.18em" : "0.24em",
+        letterSpacing: small ? "0.06em" : "0.08em",
+        paddingRight: small ? "0.06em" : "0.08em",
       }}
     >
       RUNE
