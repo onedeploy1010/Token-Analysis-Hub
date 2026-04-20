@@ -81,53 +81,80 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* ── RUNE Featured Hero (single full-width) ── */}
+      {/* ── RUNE Featured Hero ── */}
       <Link href="/projects/rune">
-        <div className="relative w-full overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-background via-[#0f172a] to-[#1e1b4b] p-8 sm:p-10 cursor-pointer group hover:border-primary/60 transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
-          {/* Glow */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] pointer-events-none group-hover:bg-primary/25 transition-colors duration-700 -translate-y-1/2 translate-x-1/3" />
-          {/* Shimmer */}
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.04)_50%,transparent_100%)] -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-          {/* Big watermark */}
-          <div className="absolute right-0 bottom-0 text-[160px] sm:text-[200px] font-black italic text-white/[0.025] select-none pointer-events-none leading-none tracking-tighter translate-y-8">RUNE</div>
+        <div className="relative w-full overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-background via-[#0f172a] to-[#1e1b4b] cursor-pointer group hover:border-primary/60 transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
+          {/* Glow orb */}
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/12 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/22 transition-colors duration-700 -translate-y-1/2 translate-x-1/3" />
+          {/* Shimmer sweep */}
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.035)_50%,transparent_100%)] -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
+          {/* Watermark */}
+          <div className="absolute right-4 bottom-0 text-[120px] sm:text-[160px] font-black italic text-white/[0.022] select-none pointer-events-none leading-none tracking-tighter translate-y-6">RUNE</div>
 
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider">
-                <Zap className="h-3.5 w-3.5" /> 精选推荐 · Featured Analysis
+          <div className="relative z-10 flex flex-col md:flex-row md:items-stretch">
+
+            {/* ── Left: identity + copy ── */}
+            <div className="flex-1 p-6 sm:p-8 space-y-4">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/30 text-primary text-[11px] font-bold uppercase tracking-wider">
+                <Zap className="h-3 w-3" /> 精选推荐 · Featured Analysis
               </div>
-          <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-black border border-primary/25 shadow-[0_0_20px_rgba(251,191,36,0.2)] shrink-0">
-                  <img src="/rune-logo.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
+
+              {/* Logo + title */}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-black border border-primary/25 shadow-[0_0_16px_rgba(251,191,36,0.18)] shrink-0">
+                  <img src="/rune-logo-new.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
                 </div>
-                <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
-                  RUNE Protocol <span className="text-primary/80">—</span> 深度节点分析
+                <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-white leading-tight">
+                  RUNE Protocol <span className="text-primary/70">—</span> <span className="text-primary">深度节点分析</span>
                 </h2>
               </div>
-              <p className="text-muted-foreground text-sm sm:text-base max-w-xl">
+
+              {/* Description */}
+              <p className="text-muted-foreground text-sm sm:text-[15px] leading-relaxed max-w-lg">
                 双TOKEN通缩经济模型 · 四级节点收益拆解 · 完整 tokenomics 图表 · 节点 ROI 交互计算器
               </p>
-              <div className="flex flex-wrap gap-2 pt-1">
+
+              {/* Tags */}
+              <div className="flex flex-wrap gap-1.5">
                 {["双TOKEN通缩", "节点质押", "AMM设计", "Layer1", "Cross-chain"].map(tag => (
-                  <span key={tag} className="text-[10px] px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary/80 font-medium">{tag}</span>
+                  <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary/80 font-medium">{tag}</span>
                 ))}
               </div>
-            </div>
-            <div className="flex items-center gap-6 shrink-0">
-              <div className="hidden md:block text-right space-y-1">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">APY</p>
-                <p className="text-3xl font-bold font-mono num text-primary">18.3%</p>
-              </div>
-              <div className="hidden md:block text-right space-y-1">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">TVL</p>
-                <p className="text-2xl font-bold font-mono num text-foreground/90">$312M</p>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="inline-flex items-center text-primary font-semibold text-sm group-hover:underline whitespace-nowrap">
-                  查看完整分析 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+
+              {/* Mobile-only stats row */}
+              <div className="flex items-center gap-4 pt-1 md:hidden">
+                <div className="space-y-0.5">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">APY</p>
+                  <p className="text-xl font-bold font-mono text-primary">170.82%</p>
+                </div>
+                <div className="w-px h-8 bg-border/50" />
+                <div className="space-y-0.5">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">TVL</p>
+                  <p className="text-xl font-bold font-mono text-foreground/80">$312M</p>
+                </div>
+                <div className="ml-auto inline-flex items-center gap-1.5 text-primary text-sm font-semibold">
+                  查看完整分析 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>
+
+            {/* ── Right: stats panel (desktop only) ── */}
+            <div className="hidden md:flex flex-col items-center justify-center gap-6 px-10 border-l border-primary/15 shrink-0 min-w-[200px] bg-white/[0.018]">
+              <div className="text-center space-y-1">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">年化收益 APY</p>
+                <p className="text-4xl font-bold font-mono text-primary leading-none">170.82%</p>
+              </div>
+              <div className="w-10 h-px bg-primary/20" />
+              <div className="text-center space-y-1">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">锁仓总量 TVL</p>
+                <p className="text-3xl font-bold font-mono text-foreground/80 leading-none">$312M</p>
+              </div>
+              <div className="mt-2 inline-flex items-center gap-2 text-primary font-semibold text-sm group-hover:gap-3 transition-all whitespace-nowrap">
+                查看完整分析 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
           </div>
         </div>
       </Link>
