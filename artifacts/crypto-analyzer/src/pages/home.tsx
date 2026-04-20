@@ -344,7 +344,7 @@ export default function Home() {
 
       {/* ── Trending Opportunities ── */}
       <section className="space-y-6">
-        <div className="flex items-start justify-between border-b border-border/40 pb-4">
+        <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-chart-2 pl-4">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60">热门机会</span>
@@ -355,9 +355,6 @@ export default function Home() {
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">Highest yield changes in 24h · 24小时最高收益变动</p>
           </div>
-          <Link href="/projects" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1 shrink-0 mt-1 group">
-            View All <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
         </div>
 
         {isTrendingLoading ? (
@@ -445,19 +442,24 @@ export default function Home() {
             <p className="text-muted-foreground text-sm">No trending projects at this time.</p>
           </div>
         )}
+
+        {/* View All — bottom of trending */}
+        <div className="flex justify-end pt-1">
+          <Link href="/projects" className="group inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 rounded-lg px-4 py-2 bg-card/40 hover:bg-card/80 transition-all duration-200">
+            查看全部项目 View All Projects
+            <ArrowUpRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Link>
+        </div>
       </section>
 
       {/* ── Recommended Projects ── */}
       <section className="space-y-6">
-        <div className="flex items-start justify-between border-b border-border/40 pb-4">
+        <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-primary pl-4">
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">精选推荐</span>
             <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">Recommended Projects</h2>
             <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">Curated high-conviction opportunities · 精选高确信度机会</p>
           </div>
-          <Link href="/projects" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1 shrink-0 mt-1 group">
-            View All <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
         </div>
 
         {isTrendingLoading ? (
@@ -483,6 +485,14 @@ export default function Home() {
             <p className="text-muted-foreground text-sm">No recommended projects at this time.</p>
           </div>
         )}
+
+        {/* View All — bottom of recommended */}
+        <div className="flex justify-end pt-1">
+          <Link href="/projects" className="group inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 rounded-lg px-4 py-2 bg-card/40 hover:bg-card/80 transition-all duration-200">
+            查看全部项目 View All Projects
+            <ArrowUpRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Link>
+        </div>
       </section>
     </div>
   );
