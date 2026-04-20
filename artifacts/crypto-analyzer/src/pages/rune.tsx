@@ -158,9 +158,11 @@ export default function Rune() {
             <Coins className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-baseline gap-3">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">节点收益深度分析</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
               RUNE Protocol
-              <span className="text-xl font-normal text-muted-foreground">节点收益深度分析</span>
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               双TOKEN通缩经济模型 · 四级节点产品 · 六阶价格路线图

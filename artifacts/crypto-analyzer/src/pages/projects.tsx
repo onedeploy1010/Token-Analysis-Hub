@@ -45,12 +45,14 @@ export default function Projects() {
 
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border/50 pb-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-baseline gap-3">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">项目分析库</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
             Project Intelligence
-            <span className="text-xl text-muted-foreground font-normal">项目分析库</span>
           </h1>
-          <p className="text-sm text-muted-foreground">金库铸造、DeFi协议深度 tokenomics 分析与收益模拟。</p>
+          <p className="text-sm text-muted-foreground pt-1">金库铸造、DeFi协议深度 tokenomics 分析与收益模拟。</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
           <div className="relative w-full sm:w-64">

@@ -92,9 +92,11 @@ export default function Tools() {
     <div className="container mx-auto px-4 py-8 animate-slide-up space-y-6">
       {/* ── Header ── */}
       <div className="border-b border-border/50 pb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex flex-wrap items-baseline gap-3">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/70">经济模拟器</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
           Economic Simulators
-          <span className="text-lg sm:text-xl text-muted-foreground font-normal">经济模拟器</span>
         </h1>
         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
           Advanced calculators for DeFi yields, liquidity analysis, and protocol-level economic simulation.
