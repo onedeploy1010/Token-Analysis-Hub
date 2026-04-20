@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-change-me";
+if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET environment variable is required");
+const JWT_SECRET: string = process.env.JWT_SECRET;
 const JWT_EXPIRY = "24h";
 
 export interface AdminTokenPayload {

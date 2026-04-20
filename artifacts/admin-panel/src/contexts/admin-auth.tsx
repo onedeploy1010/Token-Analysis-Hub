@@ -1,8 +1,6 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { Redirect } from "wouter";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 interface AdminUser { username: string; token: string; }
 interface AdminAuthContextType {
   user: AdminUser | null;
@@ -24,7 +22,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = useCallback(async (username: string, password: string) => {
-    const res = await fetch(`${BASE}/api/admin/login`, {
+    const res = await fetch(`/api/admin/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
