@@ -370,9 +370,16 @@ export default function Rune() {
               <img src="/rune-logo.png" alt="RUNE Protocol" className="w-full h-full object-contain" />
             </div>
             <div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60 block mb-1">
-                {bi("mr.rune.deepAnalysis", "Deep Node Analysis")}
-              </span>
+              <div className="mb-1 leading-tight">
+                {!isEn && (
+                  <span className="block text-[10px] font-semibold tracking-[0.22em] text-primary/70">
+                    {t("mr.rune.deepAnalysis")}
+                  </span>
+                )}
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/50 mt-0.5">
+                  Deep Node Analysis
+                </span>
+              </div>
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
                 RUNE Protocol
               </h1>
