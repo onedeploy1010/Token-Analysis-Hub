@@ -12,12 +12,15 @@ import {
   ArrowLeft, TrendingUp, TrendingDown, BarChart2,
   Wallet, Activity, Clock, Users, ExternalLink,
 } from "lucide-react";
-import { Link } from "wouter";
-import { useHLVault, useHLCandles } from "@/hooks/use-hyperliquid";
+import { Link, useRoute } from "wouter";
+import { useHLVault, useHLCandles, HL_TRACKED_VAULTS } from "@/hooks/use-hyperliquid";
 import { useShowZh } from "@/contexts/language-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const VAULT_ADDRESS = "0xd6e56265890b76413d1d527eb9b75e334c0c5b42";
+const VAULT_LABELS: Record<string, { zh: string; en: string }> = {
+  "0xc179e03922afe8fa9533d3f896338b9fb87ce0c8": { zh: "金库 A · Alpha", en: "Vault A · Alpha" },
+  "0xd6e56265890b76413d1d527eb9b75e334c0c5b42": { zh: "金库 B · Beta",  en: "Vault B · Beta"  },
+};
 
 const INTERVAL_OPTIONS = [
   { label: "1H", value: "1h" },
@@ -97,7 +100,14 @@ function CandleShape(props: {
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function HyperLiquid() {
   const showZh = useShowZh();
-  const { data: vault, isLoading: vaultLoading } = useHLVault();
+  const [, params] = useRoute<{ address?: string }>("/projects/hyperliquid/:address");
+  const routeAddr = params?.address?.toLowerCase();
+  const VAULT_ADDRESS =
+    routeAddr && HL_TRACKED_VAULTS.includes(routeAddr as (typeof HL_TRACKED_VAULTS)[number])
+      ? routeAddr
+      : HL_TRACKED_VAULTS[0];
+  const vaultLabel = VAULT_LABELS[VAULT_ADDRESS] ?? { zh: "金库", en: "Vault" };
+  const { data: vault, isLoading: vaultLoading } = useHLVault(VAULT_ADDRESS);
   const [interval, setInterval] = useState("1d");
   const { data: candleData, isLoading: candleLoading } = useHLCandles(interval);
 
@@ -129,10 +139,31 @@ export default function HyperLiquid() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-10">
 
-      {/* Back link */}
-      <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="h-4 w-4" /><span className="zh-only">返回项目库 · </span>Back to Projects
-      </Link>
+      {/* Back link + vault switcher */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" /><span className="zh-only">返回项目库 · </span>Back to Projects
+        </Link>
+        <div className="inline-flex items-center gap-1 rounded-full border border-green-500/25 bg-background/50 p-1 text-xs backdrop-blur self-start sm:self-auto">
+          {HL_TRACKED_VAULTS.map((addr) => {
+            const active = addr === VAULT_ADDRESS;
+            const label = VAULT_LABELS[addr];
+            return (
+              <Link
+                key={addr}
+                href={`/projects/hyperliquid/${addr}`}
+                className={`rounded-full px-3 py-1 font-mono tabular-nums transition-all ${
+                  active
+                    ? "bg-green-500/20 text-green-300 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.4)]"
+                    : "text-muted-foreground/65 hover:text-green-300/80"
+                }`}
+              >
+                {showZh ? label.zh : label.en}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ── Hero Banner ── */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
@@ -161,10 +192,10 @@ export default function HyperLiquid() {
                 <span className="zh-only">金库实时数据 · </span>Live Vault Intelligence
               </span>
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
-                HyperLiquid HLP
+                {vault?.name || (showZh ? vaultLabel.zh : vaultLabel.en)}
               </h1>
               <p className="text-sm text-muted-foreground mt-1 tracking-wide">
-                Hyperliquidity Provider<span className="zh-only"> · 链上永续合约做市金库</span>
+                Hyperliquid Vault<span className="zh-only"> · 链上永续合约做市金库</span>
               </p>
               {/* Vault address */}
               <div className="mt-2 inline-flex items-center gap-2">

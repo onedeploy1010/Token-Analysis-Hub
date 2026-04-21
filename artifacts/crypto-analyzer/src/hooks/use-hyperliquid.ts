@@ -2,6 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 
 const BASE = "/api";
 
+export const HL_TRACKED_VAULTS = [
+  "0xc179e03922afe8fa9533d3f896338b9fb87ce0c8",
+  "0xd6e56265890b76413d1d527eb9b75e334c0c5b42",
+] as const;
+
 export interface HLVaultData {
   name: string;
   vaultAddress: string;
@@ -20,6 +25,17 @@ export interface HLVaultData {
   monthPnl: number;
   equityHistory: Array<{ ts: number; value: number }>;
   pnlHistory: Array<{ ts: number; value: number }>;
+  fetchedAt?: number;
+}
+
+export interface HLVaultsResponse {
+  refreshIntervalMs: number;
+  vaults: Array<{
+    address: string;
+    fetchedAt: number;
+    error: string | null;
+    data: HLVaultData | null;
+  }>;
 }
 
 export interface HLCandle {
@@ -44,10 +60,21 @@ async function fetchJson<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export function useHLVault() {
+export function useHLVault(address?: string) {
+  const target = address ?? HL_TRACKED_VAULTS[0];
   return useQuery<HLVaultData>({
-    queryKey: ["hl-vault"],
-    queryFn: () => fetchJson<HLVaultData>(`${BASE}/hyperliquid/vault`),
+    queryKey: ["hl-vault", target],
+    queryFn: () =>
+      fetchJson<HLVaultData>(`${BASE}/hyperliquid/vault/${target}`),
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+}
+
+export function useHLVaults() {
+  return useQuery<HLVaultsResponse>({
+    queryKey: ["hl-vaults"],
+    queryFn: () => fetchJson<HLVaultsResponse>(`${BASE}/hyperliquid/vaults`),
     staleTime: 60_000,
     refetchInterval: 120_000,
   });
