@@ -80,3 +80,6 @@ externalPort = 8008
 JWT_SECRET = "marketrune-admin-jwt-secret-x9k2p7q4"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "MarketRune2024!"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-2889bbca-e67a-48e6-9aa5-96793b2ae859"

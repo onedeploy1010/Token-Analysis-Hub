@@ -7,7 +7,7 @@ import {
   RuneCalculatorInputNodeLevel,
 } from "@workspace/api-client-react";
 import {
-  BarChart, Bar, LineChart, Line, AreaChart, Area,
+  BarChart, Bar, LineChart, Line, AreaChart, Area, ComposedChart,
   PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -266,6 +266,7 @@ export default function Rune() {
   const [seats,     setSeats]       = useState(1);
   const [durationDays, setDurationDays] = useState(180);
   const [priceStageIndex, setPriceStageIndex] = useState(3);
+  const [trendScale, setTrendScale] = useState<"log" | "linear">("log");
   const calcMutation = useCalculateRuneReturns();
 
   const selectedNode         = overview?.nodes?.find(n => n.level === nodeLevel);
@@ -535,118 +536,239 @@ export default function Rune() {
         {/* Row 1: Price Stages + Fund Allocation */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* Chart 1: Price Stage Progression – 2/3 width */}
+          {/* Chart 1: Six-Stage Dual Line — 2/3 width */}
           <TechChartCard
             icon={BarChart2}
-            title={isEn ? "Price Stage Progression" : `${t("mr.rune.chart.priceStages")}${isZh ? " · Price Stage Progression" : ""}`}
+            title={isEn ? "Six-Stage Dual Line" : (isZh ? `${t("mr.rune.chart.priceStages")} · Six-Stage Dual Line` : t("mr.rune.chart.priceStages"))}
+            subtitle="$0.028 → $4.56 · 120×"
             accent="primary"
             delay={0.05}
             className="lg:col-span-2"
           >
             {priceStageChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={priceStageChartData} margin={{ top: 8, right: 12, left: -8, bottom: 4 }}>
-                  <defs>
-                    <linearGradient id="barMother" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%"  stopColor={C.mother} stopOpacity={1} />
-                      <stop offset="100%" stopColor={C.mother} stopOpacity={0.35} />
-                    </linearGradient>
-                    <linearGradient id="barSub" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%"  stopColor={C.sub} stopOpacity={1} />
-                      <stop offset="100%" stopColor={C.sub} stopOpacity={0.35} />
-                    </linearGradient>
-                    <filter id="barGlow">
-                      <feGaussianBlur stdDeviation="2.5" result="b" />
-                      <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-                    </filter>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
-                    tickFormatter={v => `$${v}`} />
-                  <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 4 : 2)}`, name]} animationDuration={180} />
-                  <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 8 }} iconType="circle" />
-                  <Bar dataKey="mother" name={isEn ? "Mother Token" : t("mr.rune.token.mother")} fill="url(#barMother)" radius={[6,6,0,0]} maxBarSize={36} animationDuration={1100} animationBegin={200} />
-                  <Bar dataKey="sub"    name={isEn ? "Sub Token"    : t("mr.rune.token.sub")}    fill="url(#barSub)"    radius={[6,6,0,0]} maxBarSize={36} animationDuration={1100} animationBegin={400} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="relative">
+                {/* Pulsing ambient glow inside chart area */}
+                <motion.div
+                  aria-hidden
+                  className="pointer-events-none absolute -top-8 -right-8 h-[260px] w-[260px] rounded-full"
+                  style={{ background: "radial-gradient(circle, hsl(var(--primary)/0.10), transparent 65%)" }}
+                  animate={{ opacity: [0.4, 0.85, 0.4] }}
+                  transition={{ duration: 4.4, repeat: Infinity, ease: "easeInOut" }}
+                />
+
+                {/* Log/Linear toggle */}
+                <div className="absolute top-0 right-2 z-10 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-background/50 p-1 text-[10px] uppercase tracking-[0.18em] backdrop-blur">
+                  {(["log", "linear"] as const).map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setTrendScale(s)}
+                      className={`rounded-full px-3 py-0.5 num tabular-nums transition-all ${
+                        trendScale === s
+                          ? "bg-primary/25 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.4)]"
+                          : "text-muted-foreground/60 hover:text-primary/80"
+                      }`}
+                    >
+                      {s === "log" ? (isEn ? "Log" : (isZh ? "对数" : "Log")) : (isEn ? "Linear" : (isZh ? "线性" : "Linear"))}
+                    </button>
+                  ))}
+                </div>
+
+                <ResponsiveContainer width="100%" height={280}>
+                  <ComposedChart data={priceStageChartData} margin={{ top: 28, right: 18, left: 0, bottom: 6 }}>
+                    <defs>
+                      <linearGradient id="lineMotherGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"   stopColor={C.mother} stopOpacity={0.4}  />
+                        <stop offset="100%" stopColor={C.mother} stopOpacity={1}    />
+                      </linearGradient>
+                      <linearGradient id="lineSubGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"   stopColor={C.sub} stopOpacity={0.4} />
+                        <stop offset="100%" stopColor={C.sub} stopOpacity={1}   />
+                      </linearGradient>
+                      <linearGradient id="areaMotherGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"  stopColor={C.mother} stopOpacity={0.32} />
+                        <stop offset="100%" stopColor={C.mother} stopOpacity={0}   />
+                      </linearGradient>
+                      <linearGradient id="areaSubGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"  stopColor={C.sub} stopOpacity={0.28} />
+                        <stop offset="100%" stopColor={C.sub} stopOpacity={0}   />
+                      </linearGradient>
+                      <filter id="trendGlow">
+                        <feGaussianBlur stdDeviation="2" result="b" />
+                        <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                      </filter>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
+                    <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis
+                      tick={{ fill: C.muted, fontSize: 10 }}
+                      axisLine={false} tickLine={false}
+                      scale={trendScale}
+                      domain={trendScale === "log" ? [0.02, "auto"] : [0, "auto"]}
+                      allowDataOverflow
+                      tickFormatter={v => v >= 1 ? `$${v}` : `$${(+v).toFixed(2)}`}
+                    />
+                    <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 4 : 2)}`, name]} animationDuration={180} />
+                    <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 8 }} iconType="circle" />
+                    <Line
+                      type="monotone" dataKey="mother"
+                      name={isEn ? "Mother Token (符)" : `${t("mr.rune.token.mother")} (符)`}
+                      stroke={C.mother} strokeWidth={2.8}
+                      dot={{ r: 3.5, fill: C.mother, strokeWidth: 0 }}
+                      activeDot={{ r: 6, fill: C.mother, stroke: "#fff", strokeWidth: 1.5 }}
+                      style={{ filter: "url(#trendGlow)" }}
+                      animationDuration={1600} animationBegin={150}
+                    />
+                    <Line
+                      type="monotone" dataKey="sub"
+                      name={isEn ? "Sub Token (符火)" : `${t("mr.rune.token.sub")} (符火)`}
+                      stroke={C.sub} strokeWidth={2.8}
+                      dot={{ r: 3.5, fill: C.sub, strokeWidth: 0 }}
+                      activeDot={{ r: 6, fill: C.sub, stroke: "#fff", strokeWidth: 1.5 }}
+                      style={{ filter: "url(#trendGlow)" }}
+                      animationDuration={1600} animationBegin={400}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+
+                {/* Multiplier strip below */}
+                <div className="grid grid-cols-6 gap-1 mt-2 px-1">
+                  {priceStageChartData.map((d: any, i: number) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.45, delay: 0.9 + i * 0.07 }}
+                      className="text-center"
+                    >
+                      <span className={`num text-[10px] tabular-nums ${d.mult >= 80 ? "text-primary font-semibold" : d.mult > 1 ? "text-primary/60" : "text-muted-foreground/50"}`}>
+                        {d.mult > 1 ? `${d.mult}×` : "—"}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             ) : (
-              <div className="h-[240px] flex items-center justify-center">
+              <div className="h-[280px] flex items-center justify-center">
                 <Skeleton className="h-full w-full" />
               </div>
             )}
           </TechChartCard>
 
-          {/* Chart 2: Fund Allocation – 1/3 width */}
+          {/* Chart 2: Fund Allocation – 1/3 width — stacked bar + animated rows */}
           <TechChartCard
             icon={PieIcon}
             title={isEn ? "Fund Allocation" : `${t("mr.rune.chart.fundAlloc")}${isZh ? " · Fund Allocation" : ""}`}
             accent="chart-1"
             delay={0.15}
           >
-            {fundAllocData.length > 0 ? (
-              <>
-                <div className="relative">
-                  <ResponsiveContainer width="100%" height={170}>
-                    <PieChart>
-                      <defs>
-                        {PIE_COLORS.map((c, i) => (
-                          <radialGradient key={i} id={`pieGrad-${i}`} cx="50%" cy="50%" r="50%">
-                            <stop offset="0%"  stopColor={c} stopOpacity={1}    />
-                            <stop offset="100%" stopColor={c} stopOpacity={0.6} />
-                          </radialGradient>
-                        ))}
-                      </defs>
-                      <Pie data={fundAllocData} cx="50%" cy="50%" innerRadius={48} outerRadius={75}
-                        dataKey="value" nameKey="name" paddingAngle={4} stroke="hsl(230,30%,8%)" strokeWidth={2}
-                        animationDuration={1000} animationBegin={200}>
-                        {fundAllocData.map((_, i) => (
-                          <Cell key={i} fill={`url(#pieGrad-${i})`} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={tooltipStyle.contentStyle}
-                        formatter={(v: number, name: string) => [`$${(v/1e6).toFixed(2)}M`, name]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* Center total */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center">
-                      <div className="text-[8px] uppercase tracking-widest text-muted-foreground/60">Total</div>
-                      <div className="num text-sm text-foreground/90">
-                        ${(fundAllocData.reduce((s, d) => s + (d.value ?? 0), 0) / 1e6).toFixed(1)}M
+            {fundAllocData.length > 0 ? (() => {
+              const total = fundAllocData.reduce((s, x) => s + (x.value ?? 0), 0) || 1;
+              return (
+                <div className="px-2 pb-1">
+                  {/* Total raised + counter */}
+                  <div className="flex items-end justify-between mb-3">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.28em] text-muted-foreground/60 mb-1">
+                        {isEn ? "Total Raised" : (isZh ? "总融资规模" : "Total Raised")}
+                      </p>
+                      <div className="num-shimmer text-3xl leading-none">
+                        <CountUp end={total / 1e6} prefix="$" suffix="M" decimals={1} duration={1.4} preserveValue />
                       </div>
                     </div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50">
+                      {fundAllocData.length} {isEn ? "Allocations" : (isZh ? "项分配" : "Allocations")}
+                    </span>
+                  </div>
+
+                  {/* Stacked horizontal bar */}
+                  <div className="relative h-3 rounded-full bg-border/25 overflow-hidden flex gap-[2px] mb-1.5">
+                    {fundAllocData.map((d, i) => {
+                      const pct = ((d.value ?? 0) / total) * 100;
+                      return (
+                        <motion.div
+                          key={i}
+                          className="h-full flex-none rounded-full"
+                          style={{
+                            background: PIE_COLORS[i],
+                            boxShadow: `0 0 10px ${PIE_COLORS[i]}55`,
+                          }}
+                          initial={{ width: "0%", opacity: 0 }}
+                          animate={{ width: `${pct}%`, opacity: 1 }}
+                          transition={{ duration: 1.0, delay: 0.3 + i * 0.14, ease: [0.22, 1, 0.36, 1] }}
+                        />
+                      );
+                    })}
+                  </div>
+                  {/* Percentage labels under bar */}
+                  <div className="flex mb-4">
+                    {fundAllocData.map((d, i) => {
+                      const pct = ((d.value ?? 0) / total) * 100;
+                      return (
+                        <motion.div key={i} className="overflow-hidden"
+                          style={{ width: `${pct}%` }}
+                          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                          transition={{ delay: 0.7 + i * 0.14 }}>
+                          <span className="num text-[9px] tabular-nums" style={{ color: PIE_COLORS[i] }}>
+                            {pct.toFixed(0)}%
+                          </span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Per-allocation rows with pulsing dot + progress */}
+                  <div className="space-y-3">
+                    {fundAllocData.map((d, i) => {
+                      const pct = ((d.value ?? 0) / total) * 100;
+                      return (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -12, filter: "blur(4px)" }}
+                          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                          transition={{ duration: 0.55, delay: 0.5 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                          className="space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <motion.span
+                                className="shrink-0 w-2 h-2 rounded-sm"
+                                style={{ background: PIE_COLORS[i] }}
+                                animate={{
+                                  boxShadow: [
+                                    `0 0 0px ${PIE_COLORS[i]}`,
+                                    `0 0 9px ${PIE_COLORS[i]}`,
+                                    `0 0 0px ${PIE_COLORS[i]}`,
+                                  ],
+                                }}
+                                transition={{ duration: 2.4 + i * 0.35, repeat: Infinity, ease: "easeInOut" }}
+                              />
+                              <span className="text-xs text-foreground/90 font-medium truncate">{d.name}</span>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="num text-xs font-semibold tabular-nums" style={{ color: PIE_COLORS[i] }}>
+                                <CountUp end={(d.value ?? 0) / 1e6} prefix="$" suffix="M" decimals={1}
+                                  duration={1 + i * 0.15} preserveValue />
+                              </span>
+                            </div>
+                          </div>
+                          <div className="h-[3px] rounded-full bg-border/25 overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ background: `linear-gradient(90deg, ${PIE_COLORS[i]}, ${PIE_COLORS[i]}66)` }}
+                              initial={{ width: "0%" }}
+                              animate={{ width: `${pct}%` }}
+                              transition={{ duration: 1.0, delay: 0.6 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                            />
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </div>
-                <div className="space-y-1.5 mt-3">
-                  {fundAllocData.map((d, i) => {
-                    const total = fundAllocData.reduce((s, x) => s + (x.value ?? 0), 0) || 1;
-                    const pct   = ((d.value ?? 0) / total) * 100;
-                    return (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: 0.6 + i * 0.08 }}
-                        className="flex items-center justify-between text-xs gap-2"
-                      >
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="h-2 w-2 rounded-full shrink-0 shadow-[0_0_6px_currentColor]" style={{ background: PIE_COLORS[i], color: PIE_COLORS[i] }} />
-                          <span className="text-muted-foreground truncate">{d.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] text-muted-foreground/60 num tabular-nums">{pct.toFixed(0)}%</span>
-                          <span className="num font-medium text-foreground/90 tabular-nums">${((d.value ?? 0)/1e6).toFixed(1)}M</span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </>
-            ) : (
-              <Skeleton className="h-[220px] w-full" />
+              );
+            })() : (
+              <Skeleton className="h-[280px] w-full" />
             )}
           </TechChartCard>
         </div>
