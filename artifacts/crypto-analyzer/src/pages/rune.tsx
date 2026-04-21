@@ -383,9 +383,14 @@ export default function Rune() {
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
                 RUNE Protocol
               </h1>
-              <p className="text-sm text-muted-foreground mt-1 tracking-wide">
-                {t("mr.rune.heroTagline")}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                {t("mr.rune.heroTagline").split(/\s*·\s*/).map((part, idx) => (
+                  <span key={idx} className="inline-flex items-center text-xs sm:text-sm text-muted-foreground tracking-wide">
+                    {idx > 0 && <span className="mr-2 text-primary/40">·</span>}
+                    {part}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
