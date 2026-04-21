@@ -905,10 +905,18 @@ export default function Rune() {
                     return (
                       <button key={node.level}
                         onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
-                        className={`relative text-left p-4 rounded-xl border bg-gradient-to-br transition-all duration-200 overflow-hidden ${NODE_BG[node.level]} ${isOn ? `ring-2 ${NODE_RING[node.level]} shadow-lg` : "hover:brightness-110"}`}
+                        style={isOn ? {
+                          boxShadow: `0 8px 24px -6px ${color}55, 0 0 0 1px ${color}80, inset 0 1px 0 0 ${color}40, inset 0 -12px 24px -12px ${color}30`,
+                          borderColor: `${color}90`,
+                        } : undefined}
+                        className={`relative text-left p-4 rounded-xl border bg-gradient-to-br transition-all duration-300 overflow-hidden ${NODE_BG[node.level]} ${
+                          isOn
+                            ? `${NODE_RING[node.level]} -translate-y-0.5 scale-[1.02] z-10`
+                            : "opacity-50 saturate-50 blur-[0.5px] hover:opacity-80 hover:saturate-100 hover:blur-0 hover:brightness-110"
+                        }`}
                       >
                         {/* Selected glow line */}
-                        {isOn && <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-60" style={{ color }} />}
+                        {isOn && <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-80" style={{ color }} />}
 
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color }}>{nodeName(node)}</span>
