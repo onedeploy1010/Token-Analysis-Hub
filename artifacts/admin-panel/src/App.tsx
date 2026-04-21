@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AdminAuthProvider, RequireAdmin } from "@/contexts/admin-auth";
 import AdminLayout from "@/components/admin-layout";
+import HostGate from "@/components/host-gate";
 import LoginPage from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import ResourcesList from "@/pages/resources-list";
@@ -42,16 +43,18 @@ function Router() {
 
 function App() {
   return (
-    <AdminAuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </AdminAuthProvider>
+    <HostGate>
+      <AdminAuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </AdminAuthProvider>
+    </HostGate>
   );
 }
 
