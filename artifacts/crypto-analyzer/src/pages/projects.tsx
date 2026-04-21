@@ -144,18 +144,107 @@ export default function Projects() {
               </div>
             </div>
 
-            {/* ── Right: stats panel (desktop only) ── */}
-            <div className="hidden md:flex flex-col items-center justify-center gap-6 px-10 border-l border-primary/15 shrink-0 min-w-[200px] bg-white/[0.018]">
-              <div className="text-center space-y-1">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.apy.label")}</p>
-                <p className="text-4xl font-bold font-mono text-primary leading-none">170.82%</p>
+            {/* ── Right: sparkline + stats panel (desktop only) ── */}
+            <div className="hidden md:flex flex-col justify-center gap-5 px-8 py-6 border-l border-primary/15 shrink-0 w-[300px] bg-white/[0.018] relative">
+              {/* Animated sparkline — 6 stage price trajectory */}
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium">
+                    Price Trajectory
+                  </span>
+                  <span className="text-[10px] font-mono text-primary font-semibold">+12,000%</span>
+                </div>
+                <div className="relative h-16 w-full">
+                  <svg viewBox="0 0 240 64" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="sparkLineGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"  stopColor="hsl(38, 92%, 58%)" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="hsl(38, 92%, 58%)" stopOpacity="1" />
+                      </linearGradient>
+                      <linearGradient id="sparkAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"  stopColor="hsl(38, 92%, 58%)" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="hsl(38, 92%, 58%)" stopOpacity="0" />
+                      </linearGradient>
+                      <filter id="sparkGlow">
+                        <feGaussianBlur stdDeviation="1.6" result="b" />
+                        <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                      </filter>
+                    </defs>
+                    {/* Baseline grid */}
+                    <line x1="0" y1="60" x2="240" y2="60" stroke="hsl(38, 92%, 58%)" strokeOpacity="0.1" strokeDasharray="2 3" />
+                    {/* Filled area */}
+                    <motion.path
+                      d="M 0 60 L 0 58 L 48 56 L 96 50 L 144 38 L 192 18 L 240 4 L 240 64 L 0 64 Z"
+                      fill="url(#sparkAreaGrad)"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.8, delay: 0.4 }}
+                    />
+                    {/* Stroke line — drawing animation */}
+                    <motion.path
+                      d="M 0 58 L 48 56 L 96 50 L 144 38 L 192 18 L 240 4"
+                      fill="none"
+                      stroke="url(#sparkLineGrad)"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      filter="url(#sparkGlow)"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 1.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                    {/* Stage dots */}
+                    {[
+                      { x: 0,   y: 58 },
+                      { x: 48,  y: 56 },
+                      { x: 96,  y: 50 },
+                      { x: 144, y: 38 },
+                      { x: 192, y: 18 },
+                      { x: 240, y: 4  },
+                    ].map((p, i) => (
+                      <motion.circle
+                        key={i}
+                        cx={p.x} cy={p.y} r="2.5"
+                        fill="hsl(38, 92%, 58%)"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.3, delay: 0.4 + i * 0.18 }}
+                        style={{ transformOrigin: `${p.x}px ${p.y}px` }}
+                      />
+                    ))}
+                    {/* Pulsing target dot at the peak */}
+                    <motion.circle
+                      cx="240" cy="4" r="4"
+                      fill="hsl(38, 92%, 58%)"
+                      animate={{ scale: [1, 2.4, 1], opacity: [0.7, 0, 0.7] }}
+                      transition={{ duration: 2.0, repeat: Infinity, ease: "easeInOut", delay: 1.8 }}
+                      style={{ transformOrigin: "240px 4px" }}
+                    />
+                  </svg>
+                </div>
+                <div className="flex justify-between text-[9px] font-mono text-muted-foreground/50 -mt-1">
+                  <span>$0.028</span>
+                  <span className="text-primary/60">$4.56</span>
+                </div>
               </div>
-              <div className="w-10 h-px bg-primary/20" />
-              <div className="text-center space-y-1">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.tvl.label")}</p>
-                <p className="text-3xl font-bold font-mono text-foreground/80 leading-none">$312M</p>
+
+              {/* Divider */}
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
+
+              {/* Stats grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.apy.label")}</p>
+                  <p className="text-2xl font-bold font-mono text-primary leading-none">170.82%</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.tvl.label")}</p>
+                  <p className="text-2xl font-bold font-mono text-foreground/85 leading-none">$312M</p>
+                </div>
               </div>
-              <div className="mt-2 inline-flex items-center gap-2 text-primary font-semibold text-sm group-hover:gap-3 transition-all whitespace-nowrap">
+
+              {/* CTA */}
+              <div className="inline-flex items-center gap-2 text-primary font-semibold text-sm group-hover:gap-3 transition-all whitespace-nowrap pt-1">
                 {t("mr.action.viewFull")}{!isEn && " · FULL ANALYSIS"} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
