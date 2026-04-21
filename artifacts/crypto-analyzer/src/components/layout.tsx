@@ -162,13 +162,6 @@ function Navbar() {
             animate={{ x: [0, -35, 20, 0], opacity: [0.4, 0.75, 0.5, 0.4] }}
             transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
           />
-          {/* Thin horizontal scan line */}
-          <motion.div
-            className="absolute left-0 right-0"
-            style={{ height: "1px", background: "linear-gradient(90deg, transparent 0%, rgba(251,191,36,0.25) 30%, rgba(251,191,36,0.5) 50%, rgba(251,191,36,0.25) 70%, transparent 100%)", top: "50%" }}
-            animate={{ opacity: [0, 0.6, 0], scaleX: [0.6, 1, 0.6] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          />
         </div>
 
         <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-6">
