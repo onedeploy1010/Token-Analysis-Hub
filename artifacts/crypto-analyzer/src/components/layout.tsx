@@ -108,17 +108,56 @@ function AnimatedRuneLogo({ size = 42 }: { size?: number }) {
 
 /* ─── Wordmark ───────────────────────────────────────────────────── */
 function WordmarkRune({ small = false }: { small?: boolean }) {
+  const height = small ? 20 : 30;
+  const maskStyle = {
+    WebkitMaskImage: "url(/rune-wordmark.png)",
+    maskImage: "url(/rune-wordmark.png)",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+  } as React.CSSProperties;
+
   return (
-    <img
-      src="/rune-wordmark.png"
-      alt="RUNE"
-      className="select-none object-contain"
-      style={{
-        height: small ? "20px" : "30px",
-        width: "auto",
-      }}
-      draggable={false}
-    />
+    <div
+      className="relative select-none"
+      style={{ height, aspectRatio: "4 / 1" }}
+      aria-label="RUNE"
+    >
+      {/* Hidden image preserves intrinsic width so the wordmark sizes correctly */}
+      <img
+        src="/rune-wordmark.png"
+        alt=""
+        className="block opacity-0 pointer-events-none"
+        style={{ height, width: "auto" }}
+        draggable={false}
+      />
+
+      {/* Base gold layer */}
+      <div
+        className="absolute inset-0"
+        style={{
+          ...maskStyle,
+          background: "linear-gradient(180deg, #fde68a 0%, #f59e0b 55%, #b45309 100%)",
+        }}
+      />
+
+      {/* Moving shimmer highlight */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          ...maskStyle,
+          background:
+            "linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.85) 50%, transparent 70%)",
+          backgroundSize: "250% 100%",
+          mixBlendMode: "screen",
+        }}
+        animate={{ backgroundPosition: ["180% 0%", "-80% 0%"] }}
+        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.4 }}
+      />
+    </div>
   );
 }
 
