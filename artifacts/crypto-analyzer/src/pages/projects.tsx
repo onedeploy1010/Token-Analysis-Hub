@@ -127,17 +127,18 @@ export default function Projects() {
               </div>
 
               {/* Mobile-only stats row */}
-              <div className="flex items-center gap-4 pt-1 md:hidden">
-                <div className="space-y-0.5">
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">APY</p>
-                  <p className="text-xl font-bold font-mono text-primary">170.82%</p>
+              <div className="md:hidden pt-2 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-primary/15 bg-primary/[0.04] px-3 py-2">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">APY</p>
+                    <p className="text-lg font-bold font-mono text-primary leading-tight mt-0.5">170.82%</p>
+                  </div>
+                  <div className="rounded-lg border border-border/40 bg-white/[0.02] px-3 py-2">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">TVL</p>
+                    <p className="text-lg font-bold font-mono text-foreground/85 leading-tight mt-0.5">$312M</p>
+                  </div>
                 </div>
-                <div className="w-px h-8 bg-border/50" />
-                <div className="space-y-0.5">
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">TVL</p>
-                  <p className="text-xl font-bold font-mono text-foreground/80">$312M</p>
-                </div>
-                <div className="ml-auto inline-flex items-center gap-1.5 text-primary text-sm font-semibold">
+                <div className="inline-flex items-center gap-1.5 text-primary text-sm font-semibold">
                   {t("mr.action.viewFull")}{!isEn && " · FULL ANALYSIS"} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
