@@ -124,14 +124,15 @@ function TechChartCard({
   className = "", children,
 }: TechChartCardProps) {
 
-  // map "primary" / shadcn token → CSS hsl(var)
-  const accentVar = accent === "primary" ? "var(--primary)" : undefined;
-  const accentColorClass =
-    accent === "primary" ? "text-primary"
-    : accent.startsWith("amber") ? "text-amber-400"
-    : accent.startsWith("orange") ? "text-orange-400"
-    : accent.startsWith("chart-1") ? "text-sky-400"
-    : "text-primary";
+  // map accent token → resolved hsl color + tailwind text class
+  // (using explicit hsl ensures boxShadow / radial-gradient render consistently)
+  const accentMap: Record<string, { hsl: string; cls: string }> = {
+    primary:    { hsl: "hsl(38, 92%, 58%)",  cls: "text-amber-400" },
+    "amber-500":{ hsl: "hsl(38, 92%, 58%)",  cls: "text-amber-400" },
+    "orange-500":{ hsl: "hsl(24, 92%, 58%)", cls: "text-orange-400" },
+    "chart-1":  { hsl: "hsl(199, 89%, 60%)", cls: "text-sky-400"   },
+  };
+  const { hsl: accentColor, cls: accentColorClass } = accentMap[accent] ?? accentMap.primary;
 
   return (
     <motion.div
@@ -143,19 +144,19 @@ function TechChartCard({
     >
       {/* Top accent gradient sweep */}
       <motion.div
-        className="absolute left-0 right-0 top-0 h-[2px] pointer-events-none z-20"
+        className="absolute left-0 right-0 top-0 h-[2px] pointer-events-none z-20 origin-left"
         style={{
-          background: `linear-gradient(90deg, transparent 0%, ${accentVar ? `hsl(${accentVar})` : "rgba(251,191,36,0.7)"} 25%, ${accentVar ? `hsl(${accentVar})` : "rgba(251,191,36,1)"} 50%, ${accentVar ? `hsl(${accentVar})` : "rgba(251,191,36,0.7)"} 75%, transparent 100%)`,
+          background: `linear-gradient(90deg, transparent 0%, ${accentColor} 30%, ${accentColor} 70%, transparent 100%)`,
         }}
         initial={{ scaleX: 0, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: [0, 1, 0.5] }}
-        transition={{ duration: 1.2, delay: delay + 0.2, ease: "easeOut" }}
+        animate={{ scaleX: 1, opacity: 0.85 }}
+        transition={{ duration: 1.0, delay: delay + 0.15, ease: [0.22, 1, 0.36, 1] }}
       />
 
       {/* Subtle holographic radial glow on hover */}
-      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-700`}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-700"
         style={{
-          background: `radial-gradient(600px circle at var(--mx,50%) var(--my,0%), ${accentVar ? `hsl(${accentVar} / 0.08)` : "rgba(251,191,36,0.08)"}, transparent 40%)`,
+          background: `radial-gradient(600px circle at 50% 0%, ${accentColor.replace("hsl(", "hsla(").replace(")", ", 0.07)")}, transparent 45%)`,
         }}
       />
 
@@ -169,7 +170,7 @@ function TechChartCard({
         transition={{ duration: 9, repeat: Infinity, ease: "linear", delay: delay + 1.5 }}
       />
 
-      {/* HUD corner brackets — 4 corners */}
+      {/* HUD corner brackets — 4 corners (steady, no pulse flicker) */}
       {[
         { pos: "top-2 left-2",     border: "border-t border-l", corner: "rounded-tl" },
         { pos: "top-2 right-2",    border: "border-t border-r", corner: "rounded-tr" },
@@ -178,59 +179,65 @@ function TechChartCard({
       ].map((c, i) => (
         <motion.span
           key={i}
-          className={`absolute ${c.pos} w-3 h-3 ${c.border} ${c.corner} pointer-events-none ${accentColorClass} opacity-50`}
-          style={{ borderColor: "currentColor" }}
-          initial={{ opacity: 0, scale: 0.4 }}
-          animate={{ opacity: [0, 0.8, 0.5], scale: 1 }}
-          transition={{ duration: 0.6, delay: delay + 0.4 + i * 0.05 }}
+          className={`absolute ${c.pos} w-3 h-3 ${c.border} ${c.corner} pointer-events-none`}
+          style={{ borderColor: accentColor, opacity: 0.55 }}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 0.55, scale: 1 }}
+          transition={{ duration: 0.5, delay: delay + 0.35 + i * 0.04, ease: "easeOut" }}
         />
       ))}
 
       {/* Header */}
       <div className="relative z-20 flex items-center justify-between px-5 pt-4 pb-3 border-b border-border/30">
-        <div className="flex items-start gap-3 min-w-0">
-          {/* Glowing icon block */}
-          <motion.div
-            className={`relative shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${accentColorClass}`}
-            style={{
-              background: `linear-gradient(135deg, currentColor 0%, transparent 100%)`,
-              backgroundColor: "rgba(255,255,255,0.02)",
-            }}
-            animate={{
-              boxShadow: [
-                `0 0 0 0 currentColor`,
-                `0 0 14px 2px currentColor`,
-                `0 0 0 0 currentColor`,
-              ],
-            }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay }}
-          >
-            <Icon className="h-4 w-4 relative z-10" />
-            {/* Inner glow */}
-            <span className="absolute inset-0 rounded-lg bg-current opacity-[0.08]" />
-          </motion.div>
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Icon plate — soft tinted background, even ambient halo behind it */}
+          <div className="relative shrink-0">
+            {/* Soft halo behind icon (steady, not flickering) */}
+            <motion.span
+              aria-hidden
+              className="absolute inset-0 rounded-xl pointer-events-none"
+              style={{
+                background: `radial-gradient(closest-side, ${accentColor.replace("hsl(", "hsla(").replace(")", ", 0.45)")}, transparent 75%)`,
+                filter: "blur(8px)",
+              }}
+              animate={{ opacity: [0.45, 0.75, 0.45] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay }}
+            />
+            <div
+              className={`relative flex h-10 w-10 items-center justify-center rounded-xl ${accentColorClass}`}
+              style={{
+                background: `linear-gradient(135deg, ${accentColor.replace("hsl(", "hsla(").replace(")", ", 0.18)")} 0%, ${accentColor.replace("hsl(", "hsla(").replace(")", ", 0.04)")} 100%)`,
+                border: `1px solid ${accentColor.replace("hsl(", "hsla(").replace(")", ", 0.35)")}`,
+                boxShadow: `inset 0 1px 0 0 ${accentColor.replace("hsl(", "hsla(").replace(")", ", 0.18)")}, 0 0 0 1px ${accentColor.replace("hsl(", "hsla(").replace(")", ", 0.06)")}`,
+              }}
+            >
+              <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+            </div>
+          </div>
 
           <div className="min-w-0">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <h3 className="text-sm font-semibold text-foreground tracking-tight leading-tight truncate">
-                {title}
-              </h3>
-            </div>
+            <h3 className="text-sm font-semibold text-foreground tracking-tight leading-tight truncate">
+              {title}
+            </h3>
             {subtitle && (
-              <p className="text-[10px] text-muted-foreground/70 mt-0.5 leading-tight tracking-wide">
+              <p className="text-[10px] text-muted-foreground/70 mt-0.5 leading-tight tracking-wide font-mono tabular-nums">
                 {subtitle}
               </p>
             )}
           </div>
         </div>
 
-        {/* Live data indicator */}
+        {/* Live data indicator — symmetric breathing */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <motion.span
-            className={`block h-1.5 w-1.5 rounded-full ${accentColorClass} bg-current`}
-            animate={{ opacity: [1, 0.3, 1], scale: [1, 0.85, 1] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-          />
+          <span className="relative flex h-1.5 w-1.5">
+            <motion.span
+              className="absolute inline-flex h-full w-full rounded-full"
+              style={{ background: accentColor }}
+              animate={{ opacity: [0.5, 0, 0.5], scale: [1, 2.6, 1] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <span className="relative inline-flex h-full w-full rounded-full" style={{ background: accentColor }} />
+          </span>
           <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50 font-medium hidden sm:inline">
             LIVE
           </span>
