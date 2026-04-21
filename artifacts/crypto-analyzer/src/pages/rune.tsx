@@ -927,75 +927,135 @@ export default function Rune() {
                   {/* Result chart: pie + bar side by side */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Asset breakdown pie */}
-                    <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
-                      <CardHeader className="pb-2 border-b border-border/40">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          {bi("mr.rune.chart.assetBreakdown", "Asset Breakdown")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-3 pb-2">
-                        <ResponsiveContainer width="100%" height={160}>
+                    <TechChartCard
+                      icon={PieIcon}
+                      title={bi("mr.rune.chart.assetBreakdown", "Asset Breakdown")}
+                      accent="primary"
+                      delay={0.05}
+                    >
+                      <div className="relative">
+                        <ResponsiveContainer width="100%" height={170}>
                           <PieChart>
-                            <Pie data={resultPieData} cx="50%" cy="50%" innerRadius={40} outerRadius={65}
-                              dataKey="value" nameKey="name" paddingAngle={3}>
+                            <defs>
+                              {RESULT_COLORS.map((c, i) => (
+                                <radialGradient key={i} id={`resPieGrad-${i}`} cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%"  stopColor={c} stopOpacity={1}   />
+                                  <stop offset="100%" stopColor={c} stopOpacity={0.55} />
+                                </radialGradient>
+                              ))}
+                            </defs>
+                            <Pie data={resultPieData} cx="50%" cy="50%" innerRadius={48} outerRadius={75}
+                              dataKey="value" nameKey="name" paddingAngle={4}
+                              stroke="hsl(230,30%,8%)" strokeWidth={2}
+                              animationDuration={1000} animationBegin={150}>
                               {resultPieData.map((_, i) => (
-                                <Cell key={i} fill={RESULT_COLORS[i]} />
+                                <Cell key={i} fill={`url(#resPieGrad-${i})`} />
                               ))}
                             </Pie>
                             <Tooltip contentStyle={tooltipStyle.contentStyle}
-                              formatter={(v: number, name: string) => [`$${fmt(v, 0)}`, name]} />
+                              formatter={(v: number, name: string) => [`$${fmt(v, 0)}`, name]} animationDuration={180} />
                           </PieChart>
                         </ResponsiveContainer>
-                        <div className="space-y-1.5">
-                          {resultPieData.map((d, i) => (
-                            <div key={i} className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-1.5">
-                                <div className="h-2 w-2 rounded-full" style={{ background: RESULT_COLORS[i] }} />
-                                <span className="text-muted-foreground">{d.name}</span>
-                              </div>
-                              <span className="font-mono font-semibold">${fmt(d.value, 0)}</span>
+                        {/* Center total */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="text-center">
+                            <div className="text-[8px] uppercase tracking-widest text-muted-foreground/60">Total</div>
+                            <div className="num text-sm text-foreground/90">
+                              ${fmt(resultPieData.reduce((s, d) => s + (d.value ?? 0), 0), 0)}
                             </div>
-                          ))}
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                      <div className="space-y-1.5 mt-3">
+                        {resultPieData.map((d, i) => {
+                          const total = resultPieData.reduce((s, x) => s + (x.value ?? 0), 0) || 1;
+                          const pct   = ((d.value ?? 0) / total) * 100;
+                          return (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}
+                              className="flex items-center justify-between text-xs gap-2"
+                            >
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="h-2 w-2 rounded-full shrink-0 shadow-[0_0_6px_currentColor]" style={{ background: RESULT_COLORS[i], color: RESULT_COLORS[i] }} />
+                                <span className="text-muted-foreground truncate">{d.name}</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] text-muted-foreground/60 num tabular-nums">{pct.toFixed(0)}%</span>
+                                <span className="num font-semibold text-foreground/90 tabular-nums">${fmt(d.value, 0)}</span>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </TechChartCard>
 
                     {/* Stage ROI bar chart: show all stages for this node */}
-                    <Card className="bg-card/80 backdrop-blur border-border shadow-sm overflow-hidden">
-                      <CardHeader className="pb-2 border-b border-border/40">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          {bi("mr.rune.chart.stageForecast", "Stage Forecast")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-3 pb-2">
-                        {selectedNode && (overview?.priceStages?.length) ? (
-                          <ResponsiveContainer width="100%" height={200}>
-                            <BarChart
-                              data={(overview.priceStages ?? []).map((s, i) => ({
-                                label: stageLabel(s, i),
-                                totalAssets: Math.round(
-                                  selectedNode.motherTokensPerSeat * seats * s.motherPrice +
-                                  selectedNode.airdropPerSeat      * seats * s.subPrice    +
-                                  selectedNode.dailyUsdt           * seats * durationDays
-                                ),
-                              }))}
-                              margin={{ top: 4, right: 8, left: -10, bottom: 4 }}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" stroke={C.grid} />
-                              <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false} />
-                              <YAxis tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false}
-                                tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${(v/1e3).toFixed(0)}K`} />
-                              <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")]} />
-                              <Bar dataKey="totalAssets" name={isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")} radius={[4,4,0,0]}>
-                                {(overview.priceStages ?? []).map((_, i) => (
-                                  <Cell key={i} fill={i === priceStageIndex ? C.mother : "hsl(217,50%,35%)"} />
-                                ))}
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        ) : null}
-                      </CardContent>
-                    </Card>
+                    <TechChartCard
+                      icon={BarChart2}
+                      title={bi("mr.rune.chart.stageForecast", "Stage Forecast")}
+                      accent="amber-500"
+                      delay={0.15}
+                    >
+                      {selectedNode && (overview?.priceStages?.length) ? (
+                        <ResponsiveContainer width="100%" height={220}>
+                          <BarChart
+                            data={(overview.priceStages ?? []).map((s, i) => ({
+                              label: stageLabel(s, i),
+                              totalAssets: Math.round(
+                                selectedNode.motherTokensPerSeat * seats * s.motherPrice +
+                                selectedNode.airdropPerSeat      * seats * s.subPrice    +
+                                selectedNode.dailyUsdt           * seats * durationDays
+                              ),
+                              isActive: i === priceStageIndex,
+                            }))}
+                            margin={{ top: 8, right: 8, left: -10, bottom: 4 }}
+                          >
+                            <defs>
+                              <linearGradient id="stageActiveBar" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%"   stopColor="hsl(38,92%,60%)" stopOpacity={1}    />
+                                <stop offset="100%" stopColor="hsl(38,92%,50%)" stopOpacity={0.4}  />
+                              </linearGradient>
+                              <linearGradient id="stageIdleBar" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%"   stopColor="hsl(217,55%,42%)" stopOpacity={0.85} />
+                                <stop offset="100%" stopColor="hsl(217,55%,32%)" stopOpacity={0.3}  />
+                              </linearGradient>
+                              <filter id="activeBarGlow">
+                                <feGaussianBlur stdDeviation="2.5" result="b" />
+                                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                              </filter>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
+                            <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false}
+                              tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${(v/1e3).toFixed(0)}K`} />
+                            <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")]} animationDuration={180} />
+                            <Bar dataKey="totalAssets" name={isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")} radius={[6,6,0,0]} maxBarSize={40}
+                              animationDuration={1100} animationBegin={250}>
+                              {(overview.priceStages ?? []).map((_, i) => (
+                                <Cell key={i}
+                                  fill={i === priceStageIndex ? "url(#stageActiveBar)" : "url(#stageIdleBar)"}
+                                  style={i === priceStageIndex ? { filter: "url(#activeBarGlow)" } : undefined}
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : null}
+                      {/* Stage legend strip */}
+                      <div className="flex items-center justify-center gap-4 mt-1 text-[10px] text-muted-foreground/70">
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-sm shadow-[0_0_8px_hsl(38,92%,55%)]" style={{ background: "hsl(38,92%,55%)" }} />
+                          <span>{isEn ? "Selected stage" : t("mr.rune.kpi.stage") + (isEn ? "" : " · 当前")}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-sm" style={{ background: "hsl(217,55%,40%)" }} />
+                          <span>{isEn ? "Other stages" : "其他阶段"}</span>
+                        </div>
+                      </div>
+                    </TechChartCard>
                   </div>
 
                   {/* Detail table */}
