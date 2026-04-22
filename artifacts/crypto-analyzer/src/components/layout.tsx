@@ -273,6 +273,8 @@ function Navbar() {
 
           {/* Right controls — mobile only */}
           <div className="flex md:hidden items-center gap-2">
+            {/* Language toggle — mobile */}
+            <LanguageToggle />
             {/* Connect wallet — mobile (compact, before hamburger) */}
             <div className="[&_button]:!h-9 [&_button]:!px-3 [&_button]:!text-xs">
               <WalletConnectButton />

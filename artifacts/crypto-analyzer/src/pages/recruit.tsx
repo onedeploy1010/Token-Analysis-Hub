@@ -17,7 +17,6 @@ import { useGetRuneOverview } from "@workspace/api-client-react";
 import type { RuneNodeDefinition } from "@workspace/api-client-react";
 import { useShowZh } from "@/contexts/language-context";
 import { RuneOnboarding } from "@/components/rune/rune-onboarding";
-import { WalletConnectButton } from "@/components/rune/wallet-connect-button";
 import { useActiveAccount } from "thirdweb/react";
 
 // ─── Node style maps ────────────────────────────────────────────────────────
@@ -280,25 +279,10 @@ export default function Recruit() {
 
       {/* ── Onboarding orchestrator ── */}
       {/* Invisible. Reads ?ref=, watches wallet connection, and dispatches
-          the bind-referrer / purchase-node modals + the /dashboard redirect. */}
+          the bind-referrer / purchase-node modals + the /dashboard redirect.
+          The wallet connect button lives in the global header, so we don't
+          repeat the CTA here. */}
       <RuneOnboarding />
-
-      {/* ── Wallet CTA for first-time visitors ── */}
-      {!account && (
-        <div className="rounded-2xl border border-amber-700/40 bg-gradient-to-br from-amber-950/30 via-card/40 to-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-foreground">
-              {showZh ? "连接钱包以购买节点" : "Connect your wallet to purchase a node"}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              {showZh
-                ? "使用 MetaMask / TokenPocket / OKX 等钱包，切换到 BSC 测试网，即可一步绑定推荐关系并购买节点。"
-                : "Use MetaMask, TokenPocket, OKX or any EIP-1193 wallet on BSC Testnet. We'll guide you through binding your referrer and picking a tier."}
-            </p>
-          </div>
-          <div className="shrink-0"><WalletConnectButton /></div>
-        </div>
-      )}
 
       {/* ── Node cards ── */}
       <section>
@@ -366,11 +350,14 @@ export default function Recruit() {
                       </div>
                     </div>
 
-                    {/* Buy CTA — unified with the wallet flow */}
+                    {/* Buy CTA — unified with the wallet flow.
+                        Connection lives in the global header, so we never
+                        repeat the Connect button on a node card. When
+                        disconnected, a read-only label nudges users to the
+                        header; when connected, the outline button opens the
+                        per-tier details dialog (RuneOnboarding already drives
+                        the actual purchase modal). */}
                     {account ? (
-                      // Connected: RuneOnboarding already drives the purchase modal.
-                      // We leave a subtle outline tile that opens the educational
-                      // details dialog, so users can still inspect a specific tier.
                       <Button
                         variant="outline"
                         onClick={() => handleBuy(node)}
@@ -379,15 +366,8 @@ export default function Recruit() {
                         {showZh ? "查看详情 · Details" : "View Details"}
                       </Button>
                     ) : (
-                      // Not connected: inline CTA — tapping opens the same
-                      // ConnectButton flow used in the header.
-                      <div className="mt-4 rounded-lg border border-dashed border-amber-700/40 bg-amber-950/10 px-3 py-2.5 flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-amber-200/80 leading-tight">
-                          {showZh ? "连接钱包以购买" : "Connect wallet to purchase"}
-                        </span>
-                        <div className="[&_button]:!h-7 [&_button]:!px-2.5 [&_button]:!text-[11px]">
-                          <WalletConnectButton />
-                        </div>
+                      <div className="mt-4 h-9 rounded-lg border border-dashed border-amber-700/30 bg-amber-950/10 flex items-center justify-center text-[11px] text-amber-200/70">
+                        {showZh ? "连接钱包后可购买" : "Connect wallet to purchase"}
                       </div>
                     )}
                   </motion.div>
