@@ -37,8 +37,14 @@ const bscTestnetConfig: RuneChainConfig = {
   usdt: "0xa87cC1e59598CD0C33bBe38746a81279BFfea0B8",
   community: "0x42a06ac2208E9F8e25673BA0F6c44bc56fD2aa62",
   nodePresell: "0x6a30f26338742670637f47dfC04600B4d1eF1E9a",
-  // Start scanning some blocks before deployment — BSC testnet is cheap.
-  startBlock: { community: 0n, nodePresell: 0n },
+  // The contracts ship new on every testnet iteration. Scanning from block 0
+  // on BSC testnet (100M+ blocks) wastes hours crawling empty space before
+  // we reach any event. Anchor the cursor to the actual deployment blocks
+  // so the indexer is real-time from the first tick.
+  //   Community   deployed around block 103_132_808
+  //   NodePresell deployed around block 103_132_834
+  // We subtract a small pad in case the binary search was off by one.
+  startBlock: { community: 103_132_800n, nodePresell: 103_132_800n },
   chain: bscTestnet,
 };
 

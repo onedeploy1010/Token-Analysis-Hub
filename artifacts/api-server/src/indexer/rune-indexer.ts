@@ -95,7 +95,11 @@ async function ingestNodePresell(toBlock: bigint, fromBlock: bigint) {
 async function scanContract(contract: RuneContract, head: bigint) {
   const startDefault = runeChainConfig.startBlock[contract];
   const persisted = await getCursor(runeChainConfig.chainId, contract);
-  let cursor = persisted ?? startDefault;
+  // The configured startBlock is a floor: if we bump it forward (e.g. after
+  // new contracts deploy and we want to skip ancient empty history), a
+  // stale cursor stored from an earlier run shouldn't drag the scan back
+  // into those empty blocks. Take the MAX of the two.
+  let cursor = persisted !== null && persisted > startDefault ? persisted : startDefault;
 
   // Cap the scan at `head - CONFIRMATIONS` so we don't ingest unconfirmed blocks.
   const safeHead = head > CONFIRMATIONS ? head - CONFIRMATIONS : 0n;
