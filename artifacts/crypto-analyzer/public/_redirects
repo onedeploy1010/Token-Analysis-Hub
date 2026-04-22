@@ -1,4 +1,6 @@
-# Cloudflare Pages — SPA fallback.
-# Every unknown path is rewritten (200) to index.html so Wouter's client-side
-# router can handle it. This must be the last rule.
-/*    /index.html    200
+# Cloudflare Pages — SPA fallback, but exclude /api/* so a mis-pointed
+# frontend doesn't silently receive index.html (HTTP 200) in place of a
+# proper 404. Without this, axios treats the SPA shell as a JSON body
+# and every page breaks with "s?.filter is not a function" downstream.
+/api/*    /api/:splat    404
+/*        /index.html    200
