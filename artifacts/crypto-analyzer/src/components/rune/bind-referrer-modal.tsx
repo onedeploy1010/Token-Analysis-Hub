@@ -192,25 +192,16 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
             ) : null}
           </div>
 
-          {/* ROOT explainer + one-tap button */}
-          <div className="rounded-lg border border-amber-700/30 bg-amber-950/20 px-3 py-3 space-y-2">
-            <p className="text-[11px] text-amber-200/90 leading-relaxed">
-              {t("mr.bind.rootHint")}
-              <br />
-              <span className="text-muted-foreground/80">
-                ROOT = <span className="font-mono text-foreground">{COMMUNITY_ROOT}</span>
-              </span>
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full h-8 text-[11px] border-amber-500/40 text-amber-200 hover:bg-amber-500/10 hover:text-amber-100"
-              onClick={useRoot}
-              disabled={submitting || isRoot}
-            >
-              {isRoot ? t("mr.bind.rootSelected") : t("mr.bind.useRoot")}
-            </Button>
-          </div>
+          {/* One-tap ROOT shortcut — kept minimal, no explanatory copy. */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full h-8 text-[11px] border-amber-500/40 text-amber-200 hover:bg-amber-500/10 hover:text-amber-100"
+            onClick={useRoot}
+            disabled={submitting || isRoot}
+          >
+            {isRoot ? t("mr.bind.rootSelected") : t("mr.bind.useRoot")}
+          </Button>
 
           <div className="flex gap-2 pt-1">
             <Button variant="ghost" onClick={onClose} disabled={submitting} className="flex-1">
