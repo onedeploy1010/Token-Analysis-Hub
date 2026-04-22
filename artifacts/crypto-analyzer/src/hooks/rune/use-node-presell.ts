@@ -1,13 +1,16 @@
 import { useReadContract } from "thirdweb/react";
 import { nodePresellContract, NODE_IDS } from "@/lib/thirdweb/contracts";
 
-/** Raw node config shape returned by NodePresell.getNodeConfigs. */
+/** Raw node config shape returned by NodePresell.getNodeConfigs.
+ *  `directRate` is a basis-point value out of PREVISION (10000), so
+ *  `1500 === 15 %` commission to the direct referrer on each purchase. */
 export interface NodeConfig {
   nodeId: bigint;
   payToken: string;
   payAmount: bigint;
   maxLimit: bigint;
   curNum: bigint;
+  directRate: bigint;
 }
 
 /**
@@ -18,7 +21,7 @@ export function useNodeConfigs() {
   const q = useReadContract({
     contract: nodePresellContract,
     method:
-      "function getNodeConfigs(uint256[]) view returns ((uint256 nodeId, address payToken, uint256 payAmount, uint256 maxLimit, uint256 curNum)[])",
+      "function getNodeConfigs(uint256[]) view returns ((uint256 nodeId, address payToken, uint256 payAmount, uint256 maxLimit, uint256 curNum, uint256 directRate)[])",
     params: [NODE_IDS.map((n) => BigInt(n))],
   });
   return q;

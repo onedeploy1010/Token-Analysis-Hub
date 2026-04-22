@@ -56,7 +56,7 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
     }
   }, [open]);
 
-  const configArray = (configs as any) as undefined | { nodeId: bigint; payAmount: bigint; maxLimit: bigint; curNum: bigint }[];
+  const configArray = (configs as any) as undefined | { nodeId: bigint; payAmount: bigint; maxLimit: bigint; curNum: bigint; directRate: bigint }[];
   const selectedConfig = selected && configArray
     ? configArray.find((c) => Number(c.nodeId) === selected)
     : undefined;

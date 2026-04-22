@@ -29,13 +29,15 @@ const LEVEL_TO_NODE_ID: Record<string, NodeId> = {
   pioneer:   401,
 };
 
-/** Shape of one element returned by NodePresell.getNodeConfigs. */
+/** Shape of one element returned by NodePresell.getNodeConfigs.
+ *  `directRate` is in basis points (10000 = 100%). */
 interface OnChainNodeConfig {
   nodeId: bigint;
   payToken: string;
   payAmount: bigint;
   maxLimit: bigint;
   curNum: bigint;
+  directRate: bigint;
 }
 
 // ─── Node style maps ────────────────────────────────────────────────────────
@@ -373,6 +375,12 @@ export default function Recruit() {
                 const investment = onChain
                   ? Number(onChain.payAmount / 10n ** 18n)
                   : node.investment;
+                // directRate is basis points out of 10000 (PREVISION), so
+                // divide by 100 to render a percent. No REST fallback — if
+                // the chain read hasn't landed yet we simply omit the row.
+                const directRatePct = onChain
+                  ? Number(onChain.directRate) / 100
+                  : null;
                 const occupiedPct = seats > 0
                   ? Math.round(((seats - seatsRemaining) / seats) * 100)
                   : 0;
@@ -407,6 +415,9 @@ export default function Recruit() {
                         { labelZh: "席位总量",     labelEn: "Total Seats", val: showZh ? `${fmt(seats)} 席` : `${fmt(seats)}` },
                         { labelZh: "每日USDT收益", labelEn: "Daily USDT",  val: `$${node.dailyUsdt}`, accent: true },
                         { labelZh: "子TOKEN空投",  labelEn: "Airdrop",     val: `${fmt(node.airdropPerSeat)} SUB` },
+                        ...(directRatePct !== null
+                          ? [{ labelZh: "直推返佣", labelEn: "Direct Commission", val: `${directRatePct}%`, accent: true }]
+                          : []),
                       ].map(({ labelZh, labelEn, val, accent: isAccent }) => (
                         <div key={labelEn} className="flex items-center justify-between gap-1">
                           <span className="text-[11px] text-muted-foreground/60">{showZh ? labelZh : labelEn}</span>

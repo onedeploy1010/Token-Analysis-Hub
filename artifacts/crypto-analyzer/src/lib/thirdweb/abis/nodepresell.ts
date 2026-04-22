@@ -10,6 +10,11 @@ export const nodePresellAbi = [
       },
       {
         "internalType": "address",
+        "name": "COMMUNITY_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "RECEIVEWALLET_",
         "type": "address"
       }
@@ -20,6 +25,11 @@ export const nodePresellAbi = [
   {
     "inputs": [],
     "name": "ErrorAddressZero",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ErrorNoBind",
     "type": "error"
   },
   {
@@ -165,6 +175,19 @@ export const nodePresellAbi = [
   },
   {
     "inputs": [],
+    "name": "COMMUNITY",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "DEFAULT_ADMIN_ROLE",
     "outputs": [
       {
@@ -250,6 +273,11 @@ export const nodePresellAbi = [
           {
             "internalType": "uint256",
             "name": "curNum",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "directRate",
             "type": "uint256"
           }
         ],
@@ -405,6 +433,11 @@ export const nodePresellAbi = [
       {
         "internalType": "uint256",
         "name": "maxLimit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "directRate",
         "type": "uint256"
       }
     ],
@@ -564,6 +597,11 @@ export const nodePresellAbi = [
           {
             "internalType": "uint256",
             "name": "maxLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "directRate",
             "type": "uint256"
           }
         ],
