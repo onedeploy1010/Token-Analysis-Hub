@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
-    "@pothos/core": "^4.7.2",
-    "@pothos/plugin-dataloader": "^4.6.1",
+    "@pothos/core": "^4.12.0",
+    "@pothos/plugin-dataloader": "^4.4.3",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "bcryptjs": "^3.0.3",
