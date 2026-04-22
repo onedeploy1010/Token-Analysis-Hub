@@ -1,0 +1,37 @@
+import { builder } from "../builder";
+
+/**
+ * Aggregate snapshot for a single user's team.
+ *
+ * Assembled by the resolver — there's no backing table row.
+ */
+export interface PersonalStatsShape {
+  address: string;
+  directCount: number;            // how many people they directly referred
+  totalDownstreamCount: number;   // transitive downstream (recursive)
+  directPurchaseCount: number;    // of the direct downstream, how many bought a node
+  directTotalInvested: string;    // summed USDT amount (18-decimal string)
+  totalDownstreamInvested: string;// transitive sum
+  hasPurchased: boolean;
+  ownedNodeId: number | null;     // if hasPurchased, which one
+  chainId: number;
+}
+
+export const PersonalStatsType = builder
+  .objectRef<PersonalStatsShape>("PersonalStats")
+  .implement({
+    description: "Aggregated personal + downstream-team metrics for one address.",
+    fields: (t) => ({
+      address:                 t.field({ type: "Address",      resolve: (r) => r.address }),
+      chainId:                 t.exposeInt("chainId"),
+
+      directCount:             t.exposeInt("directCount",             { description: "Number of wallets directly referred by this address." }),
+      totalDownstreamCount:    t.exposeInt("totalDownstreamCount",    { description: "Transitive downstream count (direct + indirect)." }),
+      directPurchaseCount:     t.exposeInt("directPurchaseCount",     { description: "Of direct downstream, how many purchased a node." }),
+      directTotalInvested:     t.field({ type: "BigIntString", resolve: (r) => r.directTotalInvested, description: "Sum of direct downstream USDT purchases (18-decimal wei-like string)." }),
+      totalDownstreamInvested: t.field({ type: "BigIntString", resolve: (r) => r.totalDownstreamInvested, description: "Sum of transitive downstream USDT purchases (18-decimal string)." }),
+
+      hasPurchased:            t.exposeBoolean("hasPurchased"),
+      ownedNodeId:             t.int({ nullable: true, resolve: (r) => r.ownedNodeId }),
+    }),
+  });

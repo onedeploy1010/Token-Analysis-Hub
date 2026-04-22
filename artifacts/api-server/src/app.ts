@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { yoga } from "./graphql";
 
 const app: Express = express();
 
@@ -26,6 +27,11 @@ app.use(
   }),
 );
 app.use(cors());
+
+// Mount GraphQL *before* the JSON body parser — Yoga handles its own parsing,
+// and re-parsing would break streaming operations.
+app.use(yoga.graphqlEndpoint, yoga);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

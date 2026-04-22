@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { seedAdminUser } from "./lib/seedAdmin.js";
 import { startHyperliquidCron } from "./routes/hyperliquid.js";
+import { startRuneIndexer } from "./indexer/rune-indexer.js";
 
 const rawPort = process.env["PORT"];
 
@@ -26,4 +27,5 @@ app.listen(port, async (err) => {
   logger.info({ port }, "Server listening");
   await seedAdminUser();
   startHyperliquidCron();
+  startRuneIndexer();
 });

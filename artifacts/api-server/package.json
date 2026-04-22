@@ -11,18 +11,24 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
+    "@pothos/core": "^4.7.2",
+    "@pothos/plugin-dataloader": "^4.6.1",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2",
+    "dataloader": "^2.2.3",
     "drizzle-orm": "catalog:",
     "express": "^5",
     "google-auth-library": "^10.6.2",
+    "graphql": "^16.11.0",
+    "graphql-yoga": "^5.14.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "pino": "^9",
-    "pino-http": "^10"
+    "pino-http": "^10",
+    "viem": "^2.30.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
