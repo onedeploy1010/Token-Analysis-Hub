@@ -8,6 +8,7 @@ import { prepareContractCall, readContract } from "thirdweb";
 import { communityContract, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
 import { UserPlus, Loader2, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/language-context";
 
 interface Props {
   open: boolean;
@@ -51,6 +52,7 @@ type PreCheck =
  * user sees a clear error before paying gas. ROOT short-circuits.
  */
 export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: Props) {
+  const { t } = useLanguage();
   const account = useActiveAccount();
   const [input, setInput] = useState<string>(initialReferrer ?? "");
   const [submitting, setSubmitting] = useState(false);
@@ -68,7 +70,7 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
   // "Referrer not invited" rule and fails loudly before the user pays gas.
   useEffect(() => {
     if (!isHex || isSelf) { setPreCheck({ state: "idle" }); return; }
-    if (isRoot)           { setPreCheck({ state: "ok", label: "ROOT — top of the tree" }); return; }
+    if (isRoot)           { setPreCheck({ state: "ok", label: t("mr.bind.okRoot") }); return; }
 
     setPreCheck({ state: "checking" });
     const handle = setTimeout(async () => {
@@ -82,13 +84,13 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
         if (upstreamOfRef.toLowerCase() === ZERO) {
           setPreCheck({
             state: "reject",
-            reason: "This address is not a member of the community yet — the contract will revert with \"Referrer not invited\".",
+            reason: t("mr.bind.rejectNotMember"),
           });
         } else {
-          setPreCheck({ state: "ok", label: `In community, upstream ${short(upstreamOfRef)}` });
+          setPreCheck({ state: "ok", label: `${t("mr.bind.okMember")} ${short(upstreamOfRef)}` });
         }
       } catch (e: any) {
-        setPreCheck({ state: "reject", reason: e?.message ?? "Failed to reach the Community contract." });
+        setPreCheck({ state: "reject", reason: e?.message ?? t("mr.bind.rejectRpc") });
       }
     }, 400);
 
@@ -106,12 +108,12 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
         params: [resolved as `0x${string}`],
       });
       await sendTx(tx);
-      toast({ title: "Referrer bound", description: "Your referral relationship is now on-chain." });
+      toast({ title: t("mr.bind.toastBound"), description: t("mr.bind.toastBoundDesc") });
       onBound();
     } catch (e: any) {
       toast({
-        title: "Transaction failed",
-        description: e?.message ?? "The contract rejected this binding. Check the referrer address and try again.",
+        title: t("mr.bind.toastFail"),
+        description: e?.message ?? t("mr.bind.toastFailDesc"),
         variant: "destructive",
       });
     } finally {
@@ -135,29 +137,27 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
               <UserPlus className="h-4 w-4 text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">Step 1 · Bind Referrer</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">{t("mr.bind.step")}</span>
           </div>
-          <DialogTitle className="text-xl font-bold">Connect your referral line</DialogTitle>
+          <DialogTitle className="text-xl font-bold">{t("mr.bind.title")}</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
-            One small transaction locks your upstream referrer on-chain. Required
-            before the presale accepts payment — the network needs to know which
-            line you belong to.
+            {t("mr.bind.desc")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
           <div className="space-y-2">
             <Label htmlFor="ref-addr" className="text-xs text-muted-foreground flex items-center justify-between">
-              <span>Referrer address</span>
+              <span>{t("mr.bind.addrLabel")}</span>
               {isRoot && (
                 <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-widest">
-                  ROOT selected
+                  {t("mr.bind.rootSelected")}
                 </span>
               )}
             </Label>
             <Input
               id="ref-addr"
-              placeholder="0x…  or type ROOT"
+              placeholder={t("mr.bind.addrPh")}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={submitting}
@@ -167,15 +167,15 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
             {/* Address feedback — one line at a time, priority: self > bad-format > pre-check */}
             {input && isSelf ? (
               <p className="text-[11px] text-destructive flex items-center gap-1.5">
-                <AlertCircle className="h-3 w-3" /> You can't refer yourself
+                <AlertCircle className="h-3 w-3" /> {t("mr.bind.errSelf")}
               </p>
             ) : input && !isHex && resolved.toLowerCase() !== "root" ? (
               <p className="text-[11px] text-destructive flex items-center gap-1.5">
-                <AlertCircle className="h-3 w-3" /> Not a valid EVM address
+                <AlertCircle className="h-3 w-3" /> {t("mr.bind.errInvalid")}
               </p>
             ) : preCheck.state === "checking" ? (
               <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                <Loader2 className="h-3 w-3 animate-spin" /> Checking on-chain…
+                <Loader2 className="h-3 w-3 animate-spin" /> {t("mr.bind.checking")}
               </p>
             ) : preCheck.state === "ok" ? (
               <p className="text-[11px] text-emerald-300 flex items-center gap-1.5">
@@ -187,7 +187,7 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
               </p>
             ) : initialReferrer && isHex ? (
               <p className="text-[11px] text-amber-300 flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3" /> Pre-filled from invite link
+                <CheckCircle2 className="h-3 w-3" /> {t("mr.bind.prefilled")}
               </p>
             ) : null}
           </div>
@@ -195,7 +195,7 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
           {/* ROOT explainer + one-tap button */}
           <div className="rounded-lg border border-amber-700/30 bg-amber-950/20 px-3 py-3 space-y-2">
             <p className="text-[11px] text-amber-200/90 leading-relaxed">
-              No invite link? Bind directly under the protocol root.
+              {t("mr.bind.rootHint")}
               <br />
               <span className="text-muted-foreground/80">
                 ROOT = <span className="font-mono text-foreground">{COMMUNITY_ROOT}</span>
@@ -208,25 +208,25 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
               onClick={useRoot}
               disabled={submitting || isRoot}
             >
-              {isRoot ? "ROOT selected" : "Use ROOT"}
+              {isRoot ? t("mr.bind.rootSelected") : t("mr.bind.useRoot")}
             </Button>
           </div>
 
           <div className="flex gap-2 pt-1">
             <Button variant="ghost" onClick={onClose} disabled={submitting} className="flex-1">
-              Later
+              {t("mr.bind.later")}
             </Button>
             <Button
               className="flex-1 font-semibold"
               disabled={!canSubmit}
               onClick={submit}
             >
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign & Bind"}
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t("mr.bind.sign")}
             </Button>
           </div>
 
           <p className="text-[10px] text-muted-foreground/60 text-center">
-            You pay only the BNB gas fee for this transaction. No USDT is transferred.
+            {t("mr.bind.gasNote")}
           </p>
         </div>
       </DialogContent>

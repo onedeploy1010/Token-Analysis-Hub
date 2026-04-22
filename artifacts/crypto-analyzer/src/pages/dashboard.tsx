@@ -16,6 +16,7 @@ import { NODE_META, type NodeId, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts
 import { runeChain } from "@/lib/thirdweb/chains";
 import { buildReferralUrl } from "@/hooks/rune/use-referral-param";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/language-context";
 
 type Tab = "overview" | "team";
 
@@ -40,6 +41,7 @@ function fmtUsdt(raw: bigint | undefined | string, dec = 2): string {
  * automatically so the state machine never shows empty data.
  */
 export default function Dashboard() {
+  const { t } = useLanguage();
   const account = useActiveAccount();
   const address = account?.address;
   const [, navigate] = useLocation();
@@ -58,8 +60,8 @@ export default function Dashboard() {
       {/* ── Header ── */}
       <div className="flex items-end justify-between border-b border-border/40 pb-5">
         <div>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60 block mb-1">Personal Hub</span>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60 block mb-1">{t("mr.dash.hub")}</span>
+          <h1 className="text-2xl font-bold tracking-tight">{t("mr.dash.title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2">
             <Wallet className="h-3.5 w-3.5" />
             <span className="font-mono">{short(address)}</span>
@@ -72,8 +74,8 @@ export default function Dashboard() {
       {/* ── Tabs ── */}
       <div className="flex gap-1 border-b border-border/30">
         {[
-          { id: "overview" as const, Icon: LayoutDashboard, label: "Overview" },
-          { id: "team"     as const, Icon: Users,           label: "Team" },
+          { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
+          { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
         ].map(({ id, Icon, label }) => {
           const active = tab === id;
           return (
@@ -108,6 +110,7 @@ export default function Dashboard() {
    Overview tab
 ──────────────────────────────────────────────────────────────────────────── */
 function OverviewTab({ address }: { address: string }) {
+  const { t } = useLanguage();
   const { data: usdtRaw } = useUsdtBalance(address);
   const { referrer, isBound, isRoot } = useReferrerOf(address);
   const { hasPurchased, nodeId, payTime, amount } = useUserPurchase(address);
@@ -121,10 +124,10 @@ function OverviewTab({ address }: { address: string }) {
     try {
       await navigator.clipboard.writeText(referralUrl);
       setCopied(true);
-      toast({ title: "Link copied", description: "Share this link to invite others into your line." });
+      toast({ title: t("mr.dash.ref.copiedToast"), description: t("mr.dash.ref.copiedDesc") });
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast({ title: "Copy failed", description: "Select the link manually to copy.", variant: "destructive" });
+      toast({ title: t("mr.dash.ref.copyFail"), description: t("mr.dash.ref.copyFailDesc"), variant: "destructive" });
     }
   }
 
@@ -132,10 +135,10 @@ function OverviewTab({ address }: { address: string }) {
     <div className="space-y-6">
       {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi label="USDT"                 value={`${fmtUsdt(usdtRaw as bigint | undefined, 2)}`} sub="balance" />
-        <Kpi label="Direct invitees"      value={stats ? String(stats.directCount) : "…"}        sub="wallets" />
-        <Kpi label="Team total"           value={stats ? String(stats.totalDownstreamCount) : "…"} sub="incl. indirect" />
-        <Kpi label="Team invested"        value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"} sub="USDT (all-time)" highlight />
+        <Kpi label="USDT"                 value={`${fmtUsdt(usdtRaw as bigint | undefined, 2)}`} sub={t("mr.dash.kpi.balance")} />
+        <Kpi label={t("mr.dash.kpi.direct")} value={stats ? String(stats.directCount) : "…"}     sub={t("mr.dash.kpi.wallets")} />
+        <Kpi label={t("mr.dash.kpi.teamTotal")} value={stats ? String(stats.totalDownstreamCount) : "…"} sub={t("mr.dash.kpi.inclIndirect")} />
+        <Kpi label={t("mr.dash.kpi.teamInvested")} value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"} sub={t("mr.dash.kpi.allTime")} highlight />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -143,7 +146,7 @@ function OverviewTab({ address }: { address: string }) {
         <Card className="bg-card/70 backdrop-blur border-border">
           <CardHeader className="pb-3 border-b border-border/40">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-400" /> Owned Node
+              <TrendingUp className="h-4 w-4 text-amber-400" /> {t("mr.dash.owned.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-5">
@@ -160,21 +163,21 @@ function OverviewTab({ address }: { address: string }) {
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
                   <div>
-                    <p className="text-muted-foreground/60 uppercase text-[10px] tracking-widest mb-0.5">Paid</p>
+                    <p className="text-muted-foreground/60 uppercase text-[10px] tracking-widest mb-0.5">{t("mr.dash.owned.paid")}</p>
                     <p className="num text-foreground">${amount ? fmtUsdt(amount, 0) : "—"} USDT</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground/60 uppercase text-[10px] tracking-widest mb-0.5">Purchased</p>
+                    <p className="text-muted-foreground/60 uppercase text-[10px] tracking-widest mb-0.5">{t("mr.dash.owned.purchased")}</p>
                     <p className="num text-foreground">{payTime ? new Date(Number(payTime) * 1000).toLocaleDateString() : "—"}</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="py-8 text-center text-sm text-muted-foreground">
-                No node yet.
+                {t("mr.dash.owned.noneYet")}
                 <br />
                 <Button size="sm" variant="link" onClick={() => (window.location.href = "/recruit")} className="text-amber-400">
-                  Go to recruit →
+                  {t("mr.dash.owned.goRecruit")}
                 </Button>
               </div>
             )}
@@ -185,13 +188,12 @@ function OverviewTab({ address }: { address: string }) {
         <Card className="bg-card/70 backdrop-blur border-border">
           <CardHeader className="pb-3 border-b border-border/40">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <LinkIcon className="h-4 w-4 text-amber-400" /> Referral Link
+              <LinkIcon className="h-4 w-4 text-amber-400" /> {t("mr.dash.ref.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-5 space-y-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Share this link. Anyone who connects via it will have your wallet
-              auto-filled as their referrer in the onboarding flow.
+              {t("mr.dash.ref.desc")}
             </p>
             <div className="flex gap-2">
               <div className="flex-1 rounded-lg border border-border/50 bg-background/60 px-3 py-2 text-[11px] font-mono text-foreground/80 truncate">
@@ -199,12 +201,12 @@ function OverviewTab({ address }: { address: string }) {
               </div>
               <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5 shrink-0">
                 {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                {copied ? "Copied" : "Copy"}
+                {copied ? t("mr.dash.ref.copied") : t("mr.dash.ref.copy")}
               </Button>
             </div>
             <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
               <div className="text-xs text-muted-foreground">
-                <span className="opacity-60 uppercase text-[10px] tracking-widest block">Your upstream</span>
+                <span className="opacity-60 uppercase text-[10px] tracking-widest block">{t("mr.dash.ref.upstream")}</span>
                 {isRoot ? (
                   <span className="text-amber-300 font-semibold">ROOT</span>
                 ) : isBound && referrer ? (
@@ -216,7 +218,7 @@ function OverviewTab({ address }: { address: string }) {
                     {short(referrer)} <ExternalLink className="h-3 w-3 opacity-60" />
                   </a>
                 ) : (
-                  <span className="text-muted-foreground">Not bound</span>
+                  <span className="text-muted-foreground">{t("mr.dash.ref.notBound")}</span>
                 )}
               </div>
               {navigator.share && (
@@ -224,9 +226,9 @@ function OverviewTab({ address }: { address: string }) {
                   size="sm"
                   variant="ghost"
                   className="gap-1.5"
-                  onClick={() => navigator.share({ title: "Join RUNE", url: referralUrl }).catch(() => {})}
+                  onClick={() => navigator.share({ title: t("mr.dash.ref.shareTitle"), url: referralUrl }).catch(() => {})}
                 >
-                  <Share2 className="h-3.5 w-3.5" /> Share
+                  <Share2 className="h-3.5 w-3.5" /> {t("mr.dash.ref.share")}
                 </Button>
               )}
             </div>
@@ -243,6 +245,7 @@ function OverviewTab({ address }: { address: string }) {
 
 /** One node in the tree. Children are fetched lazily when expanded. */
 function TeamNode({ row, depth }: { row: ReferrerRow; depth: number }) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const { data: children, isLoading } = useTeam(open ? row.user : undefined);
 
@@ -263,9 +266,9 @@ function TeamNode({ row, depth }: { row: ReferrerRow; depth: number }) {
       {open && (
         <div className="pl-3 border-l border-border/20 mt-1 space-y-1">
           {isLoading ? (
-            <p className="text-[11px] text-muted-foreground py-1 px-2">Loading…</p>
+            <p className="text-[11px] text-muted-foreground py-1 px-2">{t("mr.dash.team.loadingShort")}</p>
           ) : !children || children.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground/70 py-1 px-2">No downstream</p>
+            <p className="text-[11px] text-muted-foreground/70 py-1 px-2">{t("mr.dash.team.noDownstream")}</p>
           ) : (
             children.map((child) => <TeamNode key={child.user} row={child} depth={depth + 1} />)
           )}
@@ -276,31 +279,32 @@ function TeamNode({ row, depth }: { row: ReferrerRow; depth: number }) {
 }
 
 function TeamTab({ address }: { address: string }) {
+  const { t } = useLanguage();
   const { data: directTeam, isLoading } = useTeam(address);
   const { data: stats } = usePersonalStats(address);
 
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi label="Direct"           value={stats ? String(stats.directCount) : "…"}              sub="1st layer" />
-        <Kpi label="Total team"       value={stats ? String(stats.totalDownstreamCount) : "…"}      sub="recursive" />
-        <Kpi label="Direct purchases" value={stats ? String(stats.directPurchaseCount) : "…"}       sub="converted" />
-        <Kpi label="Direct invested"  value={stats ? `$${fmtUsdt(stats.directTotalInvested, 0)}` : "…"} sub="USDT" highlight />
+        <Kpi label={t("mr.dash.team.direct")} value={stats ? String(stats.directCount) : "…"} sub={t("mr.dash.team.firstLayer")} />
+        <Kpi label={t("mr.dash.team.total")} value={stats ? String(stats.totalDownstreamCount) : "…"} sub={t("mr.dash.team.recursive")} />
+        <Kpi label={t("mr.dash.team.purchased")} value={stats ? String(stats.directPurchaseCount) : "…"} sub={t("mr.dash.team.converted")} />
+        <Kpi label={t("mr.dash.team.invested")} value={stats ? `$${fmtUsdt(stats.directTotalInvested, 0)}` : "…"} sub="USDT" highlight />
       </div>
 
       <Card className="bg-card/70 backdrop-blur border-border">
         <CardHeader className="pb-3 border-b border-border/40">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Users className="h-4 w-4 text-amber-400" /> Downstream Tree
+            <Users className="h-4 w-4 text-amber-400" /> {t("mr.dash.team.treeTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4 space-y-1">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">Loading team…</p>
+            <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.team.loading")}</p>
           ) : !directTeam || directTeam.length === 0 ? (
             <div className="py-10 text-center text-sm text-muted-foreground">
               <Users className="h-8 w-8 mx-auto mb-3 opacity-30" />
-              No invitees yet. Share your link from the Overview tab.
+              {t("mr.dash.team.noInvitees")}
             </div>
           ) : (
             directTeam.map((row) => <TeamNode key={row.user} row={row} depth={0} />)
@@ -309,7 +313,7 @@ function TeamTab({ address }: { address: string }) {
       </Card>
 
       <p className="text-[10px] text-muted-foreground/50 text-center">
-        Tree data is indexed from <span className="font-mono">EventAddReferrer</span> on the Community proxy ({short(COMMUNITY_ROOT)} omitted).
+        {t("mr.dash.team.treeNote")}
       </p>
     </div>
   );
