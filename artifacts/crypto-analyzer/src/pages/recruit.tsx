@@ -17,6 +17,26 @@ import { useGetRuneOverview } from "@workspace/api-client-react";
 import type { RuneNodeDefinition } from "@workspace/api-client-react";
 import { useShowZh } from "@/contexts/language-context";
 import { useActiveAccount } from "thirdweb/react";
+import { useNodeConfigs } from "@/hooks/rune/use-node-presell";
+import { type NodeId } from "@/lib/thirdweb/contracts";
+import { useReferrerOf } from "@/hooks/rune/use-community";
+
+/** Map the REST response's tier key to the on-chain nodeId. */
+const LEVEL_TO_NODE_ID: Record<string, NodeId> = {
+  guardian:  101,
+  strategic: 201,
+  builder:   301,
+  pioneer:   401,
+};
+
+/** Shape of one element returned by NodePresell.getNodeConfigs. */
+interface OnChainNodeConfig {
+  nodeId: bigint;
+  payToken: string;
+  payAmount: bigint;
+  maxLimit: bigint;
+  curNum: bigint;
+}
 
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
@@ -210,7 +230,23 @@ export default function Recruit() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  // REST overview still supplies the marketing-style metadata (tier English
+  // name, daily USDT projection, airdrop-per-seat, etc.) that isn't stored
+  // on-chain — these are project constants, fine to keep off-chain.
   const { data: overview, isLoading } = useGetRuneOverview();
+
+  // On-chain live reads: NodePresell.getNodeConfigs returns the four tiers'
+  // real-time `curNum` / `maxLimit`, and Community.referrerOf tells us
+  // whether the connected wallet is already bound. We overlay both on top
+  // of the REST rows so the UI reflects the chain within 15 s of any tx.
+  const { data: onChainConfigs } = useNodeConfigs();
+  const onChainArray = (onChainConfigs as OnChainNodeConfig[] | undefined) ?? [];
+  const onChainByNodeId = new Map<number, OnChainNodeConfig>(
+    onChainArray.map((c) => [Number(c.nodeId), c]),
+  );
+
+  const { isBound, referrer, isRoot } = useReferrerOf(account?.address);
+
   const nodes = overview?.nodes ?? [];
 
   // Legacy "Buy Node" handler — kept only so the existing educational dialog
@@ -280,6 +316,37 @@ export default function Recruit() {
           bind / purchase / dashboard-redirect flow fires from any page the
           moment the user connects via the header. No page-level mount here. */}
 
+      {/* ── Binding status strip ── Only rendered when a wallet is
+          connected; reads `referrerOf` on-chain so the state reflects the
+          network, not the URL param. */}
+      {account && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className={`rounded-xl border px-4 py-3 text-xs flex items-center justify-between gap-3 ${
+            isBound
+              ? isRoot
+                ? "border-amber-700/40 bg-amber-950/30 text-amber-200"
+                : "border-green-700/40 bg-green-950/30 text-green-200"
+              : "border-amber-700/40 bg-amber-950/30 text-amber-200"
+          }`}
+        >
+          <span className="font-mono uppercase tracking-[0.18em] text-[10px] opacity-60">
+            {showZh ? "链上绑定 · On-chain" : "On-chain"}
+          </span>
+          <span className="text-right font-medium">
+            {!isBound
+              ? showZh ? "尚未绑定推荐人" : "Not bound yet"
+              : isRoot
+              ? showZh ? "已绑定 ROOT · 顶级节点" : "Bound to ROOT"
+              : showZh
+              ? `已绑定 ${referrer!.slice(0, 6)}…${referrer!.slice(-4)}`
+              : `Bound to ${referrer!.slice(0, 6)}…${referrer!.slice(-4)}`}
+          </span>
+        </motion.div>
+      )}
+
       {/* ── Node cards ── */}
       <section>
         <div className="flex items-center gap-2 mb-6">
@@ -294,7 +361,21 @@ export default function Recruit() {
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => <NodeCardSkeleton key={i} />)
             : nodes.map((node, i) => {
-                const occupiedPct = Math.round(((node.seats - node.seatsRemaining) / node.seats) * 100);
+                // Prefer on-chain tier stats (live) and fall back to REST (seed
+                // metadata) while the chain read is still loading or if the
+                // nodeId isn't deployed yet. payAmount is an 18-decimal USDT
+                // value; convert to whole USDT for display.
+                const onChain = onChainByNodeId.get(LEVEL_TO_NODE_ID[node.level]);
+                const seats = onChain ? Number(onChain.maxLimit) : node.seats;
+                const seatsRemaining = onChain
+                  ? Number(onChain.maxLimit - onChain.curNum)
+                  : node.seatsRemaining;
+                const investment = onChain
+                  ? Number(onChain.payAmount / 10n ** 18n)
+                  : node.investment;
+                const occupiedPct = seats > 0
+                  ? Math.round(((seats - seatsRemaining) / seats) * 100)
+                  : 0;
                 const accent = NODE_ACCENT[node.level];
                 const progressCls = NODE_PROGRESS_BAR[node.level];
                 return (
@@ -321,9 +402,9 @@ export default function Recruit() {
                     {/* Stats */}
                     <div className="space-y-2.5 flex-1">
                       {[
-                        { labelZh: "投资门槛",     labelEn: "Investment",  val: `$${fmt(node.investment)}`, accent: true },
+                        { labelZh: "投资门槛",     labelEn: "Investment",  val: `$${fmt(investment)}`, accent: true },
                         { labelZh: "私募价格",     labelEn: "Private",     val: `$${node.privatePrice.toFixed(3)}` },
-                        { labelZh: "席位总量",     labelEn: "Total Seats", val: showZh ? `${fmt(node.seats)} 席` : `${fmt(node.seats)}` },
+                        { labelZh: "席位总量",     labelEn: "Total Seats", val: showZh ? `${fmt(seats)} 席` : `${fmt(seats)}` },
                         { labelZh: "每日USDT收益", labelEn: "Daily USDT",  val: `$${node.dailyUsdt}`, accent: true },
                         { labelZh: "子TOKEN空投",  labelEn: "Airdrop",     val: `${fmt(node.airdropPerSeat)} SUB` },
                       ].map(({ labelZh, labelEn, val, accent: isAccent }) => (
@@ -342,7 +423,7 @@ export default function Recruit() {
                       </div>
                       <Progress value={occupiedPct} className={`h-1.5 bg-white/5 ${progressCls}`} />
                       <div className="text-[10px] text-muted-foreground/40 text-right">
-                        {showZh ? `剩余 ${fmt(node.seatsRemaining)} 席` : `${fmt(node.seatsRemaining)} left`}
+                        {showZh ? `剩余 ${fmt(seatsRemaining)} 席` : `${fmt(seatsRemaining)} left`}
                       </div>
                     </div>
 
