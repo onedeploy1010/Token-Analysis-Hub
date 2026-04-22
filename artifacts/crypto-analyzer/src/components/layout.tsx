@@ -212,21 +212,27 @@ function Navbar() {
           />
         </div>
 
-        <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-6">
+        <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-2 md:pr-6 gap-2">
 
-          {/* Logo + wordmark */}
+          {/* Logo + wordmark — shrinkable on narrow viewports to free room
+              for the language / wallet / menu cluster on the right. */}
           <Link
             href="/"
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-2 group min-w-0 shrink"
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="shrink-0"
             >
-              <AnimatedRuneLogo size={52} />
+              {/* Two sized copies — smaller on <md to avoid crowding the header. */}
+              <span className="hidden md:inline-flex"><AnimatedRuneLogo size={52} /></span>
+              <span className="inline-flex md:hidden"><AnimatedRuneLogo size={38} /></span>
             </motion.div>
-            <WordmarkRune />
+            {/* Wordmark image is proportionally wide — hide on narrow phones so
+                the ConnectButton has room. It returns at ≥sm. */}
+            <span className="hidden sm:inline-flex"><WordmarkRune /></span>
           </Link>
 
           {/* Desktop nav */}
@@ -271,21 +277,26 @@ function Navbar() {
             </div>
           </nav>
 
-          {/* Right controls — mobile only */}
-          <div className="flex md:hidden items-center gap-2">
-            {/* Language toggle — mobile */}
-            <LanguageToggle />
-            {/* Connect wallet — mobile (compact, before hamburger) */}
-            <div className="[&_button]:!h-9 [&_button]:!px-3 [&_button]:!text-xs">
+          {/* Right controls — mobile only. Tight 6 px gap + compact sizing
+              so everything fits on a 360 px viewport. */}
+          <div className="flex md:hidden items-center gap-1.5 shrink-0">
+            {/* Language toggle — mobile (compact, icon + short code only) */}
+            <div className="[&_button]:!h-9 [&_button]:!px-2 [&_button]:!text-xs">
+              <LanguageToggle />
+            </div>
+            {/* Connect wallet — mobile (compact). The inner CSS shrinks the
+                thirdweb ConnectButton text so connected-state chips don't
+                overflow a phone header. */}
+            <div className="[&_button]:!h-9 [&_button]:!px-2.5 [&_button]:!text-[11px] [&_button]:!rounded-lg [&_button]:!min-w-0 [&_button_img]:!w-4 [&_button_img]:!h-4">
               <WalletConnectButton />
             </div>
             {/* Mobile hamburger */}
             <button
-              className="flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+              className="flex items-center justify-center w-9 h-9 rounded-lg border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all shrink-0"
               onClick={() => setMenuOpen(v => !v)}
               aria-label="Toggle menu"
             >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
         </div>
