@@ -228,11 +228,12 @@ function Navbar() {
             >
               {/* Two sized copies — smaller on <md to avoid crowding the header. */}
               <span className="hidden md:inline-flex"><AnimatedRuneLogo size={52} /></span>
-              <span className="inline-flex md:hidden"><AnimatedRuneLogo size={38} /></span>
+              <span className="inline-flex md:hidden"><AnimatedRuneLogo size={36} /></span>
             </motion.div>
-            {/* Wordmark image is proportionally wide — hide on narrow phones so
-                the ConnectButton has room. It returns at ≥sm. */}
-            <span className="hidden sm:inline-flex"><WordmarkRune /></span>
+            {/* Wordmark stays visible on every breakpoint — the `small` variant
+                on <md shrinks the image height so it fits alongside a 36 px logo. */}
+            <span className="hidden md:inline-flex"><WordmarkRune /></span>
+            <span className="inline-flex md:hidden"><WordmarkRune small /></span>
           </Link>
 
           {/* Desktop nav */}
@@ -277,13 +278,10 @@ function Navbar() {
             </div>
           </nav>
 
-          {/* Right controls — mobile only. Tight 6 px gap + compact sizing
-              so everything fits on a 360 px viewport. */}
+          {/* Right controls — mobile only. Language toggle lives inside the
+              hamburger drawer; only the wallet + menu buttons sit in the
+              header so the logo+wordmark have breathing room. */}
           <div className="flex md:hidden items-center gap-1.5 shrink-0">
-            {/* Language toggle — mobile (compact, icon + short code only) */}
-            <div className="[&_button]:!h-9 [&_button]:!px-2 [&_button]:!text-xs">
-              <LanguageToggle />
-            </div>
             {/* Connect wallet — mobile (compact). The inner CSS shrinks the
                 thirdweb ConnectButton text so connected-state chips don't
                 overflow a phone header. */}
@@ -390,8 +388,15 @@ function Navbar() {
                 })}
               </nav>
 
-              {/* Drawer footer */}
-              <div className="px-6 py-5 border-t border-border/20 shrink-0">
+              {/* Drawer footer — language toggle moved here on mobile so the
+                  header cluster stays uncluttered for logo + wordmark + wallet. */}
+              <div className="px-6 py-5 border-t border-border/20 shrink-0 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-medium">
+                    Language · 语言
+                  </span>
+                  <LanguageToggle />
+                </div>
                 <p className="text-[10px] text-muted-foreground/30 uppercase tracking-widest">
                   {t("mr.footer.tagline")}
                 </p>
