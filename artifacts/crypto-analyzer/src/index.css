@@ -22,8 +22,12 @@
   font-style: normal;
   font-weight: 400 900;
   font-display: swap;
-  src: local('Cinzel'), local('Cinzel-Regular'), local('Cinzel-Bold'),
-       url('https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnfYrXWzBOOdCkEPf8.woff2') format('woff2');
+  /* local() only — the separate @import above already loads the full Cinzel
+     family, so for users without Cinzel installed locally this face is just
+     skipped and the next family in the stack (Cinzel, then Space Mono) runs.
+     Keeping a gstatic URL here caused transient 404s when Google rotated the
+     versioned hash. */
+  src: local('Cinzel'), local('Cinzel-Regular'), local('Cinzel-Bold');
   /* 0-9, $, %, +, ,, -, ., ×  (digits + common financial symbols) */
   unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002C, U+002D, U+002E, U+00D7;
 }
