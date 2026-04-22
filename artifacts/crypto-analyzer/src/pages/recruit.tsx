@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRuneOverview } from "@workspace/api-client-react";
 import type { RuneNodeDefinition } from "@workspace/api-client-react";
 import { useShowZh } from "@/contexts/language-context";
+import { WalletPanel } from "@/components/rune/wallet-panel";
 
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
@@ -270,6 +271,9 @@ export default function Recruit() {
           </div>
         </div>
       </motion.div>
+
+      {/* ── Wallet panel ── */}
+      <WalletPanel />
 
       {/* ── Node cards ── */}
       <section>
