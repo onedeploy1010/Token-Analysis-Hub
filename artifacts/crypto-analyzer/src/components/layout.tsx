@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Activity, Grid, Users, X, Menu, BookOpen } from "lucide-react";
+import { Activity, Grid, Users, X, Menu, BookOpen, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/contexts/language-context";
+import { WalletConnectButton } from "@/components/rune/wallet-connect-button";
+import { useActiveAccount } from "thirdweb/react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -166,8 +168,15 @@ function Navbar() {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { t, language } = useLanguage();
+  const activeAccount = useActiveAccount();
 
   const isEn = language === "en";
+
+  // Dashboard only appears in the nav when the wallet is connected — avoids
+  // dead-ending unauthenticated users on the protected page.
+  const visibleNavItems = activeAccount
+    ? [...NAV_ITEMS, { href: "/dashboard", label: "DASHBOARD", key: "dashboard", icon: LayoutDashboard }]
+    : NAV_ITEMS;
 
   return (
     <>
@@ -222,7 +231,7 @@ function Navbar() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-stretch h-[72px] gap-0">
-            {NAV_ITEMS.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               return (
                 <Link
@@ -256,13 +265,21 @@ function Navbar() {
             <div className="hidden md:flex items-center h-[72px] pl-3 ml-2 border-l border-border/30">
               <LanguageToggle />
             </div>
+            {/* Connect wallet — desktop */}
+            <div className="hidden md:flex items-center h-[72px] pl-3 ml-2 border-l border-border/30">
+              <WalletConnectButton />
+            </div>
           </nav>
 
           {/* Right controls — mobile only */}
-          <div className="flex items-center gap-2">
+          <div className="flex md:hidden items-center gap-2">
+            {/* Connect wallet — mobile (compact, before hamburger) */}
+            <div className="[&_button]:!h-9 [&_button]:!px-3 [&_button]:!text-xs">
+              <WalletConnectButton />
+            </div>
             {/* Mobile hamburger */}
             <button
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+              className="flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
               onClick={() => setMenuOpen(v => !v)}
               aria-label="Toggle menu"
             >
@@ -310,7 +327,7 @@ function Navbar() {
 
               {/* Nav items */}
               <nav className="flex-1 flex flex-col justify-center px-6 gap-1 py-8">
-                {NAV_ITEMS.map((item, i) => {
+                {visibleNavItems.map((item, i) => {
                   const Icon = item.icon;
                   const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
                   return (

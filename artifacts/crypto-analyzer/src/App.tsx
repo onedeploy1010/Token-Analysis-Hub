@@ -15,6 +15,7 @@ import HyperLiquid from "@/pages/hyperliquid";
 import LegendATM from "@/pages/legend-atm";
 import Recruit from "@/pages/recruit";
 import Resources from "@/pages/resources";
+import Dashboard from "@/pages/dashboard";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -41,6 +42,7 @@ function Router() {
         <Route path="/tools" component={Tools} />
         <Route path="/resources" component={Resources} />
         <Route path="/recruit" component={Recruit} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
