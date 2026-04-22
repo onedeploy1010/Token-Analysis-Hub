@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSendTransaction, useActiveAccount } from "thirdweb/react";
-import { prepareContractCall } from "thirdweb";
+import { prepareContractCall, readContract } from "thirdweb";
 import { communityContract, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
-import { UserPlus, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { UserPlus, Loader2, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
@@ -19,39 +19,91 @@ interface Props {
   onBound: () => void;
 }
 
+const ZERO = "0x0000000000000000000000000000000000000000";
+
+/** Treat "ROOT" / "root" typed into the field as an alias for the real
+ *  ROOT address. Non-hex input stays as-is so validation still flags it. */
+function resolveAlias(raw: string): string {
+  const trimmed = raw.trim();
+  if (trimmed.toLowerCase() === "root") return COMMUNITY_ROOT;
+  return trimmed;
+}
+
+/** Short 0x…abcd formatter for display. */
+const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+
+type PreCheck =
+  | { state: "idle" }
+  | { state: "checking" }
+  | { state: "ok"; label: string }     // ROOT or an address already in the community
+  | { state: "reject"; reason: string };
+
 /**
  * First-touch onboarding modal. Collects a referrer address (pre-fills
- * from `?ref=`) and submits `Community.addReferrer(referrer)`. The only
- * gas the user pays here is for this single tx.
+ * from `?ref=`) and submits `Community.addReferrer(referrer)`.
  *
- * The contract enforces:
- *  - referrer ≠ self
- *  - user isn't already bound
- *  - referrer itself is bound (or is ROOT)
+ * Contract-side invariants we mirror in UI:
+ *   - referrer ≠ self
+ *   - user isn't already bound (caller only opens when unbound)
+ *   - referrer is already bound OR is ROOT (0x…0001)
  *
- * We let those reverts surface as toast errors instead of pre-validating
- * the referrer on-chain; that keeps the UX snappy and mirrors what the
- * contract actually checks.
+ * We perform a low-cost on-chain pre-check for the third rule so the
+ * user sees a clear error before paying gas. ROOT short-circuits.
  */
 export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: Props) {
   const account = useActiveAccount();
   const [input, setInput] = useState<string>(initialReferrer ?? "");
   const [submitting, setSubmitting] = useState(false);
+  const [preCheck, setPreCheck] = useState<PreCheck>({ state: "idle" });
   const { mutateAsync: sendTx } = useSendTransaction();
   const { toast } = useToast();
 
-  const normalized = input.trim().toLowerCase();
-  const isValid = /^0x[0-9a-fA-F]{40}$/.test(normalized);
-  const isSelf = account && normalized === account.address.toLowerCase();
+  const resolved = resolveAlias(input).toLowerCase();
+  const isHex = /^0x[0-9a-fA-F]{40}$/.test(resolved);
+  const isRoot = isHex && resolved === COMMUNITY_ROOT.toLowerCase();
+  const isSelf = account && resolved === account.address.toLowerCase();
 
-  async function submit(refArg: string) {
-    if (!account) return;
+  // Debounced on-chain pre-check: once the user has typed a valid address,
+  // verify `referrerOf(ref) != 0` (or it's ROOT). This mirrors the contract's
+  // "Referrer not invited" rule and fails loudly before the user pays gas.
+  useEffect(() => {
+    if (!isHex || isSelf) { setPreCheck({ state: "idle" }); return; }
+    if (isRoot)           { setPreCheck({ state: "ok", label: "ROOT — top of the tree" }); return; }
+
+    setPreCheck({ state: "checking" });
+    const handle = setTimeout(async () => {
+      try {
+        const upstreamOfRef = (await readContract({
+          contract: communityContract,
+          method: "function referrerOf(address) view returns (address)",
+          params: [resolved as `0x${string}`],
+        })) as string;
+
+        if (upstreamOfRef.toLowerCase() === ZERO) {
+          setPreCheck({
+            state: "reject",
+            reason: "This address is not a member of the community yet — the contract will revert with \"Referrer not invited\".",
+          });
+        } else {
+          setPreCheck({ state: "ok", label: `In community, upstream ${short(upstreamOfRef)}` });
+        }
+      } catch (e: any) {
+        setPreCheck({ state: "reject", reason: e?.message ?? "Failed to reach the Community contract." });
+      }
+    }, 400);
+
+    return () => clearTimeout(handle);
+  }, [resolved, isHex, isSelf, isRoot]);
+
+  async function submit() {
+    if (!account || !isHex || isSelf) return;
+    if (preCheck.state === "reject") return;
     setSubmitting(true);
     try {
       const tx = prepareContractCall({
         contract: communityContract,
         method: "function addReferrer(address)",
-        params: [refArg as `0x${string}`],
+        params: [resolved as `0x${string}`],
       });
       await sendTx(tx);
       toast({ title: "Referrer bound", description: "Your referral relationship is now on-chain." });
@@ -67,6 +119,14 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
     }
   }
 
+  function useRoot() {
+    setInput(COMMUNITY_ROOT);
+  }
+
+  const canSubmit =
+    isHex && !isSelf && !submitting &&
+    (preCheck.state === "ok" || preCheck.state === "idle");
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v && !submitting) onClose(); }}>
       <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-md">
@@ -79,50 +139,76 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
           </div>
           <DialogTitle className="text-xl font-bold">Connect your referral line</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
-            One small transaction locks your upstream referrer on-chain. This is a
-            prerequisite to purchasing a node — the network needs to know which
-            line you belong to before the presale accepts payment.
+            One small transaction locks your upstream referrer on-chain. Required
+            before the presale accepts payment — the network needs to know which
+            line you belong to.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="ref-addr" className="text-xs text-muted-foreground">Referrer address</Label>
+            <Label htmlFor="ref-addr" className="text-xs text-muted-foreground flex items-center justify-between">
+              <span>Referrer address</span>
+              {isRoot && (
+                <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-widest">
+                  ROOT selected
+                </span>
+              )}
+            </Label>
             <Input
               id="ref-addr"
-              placeholder="0x…"
+              placeholder="0x…  or type ROOT"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={submitting}
               className="font-mono text-sm bg-background/60"
             />
-            {initialReferrer && (
-              <p className="text-[11px] text-amber-300 flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3" /> Pre-filled from invite link
-              </p>
-            )}
-            {input && !isValid && (
-              <p className="text-[11px] text-destructive flex items-center gap-1.5">
-                <AlertCircle className="h-3 w-3" /> Not a valid EVM address
-              </p>
-            )}
-            {isSelf && (
+
+            {/* Address feedback — one line at a time, priority: self > bad-format > pre-check */}
+            {input && isSelf ? (
               <p className="text-[11px] text-destructive flex items-center gap-1.5">
                 <AlertCircle className="h-3 w-3" /> You can't refer yourself
               </p>
-            )}
+            ) : input && !isHex && resolved.toLowerCase() !== "root" ? (
+              <p className="text-[11px] text-destructive flex items-center gap-1.5">
+                <AlertCircle className="h-3 w-3" /> Not a valid EVM address
+              </p>
+            ) : preCheck.state === "checking" ? (
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <Loader2 className="h-3 w-3 animate-spin" /> Checking on-chain…
+              </p>
+            ) : preCheck.state === "ok" ? (
+              <p className="text-[11px] text-emerald-300 flex items-center gap-1.5">
+                <ShieldCheck className="h-3 w-3" /> {preCheck.label}
+              </p>
+            ) : preCheck.state === "reject" ? (
+              <p className="text-[11px] text-destructive flex items-start gap-1.5">
+                <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" /> <span>{preCheck.reason}</span>
+              </p>
+            ) : initialReferrer && isHex ? (
+              <p className="text-[11px] text-amber-300 flex items-center gap-1.5">
+                <CheckCircle2 className="h-3 w-3" /> Pre-filled from invite link
+              </p>
+            ) : null}
           </div>
 
-          <div className="rounded-lg border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-[11px] text-amber-200 leading-relaxed">
-            Don't have a referrer? Use <span className="font-mono">ROOT</span> to join directly under the protocol.
+          {/* ROOT explainer + one-tap button */}
+          <div className="rounded-lg border border-amber-700/30 bg-amber-950/20 px-3 py-3 space-y-2">
+            <p className="text-[11px] text-amber-200/90 leading-relaxed">
+              No invite link? Bind directly under the protocol root.
+              <br />
+              <span className="text-muted-foreground/80">
+                ROOT = <span className="font-mono text-foreground">{COMMUNITY_ROOT}</span>
+              </span>
+            </p>
             <Button
-              variant="link"
+              variant="outline"
               size="sm"
-              className="h-auto py-0 ml-1 text-amber-300 text-[11px]"
-              onClick={() => setInput(COMMUNITY_ROOT)}
-              disabled={submitting}
+              className="w-full h-8 text-[11px] border-amber-500/40 text-amber-200 hover:bg-amber-500/10 hover:text-amber-100"
+              onClick={useRoot}
+              disabled={submitting || isRoot}
             >
-              Use ROOT
+              {isRoot ? "ROOT selected" : "Use ROOT"}
             </Button>
           </div>
 
@@ -132,8 +218,8 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
             </Button>
             <Button
               className="flex-1 font-semibold"
-              disabled={submitting || !isValid || !!isSelf}
-              onClick={() => submit(normalized)}
+              disabled={!canSubmit}
+              onClick={submit}
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign & Bind"}
             </Button>

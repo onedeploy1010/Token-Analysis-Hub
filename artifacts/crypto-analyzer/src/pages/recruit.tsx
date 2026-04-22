@@ -16,7 +16,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRuneOverview } from "@workspace/api-client-react";
 import type { RuneNodeDefinition } from "@workspace/api-client-react";
 import { useShowZh } from "@/contexts/language-context";
-import { RuneOnboarding } from "@/components/rune/rune-onboarding";
 import { useActiveAccount } from "thirdweb/react";
 
 // ─── Node style maps ────────────────────────────────────────────────────────
@@ -277,12 +276,9 @@ export default function Recruit() {
         </div>
       </motion.div>
 
-      {/* ── Onboarding orchestrator ── */}
-      {/* Invisible. Reads ?ref=, watches wallet connection, and dispatches
-          the bind-referrer / purchase-node modals + the /dashboard redirect.
-          The wallet connect button lives in the global header, so we don't
-          repeat the CTA here. */}
-      <RuneOnboarding />
+      {/* The onboarding orchestrator is mounted globally in App.tsx so the
+          bind / purchase / dashboard-redirect flow fires from any page the
+          moment the user connects via the header. No page-level mount here. */}
 
       {/* ── Node cards ── */}
       <section>

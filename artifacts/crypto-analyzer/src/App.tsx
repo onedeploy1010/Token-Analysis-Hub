@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
 import { LanguageProvider } from "@/contexts/language-context";
+import { RuneOnboarding } from "@/components/rune/rune-onboarding";
 import Home from "@/pages/home";
 import Projects from "@/pages/projects";
 import ProjectDetail from "@/pages/project-detail";
@@ -56,6 +57,11 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              {/* Global wallet onboarding. Runs on every page so the moment
+                  the header's Connect button succeeds we read referrerOf +
+                  getUserPurchaseData and decide: bind modal, purchase modal,
+                  or redirect to /dashboard. See components/rune/rune-onboarding. */}
+              <RuneOnboarding />
               <Router />
             </WouterRouter>
             <Toaster />
