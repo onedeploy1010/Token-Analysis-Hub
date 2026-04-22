@@ -231,10 +231,9 @@ function Navbar() {
               <span className="hidden md:inline-flex"><AnimatedRuneLogo size={52} /></span>
               <span className="inline-flex md:hidden"><AnimatedRuneLogo size={36} /></span>
             </motion.div>
-            {/* Wordmark stays visible on every breakpoint — the `small` variant
-                on <md shrinks the image height so it fits alongside a 36 px logo. */}
-            <span className="hidden md:inline-flex"><WordmarkRune /></span>
-            <span className="inline-flex md:hidden"><WordmarkRune small /></span>
+            {/* Wordmark keeps the original full-size 30 px height across every
+                breakpoint — the user asked for consistent brand sizing. */}
+            <WordmarkRune />
           </Link>
 
           {/* Desktop nav. `ml-auto` pushes the whole cluster to the right edge,
