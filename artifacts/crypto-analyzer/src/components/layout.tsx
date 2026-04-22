@@ -212,13 +212,14 @@ function Navbar() {
           />
         </div>
 
-        <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-2 md:pr-6 gap-2">
+        <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-2 md:pr-6 gap-4 md:gap-8">
 
-          {/* Logo + wordmark — shrinkable on narrow viewports to free room
-              for the language / wallet / menu cluster on the right. */}
+          {/* Logo + wordmark. `shrink-0` on desktop so the wordmark never
+              collides with the first nav item; on mobile we let it shrink
+              so the wallet + menu cluster always fits. */}
           <Link
             href="/"
-            className="flex items-center gap-2 group min-w-0 shrink"
+            className="flex items-center gap-2 group min-w-0 shrink md:shrink-0"
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
@@ -236,8 +237,11 @@ function Navbar() {
             <span className="inline-flex md:hidden"><WordmarkRune small /></span>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-stretch h-[72px] gap-0">
+          {/* Desktop nav. `ml-auto` pushes the whole cluster to the right edge,
+              leaving the flex gap to space it from the logo cluster. Item
+              padding shrinks from px-6 to px-4 so five nav items + language
+              + wallet fit on a 1024 px viewport without wrapping. */}
+          <nav className="hidden md:flex items-stretch h-[72px] gap-0 ml-auto">
             {visibleNavItems.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               return (
@@ -245,7 +249,7 @@ function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative flex flex-col items-center justify-center px-6 transition-all duration-200 group border-b-2",
+                    "relative flex flex-col items-center justify-center px-4 lg:px-5 transition-all duration-200 group border-b-2",
                     isActive
                       ? "border-amber-400 text-foreground"
                       : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/50"
@@ -269,11 +273,11 @@ function Navbar() {
               );
             })}
             {/* Language toggle — desktop only, inline with nav */}
-            <div className="hidden md:flex items-center h-[72px] pl-3 ml-2 border-l border-border/30">
+            <div className="hidden md:flex items-center h-[72px] pl-3 ml-3 border-l border-border/30">
               <LanguageToggle />
             </div>
             {/* Connect wallet — desktop */}
-            <div className="hidden md:flex items-center h-[72px] pl-3 ml-2 border-l border-border/30">
+            <div className="hidden md:flex items-center h-[72px] pl-3 ml-1">
               <WalletConnectButton />
             </div>
           </nav>
