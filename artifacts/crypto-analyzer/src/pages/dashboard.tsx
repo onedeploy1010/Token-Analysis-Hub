@@ -871,6 +871,189 @@ const GENESIS_DIRECT_THRESHOLD = 5;
 const GENESIS_TEAM_THRESHOLD = 10;
 const GENESIS_APEX_NODE_ID: NodeId = 101; // 符主 L4
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Pool-progress card — "全网底池达标进度"
+
+   Network-wide view of the 8M-USDT node fundraise and the 4-stage mother-
+   token airdrop unlock schedule. The REST overview gives us the total cap
+   (`fundraising.total`) and each tier's seat counts / remaining seats, so
+   `totalRaised = Σ (seats − seatsRemaining) × investment`.
+
+   Stage 1 (TLP ≥ 2.8M, unlocks 10%) is wired directly to fundraise
+   completion — the initial TLP seeded at launch is exactly 2.8M when the
+   8M raise fills. Stages 2–4 depend on post-launch market TLP growth
+   which isn't sourced yet, so we mark them "awaiting market" after
+   launch and "locked" before it.
+──────────────────────────────────────────────────────────────────────────── */
+const POOL_STAGES = [
+  { pct: 10, tlpM: 2.8,  driver: "fundraise" as const },
+  { pct: 20, tlpM: 7,    driver: "market"    as const },
+  { pct: 30, tlpM: 17.5, driver: "market"    as const },
+  { pct: 40, tlpM: 35,   driver: "market"    as const },
+];
+
+function PoolProgressCard() {
+  const { t } = useLanguage();
+  const { data: overview } = useGetRuneOverview();
+
+  const fundraiseCap = overview?.fundraising?.total ?? 8_000_000;
+  const tlpInitial = overview?.fundraising?.tlpPool ?? 2_800_000;
+  const nodes = overview?.nodes ?? [];
+
+  const totalRaised = nodes.reduce(
+    (sum, n) => sum + (Math.max(0, n.seats - n.seatsRemaining) * n.investment),
+    0,
+  );
+  const raisedPct = fundraiseCap > 0 ? Math.min(100, (totalRaised / fundraiseCap) * 100) : 0;
+  const fundraiseComplete = raisedPct >= 100;
+  // Pre-launch estimate: fraction of 8M raised × 2.8M initial TLP seed.
+  const projectedTlp = fundraiseCap > 0 ? (totalRaised / fundraiseCap) * tlpInitial : 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: 0.03, ease: EASE }}
+    >
+      <Card className="surface-3d relative overflow-hidden border-emerald-500/25 bg-gradient-to-br from-slate-900/85 via-emerald-950/25 to-slate-950/95">
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500/20 via-cyan-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.06),transparent_55%)] pointer-events-none" />
+        <CardHeader className="pb-3 border-b border-emerald-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.55)]" />
+            <span className="bg-gradient-to-r from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+              {t("mr.dash.pool.title")}
+            </span>
+          </CardTitle>
+          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-emerald-300/80">
+            {t("mr.dash.pool.networkTag")}
+          </span>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4 relative z-10">
+          {/* Total raise progress toward the 8M cap */}
+          <div>
+            <div className="flex items-baseline justify-between gap-3 mb-2">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">
+                {t("mr.dash.pool.raised")}
+              </span>
+              <span className="text-[10px] font-mono tabular-nums text-muted-foreground/65">
+                {raisedPct.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2 tabular-nums mb-2">
+              <span className="text-2xl font-bold text-foreground">
+                ${formatShortUsd(totalRaised)}
+              </span>
+              <span className="text-xs text-muted-foreground/65">
+                / ${formatShortUsd(fundraiseCap)} USDT
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-black/40 overflow-hidden border border-emerald-500/10">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-teal-400 transition-[width] duration-500"
+                style={{ width: `${raisedPct}%` }}
+              />
+            </div>
+            <div className="text-[10px] text-muted-foreground/65 mt-2">
+              {fundraiseComplete
+                ? t("mr.dash.pool.fundraiseDone")
+                : t("mr.dash.pool.fundraiseHint")}
+            </div>
+          </div>
+
+          {/* Projected initial TLP once the raise fills */}
+          <div className="rounded-md border border-cyan-500/20 bg-cyan-950/15 p-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            <div className="min-w-0">
+              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyan-300/85 mb-0.5">
+                {fundraiseComplete ? t("mr.dash.pool.tlpInitial") : t("mr.dash.pool.tlpProjected")}
+              </div>
+              <div className="text-base font-bold tabular-nums text-cyan-200">
+                ${formatShortUsd(fundraiseComplete ? tlpInitial : projectedTlp)} USDT
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground/75 flex-1 min-w-0">
+              {t("mr.dash.pool.tlpNote")}
+            </span>
+          </div>
+
+          {/* Four stage milestones */}
+          <div className="pt-1">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+              {t("mr.dash.pool.stagesTitle")}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              {POOL_STAGES.map((stage, i) => {
+                const unlocked =
+                  stage.driver === "fundraise" ? fundraiseComplete : false;
+                const currentStage1 =
+                  i === 0 && !fundraiseComplete && raisedPct > 0;
+                return (
+                  <div
+                    key={i}
+                    className={`rounded-md border p-2.5 transition-colors ${
+                      unlocked
+                        ? "border-emerald-500/50 bg-emerald-950/25"
+                        : currentStage1
+                        ? "border-amber-500/40 bg-amber-950/15"
+                        : "border-border/30 bg-card/25"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70">
+                        {t(`mr.dash.pool.stage${i + 1}Num`)}
+                      </span>
+                      <span
+                        className={`text-[9px] font-mono uppercase tracking-[0.18em] ${
+                          unlocked
+                            ? "text-emerald-300"
+                            : currentStage1
+                            ? "text-amber-300"
+                            : "text-muted-foreground/55"
+                        }`}
+                      >
+                        {unlocked
+                          ? t("mr.dash.pool.statusUnlocked")
+                          : currentStage1
+                          ? t("mr.dash.pool.statusCurrent")
+                          : t("mr.dash.pool.statusLocked")}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1 tabular-nums">
+                      <span className="text-lg font-bold text-foreground">
+                        {stage.pct}%
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/65">
+                        {t("mr.dash.pool.airdropRelease")}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground/75 tabular-nums mt-0.5">
+                      TLP ≥ ${stage.tlpM}M
+                    </div>
+                    <div className="text-[9px] text-muted-foreground/55 mt-1">
+                      {stage.driver === "fundraise"
+                        ? t("mr.dash.pool.driverFundraise")
+                        : t("mr.dash.pool.driverMarket")}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+/** Compact USD format: 3.4M / 812K / 2.5K with two significant digits
+ *  after the separator. Falls back to raw value for small numbers. */
+function formatShortUsd(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "0";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 1 : 2)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}K`;
+  return n.toFixed(0);
+}
+
 function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; ownedNodeId: number | undefined }) {
   const { t } = useLanguage();
   const { data: stats } = usePersonalStats(address);
@@ -1090,6 +1273,11 @@ function OverviewTab({ address }: { address: string }) {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Network-wide fundraise + 4-stage TLP unlock progress. Shown
+            to everyone so any visitor understands where the protocol
+            sits on the roadmap, not just holders. */}
+        <PoolProgressCard />
 
         {/* Genesis (L5) earnings panel — only rendered once the viewer
             has actually qualified (≥5 direct 符主 L4 referrals OR ≥10
