@@ -15,7 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUsdtBalance } from "@/hooks/rune/use-usdt";
 import { useReferrerOf } from "@/hooks/rune/use-community";
-import { useUserPurchase } from "@/hooks/rune/use-node-presell";
+import { useUserPurchase, useNodeConfigs } from "@/hooks/rune/use-node-presell";
+import { useGetRuneOverview } from "@workspace/api-client-react";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 import { useTeam, usePersonalStats, useRewards, type ReferrerRow, type RewardRow, type PersonalStats } from "@/hooks/rune/use-team";
 import { NODE_META, type NodeId, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
@@ -327,13 +328,101 @@ export default function Dashboard() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   Node benefits card — tier-themed, shows the privileges the user
+   unlocked by holding their node. Data sources:
+     - REST overview (dailyUsdt, airdropPerSeat, privatePrice) — marketing
+       metadata that doesn't live on-chain.
+     - On-chain `getNodeConfigs().directRate` — canonical bps rate the
+       contract will actually pay out.
+──────────────────────────────────────────────────────────────────────────── */
+function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) {
+  const { t } = useLanguage();
+  const { data: overview } = useGetRuneOverview();
+  const { data: configs } = useNodeConfigs();
+
+  if (!ownedNodeId) {
+    return (
+      <Card className="bg-card/70 backdrop-blur border-border">
+        <CardHeader className="pb-3 border-b border-border/40">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-amber-400" /> {t("mr.dash.owned.benefitsTitle")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          {t("mr.dash.owned.noneYet")}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const meta = NODE_META[ownedNodeId as NodeId];
+  const theme = HERO_THEME[ownedNodeId as NodeId];
+  const level = meta?.level;
+  const def = overview?.nodes?.find((n) => n.level === level);
+  const cfg = (configs as any)?.find?.((c: { nodeId: bigint }) => Number(c.nodeId) === ownedNodeId);
+  const rateBps = cfg ? Number(cfg.directRate) : undefined;
+
+  return (
+    <Card className={`relative overflow-hidden bg-gradient-to-br ${theme.from} ${theme.to} border ${theme.ring}`}>
+      <div className={`absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
+      <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <Sparkles className={`h-4 w-4 ${theme.accent}`} />
+          <span>{t("mr.dash.owned.benefitsTitle")}</span>
+          {meta && (
+            <span className={`ml-auto text-[10px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>
+              {meta.nameCn} · {meta.nameEn}
+            </span>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-5 relative z-10">
+        <div className="grid grid-cols-2 gap-4">
+          <BenefitRow icon={DollarSign} label={t("mr.dash.owned.daily")}    value={def ? `$${def.dailyUsdt}` : "—"} sub="USDT / day" theme={theme} />
+          <BenefitRow icon={TrendingUp} label={t("mr.dash.owned.total180")} value={def ? `$${(def.dailyUsdt * 180).toLocaleString("en-US")}` : "—"} sub="180 days" theme={theme} highlight />
+          <BenefitRow icon={Gift}       label={t("mr.dash.owned.airdrop")}  value={def ? def.airdropPerSeat.toLocaleString("en-US") : "—"} sub="SUB" theme={theme} />
+          <BenefitRow icon={Coins}      label={t("mr.dash.owned.rate")}     value={rateBps !== undefined ? `${(rateBps / 100).toFixed(rateBps % 100 === 0 ? 0 : 1)}%` : "—"} sub={t("mr.dash.owned.rateSub")} theme={theme} highlight />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BenefitRow({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  theme,
+  highlight = false,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  sub?: string;
+  theme: typeof HERO_THEME[NodeId];
+  highlight?: boolean;
+}) {
+  return (
+    <div className="rounded-lg border border-border/30 bg-card/30 p-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground/70 mb-1.5">
+        <Icon className="h-3 w-3" />
+        <span>{label}</span>
+      </div>
+      <div className={`text-xl font-bold tabular-nums ${highlight ? theme.accent : "text-foreground"}`}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground/60 mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    Overview tab
 ──────────────────────────────────────────────────────────────────────────── */
 function OverviewTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { data: usdtRaw } = useUsdtBalance(address);
   const { referrer, isBound, isRoot } = useReferrerOf(address);
-  const { hasPurchased, nodeId, payTime, amount } = useUserPurchase(address);
+  const { nodeId } = useUserPurchase(address);
   const { data: stats } = usePersonalStats(address);
 
   const referralUrl = buildReferralUrl(address);
@@ -362,47 +451,12 @@ function OverviewTab({ address }: { address: string }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Owned node */}
-        <Card className="bg-card/70 backdrop-blur border-border">
-          <CardHeader className="pb-3 border-b border-border/40">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-400" /> {t("mr.dash.owned.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-5">
-            {hasPurchased && nodeId ? (
-              <div className="space-y-3">
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <p className={`text-[10px] font-mono uppercase tracking-[0.22em] ${NODE_META[nodeId as NodeId]?.color ?? "text-foreground"}`}>
-                      {NODE_META[nodeId as NodeId]?.nameEn}
-                    </p>
-                    <p className="text-2xl font-bold mt-1">{NODE_META[nodeId as NodeId]?.nameCn}</p>
-                  </div>
-                  <CheckCircle2 className="h-6 w-6 text-emerald-400" />
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
-                  <div>
-                    <p className="text-muted-foreground/60 uppercase text-[10px] tracking-widest mb-0.5">{t("mr.dash.owned.paid")}</p>
-                    <p className="num text-foreground">${amount ? fmtUsdt(amount, 0) : "—"} USDT</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground/60 uppercase text-[10px] tracking-widest mb-0.5">{t("mr.dash.owned.purchased")}</p>
-                    <p className="num text-foreground">{payTime ? new Date(Number(payTime) * 1000).toLocaleDateString() : "—"}</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                {t("mr.dash.owned.noneYet")}
-                <br />
-                <Button size="sm" variant="link" onClick={() => (window.location.href = "/recruit")} className="text-amber-400">
-                  {t("mr.dash.owned.goRecruit")}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Node benefits — the tier + price is already on the hero banner,
+            so this card surfaces the actual privileges the user unlocked
+            by holding the node: daily USDT payout, 180-day total, sub-token
+            airdrop per seat, and the direct-commission rate they earn when
+            a downline buys. */}
+        <NodeBenefitsCard ownedNodeId={nodeId} />
 
         {/* Referral link */}
         <Card className="bg-card/70 backdrop-blur border-border">
@@ -684,25 +738,55 @@ function RewardsTab({ address }: { address: string }) {
       </div>
 
       {/* Per-tier breakdown — only render tiers the user has actually
-          earned from, so a new wallet doesn't see four empty rows. */}
+          earned from, so a new wallet doesn't see four empty rows.
+          Gradient bg + fade-up per card so the strip reads as a
+          first-class breakdown rather than plain chip row. */}
       {byTier.size > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {Array.from(byTier.entries())
             .sort(([a], [b]) => a - b)
-            .map(([nodeId, { count, commission }]) => {
+            .map(([nodeId, { count, commission }], idx) => {
               const meta = NODE_META[nodeId as NodeId];
+              const theme = HERO_THEME[nodeId as NodeId];
               return (
-                <div key={nodeId} className="border border-border/40 bg-card/40 rounded-xl p-4">
-                  <div className={`text-[10px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>{meta.nameEn}</div>
-                  <div className="text-sm font-bold text-foreground mt-0.5">{meta.nameCn}</div>
-                  <div className="num text-lg num-gold mt-2">${fmtUsdt(commission.toString(), 2)}</div>
-                  <div className="text-[10px] text-muted-foreground/60 mt-1">
-                    {count} × {t("mr.dash.reward.payouts")}
+                <motion.div
+                  key={nodeId}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ y: -2 }}
+                  className={`relative overflow-hidden rounded-xl border ${theme.ring} bg-gradient-to-br ${theme.from} ${theme.to} p-4 transition-shadow hover:${theme.glow}`}
+                >
+                  <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br ${theme.gradient} blur-2xl pointer-events-none`} />
+                  <div className="relative z-10">
+                    <div className={`text-[10px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>{meta.nameEn}</div>
+                    <div className="text-sm font-bold text-foreground mt-0.5">{meta.nameCn}</div>
+                    <div className={`num text-xl font-bold mt-2 tabular-nums ${theme.accent}`}>${fmtUsdt(commission.toString(), 2)}</div>
+                    <div className="text-[10px] text-muted-foreground/70 mt-1">
+                      {count} × {t("mr.dash.reward.payouts")}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
         </div>
+      )}
+
+      {/* Monthly commission trend — last 6 months bucketed from the same
+          rewards list. Tier-coloured bars stack by (month, nodeId) so the
+          shape of earnings-by-tier shows up at a glance. Recharts handles
+          responsive sizing; we pin height so the card stays stable. */}
+      {rewards && rewards.length > 0 && (
+        <Card className="bg-card/70 backdrop-blur border-border">
+          <CardHeader className="pb-3 border-b border-border/40">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-amber-400" /> {t("mr.dash.reward.monthlyTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <MonthlyRewardChart rewards={rewards} />
+          </CardContent>
+        </Card>
       )}
 
       {/* Detail list — each on-chain commission payout as its own row.
@@ -739,11 +823,16 @@ function RewardsTab({ address }: { address: string }) {
 function RewardRowItem({ row }: { row: RewardRow }) {
   const { t } = useLanguage();
   const meta = NODE_META[row.nodeId as NodeId];
+  const theme = HERO_THEME[row.nodeId as NodeId];
   const explorerBase = row.chainId === 56
     ? "https://bscscan.com/tx/"
     : "https://testnet.bscscan.com/tx/";
+  // Only link to the explorer when we actually have a real 0x… hash.
+  // Backfilled state rows carry a synthetic `state:` prefix and can't be
+  // resolved on-chain, so hide the external-link icon for them.
+  const hasRealTx = row.txHash.startsWith("0x");
   return (
-    <li className="py-3 flex items-center gap-3 flex-wrap">
+    <li className="group py-3 px-2 flex items-center gap-3 flex-wrap rounded-lg transition-colors hover:bg-white/[0.03]">
       <span className={`text-[10px] font-mono uppercase tracking-[0.18em] w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
         {meta?.nameEn ?? `#${row.nodeId}`}
       </span>
@@ -752,22 +841,90 @@ function RewardRowItem({ row }: { row: RewardRow }) {
       <span className="text-[11px] text-muted-foreground shrink-0">
         {new Date(row.paidAt).toLocaleString()}
       </span>
-      <span className="text-[11px] text-muted-foreground/70 shrink-0">
+      <span className="text-[11px] text-muted-foreground/70 shrink-0 font-mono tabular-nums">
         {(row.directRate / 100).toFixed(row.directRate % 100 === 0 ? 0 : 1)}%
       </span>
-      <span className="text-sm font-semibold text-amber-400 shrink-0 tabular-nums">
+      <span className={`text-sm font-semibold shrink-0 tabular-nums ${theme?.accent ?? "text-amber-400"}`}>
         +${fmtUsdt(row.commission, 4)}
       </span>
-      <a
-        href={`${explorerBase}${row.txHash}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-muted-foreground/70 hover:text-foreground transition-colors shrink-0"
-        title={t("mr.dash.reward.viewTx")}
-      >
-        <ExternalLink className="h-3 w-3" />
-      </a>
+      {hasRealTx ? (
+        <a
+          href={`${explorerBase}${row.txHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground/50 hover:text-foreground transition-colors shrink-0 opacity-0 group-hover:opacity-100"
+          title={t("mr.dash.reward.viewTx")}
+        >
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      ) : (
+        <span className="w-3 shrink-0" />
+      )}
     </li>
+  );
+}
+
+/** Tailwind token → literal RGB so recharts (which only accepts inline
+ *  fill/stroke) can render tier-accented bars that match the rest of the
+ *  UI. Kept local since NODE_META only knows Tailwind classes. */
+const TIER_FILL: Record<NodeId, string> = {
+  101: "#fbbf24", // amber-400
+  201: "#c084fc", // purple-400
+  301: "#34d399", // emerald-400
+  401: "#60a5fa", // blue-400
+};
+
+/**
+ * Last-6-month commission histogram, grouped by tier. `rewards` is
+ * already sorted desc by paidAt — we bucket into YYYY-MM labels and
+ * accumulate per-nodeId so each bar stacks its tiers. If the rewards
+ * list spans fewer than 6 months, the older buckets just render as
+ * empty columns so the x-axis stays stable.
+ */
+function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
+  const data = useMemo(() => {
+    const now = new Date();
+    // Build the 6 most recent month keys ending at current month (oldest left).
+    const buckets: { key: string; label: string; "101": number; "201": number; "301": number; "401": number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      buckets.push({ key, label: `${d.getMonth() + 1}月`, "101": 0, "201": 0, "301": 0, "401": 0 });
+    }
+    const byKey = new Map(buckets.map((b) => [b.key, b]));
+    for (const r of rewards) {
+      const d = new Date(r.paidAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const bucket = byKey.get(key);
+      if (!bucket) continue; // outside 6-month window
+      const whole = Number(BigInt(r.commission) / 10n ** 18n);
+      bucket[String(r.nodeId) as "101"] = (bucket[String(r.nodeId) as "101"] ?? 0) + whole;
+    }
+    return buckets;
+  }, [rewards]);
+
+  return (
+    <div className="h-64 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <XAxis dataKey="label" stroke="rgba(255,255,255,0.4)" fontSize={11} tickLine={false} axisLine={false} />
+          <YAxis stroke="rgba(255,255,255,0.4)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+          <Tooltip
+            cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            contentStyle={{ background: "#080f1e", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 8, fontSize: 12 }}
+            labelStyle={{ color: "#fbbf24", fontWeight: 600 }}
+            formatter={(value: number, name: string) => [`$${value.toLocaleString("en-US")}`, NODE_META[Number(name) as NodeId]?.nameCn ?? name]}
+          />
+          {(["401", "301", "201", "101"] as const).map((nodeIdStr) => (
+            <Bar key={nodeIdStr} dataKey={nodeIdStr} stackId="tier" radius={[0, 0, 0, 0]}>
+              {data.map((_, i) => (
+                <Cell key={`${nodeIdStr}-${i}`} fill={TIER_FILL[Number(nodeIdStr) as NodeId]} />
+              ))}
+            </Bar>
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
