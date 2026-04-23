@@ -26,7 +26,7 @@ import { buildReferralUrl } from "@/hooks/rune/use-referral-param";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/language-context";
 
-type Tab = "overview" | "benefits" | "team" | "rewards";
+type Tab = "overview" | "team" | "rewards";
 
 /**
  * Render an address in EIP-55 mixed-case form even though the indexer
@@ -362,7 +362,6 @@ export default function Dashboard() {
         <div className="flex gap-0.5 min-w-max relative">
           {[
             { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
-            { id: "benefits" as const, Icon: Sparkles,        label: t("mr.dash.tab.benefits") },
             { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
             { id: "rewards"  as const, Icon: Gift,            label: t("mr.dash.tab.rewards") },
           ].map(({ id, Icon, label }) => {
@@ -404,8 +403,6 @@ export default function Dashboard() {
         >
           {tab === "overview" ? (
             <OverviewTab address={address} />
-          ) : tab === "benefits" ? (
-            <BenefitsTab ownedNodeId={ownedNodeId} />
           ) : tab === "team" ? (
             <TeamTab address={address} />
           ) : (
@@ -604,9 +601,11 @@ const PLATFORM_FEATURES = [
 ] as const;
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Benefits tab — full member-doc digest for the user's owned tier
+   Benefits section — full member-doc digest for the user's owned tier.
+   Rendered inline on the Overview tab (right below the referral panel)
+   since we merged the standalone Benefits tab back into Overview.
 ──────────────────────────────────────────────────────────────────────────── */
-function BenefitsTab({ ownedNodeId }: { ownedNodeId: number | undefined }) {
+function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
   const { t } = useLanguage();
   const { data: overview } = useGetRuneOverview();
   const { data: configs } = useNodeConfigs();
@@ -833,10 +832,8 @@ function BenefitCell({
 
 function OverviewTab({ address }: { address: string }) {
   const { t } = useLanguage();
-  const { data: usdtRaw } = useUsdtBalance(address);
   const { referrer, isBound, isRoot } = useReferrerOf(address);
   const { nodeId } = useUserPurchase(address);
-  const { data: stats } = usePersonalStats(address);
 
   const referralUrl = buildReferralUrl(address);
   const [copied, setCopied] = useState(false);
@@ -853,21 +850,14 @@ function OverviewTab({ address }: { address: string }) {
     }
   }
 
+  // Overview is deliberately lean: the connected wallet's sharing tools
+  // on top, followed by a quick look at their node benefits. Headcount /
+  // volume stats live on the Team tab, commission stats on Rewards — so
+  // this page stays focused on "what do you have and how do you grow it".
   return (
     <div className="space-y-6">
-      {/* KPI strip — cascaded entrances (40ms stagger) so the row
-          "lands" as a chord instead of an impact. */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi icon={Wallet}      label="USDT"                             value={`${fmtUsdt(usdtRaw as bigint | undefined, 2)}`}                  sub={t("mr.dash.kpi.balance")}       delay={0.02} />
-        <Kpi icon={Users}       label={t("mr.dash.kpi.direct")}          value={stats ? String(stats.directCount) : "…"}                        sub={t("mr.dash.kpi.wallets")}       delay={0.06} />
-        <Kpi icon={Users}       label={t("mr.dash.kpi.teamTotal")}       value={stats ? String(stats.totalDownstreamCount) : "…"}               sub={t("mr.dash.kpi.inclIndirect")}  delay={0.10} />
-        <Kpi icon={TrendingUp}  label={t("mr.dash.kpi.teamInvested")}    value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"}  sub={t("mr.dash.kpi.allTime")}       delay={0.14} highlight />
-      </div>
-
-      {/* Overview keeps only the referral panel + KPI strip; the full
-          node-benefits breakdown lives in its own tab now. */}
       <div className="grid grid-cols-1 gap-6">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.22, ease: EASE }}>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.02, ease: EASE }}>
           <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/90 border-amber-500/20">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/15 via-amber-700/5 to-transparent blur-3xl pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
@@ -926,6 +916,14 @@ function OverviewTab({ address }: { address: string }) {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Full benefits digest below the referral panel — the same set
+            of cards that used to live in a standalone Benefits tab:
+            core card, mother-token P&L, airdrop batches, per-tier
+            commission matrix, strategic-only pool (if eligible), six
+            streams + weight, platform feature matrix. All data is
+            sourced from the member-facing node-benefits spec. */}
+        <BenefitsSection ownedNodeId={nodeId} />
       </div>
     </div>
   );
