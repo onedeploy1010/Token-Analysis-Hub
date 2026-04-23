@@ -9,6 +9,32 @@ import { runeChainConfig } from "../../rune/chain";
 /** Resolve chainId from optional arg, default to the currently active chain. */
 const resolveChain = (arg?: number | null) => arg ?? runeChainConfig.chainId;
 
+/**
+ * Per-node direct-referrer commission rate in basis points (10000 = 100%).
+ * Mirrors the on-chain `NodeConfigs.directRate` shipped in `runeapi 2`:
+ *   101 Guardian  → 15%
+ *   201 Strategic → 10%
+ *   301 Builder   → 8%
+ *   401 Pioneer   → 5%
+ * Hardcoded here to avoid a chain read on every personalStats query. If
+ * the project ever re-tunes the rates, update this table AND the doc.
+ */
+const DIRECT_RATE_BPS: Record<number, bigint> = {
+  101: 1500n,
+  201: 1000n,
+  301:  800n,
+  401:  500n,
+};
+
+const BPS_BASE = 10000n;
+
+/** Commission paid to the direct referrer for a purchase — payAmount × directRate / 10000. */
+function commissionOf(purchase: { amount: string | null; nodeId: number | null }): bigint {
+  if (!purchase.amount || purchase.nodeId == null) return 0n;
+  const rate = DIRECT_RATE_BPS[purchase.nodeId] ?? 0n;
+  return (BigInt(purchase.amount) * rate) / BPS_BASE;
+}
+
 /** Recursively collect all transitive downstream addresses for `root`.
  *  Uses a Postgres WITH RECURSIVE CTE — one round trip, no app-side BFS. */
 async function collectDownstream(root: string, chainId: number): Promise<string[]> {
@@ -146,10 +172,11 @@ builder.queryFields((t) => ({
         .where(and(eq(runeReferrersTable.referrer, addr), eq(runeReferrersTable.chainId, chainId)));
       const directUsers = directRows.map((r) => r.user);
 
-      // 4. Purchases by direct downstream
+      // 4. Purchases by direct downstream — pull nodeId too so we can
+      //    compute the per-tier commission in JS.
       const directPurchaseRows = directUsers.length
         ? await db
-            .select({ amount: runePurchasesTable.amount })
+            .select({ amount: runePurchasesTable.amount, nodeId: runePurchasesTable.nodeId })
             .from(runePurchasesTable)
             .where(and(eq(runePurchasesTable.chainId, chainId), inArray(runePurchasesTable.user, directUsers)))
         : [];
@@ -157,7 +184,7 @@ builder.queryFields((t) => ({
       // 5. Purchases by transitive downstream
       const totalPurchaseRows = allDownstream.length
         ? await db
-            .select({ amount: runePurchasesTable.amount })
+            .select({ amount: runePurchasesTable.amount, nodeId: runePurchasesTable.nodeId })
             .from(runePurchasesTable)
             .where(and(eq(runePurchasesTable.chainId, chainId), inArray(runePurchasesTable.user, allDownstream)))
         : [];
@@ -165,6 +192,11 @@ builder.queryFields((t) => ({
       const sumBigIntStr = (rows: { amount: string | null }[]) =>
         rows
           .reduce<bigint>((acc, r) => acc + BigInt(r.amount ?? "0"), 0n)
+          .toString();
+
+      const sumCommissionStr = (rows: { amount: string | null; nodeId: number | null }[]) =>
+        rows
+          .reduce<bigint>((acc, r) => acc + commissionOf(r), 0n)
           .toString();
 
       // 6. User's own purchase
@@ -182,6 +214,14 @@ builder.queryFields((t) => ({
         directPurchaseCount: directPurchaseRows.length,
         directTotalInvested: sumBigIntStr(directPurchaseRows),
         totalDownstreamInvested: sumBigIntStr(totalPurchaseRows),
+        // Commission this user earned on-chain from direct downlines' buys.
+        directCommission: sumCommissionStr(directPurchaseRows),
+        // Gross commission volume across the whole transitive team — the
+        // sum of what every direct-referrer in the subtree earned. Equal
+        // to the commission a perfectly-flat (one-level) team would pay,
+        // so on the contract's single-level model this is the team-wide
+        // reward ceiling.
+        teamCommission: sumCommissionStr(totalPurchaseRows),
         hasPurchased: !!ownPurchase,
         ownedNodeId: ownPurchase?.nodeId ?? null,
       };

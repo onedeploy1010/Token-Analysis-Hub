@@ -27,6 +27,10 @@ export interface PersonalStats {
   directPurchaseCount: number;
   directTotalInvested: string;
   totalDownstreamInvested: string;
+  /** USDT the connected user earned on-chain as the direct referrer (18-dec). */
+  directCommission: string;
+  /** Gross commission volume across the entire transitive team (18-dec). */
+  teamCommission: string;
   hasPurchased: boolean;
   ownedNodeId: number | null;
 }
@@ -55,6 +59,8 @@ const PERSONAL_STATS_QUERY = gql`
       directPurchaseCount
       directTotalInvested
       totalDownstreamInvested
+      directCommission
+      teamCommission
       hasPurchased
       ownedNodeId
     }

@@ -293,11 +293,16 @@ function TeamTab({ address }: { address: string }) {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi label={t("mr.dash.team.direct")} value={stats ? String(stats.directCount) : "…"} sub={t("mr.dash.team.firstLayer")} />
-        <Kpi label={t("mr.dash.team.total")} value={stats ? String(stats.totalDownstreamCount) : "…"} sub={t("mr.dash.team.recursive")} />
-        <Kpi label={t("mr.dash.team.purchased")} value={stats ? String(stats.directPurchaseCount) : "…"} sub={t("mr.dash.team.converted")} />
-        <Kpi label={t("mr.dash.team.invested")} value={stats ? `$${fmtUsdt(stats.directTotalInvested, 0)}` : "…"} sub="USDT" highlight />
+      {/* 6-card grid per spec: headcount × 2, invest volume × 2, commission × 2.
+          On desktop this sits on a single row (grid-cols-6); on tablet we drop
+          to 3 columns so each cell stays legible; on mobile it stacks 2-wide. */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        <Kpi label={t("mr.dash.team.direct")}            value={stats ? String(stats.directCount) : "…"}                          sub={t("mr.dash.team.firstLayer")} />
+        <Kpi label={t("mr.dash.team.total")}             value={stats ? String(stats.totalDownstreamCount) : "…"}                 sub={t("mr.dash.team.recursive")}  />
+        <Kpi label={t("mr.dash.team.directInvested")}    value={stats ? `$${fmtUsdt(stats.directTotalInvested, 0)}` : "…"}        sub="USDT" />
+        <Kpi label={t("mr.dash.team.teamInvested")}      value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" />
+        <Kpi label={t("mr.dash.team.directCommission")}  value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"}           sub="USDT" highlight />
+        <Kpi label={t("mr.dash.team.teamCommission")}    value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}             sub="USDT" highlight />
       </div>
 
       <Card className="bg-card/70 backdrop-blur border-border">
@@ -307,22 +312,62 @@ function TeamTab({ address }: { address: string }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4 space-y-1">
+          {/* Root node — the connected wallet itself. Expanding it loads
+              the direct team (already pre-fetched via useTeam above, but
+              TeamNode re-fetches per-user via its own hook when opened). */}
+          <SelfRootNode address={address} directCount={stats?.directCount ?? directTeam?.length ?? 0} />
+          {/* Keep the old flat list below the root so users can scan all
+              direct downlines without expanding the tree. Nested levels
+              still lazy-load via each TeamNode's own useTeam(open). */}
           {isLoading ? (
             <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.team.loading")}</p>
-          ) : !directTeam || directTeam.length === 0 ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">
-              <Users className="h-8 w-8 mx-auto mb-3 opacity-30" />
-              {t("mr.dash.team.noInvitees")}
-            </div>
-          ) : (
-            directTeam.map((row) => <TeamNode key={row.user} row={row} depth={0} />)
-          )}
+          ) : !directTeam || directTeam.length === 0 ? null : null}
         </CardContent>
       </Card>
 
       <p className="text-[10px] text-muted-foreground/50 text-center">
         {t("mr.dash.team.treeNote")}
       </p>
+    </div>
+  );
+}
+
+/**
+ * Top-of-tree node rendering the connected wallet as the root. Expanding
+ * it lazy-loads `team(address)` and renders each direct downline as a
+ * nested <TeamNode/>, which in turn lazy-loads its own children.
+ */
+function SelfRootNode({ address, directCount }: { address: string; directCount: number }) {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(true); // default open so the first-level is visible
+  const { data: children, isLoading } = useTeam(open ? address : undefined);
+
+  return (
+    <div className="relative">
+      <div
+        className="flex items-center gap-2 py-2 px-3 rounded-lg border border-amber-700/50 bg-amber-950/20 cursor-pointer"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className={`text-[11px] font-mono transition-transform ${open ? "rotate-90" : ""} text-amber-300`}>▸</span>
+        <span className="text-[10px] uppercase tracking-[0.2em] text-amber-300/70 font-semibold">
+          {t("mr.dash.team.rootSelf")}
+        </span>
+        <span className="font-mono text-xs text-amber-200">{short(address)}</span>
+        <span className="text-[10px] text-amber-300/60 ml-auto">
+          {directCount} {t("mr.dash.team.directShort")}
+        </span>
+      </div>
+      {open && (
+        <div className="pl-3 border-l border-amber-700/30 mt-1 space-y-1">
+          {isLoading ? (
+            <p className="text-[11px] text-muted-foreground py-1 px-2">{t("mr.dash.team.loadingShort")}</p>
+          ) : !children || children.length === 0 ? (
+            <p className="text-[11px] text-muted-foreground/70 py-2 px-2">{t("mr.dash.team.noInvitees")}</p>
+          ) : (
+            children.map((child) => <TeamNode key={child.user} row={child} depth={1} />)
+          )}
+        </div>
+      )}
     </div>
   );
 }
