@@ -136,7 +136,7 @@ function TreeNodeBadges({
       {meta ? (
         <span className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] ${pillBase}`} title={`${meta.nameEn} · $${meta.priceUsdt.toLocaleString("en-US")} USDT`}>
           <span className={meta.color}>{meta.nameCn}</span>
-          <span className="opacity-60">${(meta.priceUsdt / 1000).toFixed(meta.priceUsdt % 1000 ? 1 : 0)}K</span>
+          <span className="opacity-85">${(meta.priceUsdt / 1000).toFixed(meta.priceUsdt % 1000 ? 1 : 0)}K</span>
         </span>
       ) : (
         <span className={`rounded-md border px-1.5 py-0.5 text-[10px] opacity-50 ${pillBase}`} title={t("mr.dash.team.noNode")}>
@@ -331,14 +331,14 @@ export default function Dashboard() {
               className="flex items-center gap-4 shrink-0"
             >
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70">{t("mr.dash.owned.paid")}</p>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/85">{t("mr.dash.owned.paid")}</p>
                 <p
                   className={`num text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
                   style={{ textShadow: `0 0 24px rgba(${theme.rgb}, 0.4)` }}
                 >
                   ${ownedAmount ? fmtUsdt(ownedAmount, 0) : meta.priceUsdt.toLocaleString("en-US")}
                 </p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1.5 tracking-[0.18em] uppercase">USDT</p>
+                <p className="text-[10px] text-muted-foreground/80 mt-1.5 tracking-[0.18em] uppercase">USDT</p>
               </div>
             </motion.div>
           )}
@@ -527,7 +527,7 @@ function BenefitRow({
         />
       )}
       <div className="relative flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/75 mb-1.5">
-        <Icon className={`h-3 w-3 ${highlight ? theme.accent : "text-muted-foreground/60"}`} />
+        <Icon className={`h-3 w-3 ${highlight ? theme.accent : "text-muted-foreground/80"}`} />
         <span>{label}</span>
       </div>
       <div
@@ -536,7 +536,7 @@ function BenefitRow({
       >
         {value}
       </div>
-      {sub && <div className="relative text-[10px] text-muted-foreground/60 mt-1 tracking-[0.12em] uppercase">{sub}</div>}
+      {sub && <div className="relative text-[10px] text-muted-foreground/80 mt-1 tracking-[0.12em] uppercase">{sub}</div>}
     </motion.div>
   );
 }
@@ -743,7 +743,7 @@ function TeamTab({ address }: { address: string }) {
         </CardContent>
       </Card>
 
-      <p className="text-[10px] text-muted-foreground/50 text-center">
+      <p className="text-[10px] text-muted-foreground/70 text-center">
         {t("mr.dash.team.treeNote")}
       </p>
     </div>
@@ -763,7 +763,7 @@ function TeamBreadcrumb({ path, onJump }: { path: string[]; onJump: (index: numb
         const label = isRoot ? t("mr.dash.team.rootSelf") : short(addr);
         return (
           <div key={`${addr}-${i}`} className="flex items-center gap-1">
-            {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/40" />}
+            {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/65" />}
             {isLast ? (
               <span className={`font-mono px-2 py-1 rounded-md text-[11px] ${
                 isRoot
@@ -937,7 +937,7 @@ function RewardsTab({ address }: { address: string }) {
                     >
                       ${fmtUsdt(commission.toString(), 2)}
                     </div>
-                    <div className="text-[10px] text-muted-foreground/70 mt-1.5 tracking-[0.12em] uppercase tabular-nums">
+                    <div className="text-[10px] text-muted-foreground/85 mt-1.5 tracking-[0.12em] uppercase tabular-nums">
                       {count} × {t("mr.dash.reward.payouts")}
                     </div>
                   </div>
@@ -1003,7 +1003,7 @@ function RewardsTab({ address }: { address: string }) {
         </Card>
       </motion.div>
 
-      <p className="text-[10px] text-muted-foreground/50 text-center">
+      <p className="text-[10px] text-muted-foreground/70 text-center">
         {t("mr.dash.reward.note")}
       </p>
     </div>
@@ -1045,7 +1045,7 @@ function RewardRowItem({ row }: { row: RewardRow }) {
           +${fmtUsdt(row.commission, 4)}
         </span>
       </div>
-      <div className="flex items-center gap-3 flex-wrap mt-1.5 pl-[calc(3.5rem+0.5rem)] sm:pl-[calc(4rem+0.75rem)] text-[11px] text-muted-foreground/70">
+      <div className="flex items-center gap-3 flex-wrap mt-1.5 pl-[calc(3.5rem+0.5rem)] sm:pl-[calc(4rem+0.75rem)] text-[11px] text-muted-foreground/85">
         <span className="tabular-nums">{new Date(row.paidAt).toLocaleString()}</span>
         <span className="font-mono tabular-nums opacity-80">
           {(row.directRate / 100).toFixed(row.directRate % 100 === 0 ? 0 : 1)}%
@@ -1055,7 +1055,7 @@ function RewardRowItem({ row }: { row: RewardRow }) {
             href={`${explorerBase}${row.txHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto text-muted-foreground/60 hover:text-amber-400 transition-colors inline-flex items-center gap-1"
+            className="ml-auto text-muted-foreground/80 hover:text-amber-400 transition-colors inline-flex items-center gap-1"
             title={t("mr.dash.reward.viewTx")}
           >
             <ExternalLink className="h-3 w-3" />
@@ -1237,13 +1237,13 @@ function Kpi({
         }`}
       />
       <div className="relative flex items-center justify-between mb-1.5">
-        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">{label}</span>
+        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/85">{label}</span>
         {Icon && (
           <Icon className={`h-3.5 w-3.5 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]" : "text-muted-foreground/55 group-hover:text-foreground/80"}`} />
         )}
       </div>
       <div className={`relative text-xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
-      {sub && <div className="relative text-[10px] text-muted-foreground/60 mt-1 tracking-[0.14em] uppercase">{sub}</div>}
+      {sub && <div className="relative text-[10px] text-muted-foreground/80 mt-1 tracking-[0.14em] uppercase">{sub}</div>}
     </motion.div>
   );
 }
