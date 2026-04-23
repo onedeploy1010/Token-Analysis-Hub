@@ -100,7 +100,7 @@ const FAQ_ITEMS = [
     qEn: "How is the 170.82% APY calculated?",
     qZh: "年化 170.82% 如何计算？",
     aEn: "Based on Guardian node ($10,000): 180-day USDT income of $8,424 annualized ≈ 170.82%. Excludes token airdrops and MOTHER TOKEN appreciation.",
-    aZh: "以符主节点（$10,000投入）为基准：仅计入180天USDT收益$8,424，折算年化≈170.82%。不含TOKEN空投及母TOKEN市值增长部分。",
+    aZh: "以符魂节点（$10,000投入）为基准：仅计入180天USDT收益$8,424，折算年化≈170.82%。不含TOKEN空投及母TOKEN市值增长部分。",
   },
 ];
 
@@ -439,6 +439,67 @@ export default function Recruit() {
               {showZh && <p className="text-[11px] text-muted-foreground/40 leading-relaxed">{descEn}</p>}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Genesis (创世) tier — L5, condition-triggered ── */}
+      <section>
+        <div className="flex items-center gap-2 mb-6">
+          <div className="h-px flex-1 bg-border/30" />
+          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
+            创世节点 · GENESIS · L5
+          </h2>
+          <div className="h-px flex-1 bg-border/30" />
+        </div>
+        <div className="relative overflow-hidden rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-950/50 via-purple-950/30 to-amber-950/15 p-6 md:p-8">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.15),transparent_55%)]" />
+          <div className="relative space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full border border-fuchsia-500/50 bg-fuchsia-950/40 flex items-center justify-center">
+                <Zap className="h-5 w-5 text-fuchsia-300" />
+              </div>
+              <div>
+                <div className="text-xs font-mono uppercase tracking-[0.22em] text-fuchsia-300/80">GENESIS · L5</div>
+                <div className="text-xl md:text-2xl font-bold bg-gradient-to-r from-fuchsia-200 via-purple-200 to-amber-200 bg-clip-text text-transparent">
+                  {showZh ? "创世节点 · 条件触发" : "Genesis Node · Condition-triggered"}
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-foreground/90 leading-relaxed">
+              {showZh
+                ? "创世节点非购买获得。任一等级节点持有者达成以下条件之一，即自动升级为创世节点，除保留已购节点的权重分红外，额外从核心激励池 10% 中按创世权重比例分配收益。"
+                : "Genesis is not purchasable — any tier holder who meets either condition below is auto-upgraded. Genesis peers keep their base-tier dividends and additionally share 10% of the core incentive pool by weighted allocation."}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
+                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
+                  {showZh ? "条件一 · 直推达成" : "Condition 1 · Direct"}
+                </div>
+                <p className="text-sm text-foreground/95 leading-snug">
+                  {showZh ? "直推 ≥ 5 个超级节点（符主 · L4）" : "Refer ≥ 5 super-tier (符主 · L4) nodes directly"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
+                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
+                  {showZh ? "条件二 · 团队达成" : "Condition 2 · Team"}
+                </div>
+                <p className="text-sm text-foreground/95 leading-snug">
+                  {showZh ? "团队矩阵累计 ≥ 10 个超级节点（符主 · L4）" : "Accumulate ≥ 10 super-tier (符主 · L4) nodes across the full team"}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-xl border border-amber-500/30 bg-amber-950/25 p-4 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300/85 shrink-0">
+                {showZh ? "创世专属奖励" : "Genesis exclusive reward"}
+              </span>
+              <span className="text-base font-bold tabular-nums text-amber-200">
+                {showZh ? "核心激励池 10%" : "10% of core incentive pool"}
+              </span>
+              <span className="text-xs text-muted-foreground/80">
+                {showZh ? "按创世节点权重占比加权分配" : "weighted by Genesis-peer node score"}
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 

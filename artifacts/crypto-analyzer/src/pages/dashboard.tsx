@@ -577,18 +577,20 @@ function BenefitRow({
    is the single place to sync.
 ──────────────────────────────────────────────────────────────────────────── */
 
-/** Airdrop total 1,000 万枚, released across 4 batches with trigger conditions. */
+/** Airdrop release — 4 stages, back-loaded per the 2026 spec: 10/20/30/40
+ *  unlocks gated on TLP + team-stake thresholds (final stage also has a
+ *  180-day time fallback). Total = 100%. */
 const AIRDROP_BATCHES = [
-  { pct: 20, priceAt: 0.028, titleKey: "mr.dash.benefits.ad.b1", trig: "mr.dash.benefits.ad.b1Trig" },
-  { pct: 30, priceAt: 0.070, titleKey: "mr.dash.benefits.ad.b2", trig: "mr.dash.benefits.ad.b2Trig" },
+  { pct: 10, priceAt: 0.028, titleKey: "mr.dash.benefits.ad.b1", trig: "mr.dash.benefits.ad.b1Trig" },
+  { pct: 20, priceAt: 0.070, titleKey: "mr.dash.benefits.ad.b2", trig: "mr.dash.benefits.ad.b2Trig" },
   { pct: 30, priceAt: 0.175, titleKey: "mr.dash.benefits.ad.b3", trig: "mr.dash.benefits.ad.b3Trig" },
-  { pct: 20, priceAt: 0.350, titleKey: "mr.dash.benefits.ad.b4", trig: "mr.dash.benefits.ad.b4Trig" },
+  { pct: 40, priceAt: 0.350, titleKey: "mr.dash.benefits.ad.b4", trig: "mr.dash.benefits.ad.b4Trig" },
 ] as const;
 
 /** Per-tier airdrop allocation — seats × per-seat value in SUB tokens. */
 const AIRDROP_PER_TIER: Record<NodeId, { perSeat: number; total: string }> = {
   101: { perSeat: 75000, total: "300万" },
-  201: { perSeat: 13500, total: "270万" },
+  201: { perSeat: 16200, total: "324万" },
   301: { perSeat:  5750, total: "230万" },
   401: { perSeat:  2500, total: "200万" },
 };
@@ -613,14 +615,15 @@ const SIX_STREAMS = [
   { key: "pool",   shortKey: "mr.dash.benefits.six.poolShort",   tagKey: "mr.dash.benefits.six.poolTag"   },
 ] as const;
 
-/** Platform-feature matrix. `strategicOnly` = STRATEGIC × 1.5 quota boost. */
+/** Platform-feature matrix. `strategicBoost` = 1.5× quota on the apex tier.
+ *  The core-pool access row was moved into its own dedicated Genesis card
+ *  since the Genesis (L5) path is now the sole route to pool share. */
 const PLATFORM_FEATURES = [
   { labelKey: "mr.dash.benefits.feat.promo", all: true, strategicBoost: false },
   { labelKey: "mr.dash.benefits.feat.api",   all: true, strategicBoost: true  },
   { labelKey: "mr.dash.benefits.feat.ai",    all: true, strategicBoost: true  },
   { labelKey: "mr.dash.benefits.feat.pred",  all: true, strategicBoost: true  },
   { labelKey: "mr.dash.benefits.feat.quant", all: true, strategicBoost: true  },
-  { labelKey: "mr.dash.benefits.feat.pool",  all: false, strategicBoost: false, strategicOnly: true },
 ] as const;
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -760,20 +763,29 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             </div>
           </div>
 
-          {/* Strategic-only pool, conditional */}
-          {isStrategic && (
-            <div className="rounded-md border border-purple-500/40 bg-gradient-to-br from-purple-950/30 to-transparent p-3">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-purple-300 font-semibold mb-1.5 flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3" />
-                {t("mr.dash.benefits.poolTitle")}
-              </div>
-              <p className="text-xs text-foreground/90 leading-snug">{t("mr.dash.benefits.poolDesc")}</p>
-              <ul className="mt-2 space-y-1">
-                <li className="flex items-start gap-2 text-[11px] text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond1")}</li>
-                <li className="flex items-start gap-2 text-[11px] text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond2")}</li>
-              </ul>
+          {/* Dividend weight matrix — quick reference card per new spec. */}
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.weightTitle")}</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+              {([401, 301, 201, 101] as NodeId[]).map((id) => {
+                const m = NODE_META[id];
+                const th = HERO_THEME[id];
+                const w = WEIGHT_PER_TIER[id];
+                const isSelf = id === ownedNodeId;
+                return (
+                  <div
+                    key={id}
+                    className={`rounded-md border p-2.5 ${isSelf ? `${th.ring} bg-gradient-to-br ${th.from} ${th.to}` : "border-border/30 bg-card/25"}`}
+                  >
+                    <div className={`text-[9px] font-mono uppercase tracking-[0.22em] ${m.color}`}>{m.nameEn}</div>
+                    <div className="text-[11px] font-semibold text-foreground/90 mt-0.5">{m.nameCn}</div>
+                    <div className={`num text-lg font-bold mt-1.5 tabular-nums ${th.accentBright}`}>{w.coeff.toFixed(1)}×</div>
+                    <div className="text-[9px] text-muted-foreground/75 mt-0.5 tabular-nums">{w.share}</div>
+                  </div>
+                );
+              })}
             </div>
-          )}
+          </div>
 
           {/* Platform feature matrix — 2-col grid on desktop for density */}
           <div>
@@ -795,11 +807,6 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                 );
               })}
             </div>
-            {!isStrategic && (
-              <p className="text-[10px] text-muted-foreground/70 text-center pt-2">
-                {t("mr.dash.benefits.featStrategicNote")}
-              </p>
-            )}
           </div>
         </div>
       </BenefitGroup>
