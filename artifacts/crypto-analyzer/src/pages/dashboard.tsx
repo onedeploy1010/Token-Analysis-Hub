@@ -601,9 +601,16 @@ const PLATFORM_FEATURES = [
 ] as const;
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Benefits section — full member-doc digest for the user's owned tier.
-   Rendered inline on the Overview tab (right below the referral panel)
-   since we merged the standalone Benefits tab back into Overview.
+   Benefits section — full member-doc digest laid out as 4 grouped cards:
+     1. 收益 (Yield)       — daily / 180d / rate / weight
+     2. 母币 (Mother token) — private price / qty / P&L / launch
+     3. 子币 (Sub-token)    — airdrop total + 4 unlock batches
+     4. 其他权益 (Other)    — direct commission matrix, strategic pool
+                              (conditional), six dividend streams, platform
+                              features. One sub-grouping per nested panel.
+
+   Each section uses a shared <BenefitGroup> shell so visual rhythm stays
+   consistent — no per-section orbs/glows fighting each other.
 ──────────────────────────────────────────────────────────────────────────── */
 function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
   const { t } = useLanguage();
@@ -630,190 +637,193 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
   const weight = WEIGHT_PER_TIER[ownedNodeId as NodeId];
   const isStrategic = ownedNodeId === 101;
 
-  // Derived projections — mirror the formulas in §8 of the spec.
+  // §8 formulas — mother-token economics.
   const motherPrivatePrice = def?.privatePrice ?? 0;
   const launchPrice = 0.028;
   const motherQty = motherPrivatePrice > 0 && def ? def.investment / motherPrivatePrice : 0;
   const floatingPnl = motherQty * (launchPrice - motherPrivatePrice);
   const floatingPct = def?.investment ? (floatingPnl / def.investment) * 100 : 0;
+  const daily = def?.dailyUsdt ?? 0;
+  const dailyRatePct = def?.investment ? (daily / def.investment) * 100 : 0;
 
   return (
-    <div className="space-y-5">
-      {/* Core benefits strip — four headline numbers from §2 of the spec. */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: EASE }}>
-        <NodeBenefitsCard ownedNodeId={ownedNodeId} />
-      </motion.div>
+    <div className="space-y-4">
 
-      {/* Tier overview — private price + mother token qty + launch P&L. */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.04, ease: EASE }}>
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.04),transparent_55%)] pointer-events-none" />
-          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Coins className={`h-4 w-4 ${theme?.accent ?? "text-amber-400"}`} />
-              {t("mr.dash.benefits.tokenTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <BenefitCell label={t("mr.dash.benefits.privatePrice")} value={`$${motherPrivatePrice.toFixed(3)}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
-            <BenefitCell label={t("mr.dash.benefits.motherQty")}    value={motherQty.toLocaleString("en-US", { maximumFractionDigits: 0 })} sub={t("mr.dash.benefits.tokens")} theme={theme} />
-            <BenefitCell label={t("mr.dash.benefits.launchPnl")}    value={`+$${floatingPnl.toLocaleString("en-US", { maximumFractionDigits: 0 })}`} sub={`+${floatingPct.toFixed(1)}%`} theme={theme} highlight />
-            <BenefitCell label={t("mr.dash.benefits.launchPrice")}  value={`$${launchPrice}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Airdrop — 4 batches with trigger conditions. */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.08, ease: EASE }}>
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-          <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
-          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Gift className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
-              {t("mr.dash.benefits.airdropTitle")}
-              {airdrop && (
-                <span className="text-[10px] font-mono text-muted-foreground/80 tabular-nums ml-1">
-                  {airdrop.perSeat.toLocaleString("en-US")} SUB / {t("mr.dash.benefits.airdropSeat")}
-                </span>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 relative z-10 space-y-2">
-            {AIRDROP_BATCHES.map((b, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-lg border border-border/40 bg-card/30 px-3 py-2.5">
-                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 w-14 shrink-0">{t(b.titleKey)}</span>
-                <span className="text-xl font-bold tabular-nums text-amber-300 w-14 shrink-0">{b.pct}%</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] text-muted-foreground/85 leading-snug">{t(b.trig)}</p>
-                </div>
-                <span className="text-[11px] font-mono tabular-nums text-emerald-400 shrink-0">${b.priceAt}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Direct commission — tier-specific. */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.12, ease: EASE }}>
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-amber-400" />
-              {t("mr.dash.benefits.commTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3">
-            {([401, 301, 201, 101] as NodeId[]).map((id) => {
-              const m = NODE_META[id];
-              const th = HERO_THEME[id];
-              const pct = id === 401 ? 5 : id === 301 ? 8 : id === 201 ? 10 : 15;
-              const isSelf = id === ownedNodeId;
-              return (
-                <div
-                  key={id}
-                  className={`rounded-lg border p-3 ${isSelf ? `${th.ring} bg-gradient-to-br ${th.from} ${th.to}` : "border-border/40 bg-card/30"}`}
-                >
-                  <div className={`text-[10px] font-mono uppercase tracking-[0.2em] ${m.color}`}>{m.nameEn}</div>
-                  <div className="text-xs font-semibold text-foreground/90 mt-0.5">{m.nameCn}</div>
-                  <div className={`num text-xl font-bold mt-2 tabular-nums ${th.accentBright}`}>{pct}%</div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Strategic-only pool. */}
-      {isStrategic && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.16, ease: EASE }}>
-          <Card className="surface-3d surface-3d-tinted relative overflow-hidden bg-gradient-to-br from-purple-950/60 to-slate-950/95 border-purple-500/40" style={{ ["--tier-rgb" as string]: "192, 132, 252" }}>
-            <div className="absolute -top-12 -right-10 w-48 h-48 rounded-full bg-gradient-to-br from-purple-500/20 via-purple-700/5 to-transparent blur-3xl pointer-events-none" />
-            <CardHeader className="pb-3 border-b border-border/40 relative z-10">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.7)]" />
-                {t("mr.dash.benefits.poolTitle")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 relative z-10 space-y-2 text-sm">
-              <p className="text-foreground/90">{t("mr.dash.benefits.poolDesc")}</p>
-              <ul className="space-y-1.5 pt-1">
-                <li className="flex items-start gap-2 text-xs text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond1")}</li>
-                <li className="flex items-start gap-2 text-xs text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond2")}</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* 六脉分红 — six streams + tier weight. */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2, ease: EASE }}>
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-          <CardHeader className="pb-3 border-b border-border/40 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
-              {t("mr.dash.benefits.sixTitle")}
-            </CardTitle>
-            {weight && (
-              <div className="text-right shrink-0">
-                <div className={`text-xl font-bold tabular-nums ${theme?.accentBright ?? "text-amber-200"}`}>{weight.coeff.toFixed(1)}×</div>
-                <div className="text-[10px] text-muted-foreground/80">{t("mr.dash.benefits.yourShare")} · {weight.share}</div>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="pt-4 relative z-10 space-y-1.5">
+      {/* ── 1. 收益 ── yield overview for the held tier */}
+      <BenefitGroup icon={TrendingUp} title={t("mr.dash.benefits.groupYield")} subtitle="YIELD" delay={0}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          <BenefitCell label={t("mr.dash.owned.daily")}    value={`$${daily.toLocaleString("en-US")}`} sub={`${dailyRatePct.toFixed(3)}% / day`} theme={theme} highlight />
+          <BenefitCell label={t("mr.dash.owned.total180")} value={`$${(daily * 180).toLocaleString("en-US")}`} sub="180 days" theme={theme} />
+          <BenefitCell label={t("mr.dash.benefits.weightCoeff")} value={weight ? `${weight.coeff.toFixed(1)}×` : "—"} sub={weight ? `${t("mr.dash.benefits.yourShare")} · ${weight.share}` : undefined} theme={theme} />
+          <BenefitCell label={t("mr.dash.owned.rate")}     value={rateBps !== undefined ? `${(rateBps / 100).toFixed(rateBps % 100 === 0 ? 0 : 1)}%` : "—"} sub={t("mr.dash.owned.rateSub")} theme={theme} highlight />
+        </div>
+        {/* 六脉 explanatory list — collapsed visual, 2-column on desktop */}
+        <div className="mt-4 pt-4 border-t border-border/25">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.sixTitle")}</div>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
             {SIX_STREAMS.map((s, i) => (
-              <div key={s.key} className="flex items-start gap-3 rounded-lg border border-border/40 bg-card/30 px-3 py-2">
-                <span className="text-[10px] font-mono text-amber-400 w-5 shrink-0 mt-0.5">{i + 1}</span>
-                <p className="text-xs text-foreground/85 leading-snug">{t(s.labelKey)}</p>
-              </div>
+              <li key={s.key} className="flex items-start gap-2 text-[11px] text-foreground/85 leading-snug">
+                <span className="text-amber-400/80 font-mono shrink-0 w-3">{i + 1}</span>
+                <span>{t(s.labelKey)}</span>
+              </li>
             ))}
-          </CardContent>
-        </Card>
-      </motion.div>
+          </ul>
+        </div>
+      </BenefitGroup>
 
-      {/* Platform feature matrix. */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.24, ease: EASE }}>
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <LayoutDashboard className="h-4 w-4 text-amber-400" />
-              {t("mr.dash.benefits.featTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 relative z-10 space-y-1.5">
-            {PLATFORM_FEATURES.map((f) => {
-              const available = f.all || (isStrategic && (f as any).strategicOnly);
-              const boosted = f.strategicBoost && isStrategic;
-              return (
-                <div key={f.labelKey} className="flex items-center gap-3 rounded-lg border border-border/40 bg-card/30 px-3 py-2">
-                  <span className={`text-sm shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/50"}`}>
-                    {available ? "✓" : "—"}
-                  </span>
-                  <p className="text-xs text-foreground/90 flex-1 min-w-0">{t(f.labelKey)}</p>
-                  {boosted && (
-                    <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-purple-300 shrink-0">×1.5</span>
-                  )}
-                </div>
-              );
-            })}
+      {/* ── 2. 母币 ── mother token economics */}
+      <BenefitGroup icon={Coins} title={t("mr.dash.benefits.groupMother")} subtitle="MOTHER TOKEN" delay={0.04}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          <BenefitCell label={t("mr.dash.benefits.privatePrice")} value={`$${motherPrivatePrice.toFixed(3)}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
+          <BenefitCell label={t("mr.dash.benefits.motherQty")}    value={motherQty.toLocaleString("en-US", { maximumFractionDigits: 0 })} sub={t("mr.dash.benefits.tokens")} theme={theme} />
+          <BenefitCell label={t("mr.dash.benefits.launchPnl")}    value={`+$${floatingPnl.toLocaleString("en-US", { maximumFractionDigits: 0 })}`} sub={`+${floatingPct.toFixed(1)}%`} theme={theme} highlight />
+          <BenefitCell label={t("mr.dash.benefits.launchPrice")}  value={`$${launchPrice}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
+        </div>
+      </BenefitGroup>
+
+      {/* ── 3. 子币 ── airdrop total + 4 unlock batches */}
+      <BenefitGroup
+        icon={Gift}
+        title={t("mr.dash.benefits.groupSub")}
+        subtitle="SUB-TOKEN · AIRDROP"
+        rightTag={airdrop ? `${airdrop.perSeat.toLocaleString("en-US")} SUB / ${t("mr.dash.benefits.airdropSeat")}` : undefined}
+        delay={0.08}
+      >
+        <div className="space-y-1.5">
+          {AIRDROP_BATCHES.map((b, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-md border border-border/30 bg-card/25 px-3 py-2">
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400/90 w-12 shrink-0">{t(b.titleKey)}</span>
+              <span className="text-base font-bold tabular-nums text-amber-300 w-10 shrink-0">{b.pct}%</span>
+              <p className="text-[11px] text-muted-foreground/85 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
+              <span className="text-[11px] font-mono tabular-nums text-emerald-400 shrink-0">${b.priceAt}</span>
+            </div>
+          ))}
+        </div>
+      </BenefitGroup>
+
+      {/* ── 4. 其他权益 ── direct commission + strategic pool + platform */}
+      <BenefitGroup icon={Sparkles} title={t("mr.dash.benefits.groupOther")} subtitle="OTHER BENEFITS" delay={0.12}>
+        <div className="space-y-4">
+          {/* Direct commission matrix */}
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.commTitle")}</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+              {([401, 301, 201, 101] as NodeId[]).map((id) => {
+                const m = NODE_META[id];
+                const th = HERO_THEME[id];
+                const pct = id === 401 ? 5 : id === 301 ? 8 : id === 201 ? 10 : 15;
+                const isSelf = id === ownedNodeId;
+                return (
+                  <div
+                    key={id}
+                    className={`rounded-md border p-2.5 ${isSelf ? `${th.ring} bg-gradient-to-br ${th.from} ${th.to}` : "border-border/30 bg-card/25"}`}
+                  >
+                    <div className={`text-[9px] font-mono uppercase tracking-[0.22em] ${m.color}`}>{m.nameEn}</div>
+                    <div className="text-[11px] font-semibold text-foreground/90 mt-0.5">{m.nameCn}</div>
+                    <div className={`num text-lg font-bold mt-1.5 tabular-nums ${th.accentBright}`}>{pct}%</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Strategic-only pool, conditional */}
+          {isStrategic && (
+            <div className="rounded-md border border-purple-500/40 bg-gradient-to-br from-purple-950/30 to-transparent p-3">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-purple-300 font-semibold mb-1.5 flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3" />
+                {t("mr.dash.benefits.poolTitle")}
+              </div>
+              <p className="text-xs text-foreground/90 leading-snug">{t("mr.dash.benefits.poolDesc")}</p>
+              <ul className="mt-2 space-y-1">
+                <li className="flex items-start gap-2 text-[11px] text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond1")}</li>
+                <li className="flex items-start gap-2 text-[11px] text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond2")}</li>
+              </ul>
+            </div>
+          )}
+
+          {/* Platform feature matrix — 2-col grid on desktop for density */}
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.featTitle")}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+              {PLATFORM_FEATURES.map((f) => {
+                const available = f.all || (isStrategic && (f as any).strategicOnly);
+                const boosted = f.strategicBoost && isStrategic;
+                return (
+                  <div key={f.labelKey} className="flex items-center gap-2.5 rounded-md border border-border/30 bg-card/25 px-2.5 py-1.5">
+                    <span className={`text-xs shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/50"}`}>
+                      {available ? "✓" : "—"}
+                    </span>
+                    <p className="text-[11px] text-foreground/90 flex-1 min-w-0">{t(f.labelKey)}</p>
+                    {boosted && (
+                      <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-purple-300 shrink-0">×1.5</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
             {!isStrategic && (
               <p className="text-[10px] text-muted-foreground/70 text-center pt-2">
                 {t("mr.dash.benefits.featStrategicNote")}
               </p>
             )}
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
+        </div>
+      </BenefitGroup>
 
-      <p className="text-[10px] text-muted-foreground/65 text-center pt-2">
+      <p className="text-[10px] text-muted-foreground/65 text-center pt-1">
         {t("mr.dash.benefits.footer")}
       </p>
     </div>
   );
 }
 
-/** Small numeric cell for the Benefits tab — mirrors NodeBenefitsCard's
- *  BenefitRow styling but without the icon slot. */
+/** Consistent shell for the 4 benefit groups — same surface, same header
+ *  position, same motion timing. Avoids each group inventing its own
+ *  glow/orb combo which made the page read "busy" before. */
+function BenefitGroup({
+  icon: Icon,
+  title,
+  subtitle,
+  rightTag,
+  delay = 0,
+  children,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  subtitle?: string;
+  rightTag?: string;
+  delay?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: EASE }}
+    >
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.035),transparent_55%)] pointer-events-none" />
+        <CardHeader className="pb-3 border-b border-border/30 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <Icon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.45)] shrink-0" />
+            <span className="text-sm font-semibold text-foreground truncate">{title}</span>
+            {subtitle && (
+              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70 hidden sm:inline truncate">{subtitle}</span>
+            )}
+          </div>
+          {rightTag && (
+            <span className="text-[10px] font-mono tabular-nums text-amber-200/85 shrink-0">{rightTag}</span>
+          )}
+        </CardHeader>
+        <CardContent className="pt-4 relative z-10">{children}</CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+/** Small numeric cell used inside BenefitGroup content — same DNA as
+ *  NodeBenefitsCard's BenefitRow but borderless/padded for density. */
 function BenefitCell({
   label, value, sub, theme, highlight = false,
 }: {
@@ -822,9 +832,9 @@ function BenefitCell({
   highlight?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-border/30 bg-card/30 p-3">
-      <div className="text-[10px] uppercase tracking-widest text-muted-foreground/80 mb-1.5">{label}</div>
-      <div className={`text-xl font-bold tabular-nums ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}>{value}</div>
+    <div className="rounded-md border border-border/30 bg-card/25 p-2.5">
+      <div className="text-[10px] uppercase tracking-widest text-muted-foreground/80 mb-1">{label}</div>
+      <div className={`text-lg font-bold tabular-nums leading-tight ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}>{value}</div>
       {sub && <div className="text-[10px] text-muted-foreground/65 mt-0.5">{sub}</div>}
     </div>
   );
