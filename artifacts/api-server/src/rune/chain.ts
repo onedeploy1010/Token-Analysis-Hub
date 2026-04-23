@@ -41,14 +41,14 @@ const bscTestnetConfig: RuneChainConfig = {
   usdt: "0xa87cC1e59598CD0C33bBe38746a81279BFfea0B8",
   community: "0x42a06ac2208E9F8e25673BA0F6c44bc56fD2aa62",
   nodePresell: "0x6a30f26338742670637f47dfC04600B4d1eF1E9a",
-  // The contracts ship new on every testnet iteration. Scanning from block 0
-  // on BSC testnet (100M+ blocks) wastes hours crawling empty space before
-  // we reach any event. Anchor the cursor well below any observed on-chain
-  // activity so the historical bindings get indexed on a cold DB.
-  // Observed tx 0x4579…2a295f (user bound to ROOT) lives at block 103_111_133,
-  // which is earlier than the deployment blocks we originally used. Dropping
-  // to 103_100_000 covers ~5 days of history before the earliest real event.
-  startBlock: { community: 103_100_000n, nodePresell: 103_100_000n },
+  // Public BSC testnet RPCs (publicnode, binance) only retain ~50-100k
+  // blocks of history. Anchor the cursor inside that retained window so
+  // the indexer can actually make forward progress from a cold DB.
+  // Events older than this (two observed bindings at blocks ~103.1M) must
+  // be backfilled manually — see scripts/backfill-referrers.mjs. A paid
+  // archive provider (Ankr / QuickNode) set via RUNE_RPC_URL_TESTNET is
+  // the only way to re-index the full history on a fresh deploy.
+  startBlock: { community: 103_250_000n, nodePresell: 103_250_000n },
   chain: bscTestnet,
 };
 
