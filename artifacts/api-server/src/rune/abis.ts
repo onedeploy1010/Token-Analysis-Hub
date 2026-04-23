@@ -16,3 +16,9 @@ export const eventAddReferrer = parseAbiItem(
 export const eventNodePresell = parseAbiItem(
   "event EventNodePresell(address indexed user, address payToken, uint256 amount, uint256 time, uint256 num, uint256 nodeId)",
 );
+
+/** Read-only view used by node-rates.ts to keep the directRate cache
+ *  in sync with whatever the proxy is currently serving. */
+export const fnGetNodeConfigs = parseAbiItem(
+  "function getNodeConfigs(uint256[] nodeIds_) view returns ((uint256 nodeId, address payToken, uint256 payAmount, uint256 maxLimit, uint256 curNum, uint256 directRate)[])",
+);

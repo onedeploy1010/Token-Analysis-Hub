@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { seedAdminUser } from "./lib/seedAdmin.js";
 import { startHyperliquidCron } from "./routes/hyperliquid.js";
 import { startRuneIndexer } from "./indexer/rune-indexer.js";
+import { getDirectRateMap } from "./rune/node-rates.js";
 
 const rawPort = process.env["PORT"];
 
@@ -28,4 +29,8 @@ app.listen(port, async (err) => {
   await seedAdminUser();
   startHyperliquidCron();
   startRuneIndexer();
+  // Warm the directRate cache so the first personalStats query doesn't
+  // pay the RPC round-trip. Swallow errors — the resolver falls back to
+  // the doc defaults if this ever fails.
+  void getDirectRateMap().catch(() => {});
 });

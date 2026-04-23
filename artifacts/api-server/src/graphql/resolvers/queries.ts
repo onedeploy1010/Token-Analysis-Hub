@@ -5,33 +5,21 @@ import { ReferrerType } from "../types/referrer";
 import { PurchaseType } from "../types/purchase";
 import { PersonalStatsType, type PersonalStatsShape } from "../types/stats";
 import { runeChainConfig } from "../../rune/chain";
+import { getDirectRateMap } from "../../rune/node-rates";
 
 /** Resolve chainId from optional arg, default to the currently active chain. */
 const resolveChain = (arg?: number | null) => arg ?? runeChainConfig.chainId;
 
-/**
- * Per-node direct-referrer commission rate in basis points (10000 = 100%).
- * Mirrors the on-chain `NodeConfigs.directRate` shipped in `runeapi 2`:
- *   101 Guardian  → 15%
- *   201 Strategic → 10%
- *   301 Builder   → 8%
- *   401 Pioneer   → 5%
- * Hardcoded here to avoid a chain read on every personalStats query. If
- * the project ever re-tunes the rates, update this table AND the doc.
- */
-const DIRECT_RATE_BPS: Record<number, bigint> = {
-  101: 1500n,
-  201: 1000n,
-  301:  800n,
-  401:  500n,
-};
-
+/** PREVISION on the NodePresell contract — the denominator for directRate bps. */
 const BPS_BASE = 10000n;
 
-/** Commission paid to the direct referrer for a purchase — payAmount × directRate / 10000. */
-function commissionOf(purchase: { amount: string | null; nodeId: number | null }): bigint {
+/** Commission paid to the direct referrer for a purchase — payAmount × rates[nodeId] / 10000. */
+function commissionOf(
+  purchase: { amount: string | null; nodeId: number | null },
+  rates: Map<number, bigint>,
+): bigint {
   if (!purchase.amount || purchase.nodeId == null) return 0n;
-  const rate = DIRECT_RATE_BPS[purchase.nodeId] ?? 0n;
+  const rate = rates.get(purchase.nodeId) ?? 0n;
   return (BigInt(purchase.amount) * rate) / BPS_BASE;
 }
 
@@ -194,9 +182,12 @@ builder.queryFields((t) => ({
           .reduce<bigint>((acc, r) => acc + BigInt(r.amount ?? "0"), 0n)
           .toString();
 
+      // Fetch the live directRate map (cached for 10 min). One chain read
+      // amortised across every personalStats query in the window.
+      const rates = await getDirectRateMap();
       const sumCommissionStr = (rows: { amount: string | null; nodeId: number | null }[]) =>
         rows
-          .reduce<bigint>((acc, r) => acc + commissionOf(r), 0n)
+          .reduce<bigint>((acc, r) => acc + commissionOf(r, rates), 0n)
           .toString();
 
       // 6. User's own purchase
