@@ -954,7 +954,6 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
   const nextUnlockTokens = userAirdrop
     ? Math.round((userAirdrop.perSeat * nextStage.pct) / 100)
     : 0;
-  const nextUnlockUsd = nextUnlockTokens * nextBatch.priceAt;
 
   return (
     <motion.div
@@ -1101,7 +1100,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <div className="text-[10px] text-muted-foreground/75 mb-0.5">
                     {t("mr.dash.pool.yourUnlock")}
@@ -1123,15 +1122,6 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                   <div className="text-[9px] text-muted-foreground/65">
                     {t("mr.dash.pool.perToken")}
                   </div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">
-                    {t("mr.dash.pool.estValue")}
-                  </div>
-                  <div className="text-lg font-bold tabular-nums text-emerald-300">
-                    ≈ ${nextUnlockUsd.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-                  </div>
-                  <div className="text-[9px] text-muted-foreground/65">USDT</div>
                 </div>
               </div>
 
