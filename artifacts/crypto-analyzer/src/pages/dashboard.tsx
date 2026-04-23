@@ -26,7 +26,7 @@ import { buildReferralUrl } from "@/hooks/rune/use-referral-param";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/language-context";
 
-type Tab = "overview" | "team" | "rewards";
+type Tab = "overview" | "benefits" | "team" | "rewards";
 
 /**
  * Render an address in EIP-55 mixed-case form even though the indexer
@@ -353,41 +353,42 @@ export default function Dashboard() {
       {/* ── Tabs ── indicator uses `layoutId="dashTab"` so the underline
           morphs between tabs instead of cutting. Active tab also gets a
           soft radial glow beneath its label. */}
-      <div className="flex gap-1 border-b border-border/30 relative">
-        {[
-          { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
-          { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
-          { id: "rewards"  as const, Icon: Gift,            label: t("mr.dash.tab.rewards") },
-        ].map(({ id, Icon, label }) => {
-          const active = tab === id;
-          return (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`relative px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors duration-300 ${
-                active ? "text-foreground" : "text-muted-foreground hover:text-foreground/90"
-              }`}
-            >
-              {active && (
-                <motion.div
-                  layoutId="dashTabGlow"
-                  aria-hidden
-                  className="absolute inset-x-2 -bottom-px top-1 rounded-lg bg-gradient-to-t from-amber-400/10 to-transparent pointer-events-none"
-                  transition={{ type: "spring", stiffness: 280, damping: 26 }}
-                />
-              )}
-              <Icon className={`relative h-3.5 w-3.5 transition-colors ${active ? "text-amber-400" : ""}`} />
-              <span className="relative">{label}</span>
-              {active && (
-                <motion.div
-                  layoutId="dashTab"
-                  className="absolute bottom-[-1px] left-2 right-2 h-[2px] rounded-full bg-gradient-to-r from-amber-500/0 via-amber-400 to-amber-500/0 shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-            </button>
-          );
-        })}
+      {/* Segmented tab switcher — rounded container with a single sliding
+          amber pill that `layoutId`s between active tabs. Replaces the old
+          underline look with a more premium "control surface" feel and
+          gives the new 4th tab (benefits) room to breathe. Scroll-x on
+          mobile so 4 tabs + icons never clip on 360 px viewports. */}
+      <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-0.5 min-w-max relative">
+          {[
+            { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
+            { id: "benefits" as const, Icon: Sparkles,        label: t("mr.dash.tab.benefits") },
+            { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
+            { id: "rewards"  as const, Icon: Gift,            label: t("mr.dash.tab.rewards") },
+          ].map(({ id, Icon, label }) => {
+            const active = tab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`relative z-10 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-300 whitespace-nowrap ${
+                  active ? "text-amber-100" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="dashTabPill"
+                    aria-hidden
+                    className="absolute inset-0 rounded-lg bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.35),0_8px_24px_-8px_rgba(251,191,36,0.35)]"
+                    transition={{ type: "spring", stiffness: 340, damping: 32 }}
+                  />
+                )}
+                <Icon className={`relative h-3.5 w-3.5 transition-colors ${active ? "text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" : ""}`} />
+                <span className="relative">{label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Tab panels ── crossfade between panels so the view doesn't snap
@@ -403,6 +404,8 @@ export default function Dashboard() {
         >
           {tab === "overview" ? (
             <OverviewTab address={address} />
+          ) : tab === "benefits" ? (
+            <BenefitsTab ownedNodeId={ownedNodeId} />
           ) : tab === "team" ? (
             <TeamTab address={address} />
           ) : (
@@ -549,6 +552,285 @@ function BenefitRow({
 /* ─────────────────────────────────────────────────────────────────────────
    Overview tab
 ──────────────────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   Benefits spec data — mirrors `artifacts/crypto-analyzer/RUNE节点权益说明.md`.
+   Hardcoded here because the REST overview doesn't carry airdrop batches,
+   tier weights, or feature matrix. If the member doc ever changes, this
+   is the single place to sync.
+──────────────────────────────────────────────────────────────────────────── */
+
+/** Airdrop total 1,000 万枚, released across 4 batches with trigger conditions. */
+const AIRDROP_BATCHES = [
+  { pct: 20, priceAt: 0.028, titleKey: "mr.dash.benefits.ad.b1", trig: "mr.dash.benefits.ad.b1Trig" },
+  { pct: 30, priceAt: 0.070, titleKey: "mr.dash.benefits.ad.b2", trig: "mr.dash.benefits.ad.b2Trig" },
+  { pct: 30, priceAt: 0.175, titleKey: "mr.dash.benefits.ad.b3", trig: "mr.dash.benefits.ad.b3Trig" },
+  { pct: 20, priceAt: 0.350, titleKey: "mr.dash.benefits.ad.b4", trig: "mr.dash.benefits.ad.b4Trig" },
+] as const;
+
+/** Per-tier airdrop allocation — seats × per-seat value in SUB tokens. */
+const AIRDROP_PER_TIER: Record<NodeId, { perSeat: number; total: string }> = {
+  101: { perSeat: 75000, total: "300万" },
+  201: { perSeat: 13500, total: "270万" },
+  301: { perSeat:  5750, total: "230万" },
+  401: { perSeat:  2500, total: "200万" },
+};
+
+/** 六脉常态分红 weight coefficients per tier. */
+const WEIGHT_PER_TIER: Record<NodeId, { coeff: number; share: string }> = {
+  101: { coeff: 2.0, share: "16.7%" },
+  201: { coeff: 1.6, share: "22.2%" },
+  301: { coeff: 1.2, share: "33.3%" },
+  401: { coeff: 1.0, share: "27.8%" },
+};
+
+/** Six revenue streams in the ongoing dividend pool. */
+const SIX_STREAMS = [
+  { key: "qep",    labelKey: "mr.dash.benefits.six.qep"    },
+  { key: "mother", labelKey: "mr.dash.benefits.six.mother" },
+  { key: "sub",    labelKey: "mr.dash.benefits.six.sub"    },
+  { key: "c2c",    labelKey: "mr.dash.benefits.six.c2c"    },
+  { key: "new",    labelKey: "mr.dash.benefits.six.new"    },
+  { key: "pool",   labelKey: "mr.dash.benefits.six.pool"   },
+] as const;
+
+/** Platform-feature matrix. `strategicOnly` = STRATEGIC × 1.5 quota boost. */
+const PLATFORM_FEATURES = [
+  { labelKey: "mr.dash.benefits.feat.promo", all: true, strategicBoost: false },
+  { labelKey: "mr.dash.benefits.feat.api",   all: true, strategicBoost: true  },
+  { labelKey: "mr.dash.benefits.feat.ai",    all: true, strategicBoost: true  },
+  { labelKey: "mr.dash.benefits.feat.pred",  all: true, strategicBoost: true  },
+  { labelKey: "mr.dash.benefits.feat.quant", all: true, strategicBoost: true  },
+  { labelKey: "mr.dash.benefits.feat.pool",  all: false, strategicBoost: false, strategicOnly: true },
+] as const;
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Benefits tab — full member-doc digest for the user's owned tier
+──────────────────────────────────────────────────────────────────────────── */
+function BenefitsTab({ ownedNodeId }: { ownedNodeId: number | undefined }) {
+  const { t } = useLanguage();
+  const { data: overview } = useGetRuneOverview();
+  const { data: configs } = useNodeConfigs();
+
+  if (!ownedNodeId) {
+    return (
+      <Card className="bg-card/70 backdrop-blur border-border">
+        <CardContent className="py-12 text-center text-sm text-muted-foreground">
+          <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-30" />
+          {t("mr.dash.owned.noneYet")}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const meta = NODE_META[ownedNodeId as NodeId];
+  const theme = HERO_THEME[ownedNodeId as NodeId];
+  const def = overview?.nodes?.find((n) => n.level === meta?.level);
+  const cfg = (configs as any)?.find?.((c: { nodeId: bigint }) => Number(c.nodeId) === ownedNodeId);
+  const rateBps = cfg ? Number(cfg.directRate) : undefined;
+  const airdrop = AIRDROP_PER_TIER[ownedNodeId as NodeId];
+  const weight = WEIGHT_PER_TIER[ownedNodeId as NodeId];
+  const isStrategic = ownedNodeId === 101;
+
+  // Derived projections — mirror the formulas in §8 of the spec.
+  const motherPrivatePrice = def?.privatePrice ?? 0;
+  const launchPrice = 0.028;
+  const motherQty = motherPrivatePrice > 0 && def ? def.investment / motherPrivatePrice : 0;
+  const floatingPnl = motherQty * (launchPrice - motherPrivatePrice);
+  const floatingPct = def?.investment ? (floatingPnl / def.investment) * 100 : 0;
+
+  return (
+    <div className="space-y-5">
+      {/* Core benefits strip — four headline numbers from §2 of the spec. */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: EASE }}>
+        <NodeBenefitsCard ownedNodeId={ownedNodeId} />
+      </motion.div>
+
+      {/* Tier overview — private price + mother token qty + launch P&L. */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.04, ease: EASE }}>
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.04),transparent_55%)] pointer-events-none" />
+          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Coins className={`h-4 w-4 ${theme?.accent ?? "text-amber-400"}`} />
+              {t("mr.dash.benefits.tokenTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <BenefitCell label={t("mr.dash.benefits.privatePrice")} value={`$${motherPrivatePrice.toFixed(3)}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
+            <BenefitCell label={t("mr.dash.benefits.motherQty")}    value={motherQty.toLocaleString("en-US", { maximumFractionDigits: 0 })} sub={t("mr.dash.benefits.tokens")} theme={theme} />
+            <BenefitCell label={t("mr.dash.benefits.launchPnl")}    value={`+$${floatingPnl.toLocaleString("en-US", { maximumFractionDigits: 0 })}`} sub={`+${floatingPct.toFixed(1)}%`} theme={theme} highlight />
+            <BenefitCell label={t("mr.dash.benefits.launchPrice")}  value={`$${launchPrice}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Airdrop — 4 batches with trigger conditions. */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.08, ease: EASE }}>
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+          <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
+          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Gift className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+              {t("mr.dash.benefits.airdropTitle")}
+              {airdrop && (
+                <span className="text-[10px] font-mono text-muted-foreground/80 tabular-nums ml-1">
+                  {airdrop.perSeat.toLocaleString("en-US")} SUB / {t("mr.dash.benefits.airdropSeat")}
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 relative z-10 space-y-2">
+            {AIRDROP_BATCHES.map((b, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-lg border border-border/40 bg-card/30 px-3 py-2.5">
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 w-14 shrink-0">{t(b.titleKey)}</span>
+                <span className="text-xl font-bold tabular-nums text-amber-300 w-14 shrink-0">{b.pct}%</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-muted-foreground/85 leading-snug">{t(b.trig)}</p>
+                </div>
+                <span className="text-[11px] font-mono tabular-nums text-emerald-400 shrink-0">${b.priceAt}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Direct commission — tier-specific. */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.12, ease: EASE }}>
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-amber-400" />
+              {t("mr.dash.benefits.commTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+            {([401, 301, 201, 101] as NodeId[]).map((id) => {
+              const m = NODE_META[id];
+              const th = HERO_THEME[id];
+              const pct = id === 401 ? 5 : id === 301 ? 8 : id === 201 ? 10 : 15;
+              const isSelf = id === ownedNodeId;
+              return (
+                <div
+                  key={id}
+                  className={`rounded-lg border p-3 ${isSelf ? `${th.ring} bg-gradient-to-br ${th.from} ${th.to}` : "border-border/40 bg-card/30"}`}
+                >
+                  <div className={`text-[10px] font-mono uppercase tracking-[0.2em] ${m.color}`}>{m.nameEn}</div>
+                  <div className="text-xs font-semibold text-foreground/90 mt-0.5">{m.nameCn}</div>
+                  <div className={`num text-xl font-bold mt-2 tabular-nums ${th.accentBright}`}>{pct}%</div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Strategic-only pool. */}
+      {isStrategic && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.16, ease: EASE }}>
+          <Card className="surface-3d surface-3d-tinted relative overflow-hidden bg-gradient-to-br from-purple-950/60 to-slate-950/95 border-purple-500/40" style={{ ["--tier-rgb" as string]: "192, 132, 252" }}>
+            <div className="absolute -top-12 -right-10 w-48 h-48 rounded-full bg-gradient-to-br from-purple-500/20 via-purple-700/5 to-transparent blur-3xl pointer-events-none" />
+            <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.7)]" />
+                {t("mr.dash.benefits.poolTitle")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 relative z-10 space-y-2 text-sm">
+              <p className="text-foreground/90">{t("mr.dash.benefits.poolDesc")}</p>
+              <ul className="space-y-1.5 pt-1">
+                <li className="flex items-start gap-2 text-xs text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond1")}</li>
+                <li className="flex items-start gap-2 text-xs text-foreground/85"><span className="text-purple-300 mt-0.5">✦</span>{t("mr.dash.benefits.poolCond2")}</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* 六脉分红 — six streams + tier weight. */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2, ease: EASE }}>
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+          <CardHeader className="pb-3 border-b border-border/40 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+              {t("mr.dash.benefits.sixTitle")}
+            </CardTitle>
+            {weight && (
+              <div className="text-right shrink-0">
+                <div className={`text-xl font-bold tabular-nums ${theme?.accentBright ?? "text-amber-200"}`}>{weight.coeff.toFixed(1)}×</div>
+                <div className="text-[10px] text-muted-foreground/80">{t("mr.dash.benefits.yourShare")} · {weight.share}</div>
+              </div>
+            )}
+          </CardHeader>
+          <CardContent className="pt-4 relative z-10 space-y-1.5">
+            {SIX_STREAMS.map((s, i) => (
+              <div key={s.key} className="flex items-start gap-3 rounded-lg border border-border/40 bg-card/30 px-3 py-2">
+                <span className="text-[10px] font-mono text-amber-400 w-5 shrink-0 mt-0.5">{i + 1}</span>
+                <p className="text-xs text-foreground/85 leading-snug">{t(s.labelKey)}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Platform feature matrix. */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.24, ease: EASE }}>
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4 text-amber-400" />
+              {t("mr.dash.benefits.featTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 relative z-10 space-y-1.5">
+            {PLATFORM_FEATURES.map((f) => {
+              const available = f.all || (isStrategic && (f as any).strategicOnly);
+              const boosted = f.strategicBoost && isStrategic;
+              return (
+                <div key={f.labelKey} className="flex items-center gap-3 rounded-lg border border-border/40 bg-card/30 px-3 py-2">
+                  <span className={`text-sm shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/50"}`}>
+                    {available ? "✓" : "—"}
+                  </span>
+                  <p className="text-xs text-foreground/90 flex-1 min-w-0">{t(f.labelKey)}</p>
+                  {boosted && (
+                    <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-purple-300 shrink-0">×1.5</span>
+                  )}
+                </div>
+              );
+            })}
+            {!isStrategic && (
+              <p className="text-[10px] text-muted-foreground/70 text-center pt-2">
+                {t("mr.dash.benefits.featStrategicNote")}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <p className="text-[10px] text-muted-foreground/65 text-center pt-2">
+        {t("mr.dash.benefits.footer")}
+      </p>
+    </div>
+  );
+}
+
+/** Small numeric cell for the Benefits tab — mirrors NodeBenefitsCard's
+ *  BenefitRow styling but without the icon slot. */
+function BenefitCell({
+  label, value, sub, theme, highlight = false,
+}: {
+  label: string; value: string; sub?: string;
+  theme?: typeof HERO_THEME[NodeId];
+  highlight?: boolean;
+}) {
+  return (
+    <div className="rounded-lg border border-border/30 bg-card/30 p-3">
+      <div className="text-[10px] uppercase tracking-widest text-muted-foreground/80 mb-1.5">{label}</div>
+      <div className={`text-xl font-bold tabular-nums ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground/65 mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
 function OverviewTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { data: usdtRaw } = useUsdtBalance(address);
@@ -582,18 +864,9 @@ function OverviewTab({ address }: { address: string }) {
         <Kpi icon={TrendingUp}  label={t("mr.dash.kpi.teamInvested")}    value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"}  sub={t("mr.dash.kpi.allTime")}       delay={0.14} highlight />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Node benefits — the tier + price is already on the hero banner,
-            so this card surfaces the actual privileges the user unlocked
-            by holding the node: daily USDT payout, 180-day total, sub-token
-            airdrop per seat, and the direct-commission rate they earn when
-            a downline buys. */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.18, ease: EASE }}>
-          <NodeBenefitsCard ownedNodeId={nodeId} />
-        </motion.div>
-
-        {/* Referral link — layered bevel card so it reads as the
-            companion panel to the benefits card rather than a plain sheet. */}
+      {/* Overview keeps only the referral panel + KPI strip; the full
+          node-benefits breakdown lives in its own tab now. */}
+      <div className="grid grid-cols-1 gap-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.22, ease: EASE }}>
           <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/90 border-amber-500/20">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/15 via-amber-700/5 to-transparent blur-3xl pointer-events-none" />
@@ -694,16 +967,14 @@ function TeamTab({ address }: { address: string }) {
   return (
     <div className="space-y-5">
       {/* Root stats — always reflect the connected wallet, never the current
-          drill-down focus. The node contract only pays direct-referrer
-          commission on-chain (team rank bonus isn't a node-contract
-          feature), so the strip is five cards: two headcounts, two
-          volume figures, and the single direct-commission total. */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+          drill-down focus. Team tab focuses on team SHAPE — headcount
+          and umbrella volume. Commission stats live on the Rewards tab
+          where they belong. */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Kpi icon={Users}       label={t("mr.dash.team.direct")}            value={rootStats ? String(rootStats.directCount) : "…"}                          sub={t("mr.dash.team.firstLayer")} delay={0.02} />
         <Kpi icon={Users}       label={t("mr.dash.team.total")}             value={rootStats ? String(rootStats.totalDownstreamCount) : "…"}                 sub={t("mr.dash.team.recursive")}  delay={0.06} />
         <Kpi icon={Coins}       label={t("mr.dash.team.directInvested")}    value={rootStats ? `$${fmtUsdt(rootStats.directTotalInvested, 0)}` : "…"}        sub="USDT" delay={0.10} />
-        <Kpi icon={TrendingUp}  label={t("mr.dash.team.teamInvested")}      value={rootStats ? `$${fmtUsdt(rootStats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" delay={0.14} />
-        <Kpi icon={Gift}        label={t("mr.dash.team.directCommission")}  value={rootStats ? `$${fmtUsdt(rootStats.directCommission, 2)}` : "…"}           sub="USDT" delay={0.18} highlight />
+        <Kpi icon={TrendingUp}  label={t("mr.dash.team.teamInvested")}      value={rootStats ? `$${fmtUsdt(rootStats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" delay={0.14} highlight />
       </div>
 
       {/* Tier composition — 4 tier bars, toggleable between the user's
