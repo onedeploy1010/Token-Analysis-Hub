@@ -43,6 +43,23 @@ function checksum(a: string | undefined): string {
   }
 }
 
+/** Inline BSC mark — four yellow diamonds in the official layout. Tiny
+ *  stylised version that reads cleanly at 14-16 px next to the chain
+ *  name. Kept local since `lucide-react` doesn't ship a BSC icon and
+ *  we only need the one. */
+function BscLogo({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="#F3BA2F" aria-hidden className={className}>
+      <path d="M12 2l2.4 2.4-2.4 2.4-2.4-2.4L12 2z" />
+      <path d="M6.8 7.2l2.4 2.4-2.4 2.4-2.4-2.4 2.4-2.4z" />
+      <path d="M17.2 7.2l2.4 2.4-2.4 2.4-2.4-2.4 2.4-2.4z" />
+      <path d="M12 12.4l2.4 2.4L12 17.2l-2.4-2.4L12 12.4z" />
+      <path d="M12 19.6l2.4 2.4-2.4 2.4V19.6z" opacity="0" />
+      <path d="M9.2 12.4l2.8 2.8-2.8 2.8-2.8-2.8 2.8-2.8z" opacity="0" />
+    </svg>
+  );
+}
+
 /** Short-hand 0xC8D0…F7eC formatter for dense rows. */
 const short = (a: string | undefined) => {
   if (!a) return "—";
@@ -319,12 +336,16 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.22, ease: EASE }}
-              className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1"
+              className="text-xs text-muted-foreground flex items-center gap-2 pt-1 min-w-0"
             >
               <Wallet className="h-3.5 w-3.5 shrink-0" />
-              <CopyableAddress address={address} />
-              <span className="opacity-40">·</span>
-              <span>{runeChain.name}</span>
+              {/* `short` mode so the full 42-char address never wraps the
+                  hero on mobile; the copy icon still writes the full
+                  checksum value to the clipboard. */}
+              <CopyableAddress address={address} short />
+              <span className="opacity-50 shrink-0">·</span>
+              <BscLogo className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{runeChain.name}</span>
             </motion.div>
           </div>
 
@@ -580,14 +601,16 @@ const WEIGHT_PER_TIER: Record<NodeId, { coeff: number; share: string }> = {
   401: { coeff: 1.0, share: "27.8%" },
 };
 
-/** Six revenue streams in the ongoing dividend pool. */
+/** Six revenue streams in the ongoing dividend pool. Split each row into
+ *  a short heading + a dense tagline so the grid reads as a badge strip
+ *  instead of a wall of prose. */
 const SIX_STREAMS = [
-  { key: "qep",    labelKey: "mr.dash.benefits.six.qep"    },
-  { key: "mother", labelKey: "mr.dash.benefits.six.mother" },
-  { key: "sub",    labelKey: "mr.dash.benefits.six.sub"    },
-  { key: "c2c",    labelKey: "mr.dash.benefits.six.c2c"    },
-  { key: "new",    labelKey: "mr.dash.benefits.six.new"    },
-  { key: "pool",   labelKey: "mr.dash.benefits.six.pool"   },
+  { key: "qep",    shortKey: "mr.dash.benefits.six.qepShort",    tagKey: "mr.dash.benefits.six.qepTag"    },
+  { key: "mother", shortKey: "mr.dash.benefits.six.motherShort", tagKey: "mr.dash.benefits.six.motherTag" },
+  { key: "sub",    shortKey: "mr.dash.benefits.six.subShort",    tagKey: "mr.dash.benefits.six.subTag"    },
+  { key: "c2c",    shortKey: "mr.dash.benefits.six.c2cShort",    tagKey: "mr.dash.benefits.six.c2cTag"    },
+  { key: "new",    shortKey: "mr.dash.benefits.six.newShort",    tagKey: "mr.dash.benefits.six.newTag"    },
+  { key: "pool",   shortKey: "mr.dash.benefits.six.poolShort",   tagKey: "mr.dash.benefits.six.poolTag"   },
 ] as const;
 
 /** Platform-feature matrix. `strategicOnly` = STRATEGIC × 1.5 quota boost. */
@@ -657,17 +680,27 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
           <BenefitCell label={t("mr.dash.benefits.weightCoeff")} value={weight ? `${weight.coeff.toFixed(1)}×` : "—"} sub={weight ? `${t("mr.dash.benefits.yourShare")} · ${weight.share}` : undefined} theme={theme} />
           <BenefitCell label={t("mr.dash.owned.rate")}     value={rateBps !== undefined ? `${(rateBps / 100).toFixed(rateBps % 100 === 0 ? 0 : 1)}%` : "—"} sub={t("mr.dash.owned.rateSub")} theme={theme} highlight />
         </div>
-        {/* 六脉 explanatory list — collapsed visual, 2-column on desktop */}
+        {/* 六脉 at a glance — two-line badges (short name + tagline) in
+            a 3-col grid so the six streams read as a compact legend
+            instead of a wall of prose. */}
         <div className="mt-4 pt-4 border-t border-border/25">
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.sixTitle")}</div>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {SIX_STREAMS.map((s, i) => (
-              <li key={s.key} className="flex items-start gap-2 text-[11px] text-foreground/85 leading-snug">
-                <span className="text-amber-400/80 font-mono shrink-0 w-3">{i + 1}</span>
-                <span>{t(s.labelKey)}</span>
-              </li>
+              <div
+                key={s.key}
+                className="flex items-center gap-2 rounded-md border border-border/30 bg-card/30 px-2 py-1.5"
+              >
+                <span className="shrink-0 h-5 w-5 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[10px] font-mono text-amber-300 tabular-nums">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 leading-tight">
+                  <div className="text-[11px] font-semibold text-foreground/90 truncate">{t(s.shortKey)}</div>
+                  <div className="text-[10px] text-muted-foreground/75 truncate">{t(s.tagKey)}</div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </BenefitGroup>
 
