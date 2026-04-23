@@ -663,12 +663,10 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
   const weight = WEIGHT_PER_TIER[ownedNodeId as NodeId];
   const isStrategic = ownedNodeId === 101;
 
-  // §8 formulas — mother-token economics.
-  const motherPrivatePrice = def?.privatePrice ?? 0;
-  const launchPrice = 0.028;
-  const motherQty = motherPrivatePrice > 0 && def ? def.investment / motherPrivatePrice : 0;
-  const floatingPnl = motherQty * (launchPrice - motherPrivatePrice);
-  const floatingPct = def?.investment ? (floatingPnl / def.investment) * 100 : 0;
+  // Daily USDT dividend proxy from the REST overview (0.468%/day roughly
+  // tracks the QEP monthly target). The 2026 spec replaces the old
+  // private-price / instant-P&L model with a pure airdrop, so the
+  // mother-token purchase calcs were removed.
   const daily = def?.dailyUsdt ?? 0;
   const dailyRatePct = def?.investment ? (daily / def.investment) * 100 : 0;
 
@@ -707,23 +705,18 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
         </div>
       </BenefitGroup>
 
-      {/* ── 2. 母币 ── mother token economics */}
-      <BenefitGroup icon={Coins} title={t("mr.dash.benefits.groupMother")} subtitle="MOTHER TOKEN" delay={0.04}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          <BenefitCell label={t("mr.dash.benefits.privatePrice")} value={`$${motherPrivatePrice.toFixed(3)}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
-          <BenefitCell label={t("mr.dash.benefits.motherQty")}    value={motherQty.toLocaleString("en-US", { maximumFractionDigits: 0 })} sub={t("mr.dash.benefits.tokens")} theme={theme} />
-          <BenefitCell label={t("mr.dash.benefits.launchPnl")}    value={`+$${floatingPnl.toLocaleString("en-US", { maximumFractionDigits: 0 })}`} sub={`+${floatingPct.toFixed(1)}%`} theme={theme} highlight />
-          <BenefitCell label={t("mr.dash.benefits.launchPrice")}  value={`$${launchPrice}`} sub={t("mr.dash.benefits.perToken")} theme={theme} />
-        </div>
-      </BenefitGroup>
-
-      {/* ── 3. 子币 ── airdrop total + 4 unlock batches */}
+      {/* ── 2. 母币空投 ── per-tier airdrop quantity + 4-stage unlock.
+             The old member doc modelled the mother token as a private-
+             purchase at a discount ($0.024 etc.), but the 2026 spec
+             distributes it entirely via this staged airdrop (2500 /
+             5750 / 16200 / 75000 per seat). We keep one group instead
+             of the old "mother vs sub" split. */}
       <BenefitGroup
         icon={Gift}
-        title={t("mr.dash.benefits.groupSub")}
-        subtitle="SUB-TOKEN · AIRDROP"
-        rightTag={airdrop ? `${airdrop.perSeat.toLocaleString("en-US")} SUB / ${t("mr.dash.benefits.airdropSeat")}` : undefined}
-        delay={0.08}
+        title={t("mr.dash.benefits.groupMother")}
+        subtitle="MOTHER TOKEN · AIRDROP"
+        rightTag={airdrop ? `${airdrop.perSeat.toLocaleString("en-US")} / ${t("mr.dash.benefits.airdropSeat")}` : undefined}
+        delay={0.04}
       >
         <div className="space-y-1.5">
           {AIRDROP_BATCHES.map((b, i) => (
