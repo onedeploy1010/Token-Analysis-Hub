@@ -694,15 +694,16 @@ function TeamTab({ address }: { address: string }) {
   return (
     <div className="space-y-5">
       {/* Root stats — always reflect the connected wallet, never the current
-          drill-down focus. 6 cards keep the overview consistent when the
-          user descends into someone else's team. */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          drill-down focus. The node contract only pays direct-referrer
+          commission on-chain (team rank bonus isn't a node-contract
+          feature), so the strip is five cards: two headcounts, two
+          volume figures, and the single direct-commission total. */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
         <Kpi icon={Users}       label={t("mr.dash.team.direct")}            value={rootStats ? String(rootStats.directCount) : "…"}                          sub={t("mr.dash.team.firstLayer")} delay={0.02} />
         <Kpi icon={Users}       label={t("mr.dash.team.total")}             value={rootStats ? String(rootStats.totalDownstreamCount) : "…"}                 sub={t("mr.dash.team.recursive")}  delay={0.06} />
         <Kpi icon={Coins}       label={t("mr.dash.team.directInvested")}    value={rootStats ? `$${fmtUsdt(rootStats.directTotalInvested, 0)}` : "…"}        sub="USDT" delay={0.10} />
         <Kpi icon={TrendingUp}  label={t("mr.dash.team.teamInvested")}      value={rootStats ? `$${fmtUsdt(rootStats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" delay={0.14} />
         <Kpi icon={Gift}        label={t("mr.dash.team.directCommission")}  value={rootStats ? `$${fmtUsdt(rootStats.directCommission, 2)}` : "…"}           sub="USDT" delay={0.18} highlight />
-        <Kpi icon={Sparkles}    label={t("mr.dash.team.teamCommission")}    value={rootStats ? `$${fmtUsdt(rootStats.teamCommission, 2)}` : "…"}             sub="USDT" delay={0.22} highlight />
       </div>
 
       <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
