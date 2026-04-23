@@ -105,10 +105,10 @@ const FAQ_ITEMS = [
 ];
 
 const STEPS = [
-  { en: "Choose Tier",      zh: "选择节点等级",  descEn: "Select the node tier that matches your investment capacity", descZh: "根据投资规模选择最适合您的节点等级" },
-  { en: "Complete KYC",     zh: "完成 KYC 认证", descEn: "Submit identity documents and pass compliance review",      descZh: "提交身份信息，通过合规审核" },
-  { en: "Transfer Funds",   zh: "划转募集资金",  descEn: "Transfer USDT to the node contract address",                descZh: "将 USDT 划转至节点合约地址" },
-  { en: "Activate Node",    zh: "激活节点权柄",  descEn: "Node activates immediately after contract confirmation",   descZh: "合约确认后节点立即激活，开始产生收益" },
+  { en: "Connect Wallet",   zh: "连接钱包",      descEn: "Connect a Web3 wallet (MetaMask, TokenPocket, Trust, OKX…)",   descZh: "连接 Web3 钱包（MetaMask、TokenPocket、Trust、OKX 等）" },
+  { en: "Bind Referrer",    zh: "绑定推荐关系",  descEn: "Submit the on-chain bind-referrer transaction once per wallet", descZh: "每个钱包提交一次链上绑定推荐人交易" },
+  { en: "Choose Node",      zh: "选择节点",      descEn: "Pick the tier that matches your stake — L1 to L4",              descZh: "按投资规模选择节点等级（L1–L4）" },
+  { en: "Pay & Activate",   zh: "支付激活",      descEn: "Approve USDT and pay; the node activates on contract confirm",  descZh: "授权并支付 USDT，合约确认后节点即时激活" },
 ];
 
 function fmt(n: number) {
@@ -386,63 +386,9 @@ export default function Recruit() {
         </div>
       </section>
 
-      {/* ── Why RUNE ── */}
-      <section>
-        <div className="flex items-center gap-2 mb-6">
-          <div className="h-px flex-1 bg-border/30" />
-          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
-            {showZh ? "为什么选择 RUNE · Why RUNE" : "Why RUNE"}
-          </h2>
-          <div className="h-px flex-1 bg-border/30" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {[
-            {
-              icon: TrendingUp,
-              title: "双TOKEN通缩",
-              titleEn: "Dual-Token Deflation",
-              desc: "母TOKEN（RUNE）锚定 TLP 流动池，子TOKEN（SUB）持续燃烧销毁，双重通缩驱动长期价值增长。",
-              descEn: "MOTHER TOKEN (RUNE) anchored to TLP liquidity pool; SUB burned continuously — dual deflation drives long-term value.",
-              accent: "text-amber-400",
-              border: "border-amber-700/30",
-              bg: "from-amber-950/50 to-amber-900/10",
-            },
-            {
-              icon: Zap,
-              title: "六阶价格路线",
-              titleEn: "Six-Stage Price Roadmap",
-              desc: "从私募价 $0.016 到开盘价 $0.028，再到 $0.5 长期目标，六阶定价路线清晰可追踪。",
-              descEn: "From private price $0.016 to opening $0.028, targeting $0.5 long-term — six clearly defined pricing stages.",
-              accent: "text-blue-400",
-              border: "border-blue-700/30",
-              bg: "from-blue-950/50 to-blue-900/10",
-            },
-            {
-              icon: Shield,
-              title: "生态激励",
-              titleEn: "Ecosystem Incentives",
-              desc: "节点持有者优先获得治理投票权、子TOKEN空投、新项目白名单及 OTC 渠道等多重生态权益。",
-              descEn: "Node holders get priority governance rights, sub-token airdrops, whitelist access, and OTC channel benefits.",
-              accent: "text-green-400",
-              border: "border-green-700/30",
-              bg: "from-green-950/50 to-green-900/10",
-            },
-          ].map(({ icon: Icon, title, titleEn, desc, descEn, accent, border, bg }) => (
-            <div key={titleEn} className={`rounded-2xl border ${border} bg-gradient-to-b ${bg} p-6 space-y-3`}>
-              <div className={`flex items-center gap-2 ${accent}`}>
-                <Icon className="h-5 w-5" />
-                <span className="font-bold text-base text-foreground">{showZh ? title : titleEn}</span>
-              </div>
-              {showZh && <p className={`text-xs font-mono uppercase tracking-widest ${accent} opacity-70`}>{titleEn}</p>}
-              <p className="text-sm text-muted-foreground/80 leading-relaxed">{showZh ? desc : descEn}</p>
-              {showZh && <p className="text-[11px] text-muted-foreground/40 leading-relaxed">{descEn}</p>}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Genesis (创世) tier — L5, condition-triggered ── */}
+      {/* ── Genesis (创世) tier — L5, condition-triggered.
+             Surfaced above "Why RUNE" so visitors see the aspirational
+             L5 path before the generic value props. */}
       <section>
         <div className="flex items-center gap-2 mb-6">
           <div className="h-px flex-1 bg-border/30" />
@@ -500,6 +446,62 @@ export default function Recruit() {
               </span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Why RUNE ── */}
+      <section>
+        <div className="flex items-center gap-2 mb-6">
+          <div className="h-px flex-1 bg-border/30" />
+          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
+            {showZh ? "为什么选择 RUNE · Why RUNE" : "Why RUNE"}
+          </h2>
+          <div className="h-px flex-1 bg-border/30" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            {
+              icon: TrendingUp,
+              title: "双TOKEN通缩",
+              titleEn: "Dual-Token Deflation",
+              desc: "母TOKEN（RUNE）锚定 TLP 流动池，子TOKEN（SUB）持续燃烧销毁，双重通缩驱动长期价值增长。",
+              descEn: "MOTHER TOKEN (RUNE) anchored to TLP liquidity pool; SUB burned continuously — dual deflation drives long-term value.",
+              accent: "text-amber-400",
+              border: "border-amber-700/30",
+              bg: "from-amber-950/50 to-amber-900/10",
+            },
+            {
+              icon: Zap,
+              title: "六阶价格路线",
+              titleEn: "Six-Stage Price Roadmap",
+              desc: "从私募价 $0.016 到开盘价 $0.028，再到 $0.5 长期目标，六阶定价路线清晰可追踪。",
+              descEn: "From private price $0.016 to opening $0.028, targeting $0.5 long-term — six clearly defined pricing stages.",
+              accent: "text-blue-400",
+              border: "border-blue-700/30",
+              bg: "from-blue-950/50 to-blue-900/10",
+            },
+            {
+              icon: Shield,
+              title: "生态激励",
+              titleEn: "Ecosystem Incentives",
+              desc: "节点持有者优先获得治理投票权、子TOKEN空投、新项目白名单及 OTC 渠道等多重生态权益。",
+              descEn: "Node holders get priority governance rights, sub-token airdrops, whitelist access, and OTC channel benefits.",
+              accent: "text-green-400",
+              border: "border-green-700/30",
+              bg: "from-green-950/50 to-green-900/10",
+            },
+          ].map(({ icon: Icon, title, titleEn, desc, descEn, accent, border, bg }) => (
+            <div key={titleEn} className={`rounded-2xl border ${border} bg-gradient-to-b ${bg} p-6 space-y-3`}>
+              <div className={`flex items-center gap-2 ${accent}`}>
+                <Icon className="h-5 w-5" />
+                <span className="font-bold text-base text-foreground">{showZh ? title : titleEn}</span>
+              </div>
+              {showZh && <p className={`text-xs font-mono uppercase tracking-widest ${accent} opacity-70`}>{titleEn}</p>}
+              <p className="text-sm text-muted-foreground/80 leading-relaxed">{showZh ? desc : descEn}</p>
+              {showZh && <p className="text-[11px] text-muted-foreground/40 leading-relaxed">{descEn}</p>}
+            </div>
+          ))}
         </div>
       </section>
 
