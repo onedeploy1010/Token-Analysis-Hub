@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useUsdtBalance } from "@/hooks/rune/use-usdt";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { useUserPurchase } from "@/hooks/rune/use-node-presell";
+import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 import { useTeam, usePersonalStats, type ReferrerRow } from "@/hooks/rune/use-team";
 import { NODE_META, type NodeId, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
 import { runeChain } from "@/lib/thirdweb/chains";
@@ -47,13 +48,20 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<Tab>("overview");
 
-  // Disconnect → kick back to /recruit immediately. useEffect avoids
-  // navigating during render which React doesn't like.
+  // Dashboard is gated on hasPurchased. If the connected wallet hasn't
+  // bought a node yet we bounce back to /recruit and fire the purchase
+  // signal so RuneOnboarding re-opens the purchase modal. Disconnect
+  // does the same — the dashboard is never shown with no address.
+  const { hasPurchased, isLoading: purchaseLoading } = useUserPurchase(address);
   useEffect(() => {
-    if (!address) navigate("/recruit");
-  }, [address, navigate]);
+    if (!address) { navigate("/recruit"); return; }
+    if (!purchaseLoading && !hasPurchased) {
+      navigate("/recruit");
+      emitOpenPurchase();
+    }
+  }, [address, hasPurchased, purchaseLoading, navigate]);
 
-  if (!address) return null;
+  if (!address || !hasPurchased) return null;
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">

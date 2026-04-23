@@ -1,25 +1,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronDown, ChevronUp, Zap, Shield, TrendingUp, Wallet,
+  ChevronDown, ChevronUp, Zap, Shield, TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRuneOverview } from "@workspace/api-client-react";
-import type { RuneNodeDefinition } from "@workspace/api-client-react";
 import { useShowZh } from "@/contexts/language-context";
 import { useActiveAccount } from "thirdweb/react";
-import { useNodeConfigs } from "@/hooks/rune/use-node-presell";
+import { useNodeConfigs, useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { type NodeId } from "@/lib/thirdweb/contracts";
 import { useReferrerOf } from "@/hooks/rune/use-community";
+import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 
 /** Map the REST response's tier key to the on-chain nodeId. */
 const LEVEL_TO_NODE_ID: Record<string, NodeId> = {
@@ -122,76 +115,6 @@ function fmt(n: number) {
   return n.toLocaleString("en-US");
 }
 
-// ─── Purchase dialog ──────────────────────────────────────────────────────────
-function PurchaseDialog({ node, open, onClose }: { node: RuneNodeDefinition | null; open: boolean; onClose: () => void }) {
-  const showZh = useShowZh();
-  if (!node) return null;
-  const accent = NODE_ACCENT[node.level];
-  const badgeCls = NODE_BADGE[node.level];
-  return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="bg-[#080f1e] border border-border/40 max-w-md w-full">
-        <DialogHeader>
-          <div className="flex items-center gap-3 mb-1">
-            <span className={`text-xs font-mono uppercase tracking-widest border rounded px-2 py-0.5 ${badgeCls}`}>
-              {showZh ? `${node.nameCn} · ${node.nameEn}` : node.nameEn}
-            </span>
-          </div>
-          <DialogTitle className="text-xl font-bold text-foreground">
-            {showZh ? "购买节点 · Purchase Node" : "Purchase Node"}
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground text-sm">
-            {showZh ? "以下为所选节点详情，确认后可触发合约完成购买。" : "Review the selected node configuration. Confirming will trigger the purchase contract."}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-3 mt-2">
-          <div className="rounded-xl border border-border/30 bg-card/30 p-4 space-y-3">
-            {[
-              { labelZh: "节点名称",       labelEn: "Node",             value: showZh ? `${node.nameCn} ${node.nameEn}` : node.nameEn },
-              { labelZh: "投资门槛",       labelEn: "Investment",       value: `$${fmt(node.investment)} USDT`, highlight: true },
-              { labelZh: "私募价格",       labelEn: "Private Price",    value: `$${node.privatePrice.toFixed(3)}` },
-              { labelZh: "每日收益",       labelEn: "Daily USDT",       value: `$${node.dailyUsdt} USDT`, highlight: true },
-              { labelZh: "子TOKEN空投",    labelEn: "Airdrop",          value: `${fmt(node.airdropPerSeat)} SUB` },
-              { labelZh: "180日USDT总收益", labelEn: "180-Day Income",  value: `$${fmt(node.dailyUsdt * 180)} USDT` },
-            ].map(({ labelZh, labelEn, value, highlight }) => (
-              <div key={labelEn} className="flex items-center justify-between gap-2">
-                <span className="text-xs text-muted-foreground/70 shrink-0">{showZh ? `${labelZh} / ${labelEn}` : labelEn}</span>
-                <span className={`text-sm font-semibold text-right ${highlight ? accent : "text-foreground"}`}>{value}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 px-4 py-3 flex items-start gap-3">
-            <Shield className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-200/80 leading-relaxed">
-              {showZh && <>
-                <span className="font-semibold text-amber-300">功能暂未开放，敬请期待</span>
-                <br />
-                合约购买通道正在审计中，预计主网上线后开放。
-                <br className="hidden sm:block" />
-              </>}
-              <span className={showZh ? "text-amber-200/50" : ""}>Contract purchase channel is under audit. Available after mainnet launch.</span>
-            </p>
-          </div>
-
-          <Button
-            disabled
-            className="w-full h-11 font-semibold text-sm gap-2 opacity-50 cursor-not-allowed"
-          >
-            <Wallet className="h-4 w-4" />
-            {showZh ? "连接钱包 / 触发合约" : "Connect Wallet / Trigger Contract"}
-          </Button>
-
-          <p className="text-center text-[11px] text-muted-foreground/40">
-            {showZh ? "当前阶段仅展示节点参数 · Contract integration coming soon" : "Contract integration coming soon"}
-          </p>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ─── Node card skeleton ────────────────────────────────────────────────────────
 function NodeCardSkeleton() {
   return (
@@ -228,8 +151,6 @@ function NodeCardSkeleton() {
 export default function Recruit() {
   const showZh = useShowZh();
   const account = useActiveAccount();
-  const [selectedNode, setSelectedNode] = useState<RuneNodeDefinition | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   // REST overview still supplies the marketing-style metadata (tier English
@@ -248,16 +169,9 @@ export default function Recruit() {
   );
 
   const { isBound, referrer, isRoot } = useReferrerOf(account?.address);
+  const { hasPurchased } = useUserPurchase(account?.address);
 
   const nodes = overview?.nodes ?? [];
-
-  // Legacy "Buy Node" handler — kept only so the existing educational dialog
-  // still opens for un-connected users. The real purchase flow is driven by
-  // <RuneOnboarding/> below once the wallet is connected.
-  function handleBuy(node: RuneNodeDefinition) {
-    setSelectedNode(node);
-    setDialogOpen(true);
-  }
 
   return (
     <div className="container mx-auto px-4 py-10 space-y-14 max-w-6xl">
@@ -438,25 +352,32 @@ export default function Recruit() {
                       </div>
                     </div>
 
-                    {/* Buy CTA — unified with the wallet flow.
-                        Connection lives in the global header, so we never
-                        repeat the Connect button on a node card. When
-                        disconnected, a read-only label nudges users to the
-                        header; when connected, the outline button opens the
-                        per-tier details dialog (RuneOnboarding already drives
-                        the actual purchase modal). */}
-                    {account ? (
-                      <Button
-                        variant="outline"
-                        onClick={() => handleBuy(node)}
-                        className="mt-4 w-full h-9 text-sm font-medium border-amber-700/40 hover:border-amber-500/60 hover:bg-amber-500/5"
-                      >
-                        {showZh ? "查看详情 · Details" : "View Details"}
-                      </Button>
-                    ) : (
+                    {/* Buy CTA — three states tied to the on-chain user state:
+                        1. disconnected → nudge toward the header Connect button
+                        2. connected + already purchased → link to /dashboard
+                           (contract limits each wallet to one purchase)
+                        3. connected + not purchased → fire the re-open signal;
+                           RuneOnboarding shows the Bind modal first if the
+                           user still hasn't bound a referrer, then Purchase. */}
+                    {!account ? (
                       <div className="mt-4 h-9 rounded-lg border border-dashed border-amber-700/30 bg-amber-950/10 flex items-center justify-center text-[11px] text-amber-200/70">
                         {showZh ? "连接钱包后可购买" : "Connect wallet to purchase"}
                       </div>
+                    ) : hasPurchased ? (
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="mt-4 w-full h-9 text-sm font-medium border-emerald-700/40 hover:border-emerald-500/60 hover:bg-emerald-500/5 text-emerald-200"
+                      >
+                        <a href="/dashboard">{showZh ? "已购买 · 查看面板" : "Purchased · Open Dashboard"}</a>
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => emitOpenPurchase()}
+                        className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[node.level]}`}
+                      >
+                        {showZh ? "立即购买 · Buy Now" : "Buy Now"}
+                      </Button>
                     )}
                   </motion.div>
                 );
@@ -615,13 +536,6 @@ export default function Recruit() {
           })}
         </div>
       </section>
-
-      {/* Purchase dialog */}
-      <PurchaseDialog
-        node={selectedNode}
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
     </div>
   );
 }

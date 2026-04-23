@@ -7,6 +7,8 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/contexts/language-context";
 import { WalletConnectButton } from "@/components/rune/wallet-connect-button";
 import { useActiveAccount } from "thirdweb/react";
+import { useUserPurchase } from "@/hooks/rune/use-node-presell";
+import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -165,10 +167,11 @@ function WordmarkRune({ small = false }: { small?: boolean }) {
 
 
 function Navbar() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { t, language } = useLanguage();
   const activeAccount = useActiveAccount();
+  const { hasPurchased } = useUserPurchase(activeAccount?.address);
 
   const isEn = language === "en";
 
@@ -177,6 +180,18 @@ function Navbar() {
   const visibleNavItems = activeAccount
     ? [...NAV_ITEMS, { href: "/dashboard", label: "DASHBOARD", key: "dashboard", icon: LayoutDashboard }]
     : NAV_ITEMS;
+
+  /** Clicking "Dashboard" when the wallet hasn't purchased a node falls
+   *  through to the purchase modal instead of navigating — dashboard
+   *  access is gated on hasPurchased. */
+  function handleNavClick(e: React.MouseEvent, key: string) {
+    if (key === "dashboard" && !hasPurchased) {
+      e.preventDefault();
+      setMenuOpen(false);
+      navigate("/recruit");
+      emitOpenPurchase();
+    }
+  }
 
   return (
     <>
@@ -247,6 +262,7 @@ function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => handleNavClick(e, item.key)}
                   className={cn(
                     "relative flex flex-col items-center justify-center px-4 lg:px-5 transition-all duration-200 group border-b-2",
                     isActive
@@ -355,7 +371,7 @@ function Navbar() {
                     >
                       <Link
                         href={item.href}
-                        onClick={() => setMenuOpen(false)}
+                        onClick={(e) => { handleNavClick(e, item.key); setMenuOpen(false); }}
                         className={cn(
                           "group flex items-center gap-5 py-5 border-b transition-all",
                           isActive ? "border-primary/30" : "border-border/20 hover:border-border/40"
