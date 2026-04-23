@@ -595,12 +595,21 @@ const AIRDROP_PER_TIER: Record<NodeId, { perSeat: number; total: string }> = {
   401: { perSeat:  2500, total: "200万" },
 };
 
-/** 六脉常态分红 weight coefficients per tier. */
+/** Six-stream dividend weight coefficients per tier.
+ *
+ *  `share` = (seats × coeff) / totalWeight, where totalWeight is the
+ *  full-network sum across all four tiers at max seat count:
+ *    800×1.0 + 400×1.2 + 200×1.6 + 40×2.0 = 1,680
+ *
+ *  So each tier's aggregate share of the pool (if every seat were sold)
+ *  is:  L1 = 800/1680, L2 = 480/1680, L3 = 320/1680, L4 = 80/1680.
+ *  Earlier figures (27.8 / 33.3 / 22.2 / 16.7) didn't match the
+ *  formula — these do. */
 const WEIGHT_PER_TIER: Record<NodeId, { coeff: number; share: string }> = {
-  101: { coeff: 2.0, share: "16.7%" },
-  201: { coeff: 1.6, share: "22.2%" },
-  301: { coeff: 1.2, share: "33.3%" },
-  401: { coeff: 1.0, share: "27.8%" },
+  101: { coeff: 2.0, share: "4.8%"  },
+  201: { coeff: 1.6, share: "19.0%" },
+  301: { coeff: 1.2, share: "28.6%" },
+  401: { coeff: 1.0, share: "47.6%" },
 };
 
 /** Six revenue streams in the ongoing dividend pool. Split each row into
@@ -703,7 +712,6 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400/90 w-12 shrink-0">{t(b.titleKey)}</span>
                   <span className="text-base font-bold tabular-nums text-amber-300 w-10 shrink-0">{b.pct}%</span>
                   <p className="text-[11px] text-muted-foreground/85 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
-                  <span className="text-[11px] font-mono tabular-nums text-emerald-400 shrink-0">${b.priceAt}</span>
                 </div>
               ))}
             </div>
