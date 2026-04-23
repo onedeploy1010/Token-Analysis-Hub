@@ -6,7 +6,7 @@ import { getAddress } from "thirdweb/utils";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
   TrendingUp, Wallet, Link as LinkIcon, Gift, ChevronRight, Sparkles,
-  Coins, DollarSign, Search, ArrowUp, ArrowDown,
+  Coins, DollarSign, Search, ArrowUp, ArrowDown, Zap,
 } from "lucide-react";
 import {
   ComposedChart, Bar, Line, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -862,6 +862,137 @@ function BenefitGroup({
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Genesis (L5) earnings panel
+
+   Conditionally rendered on the Overview tab once the connected wallet has
+   qualified for Genesis — either direct L4 (符主, nodeId 101) count ≥ 5 or
+   team-wide L4 count ≥ 10. Shows the trigger stat, the user's base node
+   weight (which carries into the Genesis pool allocation), and the
+   reward path (10% of the core incentive pool, weighted by Genesis-peer
+   score). Actual USDT earnings and pool size pull from future indexer
+   fields; while those land we surface a "pending settlement" state so
+   the qualification itself is visible immediately.
+──────────────────────────────────────────────────────────────────────────── */
+const GENESIS_DIRECT_THRESHOLD = 5;
+const GENESIS_TEAM_THRESHOLD = 10;
+const GENESIS_APEX_NODE_ID: NodeId = 101; // 符主 L4
+
+function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; ownedNodeId: number | undefined }) {
+  const { t } = useLanguage();
+  const { data: stats } = usePersonalStats(address);
+
+  // Eligibility comes entirely from the server-computed tier histograms
+  // so we don't redo aggregation client-side.
+  const directL4 = stats?.directByTier?.find((b) => b.nodeId === GENESIS_APEX_NODE_ID)?.count ?? 0;
+  const teamL4   = stats?.teamByTier?.find((b)   => b.nodeId === GENESIS_APEX_NODE_ID)?.count ?? 0;
+  const isGenesis = directL4 >= GENESIS_DIRECT_THRESHOLD || teamL4 >= GENESIS_TEAM_THRESHOLD;
+
+  if (!isGenesis) return null;
+
+  const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
+  const weight = ownedNodeId ? WEIGHT_PER_TIER[ownedNodeId as NodeId] : null;
+  const triggeredBy = directL4 >= GENESIS_DIRECT_THRESHOLD ? "direct" : "team";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: 0.04, ease: EASE }}
+    >
+      <Card className="surface-3d relative overflow-hidden border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/45 via-purple-950/30 to-amber-950/15">
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-fuchsia-500/25 via-purple-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.12),transparent_60%)] pointer-events-none" />
+        <CardHeader className="pb-3 border-b border-fuchsia-500/20 relative z-10">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Zap className="h-4 w-4 text-fuchsia-300 drop-shadow-[0_0_8px_rgba(217,70,239,0.55)]" />
+            <span className="bg-gradient-to-r from-fuchsia-200 via-purple-200 to-amber-200 bg-clip-text text-transparent">
+              {t("mr.dash.genesis.title")}
+            </span>
+            <span className="ml-auto text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-0.5 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 shrink-0">
+              {t("mr.dash.genesis.achievedBadge")}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4 relative z-10">
+          {/* Trigger stats — show both, highlight the one that actually
+              qualified the user. */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <GenesisTriggerCell
+              label={t("mr.dash.genesis.triggerDirect")}
+              value={directL4}
+              target={GENESIS_DIRECT_THRESHOLD}
+              triggered={triggeredBy === "direct"}
+            />
+            <GenesisTriggerCell
+              label={t("mr.dash.genesis.triggerTeam")}
+              value={teamL4}
+              target={GENESIS_TEAM_THRESHOLD}
+              triggered={triggeredBy === "team"}
+            />
+          </div>
+
+          {/* Reward row — core pool share + user's weight */}
+          <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="min-w-0">
+              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300/85 mb-0.5">
+                {t("mr.dash.genesis.rewardTitle")}
+              </div>
+              <div className="text-base font-bold tabular-nums text-amber-200">
+                {t("mr.dash.genesis.rewardValue")}
+              </div>
+            </div>
+            <div className="h-8 w-px bg-amber-500/20 hidden md:block" />
+            <div className="min-w-0">
+              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/75 mb-0.5">
+                {t("mr.dash.genesis.weightLabel")}
+              </div>
+              <div className="text-sm font-semibold text-foreground/95 tabular-nums">
+                {weight ? `${weight.coeff.toFixed(1)}×` : "—"}
+                {meta && <span className="text-xs text-muted-foreground/70 ml-2">{meta.nameCn} · {meta.nameEn}</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* Pending settlement state — the indexer doesn't expose the
+              Genesis total-weight / paid-out balance yet, so mark this
+              explicitly instead of showing a zero that looks like a bug. */}
+          <div className="rounded-md border border-dashed border-fuchsia-500/25 bg-fuchsia-950/10 p-3 text-[11px] text-muted-foreground/85 leading-snug">
+            <span className="text-fuchsia-300/90 font-semibold mr-1">·</span>
+            {t("mr.dash.genesis.pendingNote")}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+function GenesisTriggerCell({
+  label, value, target, triggered,
+}: { label: string; value: number; target: number; triggered: boolean }) {
+  const pct = Math.min(100, Math.round((value / target) * 100));
+  return (
+    <div className={`rounded-lg border p-3 ${triggered ? "border-fuchsia-500/50 bg-fuchsia-950/30" : "border-border/30 bg-card/25"}`}>
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/80 truncate">{label}</span>
+        {triggered && (
+          <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 shrink-0">✓ TRIGGER</span>
+        )}
+      </div>
+      <div className="flex items-baseline gap-1.5 tabular-nums">
+        <span className={`text-2xl font-bold ${triggered ? "text-fuchsia-200" : "text-foreground/90"}`}>{value}</span>
+        <span className="text-xs text-muted-foreground/70">/ {target}</span>
+      </div>
+      <div className="mt-2 h-1 rounded-full bg-black/40 overflow-hidden">
+        <div
+          className={`h-full ${triggered ? "bg-gradient-to-r from-fuchsia-500 to-purple-400" : "bg-muted-foreground/40"}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 /** Small numeric cell used inside BenefitGroup content — same DNA as
  *  NodeBenefitsCard's BenefitRow but borderless/padded for density. */
 function BenefitCell({
@@ -967,12 +1098,19 @@ function OverviewTab({ address }: { address: string }) {
           </Card>
         </motion.div>
 
+        {/* Genesis (L5) earnings panel — only rendered once the viewer
+            has actually qualified (≥5 direct 符主 L4 referrals OR ≥10
+            符主 L4 across the team). Keeps non-qualified users from
+            seeing a mostly-empty panel that implies something they
+            don't yet have. */}
+        <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />
+
         {/* Full benefits digest below the referral panel — the same set
             of cards that used to live in a standalone Benefits tab:
             core card, mother-token P&L, airdrop batches, per-tier
-            commission matrix, strategic-only pool (if eligible), six
-            streams + weight, platform feature matrix. All data is
-            sourced from the member-facing node-benefits spec. */}
+            commission matrix, weight matrix, six streams + weight,
+            platform feature matrix. All data is sourced from the
+            member-facing node-benefits spec. */}
         <BenefitsSection ownedNodeId={nodeId} />
       </div>
     </div>
