@@ -42,10 +42,14 @@ export const NODE_IDS = [101, 201, 301, 401] as const;
 export type NodeId = typeof NODE_IDS[number];
 
 /** Human-friendly meta — backend also owns these labels, duplicated here
- *  only for UI (tier color + display name) not for business logic. */
-export const NODE_META: Record<NodeId, { level: string; nameCn: string; nameEn: string; color: string }> = {
-  101: { level: "guardian",  nameCn: "符主", nameEn: "GUARDIAN",  color: "text-amber-400"  },
-  201: { level: "strategic", nameCn: "符魂", nameEn: "STRATEGIC", color: "text-purple-400" },
-  301: { level: "builder",   nameCn: "符印", nameEn: "BUILDER",   color: "text-green-400"  },
-  401: { level: "pioneer",   nameCn: "符胚", nameEn: "PIONEER",   color: "text-blue-400"   },
+ *  only for UI (tier color + display name) not for business logic.
+ *  `priceUsdt` mirrors the on-chain payAmount in whole USDT — used for
+ *  tree badges that show "held tier + price" at a glance. If the
+ *  contract ever re-tunes prices the source of truth is
+ *  `NodePresell.getNodeConfigs`, so treat this as a display shortcut. */
+export const NODE_META: Record<NodeId, { level: string; nameCn: string; nameEn: string; color: string; priceUsdt: number }> = {
+  101: { level: "guardian",  nameCn: "符主", nameEn: "GUARDIAN",  color: "text-amber-400",  priceUsdt: 50000 },
+  201: { level: "strategic", nameCn: "符魂", nameEn: "STRATEGIC", color: "text-purple-400", priceUsdt: 10000 },
+  301: { level: "builder",   nameCn: "符印", nameEn: "BUILDER",   color: "text-green-400",  priceUsdt:  5000 },
+  401: { level: "pioneer",   nameCn: "符胚", nameEn: "PIONEER",   color: "text-blue-400",   priceUsdt:  2500 },
 };

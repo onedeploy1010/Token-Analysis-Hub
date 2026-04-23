@@ -13,7 +13,7 @@ import { useUsdtBalance } from "@/hooks/rune/use-usdt";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
-import { useTeam, usePersonalStats, useRewards, type ReferrerRow, type RewardRow } from "@/hooks/rune/use-team";
+import { useTeam, usePersonalStats, useRewards, type ReferrerRow, type RewardRow, type PersonalStats } from "@/hooks/rune/use-team";
 import { NODE_META, type NodeId, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
 import { runeChain } from "@/lib/thirdweb/chains";
 import { buildReferralUrl } from "@/hooks/rune/use-referral-param";
@@ -97,6 +97,54 @@ function CopyableAddress({
         {copied ? <CheckCircle2 className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
       </button>
     </span>
+  );
+}
+
+/**
+ * Trio of per-node badges shown inline on every referral-tree row:
+ *
+ *  [tier + price]  [team headcount]  [umbrella volume]
+ *
+ * - Tier + price: from stats.ownedNodeId via NODE_META (hidden if unsold).
+ * - Headcount:    stats.totalDownstreamCount = this user's transitive subtree.
+ * - Umbrella vol: stats.totalDownstreamInvested = sum of every purchase
+ *                 anywhere beneath this user, in whole USDT.
+ *
+ * `accent="amber"` re-skins the strip for the gold self-root row so the
+ * user's own card stays visually distinct from grey downline rows.
+ */
+function TreeNodeBadges({
+  stats,
+  accent,
+}: {
+  stats: PersonalStats | undefined;
+  accent?: "amber";
+}) {
+  const { t } = useLanguage();
+  if (!stats) return null;
+  const meta = stats.ownedNodeId ? NODE_META[stats.ownedNodeId as NodeId] : null;
+  const pillBase = accent === "amber"
+    ? "border-amber-700/40 bg-amber-950/20 text-amber-100"
+    : "border-border/40 bg-card/30 text-foreground/80";
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {meta ? (
+        <span className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] ${pillBase}`} title={`${meta.nameEn} · $${meta.priceUsdt.toLocaleString("en-US")} USDT`}>
+          <span className={meta.color}>{meta.nameCn}</span>
+          <span className="opacity-60">${(meta.priceUsdt / 1000).toFixed(meta.priceUsdt % 1000 ? 1 : 0)}K</span>
+        </span>
+      ) : (
+        <span className={`rounded-md border px-1.5 py-0.5 text-[10px] opacity-50 ${pillBase}`} title={t("mr.dash.team.noNode")}>
+          {t("mr.dash.team.noNode")}
+        </span>
+      )}
+      <span className={`rounded-md border px-1.5 py-0.5 text-[10px] ${pillBase}`} title={t("mr.dash.team.teamCountTip")}>
+        👥 {stats.totalDownstreamCount}
+      </span>
+      <span className={`rounded-md border px-1.5 py-0.5 text-[10px] ${pillBase}`} title={t("mr.dash.team.teamVolumeTip")}>
+        💰 ${fmtUsdt(stats.totalDownstreamInvested, 0)}
+      </span>
+    </div>
   );
 }
 
@@ -334,22 +382,26 @@ function OverviewTab({ address }: { address: string }) {
    Team tab — recursive downstream tree
 ──────────────────────────────────────────────────────────────────────────── */
 
-/** One node in the tree. Children are fetched lazily when expanded. */
+/** One node in the tree. Children are fetched lazily when expanded, and the
+ *  per-node metrics (owned tier, team headcount, umbrella volume) are fetched
+ *  eagerly so each row shows at-a-glance who carries what weight. */
 function TeamNode({ row, depth }: { row: ReferrerRow; depth: number }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const { data: children, isLoading } = useTeam(open ? row.user : undefined);
+  const { data: stats } = usePersonalStats(row.user);
 
   return (
     <div className="relative" style={{ marginLeft: depth === 0 ? 0 : 16 }}>
       <div
-        className={`flex items-center gap-2 py-2 px-3 rounded-lg border transition-colors cursor-pointer ${
+        className={`flex items-center gap-2 py-2 px-3 rounded-lg border transition-colors cursor-pointer flex-wrap ${
           open ? "border-amber-700/40 bg-amber-950/10" : "border-border/40 bg-card/30 hover:border-border/70"
         }`}
         onClick={() => setOpen((v) => !v)}
       >
         <span className={`text-[11px] font-mono transition-transform ${open ? "rotate-90" : ""}`}>▸</span>
         <CopyableAddress address={row.user} short />
+        <TreeNodeBadges stats={stats} />
         <span className="text-[10px] text-muted-foreground ml-auto">
           {new Date(row.boundAt).toLocaleDateString()}
         </span>
@@ -424,6 +476,7 @@ function SelfRootNode({ address, directCount }: { address: string; directCount: 
   const { t } = useLanguage();
   const [open, setOpen] = useState(true); // default open so the first-level is visible
   const { data: children, isLoading } = useTeam(open ? address : undefined);
+  const { data: stats } = usePersonalStats(address);
 
   return (
     <div className="relative">
@@ -436,6 +489,7 @@ function SelfRootNode({ address, directCount }: { address: string; directCount: 
           {t("mr.dash.team.rootSelf")}
         </span>
         <CopyableAddress address={address} short className="!border-amber-700/40 !bg-amber-950/30 !text-amber-100" />
+        <TreeNodeBadges stats={stats} accent="amber" />
         <span className="text-[10px] text-amber-300/60 ml-auto">
           {directCount} {t("mr.dash.team.directShort")}
         </span>
