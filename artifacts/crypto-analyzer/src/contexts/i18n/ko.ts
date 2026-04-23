@@ -535,7 +535,7 @@ const ko: Dict = {
   "mr.dash.team.treeNote": "트리 데이터는 Community 프록시의 EventAddReferrer 이벤트에서 인덱싱됩니다.",
   "mr.bind.step": "1단계 · 추천인 연결",
   "mr.bind.title": "리퍼럴 라인 연결",
-  "mr.bind.desc": "소액의 한 번의 거래로 상위 추천인을 온체인에 기록합니다. 프리세일 계약이 결제를 받기 전에 당신이 속한 라인을 알아야 합니다.",
+  "mr.bind.desc": "가스비를 지불하여 추천인을 온체인에 등록합니다.",
   "mr.bind.addrLabel": "추천인 주소",
   "mr.bind.addrPh": "0x…  또는 ROOT 입력",
   "mr.bind.rootSelected": "ROOT 선택됨",

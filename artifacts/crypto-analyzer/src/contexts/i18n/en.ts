@@ -535,7 +535,7 @@ const en: Dict = {
   "mr.dash.team.treeNote": "Tree data is indexed from EventAddReferrer on the Community proxy.",
   "mr.bind.step": "Step 1 · Bind Referrer",
   "mr.bind.title": "Connect your referral line",
-  "mr.bind.desc": "One small transaction locks your upstream referrer on-chain. Required before the presale accepts payment — the network needs to know which line you belong to.",
+  "mr.bind.desc": "Pay a gas fee to bind your referrer on-chain.",
   "mr.bind.addrLabel": "Referrer address",
   "mr.bind.addrPh": "0x…  or type ROOT",
   "mr.bind.rootSelected": "ROOT selected",

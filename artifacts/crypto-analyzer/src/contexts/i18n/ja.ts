@@ -535,7 +535,7 @@ const ja: Dict = {
   "mr.dash.team.treeNote": "ツリーデータは Community プロキシの EventAddReferrer イベントから索引されます。",
   "mr.bind.step": "ステップ1 · 推薦者を結ぶ",
   "mr.bind.title": "推薦ラインをつなぐ",
-  "mr.bind.desc": "小額の1トランザクションで上位推薦者をオンチェーンに記録します。プレセールは支払を受け取る前にあなたの所属ラインを確認する必要があります。",
+  "mr.bind.desc": "ガス代を支払って推薦者をオンチェーンに登録します。",
   "mr.bind.addrLabel": "推薦者アドレス",
   "mr.bind.addrPh": "0x…  または ROOT と入力",
   "mr.bind.rootSelected": "ROOT 選択中",

@@ -535,7 +535,7 @@ const vi: Dict = {
   "mr.dash.team.treeNote": "Dữ liệu cây được lập chỉ mục từ EventAddReferrer của Community proxy.",
   "mr.bind.step": "Bước 1 · Liên kết người giới thiệu",
   "mr.bind.title": "Kết nối tuyến giới thiệu",
-  "mr.bind.desc": "Một giao dịch nhỏ sẽ ghi người giới thiệu của bạn lên on-chain. Bắt buộc trước khi presale nhận thanh toán — hợp đồng cần biết bạn thuộc tuyến nào.",
+  "mr.bind.desc": "Trả phí gas để ghi người giới thiệu lên on-chain.",
   "mr.bind.addrLabel": "Địa chỉ người giới thiệu",
   "mr.bind.addrPh": "0x…  hoặc nhập ROOT",
   "mr.bind.rootSelected": "Đã chọn ROOT",

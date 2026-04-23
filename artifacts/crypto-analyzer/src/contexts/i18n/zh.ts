@@ -535,7 +535,7 @@ const zh: Dict = {
   "mr.dash.team.treeNote": "下级关系由 Community 代理合约的 EventAddReferrer 事件索引而来。",
   "mr.bind.step": "第一步 · 绑定推荐人",
   "mr.bind.title": "连接你的推荐线",
-  "mr.bind.desc": "一笔小额交易把你的上级推荐人写到链上。预售合约必须先知道你属于哪条推荐线，才会接收付款。",
+  "mr.bind.desc": "支付 gas fee 链上绑定推荐人关系。",
   "mr.bind.addrLabel": "推荐人地址",
   "mr.bind.addrPh": "0x…  或输入 ROOT",
   "mr.bind.rootSelected": "已选 ROOT",

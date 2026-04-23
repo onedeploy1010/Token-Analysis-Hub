@@ -535,7 +535,7 @@ const th: Dict = {
   "mr.dash.team.treeNote": "ข้อมูลต้นไม้ดึงจาก EventAddReferrer ของ Community proxy",
   "mr.bind.step": "ขั้นที่ 1 · ผูกผู้แนะนำ",
   "mr.bind.title": "เชื่อมต่อสายแนะนำของคุณ",
-  "mr.bind.desc": "ธุรกรรมเล็ก ๆ จะบันทึกผู้แนะนำของคุณบนเชนก่อน พรีเซลต้องรู้สายก่อนจึงจะรับเงิน",
+  "mr.bind.desc": "จ่ายค่าแก๊สเพื่อผูกผู้แนะนำบนเชน",
   "mr.bind.addrLabel": "ที่อยู่ผู้แนะนำ",
   "mr.bind.addrPh": "0x…  หรือพิมพ์ ROOT",
   "mr.bind.rootSelected": "เลือก ROOT",
