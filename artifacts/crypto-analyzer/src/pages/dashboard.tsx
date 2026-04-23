@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { useLocation } from "wouter";
 import { useActiveAccount } from "thirdweb/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { getAddress } from "thirdweb/utils";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
-  TrendingUp, Wallet, Link as LinkIcon, Gift,
+  TrendingUp, Wallet, Link as LinkIcon, Gift, ChevronRight, Sparkles,
+  Coins, DollarSign,
 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUsdtBalance } from "@/hooks/rune/use-usdt";
@@ -165,6 +169,26 @@ function fmtUsdt(raw: bigint | undefined | string, dec = 2): string {
  * if the user disconnects mid-session we bounce them back to /recruit
  * automatically so the state machine never shows empty data.
  */
+/**
+ * Per-tier theme applied to the dashboard hero banner + rewards highlights.
+ *   401 Pioneer   → blue
+ *   301 Builder   → green
+ *   101 Guardian  → amber
+ *   201 Strategic → purple
+ *
+ * Each entry bundles the CSS fragments framer-motion can hand to className
+ * directly, so callers only need `HERO_THEME[nodeId]` and can drop the
+ * strings into whichever element needs the color treatment.
+ */
+const HERO_THEME: Record<NodeId, {
+  glow: string; ring: string; from: string; to: string; accent: string; gradient: string;
+}> = {
+  401: { glow: "shadow-[0_0_80px_rgba(59,130,246,0.28)]",  ring: "border-blue-600/50",   from: "from-blue-950/70",   to: "to-slate-950/95", accent: "text-blue-300",   gradient: "from-blue-500/15 via-blue-700/5 to-transparent" },
+  301: { glow: "shadow-[0_0_80px_rgba(34,197,94,0.28)]",    ring: "border-emerald-600/50",from: "from-emerald-950/70",to: "to-slate-950/95", accent: "text-emerald-300",gradient: "from-emerald-500/15 via-emerald-700/5 to-transparent" },
+  101: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.32)]",   ring: "border-amber-600/55", from: "from-amber-950/70",  to: "to-slate-950/95", accent: "text-amber-300",  gradient: "from-amber-500/18 via-amber-700/5 to-transparent" },
+  201: { glow: "shadow-[0_0_80px_rgba(168,85,247,0.28)]",   ring: "border-purple-600/50",from: "from-purple-950/70", to: "to-slate-950/95", accent: "text-purple-300", gradient: "from-purple-500/15 via-purple-700/5 to-transparent" },
+};
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const account = useActiveAccount();
@@ -176,7 +200,7 @@ export default function Dashboard() {
   // bought a node yet we bounce back to /recruit and fire the purchase
   // signal so RuneOnboarding re-opens the purchase modal. Disconnect
   // does the same — the dashboard is never shown with no address.
-  const { hasPurchased, isLoading: purchaseLoading } = useUserPurchase(address);
+  const { hasPurchased, isLoading: purchaseLoading, nodeId: ownedNodeId, amount: ownedAmount } = useUserPurchase(address);
   useEffect(() => {
     if (!address) { navigate("/recruit"); return; }
     if (!purchaseLoading && !hasPurchased) {
@@ -187,21 +211,66 @@ export default function Dashboard() {
 
   if (!address || !hasPurchased) return null;
 
+  const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
+  const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
+
   return (
     <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
-      {/* ── Header ── */}
-      <div className="flex items-end justify-between border-b border-border/40 pb-5">
-        <div>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60 block mb-1">{t("mr.dash.hub")}</span>
-          <h1 className="text-2xl font-bold tracking-tight">{t("mr.dash.title")}</h1>
-          <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
-            <Wallet className="h-3.5 w-3.5 shrink-0" />
-            <CopyableAddress address={address} />
-            <span className="opacity-40">·</span>
-            <span>{runeChain.name}</span>
+      {/* ── Hero banner ── tier-themed, with slow-pulse glow + big level title.
+          Stays stable at first render so reloading mid-session doesn't reshuffle
+          the layout; motion is limited to the decorative orb + a single fade-up
+          entry on the content block. */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className={`relative overflow-hidden rounded-3xl border ${theme.ring} bg-gradient-to-br ${theme.from} ${theme.to} ${theme.glow}`}
+      >
+        <motion.div
+          aria-hidden
+          className={`absolute -top-24 -right-24 w-96 h-96 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`}
+          animate={{ scale: [0.9, 1.08, 0.9], opacity: [0.6, 0.9, 0.6] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+
+        <div className="relative z-10 px-6 py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div className="space-y-3 min-w-0">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-foreground/60">
+              <Sparkles className="h-3 w-3" /> {t("mr.dash.hub")}
+            </span>
+            {meta ? (
+              <div className="space-y-1">
+                <p className={`text-[11px] font-mono uppercase tracking-[0.28em] ${meta.color}`}>{meta.nameEn}</p>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-none">
+                  <span className={theme.accent}>{meta.nameCn}</span>
+                  <span className="text-foreground/40 text-xl ml-3 font-mono">#{ownedNodeId}</span>
+                </h1>
+              </div>
+            ) : (
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{t("mr.dash.title")}</h1>
+            )}
+            <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1">
+              <Wallet className="h-3.5 w-3.5 shrink-0" />
+              <CopyableAddress address={address} />
+              <span className="opacity-40">·</span>
+              <span>{runeChain.name}</span>
+            </div>
           </div>
+
+          {meta && (
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="text-right">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">{t("mr.dash.owned.paid")}</p>
+                <p className={`num text-2xl md:text-3xl font-bold tabular-nums ${theme.accent}`}>
+                  ${ownedAmount ? fmtUsdt(ownedAmount, 0) : meta.priceUsdt.toLocaleString("en-US")}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5">USDT</p>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </motion.div>
 
       {/* ── Tabs ── */}
       <div className="flex gap-1 border-b border-border/30">
@@ -233,14 +302,26 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* ── Tab panels ── */}
-      {tab === "overview" ? (
-        <OverviewTab address={address} />
-      ) : tab === "team" ? (
-        <TeamTab address={address} />
-      ) : (
-        <RewardsTab address={address} />
-      )}
+      {/* ── Tab panels ── crossfade between panels so the view doesn't snap
+          when switching; `mode="wait"` keeps only one panel mounted at a
+          time which avoids double-fetching GraphQL hooks. */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {tab === "overview" ? (
+            <OverviewTab address={address} />
+          ) : tab === "team" ? (
+            <TeamTab address={address} />
+          ) : (
+            <RewardsTab address={address} />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
@@ -274,10 +355,10 @@ function OverviewTab({ address }: { address: string }) {
     <div className="space-y-6">
       {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi label="USDT"                 value={`${fmtUsdt(usdtRaw as bigint | undefined, 2)}`} sub={t("mr.dash.kpi.balance")} />
-        <Kpi label={t("mr.dash.kpi.direct")} value={stats ? String(stats.directCount) : "…"}     sub={t("mr.dash.kpi.wallets")} />
-        <Kpi label={t("mr.dash.kpi.teamTotal")} value={stats ? String(stats.totalDownstreamCount) : "…"} sub={t("mr.dash.kpi.inclIndirect")} />
-        <Kpi label={t("mr.dash.kpi.teamInvested")} value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"} sub={t("mr.dash.kpi.allTime")} highlight />
+        <Kpi icon={Wallet}      label="USDT"                             value={`${fmtUsdt(usdtRaw as bigint | undefined, 2)}`}                  sub={t("mr.dash.kpi.balance")} />
+        <Kpi icon={Users}       label={t("mr.dash.kpi.direct")}          value={stats ? String(stats.directCount) : "…"}                        sub={t("mr.dash.kpi.wallets")} />
+        <Kpi icon={Users}       label={t("mr.dash.kpi.teamTotal")}       value={stats ? String(stats.totalDownstreamCount) : "…"}               sub={t("mr.dash.kpi.inclIndirect")} />
+        <Kpi icon={TrendingUp}  label={t("mr.dash.kpi.teamInvested")}    value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"}  sub={t("mr.dash.kpi.allTime")} highlight />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -379,65 +460,50 @@ function OverviewTab({ address }: { address: string }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Team tab — recursive downstream tree
+   Team tab — drill-down navigation
+
+   Instead of an ever-nesting tree that runs off the screen past ~4 levels,
+   we keep the view flat: one "focus" wallet at a time with its direct
+   downlines listed below, and a horizontal breadcrumb that shows the
+   referral chain from the connected root wallet to the current focus.
+   Click any downline to drill into it; click any breadcrumb segment to
+   jump back up. The root (you) is always the first segment, even when
+   you've descended many levels, so it's trivial to reset.
 ──────────────────────────────────────────────────────────────────────────── */
-
-/** One node in the tree. Children are fetched lazily when expanded, and the
- *  per-node metrics (owned tier, team headcount, umbrella volume) are fetched
- *  eagerly so each row shows at-a-glance who carries what weight. */
-function TeamNode({ row, depth }: { row: ReferrerRow; depth: number }) {
-  const { t } = useLanguage();
-  const [open, setOpen] = useState(false);
-  const { data: children, isLoading } = useTeam(open ? row.user : undefined);
-  const { data: stats } = usePersonalStats(row.user);
-
-  return (
-    <div className="relative" style={{ marginLeft: depth === 0 ? 0 : 16 }}>
-      <div
-        className={`flex items-center gap-2 py-2 px-3 rounded-lg border transition-colors cursor-pointer flex-wrap ${
-          open ? "border-amber-700/40 bg-amber-950/10" : "border-border/40 bg-card/30 hover:border-border/70"
-        }`}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className={`text-[11px] font-mono transition-transform ${open ? "rotate-90" : ""}`}>▸</span>
-        <CopyableAddress address={row.user} short />
-        <TreeNodeBadges stats={stats} />
-        <span className="text-[10px] text-muted-foreground ml-auto">
-          {new Date(row.boundAt).toLocaleDateString()}
-        </span>
-      </div>
-      {open && (
-        <div className="pl-3 border-l border-border/20 mt-1 space-y-1">
-          {isLoading ? (
-            <p className="text-[11px] text-muted-foreground py-1 px-2">{t("mr.dash.team.loadingShort")}</p>
-          ) : !children || children.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground/70 py-1 px-2">{t("mr.dash.team.noDownstream")}</p>
-          ) : (
-            children.map((child) => <TeamNode key={child.user} row={child} depth={depth + 1} />)
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function TeamTab({ address }: { address: string }) {
   const { t } = useLanguage();
-  const { data: directTeam, isLoading } = useTeam(address);
-  const { data: stats } = usePersonalStats(address);
+  // The referral chain: path[0] is always the connected wallet (root),
+  // path[path.length-1] is the wallet currently being inspected. Drilling
+  // appends; breadcrumb clicks truncate.
+  const [path, setPath] = useState<string[]>([address.toLowerCase()]);
+  // If the connected wallet changes (switch accounts), reset the chain so
+  // we don't show the previous account's drill-in state.
+  useEffect(() => { setPath([address.toLowerCase()]); }, [address]);
+
+  const current = path[path.length - 1];
+  const { data: stats } = usePersonalStats(current);
+  const rootStats = usePersonalStats(path[0]).data;
+  const { data: children, isLoading } = useTeam(current);
+
+  function drillInto(child: string) {
+    setPath((p) => [...p, child.toLowerCase()]);
+  }
+  function jumpTo(index: number) {
+    setPath((p) => p.slice(0, index + 1));
+  }
 
   return (
     <div className="space-y-5">
-      {/* 6-card grid per spec: headcount × 2, invest volume × 2, commission × 2.
-          On desktop this sits on a single row (grid-cols-6); on tablet we drop
-          to 3 columns so each cell stays legible; on mobile it stacks 2-wide. */}
+      {/* Root stats — always reflect the connected wallet, never the current
+          drill-down focus. 6 cards keep the overview consistent when the
+          user descends into someone else's team. */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-        <Kpi label={t("mr.dash.team.direct")}            value={stats ? String(stats.directCount) : "…"}                          sub={t("mr.dash.team.firstLayer")} />
-        <Kpi label={t("mr.dash.team.total")}             value={stats ? String(stats.totalDownstreamCount) : "…"}                 sub={t("mr.dash.team.recursive")}  />
-        <Kpi label={t("mr.dash.team.directInvested")}    value={stats ? `$${fmtUsdt(stats.directTotalInvested, 0)}` : "…"}        sub="USDT" />
-        <Kpi label={t("mr.dash.team.teamInvested")}      value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" />
-        <Kpi label={t("mr.dash.team.directCommission")}  value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"}           sub="USDT" highlight />
-        <Kpi label={t("mr.dash.team.teamCommission")}    value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}             sub="USDT" highlight />
+        <Kpi icon={Users}       label={t("mr.dash.team.direct")}            value={rootStats ? String(rootStats.directCount) : "…"}                          sub={t("mr.dash.team.firstLayer")} />
+        <Kpi icon={Users}       label={t("mr.dash.team.total")}             value={rootStats ? String(rootStats.totalDownstreamCount) : "…"}                 sub={t("mr.dash.team.recursive")}  />
+        <Kpi icon={Coins}       label={t("mr.dash.team.directInvested")}    value={rootStats ? `$${fmtUsdt(rootStats.directTotalInvested, 0)}` : "…"}        sub="USDT" />
+        <Kpi icon={TrendingUp}  label={t("mr.dash.team.teamInvested")}      value={rootStats ? `$${fmtUsdt(rootStats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" />
+        <Kpi icon={Gift}        label={t("mr.dash.team.directCommission")}  value={rootStats ? `$${fmtUsdt(rootStats.directCommission, 2)}` : "…"}           sub="USDT" highlight />
+        <Kpi icon={Sparkles}    label={t("mr.dash.team.teamCommission")}    value={rootStats ? `$${fmtUsdt(rootStats.teamCommission, 2)}` : "…"}             sub="USDT" highlight />
       </div>
 
       <Card className="bg-card/70 backdrop-blur border-border">
@@ -446,17 +512,37 @@ function TeamTab({ address }: { address: string }) {
             <Users className="h-4 w-4 text-amber-400" /> {t("mr.dash.team.treeTitle")}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4 space-y-1">
-          {/* Root node — the connected wallet itself. Expanding it loads
-              the direct team (already pre-fetched via useTeam above, but
-              TeamNode re-fetches per-user via its own hook when opened). */}
-          <SelfRootNode address={address} directCount={stats?.directCount ?? directTeam?.length ?? 0} />
-          {/* Keep the old flat list below the root so users can scan all
-              direct downlines without expanding the tree. Nested levels
-              still lazy-load via each TeamNode's own useTeam(open). */}
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.team.loading")}</p>
-          ) : !directTeam || directTeam.length === 0 ? null : null}
+        <CardContent className="pt-4 space-y-4">
+          {/* Referral-chain breadcrumb. Always shows "Root (You)" as the
+              first chip; subsequent chips are drilled-in wallets. The last
+              chip is non-clickable since it IS the current view. */}
+          <TeamBreadcrumb path={path} onJump={jumpTo} />
+
+          {/* Focused wallet header — the current inspection target with its
+              full badge strip. When focus === root, keep the amber accent so
+              the "this is you" framing stays obvious. */}
+          <FocusHeader
+            address={current}
+            isSelf={current === path[0]}
+            stats={stats}
+          />
+
+          {/* Direct downlines of the current focus. Each row is clickable
+              to drill in; keyboard / screen readers get a button role. */}
+          <div className="space-y-1">
+            {isLoading ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.team.loading")}</p>
+            ) : !children || children.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                <Users className="h-6 w-6 mx-auto mb-2 opacity-30" />
+                {current === path[0] ? t("mr.dash.team.noInvitees") : t("mr.dash.team.noDownstream")}
+              </div>
+            ) : (
+              children.map((child) => (
+                <TeamRow key={child.user} row={child} onDrill={() => drillInto(child.user)} />
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -467,45 +553,103 @@ function TeamTab({ address }: { address: string }) {
   );
 }
 
-/**
- * Top-of-tree node rendering the connected wallet as the root. Expanding
- * it lazy-loads `team(address)` and renders each direct downline as a
- * nested <TeamNode/>, which in turn lazy-loads its own children.
- */
-function SelfRootNode({ address, directCount }: { address: string; directCount: number }) {
+/** Horizontal chain: Root (You) › 0xA… › 0xB… › current.
+ *  Each non-terminal segment is a button that truncates `path` back to its
+ *  index; the terminal segment is rendered as plain text. */
+function TeamBreadcrumb({ path, onJump }: { path: string[]; onJump: (index: number) => void }) {
   const { t } = useLanguage();
-  const [open, setOpen] = useState(true); // default open so the first-level is visible
-  const { data: children, isLoading } = useTeam(open ? address : undefined);
-  const { data: stats } = usePersonalStats(address);
-
   return (
-    <div className="relative">
-      <div
-        className="flex items-center gap-2 py-2 px-3 rounded-lg border border-amber-700/50 bg-amber-950/20 cursor-pointer flex-wrap"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className={`text-[11px] font-mono transition-transform ${open ? "rotate-90" : ""} text-amber-300`}>▸</span>
+    <div className="flex items-center gap-1 flex-wrap text-xs">
+      {path.map((addr, i) => {
+        const isLast = i === path.length - 1;
+        const isRoot = i === 0;
+        const label = isRoot ? t("mr.dash.team.rootSelf") : short(addr);
+        return (
+          <div key={`${addr}-${i}`} className="flex items-center gap-1">
+            {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/40" />}
+            {isLast ? (
+              <span className={`font-mono px-2 py-1 rounded-md text-[11px] ${
+                isRoot
+                  ? "bg-amber-950/30 border border-amber-700/40 text-amber-200"
+                  : "bg-card/60 border border-border/50 text-foreground"
+              }`}>
+                {label}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onJump(i)}
+                className={`font-mono px-2 py-1 rounded-md text-[11px] transition-colors ${
+                  isRoot
+                    ? "text-amber-300/80 hover:text-amber-300 hover:bg-amber-950/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                }`}
+              >
+                {label}
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** The current focus's summary: address + owned-tier + team badges. Renders
+ *  the amber "you are here" styling when the focus is the root wallet. */
+function FocusHeader({
+  address,
+  isSelf,
+  stats,
+}: {
+  address: string;
+  isSelf: boolean;
+  stats: PersonalStats | undefined;
+}) {
+  const { t } = useLanguage();
+  return (
+    <div className={`rounded-xl border p-3 flex items-center gap-3 flex-wrap ${
+      isSelf
+        ? "border-amber-700/50 bg-amber-950/20"
+        : "border-border/50 bg-card/40"
+    }`}>
+      {isSelf && (
         <span className="text-[10px] uppercase tracking-[0.2em] text-amber-300/70 font-semibold">
           {t("mr.dash.team.rootSelf")}
         </span>
-        <CopyableAddress address={address} short className="!border-amber-700/40 !bg-amber-950/30 !text-amber-100" />
-        <TreeNodeBadges stats={stats} accent="amber" />
-        <span className="text-[10px] text-amber-300/60 ml-auto">
-          {directCount} {t("mr.dash.team.directShort")}
-        </span>
-      </div>
-      {open && (
-        <div className="pl-3 border-l border-amber-700/30 mt-1 space-y-1">
-          {isLoading ? (
-            <p className="text-[11px] text-muted-foreground py-1 px-2">{t("mr.dash.team.loadingShort")}</p>
-          ) : !children || children.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground/70 py-2 px-2">{t("mr.dash.team.noInvitees")}</p>
-          ) : (
-            children.map((child) => <TeamNode key={child.user} row={child} depth={1} />)
-          )}
-        </div>
       )}
+      <CopyableAddress
+        address={address}
+        short
+        className={isSelf ? "!border-amber-700/40 !bg-amber-950/30 !text-amber-100" : ""}
+      />
+      <TreeNodeBadges stats={stats} accent={isSelf ? "amber" : undefined} />
+      <span className="text-[10px] text-muted-foreground ml-auto">
+        {stats ? `${stats.directCount} ${t("mr.dash.team.directShort")}` : ""}
+      </span>
     </div>
+  );
+}
+
+/** A single direct-downline row. Clicking drills into that wallet — the
+ *  parent TeamTab pushes it onto the breadcrumb path and rerenders with
+ *  the new focus. Badges come from `personalStats(row.user)` so users can
+ *  scan who's worth drilling into without actually drilling. */
+function TeamRow({ row, onDrill }: { row: ReferrerRow; onDrill: () => void }) {
+  const { data: stats } = usePersonalStats(row.user);
+  return (
+    <button
+      type="button"
+      onClick={onDrill}
+      className="w-full flex items-center gap-2 py-2 px-3 rounded-lg border border-border/40 bg-card/30 hover:border-amber-600/50 hover:bg-amber-950/10 transition-colors flex-wrap text-left group"
+    >
+      <CopyableAddress address={row.user} short />
+      <TreeNodeBadges stats={stats} />
+      <span className="text-[10px] text-muted-foreground ml-auto flex items-center gap-1.5">
+        {new Date(row.boundAt).toLocaleDateString()}
+        <ChevronRight className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 group-hover:text-amber-400 transition-all" />
+      </span>
+    </button>
   );
 }
 
@@ -534,9 +678,9 @@ function RewardsTab({ address }: { address: string }) {
           with the rewards-tab framing. Total earned mirrors
           personalStats.directCommission; count mirrors directPurchaseCount. */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <Kpi label={t("mr.dash.reward.total")}   value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"} sub="USDT" highlight />
-        <Kpi label={t("mr.dash.reward.count")}   value={stats ? String(stats.directPurchaseCount) : "…"}       sub={t("mr.dash.reward.countSub")} />
-        <Kpi label={t("mr.dash.reward.teamAll")} value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}  sub="USDT" />
+        <Kpi icon={Gift}       label={t("mr.dash.reward.total")}   value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"} sub="USDT" highlight />
+        <Kpi icon={DollarSign} label={t("mr.dash.reward.count")}   value={stats ? String(stats.directPurchaseCount) : "…"}       sub={t("mr.dash.reward.countSub")} />
+        <Kpi icon={Sparkles}   label={t("mr.dash.reward.teamAll")} value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}  sub="USDT" />
       </div>
 
       {/* Per-tier breakdown — only render tiers the user has actually
@@ -628,14 +772,43 @@ function RewardRowItem({ row }: { row: RewardRow }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Shared KPI tile
+   Shared KPI tile — accepts an optional lucide icon so the strip feels
+   less text-heavy. Fades-in on mount and lifts slightly on hover; the
+   highlight variant glows gold so critical numbers read even at a glance.
 ──────────────────────────────────────────────────────────────────────────── */
-function Kpi({ label, value, sub, highlight = false }: { label: string; value: string; sub?: string; highlight?: boolean }) {
+function Kpi({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  icon?: ComponentType<{ className?: string }>;
+  highlight?: boolean;
+}) {
   return (
-    <div className="border border-border/50 bg-card/60 rounded-xl p-4 corner-brackets">
-      <div className="text-[10px] uppercase tracking-widest text-muted-foreground/70 mb-1.5">{label}</div>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -2 }}
+      className={`relative border rounded-xl p-4 corner-brackets transition-all ${
+        highlight
+          ? "border-amber-700/50 bg-gradient-to-br from-amber-950/30 to-card/70 hover:border-amber-500/60 hover:shadow-[0_0_24px_rgba(251,191,36,0.18)]"
+          : "border-border/50 bg-card/60 hover:border-border/80 hover:bg-card/80"
+      }`}
+    >
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/70">{label}</span>
+        {Icon && (
+          <Icon className={`h-3.5 w-3.5 ${highlight ? "text-amber-400/80" : "text-muted-foreground/50"}`} />
+        )}
+      </div>
       <div className={`text-xl num ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
       {sub && <div className="text-[10px] text-muted-foreground/60 mt-1">{sub}</div>}
-    </div>
+    </motion.div>
   );
 }
