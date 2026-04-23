@@ -299,23 +299,22 @@ function Navbar() {
 
           {/* Right controls — mobile only. Language toggle lives inside the
               hamburger drawer; only the wallet + menu buttons sit in the
-              header. Both buttons share a 40 px height so the row reads
-              as a single control cluster. */}
-          <div className="flex md:hidden items-center gap-2 shrink-0">
-            {/* Connect wallet — mobile. Keep the thirdweb button at a
-                normal tap-target size (40 px high, readable 13 px text);
-                the connected-state pill truncates long addresses via the
-                max-width set in WalletConnectButton itself. */}
-            <div className="[&_button]:!h-10 [&_button]:!px-3.5 [&_button]:!text-[13px] [&_button]:!rounded-xl [&_button_img]:!w-4 [&_button_img]:!h-4">
+              header. Shrunk to a 36 px cluster so the logo + wordmark
+              still have breathing room on a 360 px viewport. */}
+          <div className="flex md:hidden items-center gap-1.5 shrink-0">
+            {/* Connect wallet — mobile. 36 px tall, 11 px text, tighter
+                radius; connected-state pill truncates long addresses via
+                the max-width set in WalletConnectButton itself. */}
+            <div className="[&_button]:!h-9 [&_button]:!px-2.5 [&_button]:!text-[11px] [&_button]:!rounded-lg [&_button]:!min-w-0 [&_button_img]:!w-3.5 [&_button_img]:!h-3.5">
               <WalletConnectButton />
             </div>
             {/* Mobile hamburger — matches the wallet button height. */}
             <button
-              className="flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all shrink-0"
+              className="flex items-center justify-center w-9 h-9 rounded-lg border border-border/50 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all shrink-0"
               onClick={() => setMenuOpen(v => !v)}
               aria-label="Toggle menu"
             >
-              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {menuOpen ? <X className="h-3.5 w-3.5" /> : <Menu className="h-3.5 w-3.5" />}
             </button>
           </div>
         </div>

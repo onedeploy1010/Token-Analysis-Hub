@@ -45,12 +45,12 @@ export function WalletConnectButton() {
       connectButton={{
         // "Connect" reads fine on mobile; desktop still has plenty of room.
         label: "Connect",
-        className: "!font-semibold !max-w-[200px]",
+        className: "!font-semibold !max-w-[120px] sm:!max-w-[200px]",
       }}
       // `detailsButton` style nudges the connected-state chip to stay compact —
       // long addresses / balances get truncated instead of overflowing the
       // mobile header.
-      detailsButton={{ className: "!max-w-[170px] sm:!max-w-[240px]" }}
+      detailsButton={{ className: "!max-w-[128px] sm:!max-w-[240px]" }}
       connectModal={{ size: "compact", showThirdwebBranding: false }}
       theme={darkTheme({
         colors: {

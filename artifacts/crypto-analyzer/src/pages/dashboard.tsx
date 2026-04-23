@@ -6,10 +6,11 @@ import { getAddress } from "thirdweb/utils";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
   TrendingUp, Wallet, Link as LinkIcon, Gift, ChevronRight, Sparkles,
-  Coins, DollarSign,
+  Coins, DollarSign, Search, ArrowUp, ArrowDown,
 } from "lucide-react";
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -878,84 +879,53 @@ function RewardsTab({ address }: { address: string }) {
   const { data: stats } = usePersonalStats(address);
   const { data: rewards, isLoading } = useRewards(address);
 
-  // Break the rewards list down by tier so the summary shows "where your
-  // commissions came from" — derived client-side from the same rows the
-  // table below renders so numbers can never drift.
-  const byTier = new Map<number, { count: number; commission: bigint }>();
-  for (const r of rewards ?? []) {
-    const entry = byTier.get(r.nodeId) ?? { count: 0, commission: 0n };
-    entry.count += 1;
-    entry.commission += BigInt(r.commission);
-    byTier.set(r.nodeId, entry);
-  }
+  // Filter + sort state. Dates are YYYY-MM-DD strings (the <input type="date">
+  // native value); search is a case-insensitive substring match on the
+  // downline address; order flips between desc (default, newest first) and asc.
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [q, setQ] = useState("");
+  const [order, setOrder] = useState<"desc" | "asc">("desc");
+
+  const filtered = useMemo(() => {
+    if (!rewards) return [];
+    const fromTs = from ? new Date(`${from}T00:00:00`).getTime() : -Infinity;
+    const toTs = to ? new Date(`${to}T23:59:59`).getTime() : Infinity;
+    const needle = q.trim().toLowerCase();
+    const list = rewards.filter((r) => {
+      const ts = new Date(r.paidAt).getTime();
+      if (ts < fromTs || ts > toTs) return false;
+      if (needle && !r.downline.toLowerCase().includes(needle)) return false;
+      return true;
+    });
+    list.sort((a, b) => {
+      const d = new Date(a.paidAt).getTime() - new Date(b.paidAt).getTime();
+      return order === "desc" ? -d : d;
+    });
+    return list;
+  }, [rewards, from, to, q, order]);
 
   return (
     <div className="space-y-5">
-      {/* Top summary — three tiles the user already sees elsewhere, but
-          with the rewards-tab framing. Total earned mirrors
-          personalStats.directCommission; count mirrors directPurchaseCount. */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <Kpi icon={Gift}       label={t("mr.dash.reward.total")}   value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"} sub="USDT" delay={0.02} highlight />
-        <Kpi icon={DollarSign} label={t("mr.dash.reward.count")}   value={stats ? String(stats.directPurchaseCount) : "…"}       sub={t("mr.dash.reward.countSub")} delay={0.06} />
-        <Kpi icon={Sparkles}   label={t("mr.dash.reward.teamAll")} value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}  sub="USDT" delay={0.10} />
+      {/* Only two stats reflect the on-chain reality today: how many
+          direct downlines actually converted into buyers, and the total
+          USDT that's flowed into the wallet from those purchases. Team
+          rewards aren't live (they'll come in with the tier-based rank
+          bonus), so we don't surface a stub number that would read as
+          zero forever. */}
+      <div className="grid grid-cols-2 gap-3">
+        <Kpi icon={Users}      label={t("mr.dash.reward.validDirect")} value={stats ? String(stats.directPurchaseCount) : "…"} sub={t("mr.dash.reward.validDirectSub")} delay={0.02} />
+        <Kpi icon={Gift}       label={t("mr.dash.reward.cumulative")}  value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"} sub="USDT" delay={0.06} highlight />
       </div>
 
-      {/* Per-tier breakdown — only render tiers the user has actually
-          earned from, so a new wallet doesn't see four empty rows.
-          Gradient bg + fade-up per card so the strip reads as a
-          first-class breakdown rather than plain chip row. */}
-      {byTier.size > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {Array.from(byTier.entries())
-            .sort(([a], [b]) => a - b)
-            .map(([nodeId, { count, commission }], idx) => {
-              const meta = NODE_META[nodeId as NodeId];
-              const theme = HERO_THEME[nodeId as NodeId];
-              return (
-                <motion.div
-                  key={nodeId}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.12 + idx * 0.05, ease: EASE }}
-                  whileHover={{ y: -3 }}
-                  style={{ ["--tier-rgb" as string]: theme.rgb }}
-                  className={`group surface-3d surface-3d-tinted relative overflow-hidden rounded-xl border ${theme.ring} bg-gradient-to-br ${theme.from} ${theme.to} p-4 transition-all duration-300`}
-                >
-                  {/* Orb — counter-tinted, pulses on hover */}
-                  <div className={`absolute -top-10 -right-10 w-36 h-36 rounded-full bg-gradient-to-br ${theme.gradient} blur-2xl pointer-events-none transition-all duration-500 group-hover:scale-125`} />
-                  {/* Specular top-left for bevel */}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className={`text-[10px] font-mono uppercase tracking-[0.22em] ${meta.color}`}>{meta.nameEn}</div>
-                      <span className={`text-[9px] font-mono rounded border px-1.5 py-0.5 tabular-nums ${theme.chip}`}>#{nodeId}</span>
-                    </div>
-                    <div className="text-sm font-bold text-foreground/90 mt-0.5">{meta.nameCn}</div>
-                    <div
-                      className={`num text-2xl font-bold mt-3 tabular-nums ${theme.accentBright}`}
-                      style={{ textShadow: `0 0 18px rgba(${theme.rgb}, 0.4)` }}
-                    >
-                      ${fmtUsdt(commission.toString(), 2)}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground/85 mt-1.5 tracking-[0.12em] uppercase tabular-nums">
-                      {count} × {t("mr.dash.reward.payouts")}
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-        </div>
-      )}
-
-      {/* Monthly commission trend — last 6 months bucketed from the same
-          rewards list. Tier-coloured bars stack by (month, nodeId) so the
-          shape of earnings-by-tier shows up at a glance. Recharts handles
-          responsive sizing; we pin height so the card stays stable. */}
+      {/* Composed chart: bars for monthly purchase COUNT (left axis),
+          line for monthly commission AMOUNT (right axis). One glance
+          reveals when the team converted + how much USDT flowed. */}
       {rewards && rewards.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.3, ease: EASE }}
+          transition={{ duration: 0.45, delay: 0.18, ease: EASE }}
         >
           <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
             <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/8 via-transparent to-transparent blur-3xl pointer-events-none" />
@@ -972,12 +942,13 @@ function RewardsTab({ address }: { address: string }) {
         </motion.div>
       )}
 
-      {/* Detail list — each on-chain commission payout as its own row.
-          rewards are already ordered by paidAt DESC on the server. */}
+      {/* Detail list with filter controls. Date range + address search +
+          asc/desc toggle cover the three ways a member usually wants to
+          cut their commission history. */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.35, ease: EASE }}
+        transition={{ duration: 0.45, delay: 0.24, ease: EASE }}
       >
         <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.04),transparent_55%)] pointer-events-none" />
@@ -986,7 +957,12 @@ function RewardsTab({ address }: { address: string }) {
               <Gift className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> {t("mr.dash.reward.listTitle")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-4 relative z-10">
+          <CardContent className="pt-4 relative z-10 space-y-3">
+            <RewardListFilters
+              from={from} to={to} q={q} order={order}
+              onFrom={setFrom} onTo={setTo} onQ={setQ}
+              onOrder={() => setOrder((o) => (o === "desc" ? "asc" : "desc"))}
+            />
             {isLoading ? (
               <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.reward.loading")}</p>
             ) : !rewards || rewards.length === 0 ? (
@@ -994,9 +970,14 @@ function RewardsTab({ address }: { address: string }) {
                 <Gift className="h-8 w-8 mx-auto mb-3 opacity-30" />
                 {t("mr.dash.reward.empty")}
               </div>
+            ) : filtered.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                <Search className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                {t("mr.dash.reward.noMatch")}
+              </div>
             ) : (
               <ul className="divide-y divide-border/30">
-                {rewards.map((r) => <RewardRowItem key={r.txHash} row={r} />)}
+                {filtered.map((r) => <RewardRowItem key={r.txHash} row={r} />)}
               </ul>
             )}
           </CardContent>
@@ -1077,32 +1058,28 @@ const TIER_FILL: Record<NodeId, string> = {
 };
 
 /**
- * Monthly commission chart, anchored at April 2026 (the earliest real
- * activity) and extended through the current month. Each tier is its own
- * stacked area with a gradient fill and a subtle glow; recharts' SMOOTH
- * monotone interpolation gives the curve a crypto-dashboard feel instead
- * of the blocky stacked bars the first pass shipped.
- *
- * Months with no data render as zero-height slivers so the timeline is
- * continuous — users can see exactly when activity picked up.
+ * Monthly activity chart: bars for purchase count (left axis), a smooth
+ * amber line with a glowing emerald dot for commission amount (right
+ * axis). Anchored at April 2026 and extended through the current month
+ * so the ramp is always visible. Bars + line let members read count and
+ * $ in a single glance without per-tier slicing.
  */
 const TREND_START = { year: 2026, month: 3 }; // April = month index 3 in Date
-type TrendDatum = { key: string; label: string; total: number; "101": number; "201": number; "301": number; "401": number };
+type TrendDatum = { key: string; label: string; count: number; amount: number };
 
 function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
+  const { t } = useLanguage();
   const data = useMemo<TrendDatum[]>(() => {
     const now = new Date();
     const start = new Date(TREND_START.year, TREND_START.month, 1);
     const end = new Date(now.getFullYear(), now.getMonth(), 1);
-    // At least 6 columns even if the project is only a month old, so the
-    // chart never looks squashed.
     const buckets: TrendDatum[] = [];
     const cursor = new Date(start);
     while (cursor <= end || buckets.length < 6) {
       const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-      buckets.push({ key, label: `${cursor.getMonth() + 1}月`, total: 0, "101": 0, "201": 0, "301": 0, "401": 0 });
+      buckets.push({ key, label: `${cursor.getMonth() + 1}月`, count: 0, amount: 0 });
       cursor.setMonth(cursor.getMonth() + 1);
-      if (buckets.length >= 18) break; // hard cap so a stale clock can't runaway
+      if (buckets.length >= 18) break;
     }
     const byKey = new Map(buckets.map((b) => [b.key, b]));
     for (const r of rewards) {
@@ -1110,10 +1087,8 @@ function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const bucket = byKey.get(key);
       if (!bucket) continue;
-      const whole = Number(BigInt(r.commission) / 10n ** 18n);
-      const nKey = String(r.nodeId) as "101";
-      bucket[nKey] = (bucket[nKey] ?? 0) + whole;
-      bucket.total += whole;
+      bucket.count += 1;
+      bucket.amount += Number(BigInt(r.commission) / 10n ** 18n);
     }
     return buckets;
   }, [rewards]);
@@ -1121,21 +1096,16 @@ function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+        <ComposedChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
           <defs>
-            {(Object.keys(TIER_FILL) as unknown as NodeId[]).map((id) => {
-              const c = TIER_FILL[id as NodeId];
-              return (
-                <linearGradient id={`tier-${id}`} key={id} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={c} stopOpacity={0.75} />
-                  <stop offset="55%" stopColor={c} stopOpacity={0.22} />
-                  <stop offset="100%" stopColor={c} stopOpacity={0.01} />
-                </linearGradient>
-              );
-            })}
-            {/* Soft glow overlay reused for the total-line emphasis. */}
-            <filter id="areaGlow" x="-10%" y="-10%" width="120%" height="130%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
+            {/* Bar gradient — amber-to-navy for the node count column. */}
+            <linearGradient id="barCount" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.85} />
+              <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.15} />
+            </linearGradient>
+            {/* Soft glow for the $ line. */}
+            <filter id="lineGlow" x="-10%" y="-10%" width="120%" height="130%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -1145,22 +1115,34 @@ function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
           <CartesianGrid strokeDasharray="3 5" stroke="rgba(255,255,255,0.06)" vertical={false} />
           <XAxis
             dataKey="label"
-            stroke="rgba(255,255,255,0.35)"
+            stroke="rgba(255,255,255,0.45)"
             fontSize={11}
             tickLine={false}
-            axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+            axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
             dy={4}
           />
           <YAxis
-            stroke="rgba(255,255,255,0.35)"
+            yAxisId="left"
+            stroke="rgba(251,191,36,0.55)"
             fontSize={11}
             tickLine={false}
             axisLine={false}
+            width={36}
+            allowDecimals={false}
+            tickFormatter={(v) => `${v}`}
+          />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            stroke="rgba(52,211,153,0.55)"
+            fontSize={11}
+            tickLine={false}
+            axisLine={false}
+            width={52}
             tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
-            width={48}
           />
           <Tooltip
-            cursor={{ stroke: "rgba(251,191,36,0.35)", strokeWidth: 1 }}
+            cursor={{ fill: "rgba(255,255,255,0.04)" }}
             contentStyle={{
               background: "rgba(8, 15, 30, 0.95)",
               border: "1px solid rgba(251,191,36,0.35)",
@@ -1170,25 +1152,86 @@ function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
             }}
             labelStyle={{ color: "#fbbf24", fontWeight: 600, marginBottom: 4 }}
             formatter={(value: number, name: string) => {
-              if (name === "total") return [`$${value.toLocaleString("en-US")}`, "合计"];
-              return [`$${value.toLocaleString("en-US")}`, NODE_META[Number(name) as NodeId]?.nameCn ?? name];
+              if (name === "count") return [value, t("mr.dash.reward.chartCount")];
+              return [`$${value.toLocaleString("en-US")}`, t("mr.dash.reward.chartAmount")];
             }}
           />
-          {(["401", "301", "201", "101"] as const).map((id) => (
-            <Area
-              key={id}
-              type="monotone"
-              dataKey={id}
-              stackId="tier"
-              stroke={TIER_FILL[Number(id) as NodeId]}
-              strokeWidth={1.5}
-              fill={`url(#tier-${id})`}
-              filter="url(#areaGlow)"
-              animationDuration={800}
-            />
-          ))}
-        </AreaChart>
+          <Bar
+            yAxisId="left"
+            dataKey="count"
+            fill="url(#barCount)"
+            radius={[6, 6, 0, 0]}
+            animationDuration={700}
+          />
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="amount"
+            stroke="#34d399"
+            strokeWidth={2.25}
+            dot={{ r: 3.5, fill: "#34d399", stroke: "#0f172a", strokeWidth: 1.5 }}
+            activeDot={{ r: 5, fill: "#34d399" }}
+            filter="url(#lineGlow)"
+            animationDuration={1000}
+          />
+        </ComposedChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Date range + address search + asc/desc toggle for the rewards list. */
+function RewardListFilters({
+  from, to, q, order,
+  onFrom, onTo, onQ, onOrder,
+}: {
+  from: string; to: string; q: string; order: "asc" | "desc";
+  onFrom: (v: string) => void;
+  onTo: (v: string) => void;
+  onQ: (v: string) => void;
+  onOrder: () => void;
+}) {
+  const { t } = useLanguage();
+  const inputCls = "h-9 px-2 rounded-md border border-border/40 bg-background/60 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-amber-500/60 focus:outline-none focus:ring-1 focus:ring-amber-500/40 transition-colors";
+  return (
+    <div className="flex flex-wrap items-center gap-2 pb-2">
+      <div className="flex items-center gap-1.5">
+        <input
+          type="date"
+          value={from}
+          onChange={(e) => onFrom(e.target.value)}
+          aria-label={t("mr.dash.reward.filterFrom")}
+          className={`${inputCls} w-[132px]`}
+        />
+        <span className="text-[10px] text-muted-foreground/70">→</span>
+        <input
+          type="date"
+          value={to}
+          onChange={(e) => onTo(e.target.value)}
+          aria-label={t("mr.dash.reward.filterTo")}
+          className={`${inputCls} w-[132px]`}
+        />
+      </div>
+      <div className="relative flex-1 min-w-[140px]">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
+        <input
+          type="text"
+          value={q}
+          onChange={(e) => onQ(e.target.value)}
+          placeholder={t("mr.dash.reward.filterSearch")}
+          className={`${inputCls} w-full pl-7 font-mono`}
+        />
+      </div>
+      <button
+        type="button"
+        onClick={onOrder}
+        className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border/40 bg-background/60 text-xs text-foreground hover:border-amber-500/50 hover:text-amber-200 transition-colors"
+        aria-label={order === "desc" ? t("mr.dash.reward.sortDesc") : t("mr.dash.reward.sortAsc")}
+        title={order === "desc" ? t("mr.dash.reward.sortDesc") : t("mr.dash.reward.sortAsc")}
+      >
+        {order === "desc" ? <ArrowDown className="h-3.5 w-3.5" /> : <ArrowUp className="h-3.5 w-3.5" />}
+        {order === "desc" ? t("mr.dash.reward.sortDesc") : t("mr.dash.reward.sortAsc")}
+      </button>
     </div>
   );
 }
