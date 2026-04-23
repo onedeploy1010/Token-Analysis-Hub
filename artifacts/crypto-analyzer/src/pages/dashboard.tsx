@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUsdtBalance } from "@/hooks/rune/use-usdt";
 import { useReferrerOf } from "@/hooks/rune/use-community";
-import { useUserPurchase, useNodeConfigs } from "@/hooks/rune/use-node-presell";
+import { useUserPurchase, useNodeConfigs, type NodeConfig } from "@/hooks/rune/use-node-presell";
 import { useGetRuneOverview } from "@workspace/api-client-react";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 import { useTeam, usePersonalStats, useRewards, type ReferrerRow, type RewardRow, type PersonalStats } from "@/hooks/rune/use-team";
@@ -913,22 +913,48 @@ const POOL_STAGES = [
   { pct: 40, tlpM: 35,   driver: "market"    as const },
 ];
 
-function PoolProgressCard() {
+function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) {
   const { t } = useLanguage();
   const { data: overview } = useGetRuneOverview();
+  const { data: configs } = useNodeConfigs();
 
   const fundraiseCap = overview?.fundraising?.total ?? 8_000_000;
   const tlpInitial = overview?.fundraising?.tlpPool ?? 2_800_000;
-  const nodes = overview?.nodes ?? [];
 
-  const totalRaised = nodes.reduce(
-    (sum, n) => sum + (Math.max(0, n.seats - n.seatsRemaining) * n.investment),
-    0,
-  );
+  // Prefer on-chain NodePresell.curNum × payAmount for the network-wide
+  // raise total — REST `seatsRemaining` is mock/static while the contract
+  // reads are live. Bigint math first (payAmount is 18-dec wei and
+  // multiplying the Number form overflows MAX_SAFE_INTEGER).
+  const totalRaised = configs
+    ? (configs as NodeConfig[]).reduce((sum, c) => {
+        const priceUsdt = Number(c.payAmount / 10n ** 18n);
+        const sold = Number(c.curNum);
+        return sum + sold * priceUsdt;
+      }, 0)
+    : (overview?.nodes ?? []).reduce(
+        (sum, n) => sum + Math.max(0, n.seats - n.seatsRemaining) * n.investment,
+        0,
+      );
   const raisedPct = fundraiseCap > 0 ? Math.min(100, (totalRaised / fundraiseCap) * 100) : 0;
   const fundraiseComplete = raisedPct >= 100;
   // Pre-launch estimate: fraction of 8M raised × 2.8M initial TLP seed.
   const projectedTlp = fundraiseCap > 0 ? (totalRaised / fundraiseCap) * tlpInitial : 0;
+
+  // Next stage = first not-yet-unlocked. Pre-launch that's Stage 1;
+  // once the raise fills Stage 1 unlocks and Stage 2 becomes next.
+  const nextStageIdx = fundraiseComplete ? 1 : 0;
+  const nextStage = POOL_STAGES[Math.min(3, nextStageIdx)];
+  const nextBatch = AIRDROP_BATCHES[Math.min(3, nextStageIdx)];
+
+  // Tier-specific detail for the viewer's own node: how many mother-
+  // tokens will unlock at the next stage, and an estimated USDT value at
+  // that stage's reference mother-price.
+  const userAirdrop = ownedNodeId ? AIRDROP_PER_TIER[ownedNodeId as NodeId] : null;
+  const userTierMeta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
+  const nextUnlockTokens = userAirdrop
+    ? Math.round((userAirdrop.perSeat * nextStage.pct) / 100)
+    : 0;
+  const nextUnlockUsd = nextUnlockTokens * nextBatch.priceAt;
 
   return (
     <motion.div
@@ -1006,16 +1032,15 @@ function PoolProgressCard() {
               {POOL_STAGES.map((stage, i) => {
                 const unlocked =
                   stage.driver === "fundraise" ? fundraiseComplete : false;
-                const currentStage1 =
-                  i === 0 && !fundraiseComplete && raisedPct > 0;
+                const isNext = i === nextStageIdx && !unlocked;
                 return (
                   <div
                     key={i}
                     className={`rounded-md border p-2.5 transition-colors ${
                       unlocked
                         ? "border-emerald-500/50 bg-emerald-950/25"
-                        : currentStage1
-                        ? "border-amber-500/40 bg-amber-950/15"
+                        : isNext
+                        ? "border-amber-500/50 bg-amber-950/20 ring-1 ring-amber-500/20"
                         : "border-border/30 bg-card/25"
                     }`}
                   >
@@ -1027,15 +1052,15 @@ function PoolProgressCard() {
                         className={`text-[9px] font-mono uppercase tracking-[0.18em] ${
                           unlocked
                             ? "text-emerald-300"
-                            : currentStage1
+                            : isNext
                             ? "text-amber-300"
                             : "text-muted-foreground/55"
                         }`}
                       >
                         {unlocked
                           ? t("mr.dash.pool.statusUnlocked")
-                          : currentStage1
-                          ? t("mr.dash.pool.statusCurrent")
+                          : isNext
+                          ? t("mr.dash.pool.statusNext")
                           : t("mr.dash.pool.statusLocked")}
                       </span>
                     </div>
@@ -1060,6 +1085,68 @@ function PoolProgressCard() {
               })}
             </div>
           </div>
+
+          {/* Next-stage detail — tier-specific reward the viewer will
+              receive when the next unlock triggers. Only shown when the
+              viewer actually holds a node; otherwise there's nothing to
+              project, so we hide the panel instead of rendering zeros. */}
+          {userAirdrop && userTierMeta && (
+            <div className="rounded-lg border border-amber-500/35 bg-gradient-to-br from-amber-950/30 via-amber-950/10 to-transparent p-3.5 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300/90">
+                  {t("mr.dash.pool.nextStageTitle")}
+                </span>
+                <span className="text-[9px] font-mono uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-950/40 text-amber-300 shrink-0">
+                  {t(`mr.dash.pool.stage${nextStageIdx + 1}Num`)} · {nextStage.pct}%
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">
+                    {t("mr.dash.pool.yourUnlock")}
+                  </div>
+                  <div className="text-lg font-bold tabular-nums text-amber-200">
+                    {nextUnlockTokens.toLocaleString("en-US")}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground/65">
+                    {t("mr.dash.pool.motherTokens")}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">
+                    {t("mr.dash.pool.stagePrice")}
+                  </div>
+                  <div className="text-lg font-bold tabular-nums text-foreground/95">
+                    ${nextBatch.priceAt}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground/65">
+                    {t("mr.dash.pool.perToken")}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">
+                    {t("mr.dash.pool.estValue")}
+                  </div>
+                  <div className="text-lg font-bold tabular-nums text-emerald-300">
+                    ≈ ${nextUnlockUsd.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground/65">USDT</div>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground/85 leading-snug pt-2 border-t border-amber-500/15">
+                <span className="text-amber-300/90 font-semibold mr-1.5">{t("mr.dash.pool.trigger")}:</span>
+                {t(nextBatch.trig)}
+              </div>
+
+              <div className="text-[10px] text-muted-foreground/60 tabular-nums">
+                {userTierMeta.nameEn} · {userTierMeta.nameCn} ·{" "}
+                {userAirdrop.perSeat.toLocaleString("en-US")} × {nextStage.pct}% ={" "}
+                {nextUnlockTokens.toLocaleString("en-US")} RUNE
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>
@@ -1297,8 +1384,10 @@ function OverviewTab({ address }: { address: string }) {
 
         {/* Network-wide fundraise + 4-stage TLP unlock progress. Shown
             to everyone so any visitor understands where the protocol
-            sits on the roadmap, not just holders. */}
-        <PoolProgressCard />
+            sits on the roadmap, not just holders. The `ownedNodeId`
+            lets the card compute the viewer's tier-specific unlock at
+            the next stage (tokens + USDT estimate). */}
+        <PoolProgressCard ownedNodeId={nodeId} />
 
         {/* Genesis (L5) earnings panel — only rendered once the viewer
             has actually qualified (≥5 direct 符主 L4 referrals OR ≥10
