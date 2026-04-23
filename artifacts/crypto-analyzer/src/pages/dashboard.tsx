@@ -1285,7 +1285,7 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
         <div className="absolute -top-20 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
 
-        <CardHeader className="pb-3 border-b border-border/40 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
+        <CardHeader className="pb-3 border-b border-border/40 relative z-10">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Coins className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
             {t("mr.dash.team.compTitle")}
@@ -1293,42 +1293,33 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
               {total} {t("mr.dash.team.compTotal")}
             </span>
           </CardTitle>
+        </CardHeader>
 
-          {/* Pill switcher, 2 options, amber-filled active. */}
-          <div className="inline-flex rounded-full border border-border/40 bg-background/60 p-0.5 text-[11px]">
-            {(["direct", "team"] as const).map((m) => {
-              const active = mode === m;
-              return (
+        <CardContent className="pt-4 relative z-10">
+          <div className="relative h-56 w-full">
+            {/* Pill switcher — pinned inside the chart area, matching the
+                rune page's Six-Stage Dual Line toggle so the interaction
+                feels familiar. Primary-tinted fill + inset ring on the
+                active pill; muted-foreground + hover-primary on inactive. */}
+            <div className="absolute top-0 right-2 z-10 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-background/50 p-1 text-[10px] uppercase tracking-[0.18em] backdrop-blur">
+              {(["direct", "team"] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => setMode(m)}
-                  className={`relative px-3 py-1 rounded-full transition-colors ${
-                    active
-                      ? "text-slate-950 font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
+                  className={`rounded-full px-3 py-0.5 num tabular-nums transition-all ${
+                    mode === m
+                      ? "bg-primary/25 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.4)]"
+                      : "text-muted-foreground/60 hover:text-primary/80"
                   }`}
                 >
-                  {active && (
-                    <motion.span
-                      layoutId="tierCompPill"
-                      className="absolute inset-0 rounded-full bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.5)]"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  <span className="relative">
-                    {m === "direct" ? t("mr.dash.team.compDirect") : t("mr.dash.team.compTeam")}
-                  </span>
+                  {m === "direct" ? t("mr.dash.team.compDirect") : t("mr.dash.team.compTeam")}
                 </button>
-              );
-            })}
-          </div>
-        </CardHeader>
+              ))}
+            </div>
 
-        <CardContent className="pt-4 relative z-10">
-          <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+              <ComposedChart data={data} margin={{ top: 28, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   {data.map((d) => (
                     <linearGradient id={`tierBar-${d.nodeId}`} key={d.nodeId} x1="0" y1="0" x2="0" y2="1">
