@@ -39,12 +39,12 @@ const bscTestnetConfig: RuneChainConfig = {
   nodePresell: "0x6a30f26338742670637f47dfC04600B4d1eF1E9a",
   // The contracts ship new on every testnet iteration. Scanning from block 0
   // on BSC testnet (100M+ blocks) wastes hours crawling empty space before
-  // we reach any event. Anchor the cursor to the actual deployment blocks
-  // so the indexer is real-time from the first tick.
-  //   Community   deployed around block 103_132_808
-  //   NodePresell deployed around block 103_132_834
-  // We subtract a small pad in case the binary search was off by one.
-  startBlock: { community: 103_132_800n, nodePresell: 103_132_800n },
+  // we reach any event. Anchor the cursor well below any observed on-chain
+  // activity so the historical bindings get indexed on a cold DB.
+  // Observed tx 0x4579…2a295f (user bound to ROOT) lives at block 103_111_133,
+  // which is earlier than the deployment blocks we originally used. Dropping
+  // to 103_100_000 covers ~5 days of history before the earliest real event.
+  startBlock: { community: 103_100_000n, nodePresell: 103_100_000n },
   chain: bscTestnet,
 };
 
