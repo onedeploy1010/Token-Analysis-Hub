@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useActiveAccount } from "thirdweb/react";
 import { motion } from "framer-motion";
+import { getAddress } from "thirdweb/utils";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
   TrendingUp, Wallet, Link as LinkIcon, Gift,
@@ -21,8 +22,27 @@ import { useLanguage } from "@/contexts/language-context";
 
 type Tab = "overview" | "team" | "rewards";
 
-/** Short-hand 0x123…abcd formatter for display. */
-const short = (a: string | undefined) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "—");
+/**
+ * Render an address in EIP-55 mixed-case form even though the indexer
+ * stores it lowercase — case only matters for display (checksum lets a
+ * human spot typos), never for protocol equality. Returns `"—"` for
+ * nullish inputs so callers can drop it straight into JSX.
+ */
+function checksum(a: string | undefined): string {
+  if (!a) return "—";
+  try {
+    return getAddress(a);
+  } catch {
+    return a;
+  }
+}
+
+/** Short-hand 0xC8D0…F7eC formatter for dense rows. */
+const short = (a: string | undefined) => {
+  if (!a) return "—";
+  const c = checksum(a);
+  return `${c.slice(0, 6)}…${c.slice(-4)}`;
+};
 
 /**
  * Read-only address pill with select-all text and a copy icon. The user
@@ -41,15 +61,19 @@ function CopyableAddress({
   className = "",
 }: {
   address: string;
-  /** Display the truncated 0x1234…abcd form but still copy the full 42-char address. */
+  /** Display the truncated 0xC8D0…F7eC form but still copy the full 42-char address. */
   short?: boolean;
   className?: string;
 }) {
   const [copied, setCopied] = useState(false);
+  // Always render + copy EIP-55 checksum. The DB stores lowercase for
+  // case-insensitive equality, but the UI hands users a checksummed
+  // value so pastes back into other dapps/wallets keep the same form.
+  const display = checksum(address);
   async function copy(e: React.MouseEvent) {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(address);
+      await navigator.clipboard.writeText(display);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -57,16 +81,13 @@ function CopyableAddress({
        *  lets the user select-and-copy manually. */
     }
   }
-  // Short mode is for dense rows (tree children): we show 0x1234…abcd but
-  // the copy button always writes the full address to the clipboard so the
-  // user can paste a real Ethereum-format address.
   return (
     <span
       onClick={(e) => e.stopPropagation()}
       className={`inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-0.5 font-mono text-[11px] sm:text-xs ${isShort ? "" : "break-all"} ${className}`}
-      title={address}
+      title={display}
     >
-      <span className={isShort ? "" : "select-all"}>{isShort ? short(address) : address}</span>
+      <span className={isShort ? "" : "select-all"}>{isShort ? short(address) : display}</span>
       <button
         type="button"
         onClick={copy}
