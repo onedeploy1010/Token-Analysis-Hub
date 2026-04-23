@@ -46,10 +46,16 @@ export type NodeId = typeof NODE_IDS[number];
  *  `priceUsdt` mirrors the on-chain payAmount in whole USDT — used for
  *  tree badges that show "held tier + price" at a glance. If the
  *  contract ever re-tunes prices the source of truth is
- *  `NodePresell.getNodeConfigs`, so treat this as a display shortcut. */
-export const NODE_META: Record<NodeId, { level: string; nameCn: string; nameEn: string; color: string; priceUsdt: number }> = {
-  101: { level: "guardian",  nameCn: "符主", nameEn: "GUARDIAN",  color: "text-amber-400",  priceUsdt: 50000 },
-  201: { level: "strategic", nameCn: "符魂", nameEn: "STRATEGIC", color: "text-purple-400", priceUsdt: 10000 },
-  301: { level: "builder",   nameCn: "符印", nameEn: "BUILDER",   color: "text-green-400",  priceUsdt:  5000 },
-  401: { level: "pioneer",   nameCn: "符胚", nameEn: "PIONEER",   color: "text-blue-400",   priceUsdt:  2500 },
+ *  `NodePresell.getNodeConfigs`, so treat this as a display shortcut.
+ *
+ *  `rgb` is the Tailwind-400 shade of each tier expressed as a raw
+ *  "r, g, b" triple so CSS custom properties can mix it into shadows
+ *  and glows without string parsing (`rgba(var(--tier-rgb), 0.3)`).
+ *  Keep it in sync with `color` — they're both pointing at the same
+ *  tailwind shade, just expressed differently. */
+export const NODE_META: Record<NodeId, { level: string; nameCn: string; nameEn: string; color: string; rgb: string; priceUsdt: number }> = {
+  101: { level: "guardian",  nameCn: "符主", nameEn: "GUARDIAN",  color: "text-amber-400",  rgb: "251, 191, 36",  priceUsdt: 50000 },
+  201: { level: "strategic", nameCn: "符魂", nameEn: "STRATEGIC", color: "text-purple-400", rgb: "192, 132, 252", priceUsdt: 10000 },
+  301: { level: "builder",   nameCn: "符印", nameEn: "BUILDER",   color: "text-green-400",  rgb: "52, 211, 153",  priceUsdt:  5000 },
+  401: { level: "pioneer",   nameCn: "符胚", nameEn: "PIONEER",   color: "text-blue-400",   rgb: "96, 165, 250",  priceUsdt:  2500 },
 };

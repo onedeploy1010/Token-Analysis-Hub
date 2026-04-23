@@ -89,17 +89,17 @@ function CopyableAddress({
   return (
     <span
       onClick={(e) => e.stopPropagation()}
-      className={`inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-0.5 font-mono text-[11px] sm:text-xs ${isShort ? "" : "break-all"} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-0.5 font-mono text-[11px] sm:text-xs transition-colors duration-300 ${copied ? "border-emerald-500/50 bg-emerald-500/5" : "hover:border-amber-500/30"} ${isShort ? "" : "break-all"} ${className}`}
       title={display}
     >
       <span className={isShort ? "" : "select-all"}>{isShort ? short(address) : display}</span>
       <button
         type="button"
         onClick={copy}
-        className="opacity-60 hover:opacity-100 transition-opacity shrink-0"
+        className={`rounded-sm transition-all duration-200 shrink-0 ${copied ? "animate-copy-pop text-emerald-400" : "opacity-60 hover:opacity-100 hover:text-amber-400"}`}
         aria-label="Copy address"
       >
-        {copied ? <CheckCircle2 className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+        {copied ? <CheckCircle2 className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
       </button>
     </span>
   );
@@ -183,12 +183,26 @@ function fmtUsdt(raw: bigint | undefined | string, dec = 2): string {
  */
 const HERO_THEME: Record<NodeId, {
   glow: string; ring: string; from: string; to: string; accent: string; gradient: string;
+  /** Raw "r, g, b" triple mirroring NODE_META.rgb — used for CSS custom
+   *  props so shadows/glows can mix the tier colour at arbitrary alpha. */
+  rgb: string;
+  /** Bright accent-50ish chip foreground, used on ultra-short numeric
+   *  readouts where text-*-300 is still a touch dim against the ink bg. */
+  accentBright: string;
+  /** Per-tier chip background used for tier pills on the hero + reward cards.
+   *  Strong enough to register on the dark bg, never competing with `.num-gold`. */
+  chip: string;
 }> = {
-  401: { glow: "shadow-[0_0_80px_rgba(59,130,246,0.28)]",  ring: "border-blue-600/50",   from: "from-blue-950/70",   to: "to-slate-950/95", accent: "text-blue-300",   gradient: "from-blue-500/15 via-blue-700/5 to-transparent" },
-  301: { glow: "shadow-[0_0_80px_rgba(34,197,94,0.28)]",    ring: "border-emerald-600/50",from: "from-emerald-950/70",to: "to-slate-950/95", accent: "text-emerald-300",gradient: "from-emerald-500/15 via-emerald-700/5 to-transparent" },
-  101: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.32)]",   ring: "border-amber-600/55", from: "from-amber-950/70",  to: "to-slate-950/95", accent: "text-amber-300",  gradient: "from-amber-500/18 via-amber-700/5 to-transparent" },
-  201: { glow: "shadow-[0_0_80px_rgba(168,85,247,0.28)]",   ring: "border-purple-600/50",from: "from-purple-950/70", to: "to-slate-950/95", accent: "text-purple-300", gradient: "from-purple-500/15 via-purple-700/5 to-transparent" },
+  401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.32)]",   ring: "border-blue-500/50",    from: "from-blue-950/70",    to: "to-slate-950/95", accent: "text-blue-300",    accentBright: "text-blue-200",    gradient: "from-blue-500/20 via-blue-700/5 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/10 border-blue-500/40 text-blue-200" },
+  301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.30)]",   ring: "border-emerald-500/50", from: "from-emerald-950/70", to: "to-slate-950/95", accent: "text-emerald-300", accentBright: "text-emerald-200", gradient: "from-emerald-500/20 via-emerald-700/5 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/10 border-emerald-500/40 text-emerald-200" },
+  101: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.38)]",   ring: "border-amber-500/60",   from: "from-amber-950/70",   to: "to-slate-950/95", accent: "text-amber-300",   accentBright: "text-amber-200",   gradient: "from-amber-500/24 via-amber-700/6 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/10 border-amber-500/45 text-amber-200" },
+  201: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.30)]",  ring: "border-purple-500/50",  from: "from-purple-950/70",  to: "to-slate-950/95", accent: "text-purple-300",  accentBright: "text-purple-200",  gradient: "from-purple-500/20 via-purple-700/5 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/10 border-purple-500/40 text-purple-200" },
 };
+
+/** Unified easing — every dashboard entrance + hover rides this curve so
+ *  the timing reads as coordinated instead of "each component had its own
+ *  idea". Matches the project's `.token-card-3d` transition choice. */
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -219,62 +233,122 @@ export default function Dashboard() {
     <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
       {/* ── Hero banner ── tier-themed, with slow-pulse glow + big level title.
           Stays stable at first render so reloading mid-session doesn't reshuffle
-          the layout; motion is limited to the decorative orb + a single fade-up
-          entry on the content block. */}
+          the layout; motion is limited to the decorative orb, a horizontal
+          sweep, and a single fade-up entry on the content block.
+
+          Depth recipe:
+            1. gradient ink base (`from` → `to`)
+            2. two counter-drifting radial orbs (tier accent + slate fill)
+            3. inner rim bevel (top-edge highlight + bottom shadow via .surface-3d)
+            4. subtle diagonal noise via radial overlay
+            5. 8s horizontal sweep streak for a "live" feel */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative overflow-hidden rounded-3xl border ${theme.ring} bg-gradient-to-br ${theme.from} ${theme.to} ${theme.glow}`}
+        transition={{ duration: 0.55, ease: EASE }}
+        style={{ ["--tier-rgb" as string]: theme.rgb }}
+        className={`surface-3d surface-3d-tinted relative overflow-hidden rounded-3xl border ${theme.ring} bg-gradient-to-br ${theme.from} ${theme.to} ${theme.glow}`}
       >
+        {/* Pulse orb — top-right, tier-tinted, slow-breathing */}
         <motion.div
           aria-hidden
-          className={`absolute -top-24 -right-24 w-96 h-96 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`}
-          animate={{ scale: [0.9, 1.08, 0.9], opacity: [0.6, 0.9, 0.6] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className={`absolute -top-28 -right-28 w-[28rem] h-[28rem] rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`}
+          animate={{ scale: [0.9, 1.1, 0.9], opacity: [0.55, 0.95, 0.55] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+        {/* Secondary slate orb — bottom-left, counter-drifts so the banner
+            always has *two* light sources rather than one flat wash. */}
+        <motion.div
+          aria-hidden
+          className="absolute -bottom-32 -left-24 w-96 h-96 rounded-full bg-gradient-to-tr from-slate-400/5 via-transparent to-transparent blur-3xl pointer-events-none"
+          animate={{ scale: [1.05, 0.92, 1.05], opacity: [0.35, 0.65, 0.35] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Top-left specular highlight — fixed, sells the bevel. */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
+        {/* Horizontal sweep — a thin gold streak rides across every 8s. */}
+        <div aria-hidden className="absolute inset-y-0 left-0 right-0 overflow-hidden pointer-events-none">
+          <div className="animate-hero-sweep absolute top-0 bottom-0 w-[40%] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent mix-blend-overlay" />
+        </div>
+        {/* Grid shimmer — faint scanline texture anchored top-right */}
+        <div aria-hidden className="absolute inset-0 opacity-[0.08] pointer-events-none"
+          style={{
+            backgroundImage: "repeating-linear-gradient(90deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 32px)",
+            maskImage: "radial-gradient(ellipse at top right, black 10%, transparent 55%)",
+            WebkitMaskImage: "radial-gradient(ellipse at top right, black 10%, transparent 55%)",
+          }}
+        />
 
         <div className="relative z-10 px-5 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div className="space-y-2 md:space-y-3 min-w-0">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-foreground/60">
-              <Sparkles className="h-3 w-3" /> {t("mr.dash.hub")}
-            </span>
+            <motion.span
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.08, ease: EASE }}
+              className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-foreground/60"
+            >
+              <Sparkles className="h-3 w-3 text-amber-400/90" /> {t("mr.dash.hub")}
+            </motion.span>
             {meta ? (
-              <div className="space-y-1">
-                <p className={`text-[11px] font-mono uppercase tracking-[0.28em] ${meta.color}`}>{meta.nameEn}</p>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.14, ease: EASE }}
+                className="space-y-1"
+              >
+                <p className={`text-[11px] font-mono uppercase tracking-[0.32em] ${meta.color} drop-shadow-[0_0_12px_rgba(var(--tier-rgb),0.35)]`}>{meta.nameEn}</p>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-none">
-                  <span className={theme.accent}>{meta.nameCn}</span>
-                  <span className="text-foreground/40 text-base sm:text-xl ml-2 sm:ml-3 font-mono">#{ownedNodeId}</span>
+                  <span
+                    className={theme.accent}
+                    style={{ textShadow: `0 0 32px rgba(${theme.rgb}, 0.35)` }}
+                  >
+                    {meta.nameCn}
+                  </span>
+                  <span className="text-foreground/35 text-base sm:text-xl ml-2 sm:ml-3 font-mono tabular-nums">#{ownedNodeId}</span>
                 </h1>
-              </div>
+              </motion.div>
             ) : (
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{t("mr.dash.title")}</h1>
             )}
-            <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1">
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.22, ease: EASE }}
+              className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1"
+            >
               <Wallet className="h-3.5 w-3.5 shrink-0" />
               <CopyableAddress address={address} />
               <span className="opacity-40">·</span>
               <span>{runeChain.name}</span>
-            </div>
+            </motion.div>
           </div>
 
           {meta && (
-            <div className="flex items-center gap-4 shrink-0">
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.45, delay: 0.2, ease: EASE }}
+              className="flex items-center gap-4 shrink-0"
+            >
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">{t("mr.dash.owned.paid")}</p>
-                <p className={`num text-2xl md:text-3xl font-bold tabular-nums ${theme.accent}`}>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70">{t("mr.dash.owned.paid")}</p>
+                <p
+                  className={`num text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
+                  style={{ textShadow: `0 0 24px rgba(${theme.rgb}, 0.4)` }}
+                >
                   ${ownedAmount ? fmtUsdt(ownedAmount, 0) : meta.priceUsdt.toLocaleString("en-US")}
                 </p>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">USDT</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1.5 tracking-[0.18em] uppercase">USDT</p>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       </motion.div>
 
-      {/* ── Tabs ── */}
-      <div className="flex gap-1 border-b border-border/30">
+      {/* ── Tabs ── indicator uses `layoutId="dashTab"` so the underline
+          morphs between tabs instead of cutting. Active tab also gets a
+          soft radial glow beneath its label. */}
+      <div className="flex gap-1 border-b border-border/30 relative">
         {[
           { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
           { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
@@ -285,16 +359,24 @@ export default function Dashboard() {
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`relative px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors ${
-                active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              className={`relative px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors duration-300 ${
+                active ? "text-foreground" : "text-muted-foreground hover:text-foreground/90"
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
+              {active && (
+                <motion.div
+                  layoutId="dashTabGlow"
+                  aria-hidden
+                  className="absolute inset-x-2 -bottom-px top-1 rounded-lg bg-gradient-to-t from-amber-400/10 to-transparent pointer-events-none"
+                  transition={{ type: "spring", stiffness: 280, damping: 26 }}
+                />
+              )}
+              <Icon className={`relative h-3.5 w-3.5 transition-colors ${active ? "text-amber-400" : ""}`} />
+              <span className="relative">{label}</span>
               {active && (
                 <motion.div
                   layoutId="dashTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400"
+                  className="absolute bottom-[-1px] left-2 right-2 h-[2px] rounded-full bg-gradient-to-r from-amber-500/0 via-amber-400 to-amber-500/0 shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
@@ -309,10 +391,10 @@ export default function Dashboard() {
       <AnimatePresence mode="wait">
         <motion.div
           key={tab}
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.28, ease: EASE }}
         >
           {tab === "overview" ? (
             <OverviewTab address={address} />
@@ -363,25 +445,42 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
   const rateBps = cfg ? Number(cfg.directRate) : undefined;
 
   return (
-    <Card className={`relative overflow-hidden bg-gradient-to-br ${theme.from} ${theme.to} border ${theme.ring}`}>
-      <div className={`absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
+    <Card
+      style={{ ["--tier-rgb" as string]: theme.rgb }}
+      className={`surface-3d surface-3d-tinted relative overflow-hidden bg-gradient-to-br ${theme.from} ${theme.to} border ${theme.ring}`}
+    >
+      <div className={`absolute -top-20 -right-20 w-56 h-56 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.05),transparent_55%)] pointer-events-none" />
       <CardHeader className="pb-3 border-b border-border/40 relative z-10">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Sparkles className={`h-4 w-4 ${theme.accent}`} />
           <span>{t("mr.dash.owned.benefitsTitle")}</span>
           {meta && (
-            <span className={`ml-auto text-[10px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>
+            <span className={`ml-auto text-[10px] font-mono uppercase tracking-[0.22em] rounded-md border px-2 py-0.5 ${theme.chip}`}>
               {meta.nameCn} · {meta.nameEn}
             </span>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-5 relative z-10">
-        <div className="grid grid-cols-2 gap-4">
-          <BenefitRow icon={DollarSign} label={t("mr.dash.owned.daily")}    value={def ? `$${def.dailyUsdt}` : "—"} sub="USDT / day" theme={theme} />
-          <BenefitRow icon={TrendingUp} label={t("mr.dash.owned.total180")} value={def ? `$${(def.dailyUsdt * 180).toLocaleString("en-US")}` : "—"} sub="180 days" theme={theme} highlight />
-          <BenefitRow icon={Gift}       label={t("mr.dash.owned.airdrop")}  value={def ? def.airdropPerSeat.toLocaleString("en-US") : "—"} sub="SUB" theme={theme} />
-          <BenefitRow icon={Coins}      label={t("mr.dash.owned.rate")}     value={rateBps !== undefined ? `${(rateBps / 100).toFixed(rateBps % 100 === 0 ? 0 : 1)}%` : "—"} sub={t("mr.dash.owned.rateSub")} theme={theme} highlight />
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: DollarSign, label: t("mr.dash.owned.daily"),    value: def ? `$${def.dailyUsdt}` : "—",                                                             sub: "USDT / day",       highlight: false },
+            { icon: TrendingUp, label: t("mr.dash.owned.total180"), value: def ? `$${(def.dailyUsdt * 180).toLocaleString("en-US")}` : "—",                             sub: "180 days",         highlight: true  },
+            { icon: Gift,       label: t("mr.dash.owned.airdrop"),  value: def ? def.airdropPerSeat.toLocaleString("en-US") : "—",                                      sub: "SUB",              highlight: false },
+            { icon: Coins,      label: t("mr.dash.owned.rate"),     value: rateBps !== undefined ? `${(rateBps / 100).toFixed(rateBps % 100 === 0 ? 0 : 1)}%` : "—",    sub: t("mr.dash.owned.rateSub"), highlight: true },
+          ].map((row, idx) => (
+            <BenefitRow
+              key={row.label}
+              icon={row.icon}
+              label={row.label}
+              value={row.value}
+              sub={row.sub}
+              theme={theme}
+              highlight={row.highlight}
+              delay={0.04 + idx * 0.05}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>
@@ -395,6 +494,7 @@ function BenefitRow({
   sub,
   theme,
   highlight = false,
+  delay = 0,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
@@ -402,16 +502,42 @@ function BenefitRow({
   sub?: string;
   theme: typeof HERO_THEME[NodeId];
   highlight?: boolean;
+  delay?: number;
 }) {
   return (
-    <div className="rounded-lg border border-border/30 bg-card/30 p-3">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground/70 mb-1.5">
-        <Icon className="h-3 w-3" />
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay, ease: EASE }}
+      whileHover={{ y: -2 }}
+      style={highlight ? { ["--tier-rgb" as string]: theme.rgb } : undefined}
+      className={`relative rounded-xl border p-3 overflow-hidden transition-colors duration-300 ${
+        highlight
+          ? "surface-3d surface-3d-tinted border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01]"
+          : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20"
+      }`}
+    >
+      {highlight && (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none opacity-60"
+          style={{
+            background: `radial-gradient(circle at 85% -20%, rgba(${theme.rgb}, 0.15), transparent 55%)`,
+          }}
+        />
+      )}
+      <div className="relative flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/75 mb-1.5">
+        <Icon className={`h-3 w-3 ${highlight ? theme.accent : "text-muted-foreground/60"}`} />
         <span>{label}</span>
       </div>
-      <div className={`text-xl font-bold tabular-nums ${highlight ? theme.accent : "text-foreground"}`}>{value}</div>
-      {sub && <div className="text-[10px] text-muted-foreground/60 mt-0.5">{sub}</div>}
-    </div>
+      <div
+        className={`relative text-xl font-bold tabular-nums num ${highlight ? theme.accentBright : "text-foreground"}`}
+        style={highlight ? { textShadow: `0 0 18px rgba(${theme.rgb}, 0.35)` } : undefined}
+      >
+        {value}
+      </div>
+      {sub && <div className="relative text-[10px] text-muted-foreground/60 mt-1 tracking-[0.12em] uppercase">{sub}</div>}
+    </motion.div>
   );
 }
 
@@ -442,12 +568,13 @@ function OverviewTab({ address }: { address: string }) {
 
   return (
     <div className="space-y-6">
-      {/* KPI strip */}
+      {/* KPI strip — cascaded entrances (40ms stagger) so the row
+          "lands" as a chord instead of an impact. */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi icon={Wallet}      label="USDT"                             value={`${fmtUsdt(usdtRaw as bigint | undefined, 2)}`}                  sub={t("mr.dash.kpi.balance")} />
-        <Kpi icon={Users}       label={t("mr.dash.kpi.direct")}          value={stats ? String(stats.directCount) : "…"}                        sub={t("mr.dash.kpi.wallets")} />
-        <Kpi icon={Users}       label={t("mr.dash.kpi.teamTotal")}       value={stats ? String(stats.totalDownstreamCount) : "…"}               sub={t("mr.dash.kpi.inclIndirect")} />
-        <Kpi icon={TrendingUp}  label={t("mr.dash.kpi.teamInvested")}    value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"}  sub={t("mr.dash.kpi.allTime")} highlight />
+        <Kpi icon={Wallet}      label="USDT"                             value={`${fmtUsdt(usdtRaw as bigint | undefined, 2)}`}                  sub={t("mr.dash.kpi.balance")}       delay={0.02} />
+        <Kpi icon={Users}       label={t("mr.dash.kpi.direct")}          value={stats ? String(stats.directCount) : "…"}                        sub={t("mr.dash.kpi.wallets")}       delay={0.06} />
+        <Kpi icon={Users}       label={t("mr.dash.kpi.teamTotal")}       value={stats ? String(stats.totalDownstreamCount) : "…"}               sub={t("mr.dash.kpi.inclIndirect")}  delay={0.10} />
+        <Kpi icon={TrendingUp}  label={t("mr.dash.kpi.teamInvested")}    value={stats ? `$${fmtUsdt(stats.totalDownstreamInvested, 0)}` : "…"}  sub={t("mr.dash.kpi.allTime")}       delay={0.14} highlight />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -456,58 +583,71 @@ function OverviewTab({ address }: { address: string }) {
             by holding the node: daily USDT payout, 180-day total, sub-token
             airdrop per seat, and the direct-commission rate they earn when
             a downline buys. */}
-        <NodeBenefitsCard ownedNodeId={nodeId} />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.18, ease: EASE }}>
+          <NodeBenefitsCard ownedNodeId={nodeId} />
+        </motion.div>
 
-        {/* Referral link */}
-        <Card className="bg-card/70 backdrop-blur border-border">
-          <CardHeader className="pb-3 border-b border-border/40">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <LinkIcon className="h-4 w-4 text-amber-400" /> {t("mr.dash.ref.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-5 space-y-3">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t("mr.dash.ref.desc")}
-            </p>
-            <div className="flex gap-2">
-              <div className="flex-1 rounded-lg border border-border/50 bg-background/60 px-3 py-2 text-[11px] font-mono text-foreground/80 truncate">
-                {referralUrl}
-              </div>
-              <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5 shrink-0">
-                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                {copied ? t("mr.dash.ref.copied") : t("mr.dash.ref.copy")}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
-              <div className="text-xs text-muted-foreground">
-                <span className="opacity-60 uppercase text-[10px] tracking-widest block">{t("mr.dash.ref.upstream")}</span>
-                {isRoot ? (
-                  <span className="text-amber-300 font-semibold">ROOT</span>
-                ) : isBound && referrer ? (
-                  <a
-                    href={`${runeChain.blockExplorers?.[0]?.url ?? "https://bscscan.com"}/address/${referrer}`}
-                    target="_blank" rel="noreferrer"
-                    className="font-mono text-foreground hover:text-amber-400 inline-flex items-center gap-1"
-                  >
-                    {short(referrer)} <ExternalLink className="h-3 w-3 opacity-60" />
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground">{t("mr.dash.ref.notBound")}</span>
-                )}
-              </div>
-              {navigator.share && (
+        {/* Referral link — layered bevel card so it reads as the
+            companion panel to the benefits card rather than a plain sheet. */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.22, ease: EASE }}>
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/90 border-amber-500/20">
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/15 via-amber-700/5 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+            <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <LinkIcon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+                {t("mr.dash.ref.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-5 space-y-3 relative z-10">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {t("mr.dash.ref.desc")}
+              </p>
+              <div className="flex gap-2">
+                <div className="flex-1 rounded-lg border border-amber-500/15 bg-black/40 px-3 py-2 text-[11px] font-mono text-foreground/85 truncate shadow-[inset_0_1px_0_rgba(255,255,255,0.04),inset_0_-1px_0_rgba(0,0,0,0.4)]">
+                  {referralUrl}
+                </div>
                 <Button
                   size="sm"
-                  variant="ghost"
-                  className="gap-1.5"
-                  onClick={() => navigator.share({ title: t("mr.dash.ref.shareTitle"), url: referralUrl }).catch(() => {})}
+                  variant="outline"
+                  onClick={copyLink}
+                  className={`gap-1.5 shrink-0 border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-400/60 hover:text-amber-200 transition-all ${copied ? "animate-copy-pop" : ""}`}
                 >
-                  <Share2 className="h-3.5 w-3.5" /> {t("mr.dash.ref.share")}
+                  {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? t("mr.dash.ref.copied") : t("mr.dash.ref.copy")}
                 </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
+                <div className="text-xs text-muted-foreground">
+                  <span className="opacity-60 uppercase text-[10px] tracking-widest block mb-0.5">{t("mr.dash.ref.upstream")}</span>
+                  {isRoot ? (
+                    <span className="text-amber-300 font-semibold drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">ROOT</span>
+                  ) : isBound && referrer ? (
+                    <a
+                      href={`${runeChain.blockExplorers?.[0]?.url ?? "https://bscscan.com"}/address/${referrer}`}
+                      target="_blank" rel="noreferrer"
+                      className="font-mono text-foreground hover:text-amber-400 inline-flex items-center gap-1 transition-colors"
+                    >
+                      {short(referrer)} <ExternalLink className="h-3 w-3 opacity-60" />
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">{t("mr.dash.ref.notBound")}</span>
+                  )}
+                </div>
+                {navigator.share && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1.5 hover:bg-amber-500/10 hover:text-amber-200"
+                    onClick={() => navigator.share({ title: t("mr.dash.ref.shareTitle"), url: referralUrl }).catch(() => {})}
+                  >
+                    <Share2 className="h-3.5 w-3.5" /> {t("mr.dash.ref.share")}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
@@ -552,21 +692,23 @@ function TeamTab({ address }: { address: string }) {
           drill-down focus. 6 cards keep the overview consistent when the
           user descends into someone else's team. */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-        <Kpi icon={Users}       label={t("mr.dash.team.direct")}            value={rootStats ? String(rootStats.directCount) : "…"}                          sub={t("mr.dash.team.firstLayer")} />
-        <Kpi icon={Users}       label={t("mr.dash.team.total")}             value={rootStats ? String(rootStats.totalDownstreamCount) : "…"}                 sub={t("mr.dash.team.recursive")}  />
-        <Kpi icon={Coins}       label={t("mr.dash.team.directInvested")}    value={rootStats ? `$${fmtUsdt(rootStats.directTotalInvested, 0)}` : "…"}        sub="USDT" />
-        <Kpi icon={TrendingUp}  label={t("mr.dash.team.teamInvested")}      value={rootStats ? `$${fmtUsdt(rootStats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" />
-        <Kpi icon={Gift}        label={t("mr.dash.team.directCommission")}  value={rootStats ? `$${fmtUsdt(rootStats.directCommission, 2)}` : "…"}           sub="USDT" highlight />
-        <Kpi icon={Sparkles}    label={t("mr.dash.team.teamCommission")}    value={rootStats ? `$${fmtUsdt(rootStats.teamCommission, 2)}` : "…"}             sub="USDT" highlight />
+        <Kpi icon={Users}       label={t("mr.dash.team.direct")}            value={rootStats ? String(rootStats.directCount) : "…"}                          sub={t("mr.dash.team.firstLayer")} delay={0.02} />
+        <Kpi icon={Users}       label={t("mr.dash.team.total")}             value={rootStats ? String(rootStats.totalDownstreamCount) : "…"}                 sub={t("mr.dash.team.recursive")}  delay={0.06} />
+        <Kpi icon={Coins}       label={t("mr.dash.team.directInvested")}    value={rootStats ? `$${fmtUsdt(rootStats.directTotalInvested, 0)}` : "…"}        sub="USDT" delay={0.10} />
+        <Kpi icon={TrendingUp}  label={t("mr.dash.team.teamInvested")}      value={rootStats ? `$${fmtUsdt(rootStats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" delay={0.14} />
+        <Kpi icon={Gift}        label={t("mr.dash.team.directCommission")}  value={rootStats ? `$${fmtUsdt(rootStats.directCommission, 2)}` : "…"}           sub="USDT" delay={0.18} highlight />
+        <Kpi icon={Sparkles}    label={t("mr.dash.team.teamCommission")}    value={rootStats ? `$${fmtUsdt(rootStats.teamCommission, 2)}` : "…"}             sub="USDT" delay={0.22} highlight />
       </div>
 
-      <Card className="bg-card/70 backdrop-blur border-border">
-        <CardHeader className="pb-3 border-b border-border/40">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+        <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+        <CardHeader className="pb-3 border-b border-border/40 relative z-10">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Users className="h-4 w-4 text-amber-400" /> {t("mr.dash.team.treeTitle")}
+            <Users className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> {t("mr.dash.team.treeTitle")}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4 space-y-4">
+        <CardContent className="pt-4 space-y-4 relative z-10">
           {/* Referral-chain breadcrumb. Always shows "Root (You)" as the
               first chip; subsequent chips are drilled-in wallets. The last
               chip is non-clickable since it IS the current view. */}
@@ -669,28 +811,34 @@ function FocusHeader({
   // and the badge strip on its own row on mobile; collapse to a single
   // row once we hit `sm` so desktop still reads at a glance.
   return (
-    <div className={`rounded-xl border p-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:flex-wrap ${
+    <div className={`relative overflow-hidden rounded-xl border p-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:flex-wrap transition-all duration-300 ${
       isSelf
-        ? "border-amber-700/50 bg-amber-950/20"
-        : "border-border/50 bg-card/40"
+        ? "border-amber-500/55 bg-gradient-to-br from-amber-950/35 via-amber-950/15 to-slate-950/40 shadow-[inset_0_1px_0_rgba(251,191,36,0.12),0_8px_24px_-12px_rgba(251,191,36,0.3)]"
+        : "border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-950/80 hover:border-white/20"
     }`}>
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className={`text-[10px] uppercase tracking-[0.18em] font-semibold px-1.5 py-0.5 rounded border ${
+      {isSelf && (
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.12),transparent_55%)] pointer-events-none"
+        />
+      )}
+      <div className="relative flex items-center gap-2 flex-wrap">
+        <span className={`text-[10px] uppercase tracking-[0.2em] font-semibold px-1.5 py-0.5 rounded border ${
           isSelf
-            ? "text-amber-300/80 border-amber-700/40 bg-amber-950/30"
-            : "text-muted-foreground border-border/50 bg-card/50"
+            ? "text-amber-200 border-amber-500/50 bg-amber-500/10 drop-shadow-[0_0_6px_rgba(251,191,36,0.3)]"
+            : "text-muted-foreground border-white/15 bg-white/[0.03]"
         }`}>
           {isSelf ? t("mr.dash.team.rootSelf") : `L${depth}`}
         </span>
         <CopyableAddress
           address={address}
           short
-          className={isSelf ? "!border-amber-700/40 !bg-amber-950/30 !text-amber-100" : ""}
+          className={isSelf ? "!border-amber-500/40 !bg-amber-500/10 !text-amber-100" : ""}
         />
       </div>
-      <div className="flex items-center gap-2 flex-wrap sm:contents">
+      <div className="relative flex items-center gap-2 flex-wrap sm:contents">
         <TreeNodeBadges stats={stats} accent={isSelf ? "amber" : undefined} />
-        <span className="text-[10px] text-muted-foreground sm:ml-auto">
+        <span className="relative text-[10px] text-muted-foreground sm:ml-auto tabular-nums">
           {stats ? `${stats.directCount} ${t("mr.dash.team.directShort")}` : ""}
         </span>
       </div>
@@ -705,18 +853,20 @@ function FocusHeader({
 function TeamRow({ row, onDrill }: { row: ReferrerRow; onDrill: () => void }) {
   const { data: stats } = usePersonalStats(row.user);
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onDrill}
-      className="w-full flex items-center gap-2 py-2 px-3 rounded-lg border border-border/40 bg-card/30 hover:border-amber-600/50 hover:bg-amber-950/10 transition-colors flex-wrap text-left group"
+      whileHover={{ x: 2 }}
+      transition={{ duration: 0.2, ease: EASE }}
+      className="w-full flex items-center gap-2 py-2.5 px-3 rounded-lg border border-white/10 bg-white/[0.02] hover:border-amber-500/50 hover:bg-amber-500/[0.06] hover:shadow-[0_4px_20px_-8px_rgba(251,191,36,0.3)] transition-all duration-300 flex-wrap text-left group"
     >
       <CopyableAddress address={row.user} short />
       <TreeNodeBadges stats={stats} />
       <span className="text-[10px] text-muted-foreground ml-auto flex items-center gap-1.5">
-        {new Date(row.boundAt).toLocaleDateString()}
-        <ChevronRight className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 group-hover:text-amber-400 transition-all" />
+        <span className="tabular-nums">{new Date(row.boundAt).toLocaleDateString()}</span>
+        <ChevronRight className="h-3.5 w-3.5 opacity-50 transition-all duration-300 group-hover:opacity-100 group-hover:text-amber-400 group-hover:translate-x-0.5" />
       </span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -745,9 +895,9 @@ function RewardsTab({ address }: { address: string }) {
           with the rewards-tab framing. Total earned mirrors
           personalStats.directCommission; count mirrors directPurchaseCount. */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <Kpi icon={Gift}       label={t("mr.dash.reward.total")}   value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"} sub="USDT" highlight />
-        <Kpi icon={DollarSign} label={t("mr.dash.reward.count")}   value={stats ? String(stats.directPurchaseCount) : "…"}       sub={t("mr.dash.reward.countSub")} />
-        <Kpi icon={Sparkles}   label={t("mr.dash.reward.teamAll")} value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}  sub="USDT" />
+        <Kpi icon={Gift}       label={t("mr.dash.reward.total")}   value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"} sub="USDT" delay={0.02} highlight />
+        <Kpi icon={DollarSign} label={t("mr.dash.reward.count")}   value={stats ? String(stats.directPurchaseCount) : "…"}       sub={t("mr.dash.reward.countSub")} delay={0.06} />
+        <Kpi icon={Sparkles}   label={t("mr.dash.reward.teamAll")} value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}  sub="USDT" delay={0.10} />
       </div>
 
       {/* Per-tier breakdown — only render tiers the user has actually
@@ -764,18 +914,30 @@ function RewardsTab({ address }: { address: string }) {
               return (
                 <motion.div
                   key={nodeId}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                  whileHover={{ y: -2 }}
-                  className={`relative overflow-hidden rounded-xl border ${theme.ring} bg-gradient-to-br ${theme.from} ${theme.to} p-4 transition-shadow hover:${theme.glow}`}
+                  transition={{ duration: 0.4, delay: 0.12 + idx * 0.05, ease: EASE }}
+                  whileHover={{ y: -3 }}
+                  style={{ ["--tier-rgb" as string]: theme.rgb }}
+                  className={`group surface-3d surface-3d-tinted relative overflow-hidden rounded-xl border ${theme.ring} bg-gradient-to-br ${theme.from} ${theme.to} p-4 transition-all duration-300`}
                 >
-                  <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br ${theme.gradient} blur-2xl pointer-events-none`} />
+                  {/* Orb — counter-tinted, pulses on hover */}
+                  <div className={`absolute -top-10 -right-10 w-36 h-36 rounded-full bg-gradient-to-br ${theme.gradient} blur-2xl pointer-events-none transition-all duration-500 group-hover:scale-125`} />
+                  {/* Specular top-left for bevel */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
                   <div className="relative z-10">
-                    <div className={`text-[10px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>{meta.nameEn}</div>
-                    <div className="text-sm font-bold text-foreground mt-0.5">{meta.nameCn}</div>
-                    <div className={`num text-xl font-bold mt-2 tabular-nums ${theme.accent}`}>${fmtUsdt(commission.toString(), 2)}</div>
-                    <div className="text-[10px] text-muted-foreground/70 mt-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className={`text-[10px] font-mono uppercase tracking-[0.22em] ${meta.color}`}>{meta.nameEn}</div>
+                      <span className={`text-[9px] font-mono rounded border px-1.5 py-0.5 tabular-nums ${theme.chip}`}>#{nodeId}</span>
+                    </div>
+                    <div className="text-sm font-bold text-foreground/90 mt-0.5">{meta.nameCn}</div>
+                    <div
+                      className={`num text-2xl font-bold mt-3 tabular-nums ${theme.accentBright}`}
+                      style={{ textShadow: `0 0 18px rgba(${theme.rgb}, 0.4)` }}
+                    >
+                      ${fmtUsdt(commission.toString(), 2)}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground/70 mt-1.5 tracking-[0.12em] uppercase tabular-nums">
                       {count} × {t("mr.dash.reward.payouts")}
                     </div>
                   </div>
@@ -790,41 +952,56 @@ function RewardsTab({ address }: { address: string }) {
           shape of earnings-by-tier shows up at a glance. Recharts handles
           responsive sizing; we pin height so the card stays stable. */}
       {rewards && rewards.length > 0 && (
-        <Card className="bg-card/70 backdrop-blur border-border">
-          <CardHeader className="pb-3 border-b border-border/40">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-400" /> {t("mr.dash.reward.monthlyTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <MonthlyRewardChart rewards={rewards} />
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.3, ease: EASE }}
+        >
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+            <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/8 via-transparent to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+            <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> {t("mr.dash.reward.monthlyTitle")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 relative z-10">
+              <MonthlyRewardChart rewards={rewards} />
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
 
       {/* Detail list — each on-chain commission payout as its own row.
           rewards are already ordered by paidAt DESC on the server. */}
-      <Card className="bg-card/70 backdrop-blur border-border">
-        <CardHeader className="pb-3 border-b border-border/40">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Gift className="h-4 w-4 text-amber-400" /> {t("mr.dash.reward.listTitle")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.reward.loading")}</p>
-          ) : !rewards || rewards.length === 0 ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">
-              <Gift className="h-8 w-8 mx-auto mb-3 opacity-30" />
-              {t("mr.dash.reward.empty")}
-            </div>
-          ) : (
-            <ul className="divide-y divide-border/30">
-              {rewards.map((r) => <RewardRowItem key={r.txHash} row={r} />)}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.35, ease: EASE }}
+      >
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.04),transparent_55%)] pointer-events-none" />
+          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Gift className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> {t("mr.dash.reward.listTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 relative z-10">
+            {isLoading ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.reward.loading")}</p>
+            ) : !rewards || rewards.length === 0 ? (
+              <div className="py-10 text-center text-sm text-muted-foreground">
+                <Gift className="h-8 w-8 mx-auto mb-3 opacity-30" />
+                {t("mr.dash.reward.empty")}
+              </div>
+            ) : (
+              <ul className="divide-y divide-border/30">
+                {rewards.map((r) => <RewardRowItem key={r.txHash} row={r} />)}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <p className="text-[10px] text-muted-foreground/50 text-center">
         {t("mr.dash.reward.note")}
@@ -849,19 +1026,28 @@ function RewardRowItem({ row }: { row: RewardRow }) {
   //   row-2: date · rate · explorer icon
   // Desktop (sm+): single line so the detail list stays dense.
   return (
-    <li className="group py-3 px-2 rounded-lg transition-colors hover:bg-white/[0.03]">
+    <li className="group relative py-3 px-3 rounded-lg transition-all duration-300 hover:bg-white/[0.04] hover:translate-x-0.5">
+      {/* Tier-colored left edge — appears on hover to confirm the row is interactive */}
+      <span
+        aria-hidden
+        className={`absolute left-0 top-2 bottom-2 w-[2px] rounded-full opacity-0 group-hover:opacity-80 transition-opacity duration-300`}
+        style={theme ? { backgroundColor: `rgb(${theme.rgb})`, boxShadow: `0 0 8px rgba(${theme.rgb}, 0.6)` } : undefined}
+      />
       <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-        <span className={`text-[10px] font-mono uppercase tracking-[0.18em] w-14 sm:w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
+        <span className={`text-[10px] font-mono uppercase tracking-[0.2em] w-14 sm:w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
           {meta?.nameEn ?? `#${row.nodeId}`}
         </span>
         <CopyableAddress address={row.downline} short />
-        <span className={`ml-auto text-sm font-semibold shrink-0 tabular-nums ${theme?.accent ?? "text-amber-400"}`}>
+        <span
+          className={`ml-auto text-sm font-semibold shrink-0 tabular-nums num ${theme?.accentBright ?? "text-amber-300"}`}
+          style={theme ? { textShadow: `0 0 12px rgba(${theme.rgb}, 0.35)` } : undefined}
+        >
           +${fmtUsdt(row.commission, 4)}
         </span>
       </div>
       <div className="flex items-center gap-3 flex-wrap mt-1.5 pl-[calc(3.5rem+0.5rem)] sm:pl-[calc(4rem+0.75rem)] text-[11px] text-muted-foreground/70">
-        <span>{new Date(row.paidAt).toLocaleString()}</span>
-        <span className="font-mono tabular-nums">
+        <span className="tabular-nums">{new Date(row.paidAt).toLocaleString()}</span>
+        <span className="font-mono tabular-nums opacity-80">
           {(row.directRate / 100).toFixed(row.directRate % 100 === 0 ? 0 : 1)}%
         </span>
         {hasRealTx && (
@@ -869,7 +1055,7 @@ function RewardRowItem({ row }: { row: RewardRow }) {
             href={`${explorerBase}${row.txHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto text-muted-foreground/60 hover:text-foreground transition-colors inline-flex items-center gap-1"
+            className="ml-auto text-muted-foreground/60 hover:text-amber-400 transition-colors inline-flex items-center gap-1"
             title={t("mr.dash.reward.viewTx")}
           >
             <ExternalLink className="h-3 w-3" />
@@ -941,8 +1127,9 @@ function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
               const c = TIER_FILL[id as NodeId];
               return (
                 <linearGradient id={`tier-${id}`} key={id} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={c} stopOpacity={0.55} />
-                  <stop offset="100%" stopColor={c} stopOpacity={0.02} />
+                  <stop offset="0%" stopColor={c} stopOpacity={0.75} />
+                  <stop offset="55%" stopColor={c} stopOpacity={0.22} />
+                  <stop offset="100%" stopColor={c} stopOpacity={0.01} />
                 </linearGradient>
               );
             })}
@@ -1017,33 +1204,46 @@ function Kpi({
   sub,
   icon: Icon,
   highlight = false,
+  delay = 0,
 }: {
   label: string;
   value: string;
   sub?: string;
   icon?: ComponentType<{ className?: string }>;
   highlight?: boolean;
+  /** Stagger offset (seconds) so rows of Kpis cascade rather than all land
+   *  together. Caller supplies 0.04–0.06s increments for a chord effect. */
+  delay?: number;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -2 }}
-      className={`relative border rounded-xl p-4 corner-brackets transition-all ${
+      transition={{ duration: 0.4, delay, ease: EASE }}
+      whileHover={{ y: -3 }}
+      className={`group relative border rounded-xl p-4 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
         highlight
-          ? "border-amber-700/50 bg-gradient-to-br from-amber-950/30 to-card/70 hover:border-amber-500/60 hover:shadow-[0_0_24px_rgba(251,191,36,0.18)]"
-          : "border-border/50 bg-card/60 hover:border-border/80 hover:bg-card/80"
+          ? "border-amber-500/40 bg-gradient-to-br from-amber-950/30 via-slate-900/80 to-slate-950/90 hover:border-amber-400/60 hover:shadow-[0_0_28px_rgba(251,191,36,0.25),inset_0_1px_0_rgba(251,191,36,0.15)]"
+          : "border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-950/85 hover:border-white/25 hover:bg-slate-900/80"
       }`}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/70">{label}</span>
+      {/* Hover glow aurora — appears behind content on hover */}
+      <div
+        aria-hidden
+        className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${
+          highlight
+            ? "bg-[radial-gradient(circle_at_75%_-20%,rgba(251,191,36,0.18),transparent_55%)]"
+            : "bg-[radial-gradient(circle_at_75%_-20%,rgba(255,255,255,0.06),transparent_55%)]"
+        }`}
+      />
+      <div className="relative flex items-center justify-between mb-1.5">
+        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">{label}</span>
         {Icon && (
-          <Icon className={`h-3.5 w-3.5 ${highlight ? "text-amber-400/80" : "text-muted-foreground/50"}`} />
+          <Icon className={`h-3.5 w-3.5 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]" : "text-muted-foreground/55 group-hover:text-foreground/80"}`} />
         )}
       </div>
-      <div className={`text-xl num ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
-      {sub && <div className="text-[10px] text-muted-foreground/60 mt-1">{sub}</div>}
+      <div className={`relative text-xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
+      {sub && <div className="relative text-[10px] text-muted-foreground/60 mt-1 tracking-[0.14em] uppercase">{sub}</div>}
     </motion.div>
   );
 }
