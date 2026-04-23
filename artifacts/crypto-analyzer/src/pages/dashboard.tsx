@@ -9,7 +9,7 @@ import {
   Coins, DollarSign,
 } from "lucide-react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -235,21 +235,21 @@ export default function Dashboard() {
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
 
-        <div className="relative z-10 px-6 py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div className="space-y-3 min-w-0">
+        <div className="relative z-10 px-5 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
+          <div className="space-y-2 md:space-y-3 min-w-0">
             <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-foreground/60">
               <Sparkles className="h-3 w-3" /> {t("mr.dash.hub")}
             </span>
             {meta ? (
               <div className="space-y-1">
                 <p className={`text-[11px] font-mono uppercase tracking-[0.28em] ${meta.color}`}>{meta.nameEn}</p>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-none">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-none">
                   <span className={theme.accent}>{meta.nameCn}</span>
-                  <span className="text-foreground/40 text-xl ml-3 font-mono">#{ownedNodeId}</span>
+                  <span className="text-foreground/40 text-base sm:text-xl ml-2 sm:ml-3 font-mono">#{ownedNodeId}</span>
                 </h1>
               </div>
             ) : (
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{t("mr.dash.title")}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{t("mr.dash.title")}</h1>
             )}
             <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1">
               <Wallet className="h-3.5 w-3.5 shrink-0" />
@@ -285,7 +285,7 @@ export default function Dashboard() {
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`relative px-5 py-2.5 text-sm font-medium flex items-center gap-2 transition-colors ${
+              className={`relative px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -578,6 +578,7 @@ function TeamTab({ address }: { address: string }) {
           <FocusHeader
             address={current}
             isSelf={current === path[0]}
+            depth={path.length - 1}
             stats={stats}
           />
 
@@ -649,38 +650,50 @@ function TeamBreadcrumb({ path, onJump }: { path: string[]; onJump: (index: numb
   );
 }
 
-/** The current focus's summary: address + owned-tier + team badges. Renders
- *  the amber "you are here" styling when the focus is the root wallet. */
+/** The current focus's summary: address + owned-tier + team badges +
+ *  depth label ("ROOT" when isSelf, "第 N 层" otherwise). Renders the
+ *  amber "you are here" styling when the focus is the root wallet. */
 function FocusHeader({
   address,
   isSelf,
   stats,
+  depth,
 }: {
   address: string;
+  depth: number;
   isSelf: boolean;
   stats: PersonalStats | undefined;
 }) {
   const { t } = useLanguage();
+  // Keep the header readable down to 320px: stack the address line on top
+  // and the badge strip on its own row on mobile; collapse to a single
+  // row once we hit `sm` so desktop still reads at a glance.
   return (
-    <div className={`rounded-xl border p-3 flex items-center gap-3 flex-wrap ${
+    <div className={`rounded-xl border p-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:flex-wrap ${
       isSelf
         ? "border-amber-700/50 bg-amber-950/20"
         : "border-border/50 bg-card/40"
     }`}>
-      {isSelf && (
-        <span className="text-[10px] uppercase tracking-[0.2em] text-amber-300/70 font-semibold">
-          {t("mr.dash.team.rootSelf")}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`text-[10px] uppercase tracking-[0.18em] font-semibold px-1.5 py-0.5 rounded border ${
+          isSelf
+            ? "text-amber-300/80 border-amber-700/40 bg-amber-950/30"
+            : "text-muted-foreground border-border/50 bg-card/50"
+        }`}>
+          {isSelf ? t("mr.dash.team.rootSelf") : `L${depth}`}
         </span>
-      )}
-      <CopyableAddress
-        address={address}
-        short
-        className={isSelf ? "!border-amber-700/40 !bg-amber-950/30 !text-amber-100" : ""}
-      />
-      <TreeNodeBadges stats={stats} accent={isSelf ? "amber" : undefined} />
-      <span className="text-[10px] text-muted-foreground ml-auto">
-        {stats ? `${stats.directCount} ${t("mr.dash.team.directShort")}` : ""}
-      </span>
+        <CopyableAddress
+          address={address}
+          short
+          className={isSelf ? "!border-amber-700/40 !bg-amber-950/30 !text-amber-100" : ""}
+        />
+      </div>
+      <div className="flex items-center gap-2 flex-wrap sm:contents">
+        <TreeNodeBadges stats={stats} accent={isSelf ? "amber" : undefined} />
+        <span className="text-[10px] text-muted-foreground sm:ml-auto">
+          {stats ? `${stats.directCount} ${t("mr.dash.team.directShort")}` : ""}
+        </span>
+      </div>
     </div>
   );
 }
@@ -831,35 +844,38 @@ function RewardRowItem({ row }: { row: RewardRow }) {
   // Backfilled state rows carry a synthetic `state:` prefix and can't be
   // resolved on-chain, so hide the external-link icon for them.
   const hasRealTx = row.txHash.startsWith("0x");
+  // Mobile: 2-row layout so nothing truncates past a 320px viewport.
+  //   row-1: tier tag · address · amount
+  //   row-2: date · rate · explorer icon
+  // Desktop (sm+): single line so the detail list stays dense.
   return (
-    <li className="group py-3 px-2 flex items-center gap-3 flex-wrap rounded-lg transition-colors hover:bg-white/[0.03]">
-      <span className={`text-[10px] font-mono uppercase tracking-[0.18em] w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
-        {meta?.nameEn ?? `#${row.nodeId}`}
-      </span>
-      <CopyableAddress address={row.downline} short />
-      <div className="flex-1 min-w-0" />
-      <span className="text-[11px] text-muted-foreground shrink-0">
-        {new Date(row.paidAt).toLocaleString()}
-      </span>
-      <span className="text-[11px] text-muted-foreground/70 shrink-0 font-mono tabular-nums">
-        {(row.directRate / 100).toFixed(row.directRate % 100 === 0 ? 0 : 1)}%
-      </span>
-      <span className={`text-sm font-semibold shrink-0 tabular-nums ${theme?.accent ?? "text-amber-400"}`}>
-        +${fmtUsdt(row.commission, 4)}
-      </span>
-      {hasRealTx ? (
-        <a
-          href={`${explorerBase}${row.txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted-foreground/50 hover:text-foreground transition-colors shrink-0 opacity-0 group-hover:opacity-100"
-          title={t("mr.dash.reward.viewTx")}
-        >
-          <ExternalLink className="h-3 w-3" />
-        </a>
-      ) : (
-        <span className="w-3 shrink-0" />
-      )}
+    <li className="group py-3 px-2 rounded-lg transition-colors hover:bg-white/[0.03]">
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <span className={`text-[10px] font-mono uppercase tracking-[0.18em] w-14 sm:w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
+          {meta?.nameEn ?? `#${row.nodeId}`}
+        </span>
+        <CopyableAddress address={row.downline} short />
+        <span className={`ml-auto text-sm font-semibold shrink-0 tabular-nums ${theme?.accent ?? "text-amber-400"}`}>
+          +${fmtUsdt(row.commission, 4)}
+        </span>
+      </div>
+      <div className="flex items-center gap-3 flex-wrap mt-1.5 pl-[calc(3.5rem+0.5rem)] sm:pl-[calc(4rem+0.75rem)] text-[11px] text-muted-foreground/70">
+        <span>{new Date(row.paidAt).toLocaleString()}</span>
+        <span className="font-mono tabular-nums">
+          {(row.directRate / 100).toFixed(row.directRate % 100 === 0 ? 0 : 1)}%
+        </span>
+        {hasRealTx && (
+          <a
+            href={`${explorerBase}${row.txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto text-muted-foreground/60 hover:text-foreground transition-colors inline-flex items-center gap-1"
+            title={t("mr.dash.reward.viewTx")}
+          >
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        )}
+      </div>
     </li>
   );
 }
@@ -875,54 +891,116 @@ const TIER_FILL: Record<NodeId, string> = {
 };
 
 /**
- * Last-6-month commission histogram, grouped by tier. `rewards` is
- * already sorted desc by paidAt — we bucket into YYYY-MM labels and
- * accumulate per-nodeId so each bar stacks its tiers. If the rewards
- * list spans fewer than 6 months, the older buckets just render as
- * empty columns so the x-axis stays stable.
+ * Monthly commission chart, anchored at April 2026 (the earliest real
+ * activity) and extended through the current month. Each tier is its own
+ * stacked area with a gradient fill and a subtle glow; recharts' SMOOTH
+ * monotone interpolation gives the curve a crypto-dashboard feel instead
+ * of the blocky stacked bars the first pass shipped.
+ *
+ * Months with no data render as zero-height slivers so the timeline is
+ * continuous — users can see exactly when activity picked up.
  */
+const TREND_START = { year: 2026, month: 3 }; // April = month index 3 in Date
+type TrendDatum = { key: string; label: string; total: number; "101": number; "201": number; "301": number; "401": number };
+
 function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
-  const data = useMemo(() => {
+  const data = useMemo<TrendDatum[]>(() => {
     const now = new Date();
-    // Build the 6 most recent month keys ending at current month (oldest left).
-    const buckets: { key: string; label: string; "101": number; "201": number; "301": number; "401": number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      buckets.push({ key, label: `${d.getMonth() + 1}月`, "101": 0, "201": 0, "301": 0, "401": 0 });
+    const start = new Date(TREND_START.year, TREND_START.month, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 1);
+    // At least 6 columns even if the project is only a month old, so the
+    // chart never looks squashed.
+    const buckets: TrendDatum[] = [];
+    const cursor = new Date(start);
+    while (cursor <= end || buckets.length < 6) {
+      const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+      buckets.push({ key, label: `${cursor.getMonth() + 1}月`, total: 0, "101": 0, "201": 0, "301": 0, "401": 0 });
+      cursor.setMonth(cursor.getMonth() + 1);
+      if (buckets.length >= 18) break; // hard cap so a stale clock can't runaway
     }
     const byKey = new Map(buckets.map((b) => [b.key, b]));
     for (const r of rewards) {
       const d = new Date(r.paidAt);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const bucket = byKey.get(key);
-      if (!bucket) continue; // outside 6-month window
+      if (!bucket) continue;
       const whole = Number(BigInt(r.commission) / 10n ** 18n);
-      bucket[String(r.nodeId) as "101"] = (bucket[String(r.nodeId) as "101"] ?? 0) + whole;
+      const nKey = String(r.nodeId) as "101";
+      bucket[nKey] = (bucket[nKey] ?? 0) + whole;
+      bucket.total += whole;
     }
     return buckets;
   }, [rewards]);
 
   return (
-    <div className="h-64 w-full">
+    <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-          <XAxis dataKey="label" stroke="rgba(255,255,255,0.4)" fontSize={11} tickLine={false} axisLine={false} />
-          <YAxis stroke="rgba(255,255,255,0.4)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
-          <Tooltip
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
-            contentStyle={{ background: "#080f1e", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 8, fontSize: 12 }}
-            labelStyle={{ color: "#fbbf24", fontWeight: 600 }}
-            formatter={(value: number, name: string) => [`$${value.toLocaleString("en-US")}`, NODE_META[Number(name) as NodeId]?.nameCn ?? name]}
+        <AreaChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+          <defs>
+            {(Object.keys(TIER_FILL) as unknown as NodeId[]).map((id) => {
+              const c = TIER_FILL[id as NodeId];
+              return (
+                <linearGradient id={`tier-${id}`} key={id} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={c} stopOpacity={0.55} />
+                  <stop offset="100%" stopColor={c} stopOpacity={0.02} />
+                </linearGradient>
+              );
+            })}
+            {/* Soft glow overlay reused for the total-line emphasis. */}
+            <filter id="areaGlow" x="-10%" y="-10%" width="120%" height="130%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <CartesianGrid strokeDasharray="3 5" stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <XAxis
+            dataKey="label"
+            stroke="rgba(255,255,255,0.35)"
+            fontSize={11}
+            tickLine={false}
+            axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+            dy={4}
           />
-          {(["401", "301", "201", "101"] as const).map((nodeIdStr) => (
-            <Bar key={nodeIdStr} dataKey={nodeIdStr} stackId="tier" radius={[0, 0, 0, 0]}>
-              {data.map((_, i) => (
-                <Cell key={`${nodeIdStr}-${i}`} fill={TIER_FILL[Number(nodeIdStr) as NodeId]} />
-              ))}
-            </Bar>
+          <YAxis
+            stroke="rgba(255,255,255,0.35)"
+            fontSize={11}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+            width={48}
+          />
+          <Tooltip
+            cursor={{ stroke: "rgba(251,191,36,0.35)", strokeWidth: 1 }}
+            contentStyle={{
+              background: "rgba(8, 15, 30, 0.95)",
+              border: "1px solid rgba(251,191,36,0.35)",
+              borderRadius: 10,
+              fontSize: 12,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            }}
+            labelStyle={{ color: "#fbbf24", fontWeight: 600, marginBottom: 4 }}
+            formatter={(value: number, name: string) => {
+              if (name === "total") return [`$${value.toLocaleString("en-US")}`, "合计"];
+              return [`$${value.toLocaleString("en-US")}`, NODE_META[Number(name) as NodeId]?.nameCn ?? name];
+            }}
+          />
+          {(["401", "301", "201", "101"] as const).map((id) => (
+            <Area
+              key={id}
+              type="monotone"
+              dataKey={id}
+              stackId="tier"
+              stroke={TIER_FILL[Number(id) as NodeId]}
+              strokeWidth={1.5}
+              fill={`url(#tier-${id})`}
+              filter="url(#areaGlow)"
+              animationDuration={800}
+            />
           ))}
-        </BarChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );
