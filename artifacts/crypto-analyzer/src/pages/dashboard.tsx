@@ -24,6 +24,61 @@ type Tab = "overview" | "team";
 /** Short-hand 0x123…abcd formatter for display. */
 const short = (a: string | undefined) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "—");
 
+/**
+ * Read-only address pill with select-all text and a copy icon. The user
+ * asked for the dashboard to show the full address and let them copy it,
+ * so we render the whole 42-char value in a mono span with `select-all`
+ * (one click selects the full address for manual copy), plus an icon
+ * button that writes to the clipboard.
+ *
+ * `stopPropagation` on the outer span so clicks inside don't bubble up
+ * to parent rows — important for SelfRootNode where the row toggles the
+ * tree open/closed.
+ */
+function CopyableAddress({
+  address,
+  short: isShort = false,
+  className = "",
+}: {
+  address: string;
+  /** Display the truncated 0x1234…abcd form but still copy the full 42-char address. */
+  short?: boolean;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  async function copy(e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked — `select-all` on the full-width variant still
+       *  lets the user select-and-copy manually. */
+    }
+  }
+  // Short mode is for dense rows (tree children): we show 0x1234…abcd but
+  // the copy button always writes the full address to the clipboard so the
+  // user can paste a real Ethereum-format address.
+  return (
+    <span
+      onClick={(e) => e.stopPropagation()}
+      className={`inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-card/40 px-2 py-0.5 font-mono text-[11px] sm:text-xs ${isShort ? "" : "break-all"} ${className}`}
+      title={address}
+    >
+      <span className={isShort ? "" : "select-all"}>{isShort ? short(address) : address}</span>
+      <button
+        type="button"
+        onClick={copy}
+        className="opacity-60 hover:opacity-100 transition-opacity shrink-0"
+        aria-label="Copy address"
+      >
+        {copied ? <CheckCircle2 className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+      </button>
+    </span>
+  );
+}
+
 /** 18-decimal bigint → human USDT string. */
 function fmtUsdt(raw: bigint | undefined | string, dec = 2): string {
   if (raw === undefined || raw === null) return "—";
@@ -70,12 +125,12 @@ export default function Dashboard() {
         <div>
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60 block mb-1">{t("mr.dash.hub")}</span>
           <h1 className="text-2xl font-bold tracking-tight">{t("mr.dash.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2">
-            <Wallet className="h-3.5 w-3.5" />
-            <span className="font-mono">{short(address)}</span>
+          <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+            <Wallet className="h-3.5 w-3.5 shrink-0" />
+            <CopyableAddress address={address} />
             <span className="opacity-40">·</span>
             <span>{runeChain.name}</span>
-          </p>
+          </div>
         </div>
       </div>
 
@@ -266,7 +321,7 @@ function TeamNode({ row, depth }: { row: ReferrerRow; depth: number }) {
         onClick={() => setOpen((v) => !v)}
       >
         <span className={`text-[11px] font-mono transition-transform ${open ? "rotate-90" : ""}`}>▸</span>
-        <span className="font-mono text-xs text-foreground">{short(row.user)}</span>
+        <CopyableAddress address={row.user} short />
         <span className="text-[10px] text-muted-foreground ml-auto">
           {new Date(row.boundAt).toLocaleDateString()}
         </span>
@@ -345,14 +400,14 @@ function SelfRootNode({ address, directCount }: { address: string; directCount: 
   return (
     <div className="relative">
       <div
-        className="flex items-center gap-2 py-2 px-3 rounded-lg border border-amber-700/50 bg-amber-950/20 cursor-pointer"
+        className="flex items-center gap-2 py-2 px-3 rounded-lg border border-amber-700/50 bg-amber-950/20 cursor-pointer flex-wrap"
         onClick={() => setOpen((v) => !v)}
       >
         <span className={`text-[11px] font-mono transition-transform ${open ? "rotate-90" : ""} text-amber-300`}>▸</span>
         <span className="text-[10px] uppercase tracking-[0.2em] text-amber-300/70 font-semibold">
           {t("mr.dash.team.rootSelf")}
         </span>
-        <span className="font-mono text-xs text-amber-200">{short(address)}</span>
+        <CopyableAddress address={address} short className="!border-amber-700/40 !bg-amber-950/30 !text-amber-100" />
         <span className="text-[10px] text-amber-300/60 ml-auto">
           {directCount} {t("mr.dash.team.directShort")}
         </span>
