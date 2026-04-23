@@ -25,25 +25,28 @@ function commissionOf(
 }
 
 /** Recursively collect all transitive downstream addresses for `root`.
- *  Uses a Postgres WITH RECURSIVE CTE — one round trip, no app-side BFS. */
+ *  Uses a Postgres WITH RECURSIVE CTE — one round trip, no app-side BFS.
+ *  Avoid the alias `user`: it's a Postgres reserved keyword and a bare
+ *  `SELECT user` resolves to `CURRENT_USER`, not the CTE column. Rename
+ *  to `addr` so the final SELECT reads unambiguously. */
 async function collectDownstream(root: string, chainId: number): Promise<string[]> {
-  const rows = await db.execute<{ user: string }>(
+  const rows = await db.execute<{ addr: string }>(
     sql`
       WITH RECURSIVE team AS (
-        SELECT ${runeReferrersTable.user} AS user
+        SELECT ${runeReferrersTable.user} AS addr
         FROM   ${runeReferrersTable}
         WHERE  ${runeReferrersTable.referrer} = ${root.toLowerCase()}
           AND  ${runeReferrersTable.chainId} = ${chainId}
         UNION
-        SELECT r.user
+        SELECT r."user" AS addr
         FROM   ${runeReferrersTable} r
-        INNER JOIN team ON r.referrer = team.user
+        INNER JOIN team ON r.referrer = team.addr
         WHERE  r.chain_id = ${chainId}
       )
-      SELECT user FROM team
+      SELECT addr FROM team
     `,
   );
-  return (rows.rows ?? []).map((r) => r.user);
+  return (rows.rows ?? []).map((r) => r.addr);
 }
 
 builder.queryFields((t) => ({
