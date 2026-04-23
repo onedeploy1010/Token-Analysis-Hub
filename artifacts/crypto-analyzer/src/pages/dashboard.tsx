@@ -9,7 +9,7 @@ import {
   Coins, DollarSign, Search, ArrowUp, ArrowDown,
 } from "lucide-react";
 import {
-  ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  ComposedChart, Bar, Line, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -706,6 +706,13 @@ function TeamTab({ address }: { address: string }) {
         <Kpi icon={Gift}        label={t("mr.dash.team.directCommission")}  value={rootStats ? `$${fmtUsdt(rootStats.directCommission, 2)}` : "…"}           sub="USDT" delay={0.18} highlight />
       </div>
 
+      {/* Tier composition — 4 tier bars, toggleable between the user's
+          direct downlines and the full transitive team. Gives a shape to
+          the team in one glance without having to drill through levels. */}
+      {rootStats && (rootStats.directByTier.length > 0 || rootStats.teamByTier.length > 0) && (
+        <TierCompositionChart stats={rootStats} />
+      )}
+
       <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
         <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
@@ -1238,6 +1245,138 @@ function RewardListFilters({
         {order === "desc" ? t("mr.dash.reward.sortDesc") : t("mr.dash.reward.sortAsc")}
       </button>
     </div>
+  );
+}
+
+/**
+ * 4-bar histogram of the user's team composition by tier, with a
+ * pill switcher — 直推 (direct downlines' purchases) vs 伞下 (full
+ * transitive team). The pattern mirrors the token-price chart
+ * switcher on the /recruit page so users feel at home.
+ *
+ * All four tiers render even when a bucket has 0 purchases, so the
+ * baseline axis is stable and comparisons between views stay honest.
+ */
+function TierCompositionChart({ stats }: { stats: PersonalStats }) {
+  const { t } = useLanguage();
+  const [mode, setMode] = useState<"direct" | "team">("direct");
+
+  const data = useMemo(() => {
+    const source = mode === "direct" ? stats.directByTier : stats.teamByTier;
+    const byId = new Map(source.map((r) => [r.nodeId, r.count]));
+    // Iterate tiers from apex down so the chart reads STRATEGIC → PIONEER.
+    return ([101, 201, 301, 401] as NodeId[]).map((id) => ({
+      nodeId: id,
+      label: NODE_META[id].nameCn,
+      count: byId.get(id) ?? 0,
+      color: TIER_FILL[id],
+    }));
+  }, [stats, mode]);
+
+  const total = data.reduce((sum, d) => sum + d.count, 0);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.22, ease: EASE }}
+    >
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
+        <div className="absolute -top-20 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+
+        <CardHeader className="pb-3 border-b border-border/40 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Coins className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+            {t("mr.dash.team.compTitle")}
+            <span className="text-[10px] font-mono text-muted-foreground/80 tabular-nums ml-1">
+              {total} {t("mr.dash.team.compTotal")}
+            </span>
+          </CardTitle>
+
+          {/* Pill switcher, 2 options, amber-filled active. */}
+          <div className="inline-flex rounded-full border border-border/40 bg-background/60 p-0.5 text-[11px]">
+            {(["direct", "team"] as const).map((m) => {
+              const active = mode === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  className={`relative px-3 py-1 rounded-full transition-colors ${
+                    active
+                      ? "text-slate-950 font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="tierCompPill"
+                      className="absolute inset-0 rounded-full bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.5)]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative">
+                    {m === "direct" ? t("mr.dash.team.compDirect") : t("mr.dash.team.compTeam")}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-4 relative z-10">
+          <div className="h-56 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  {data.map((d) => (
+                    <linearGradient id={`tierBar-${d.nodeId}`} key={d.nodeId} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={d.color} stopOpacity={0.95} />
+                      <stop offset="100%" stopColor={d.color} stopOpacity={0.35} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="3 5" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  stroke="rgba(255,255,255,0.5)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                  dy={4}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  stroke="rgba(255,255,255,0.45)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  width={28}
+                />
+                <Tooltip
+                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                  contentStyle={{
+                    background: "rgba(8, 15, 30, 0.95)",
+                    border: "1px solid rgba(251,191,36,0.35)",
+                    borderRadius: 10,
+                    fontSize: 12,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+                  }}
+                  labelStyle={{ color: "#fbbf24", fontWeight: 600, marginBottom: 4 }}
+                  formatter={(value: number) => [value, t("mr.dash.team.compCount")]}
+                />
+                <Bar dataKey="count" radius={[8, 8, 0, 0]} animationDuration={700}>
+                  {data.map((d) => (
+                    <Cell key={d.nodeId} fill={`url(#tierBar-${d.nodeId})`} stroke={d.color} strokeOpacity={0.6} />
+                  ))}
+                </Bar>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 

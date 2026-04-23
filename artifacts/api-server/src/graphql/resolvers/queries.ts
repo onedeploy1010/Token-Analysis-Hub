@@ -194,6 +194,20 @@ builder.queryFields((t) => ({
           .reduce<bigint>((acc, r) => acc + commissionOf(r, rates), 0n)
           .toString();
 
+      // Per-tier histograms for the dashboard composition chart.
+      // Filter out any row that somehow lacks a nodeId — shouldn't happen
+      // against a clean indexer, but cheap to guard.
+      const histogram = (rows: { nodeId: number | null }[]) => {
+        const m = new Map<number, number>();
+        for (const r of rows) {
+          if (r.nodeId == null) continue;
+          m.set(r.nodeId, (m.get(r.nodeId) ?? 0) + 1);
+        }
+        return Array.from(m.entries())
+          .sort(([a], [b]) => a - b)
+          .map(([nodeId, count]) => ({ nodeId, count }));
+      };
+
       // 6. User's own purchase
       const [ownPurchase] = await db
         .select({ nodeId: runePurchasesTable.nodeId })
@@ -217,6 +231,8 @@ builder.queryFields((t) => ({
         // so on the contract's single-level model this is the team-wide
         // reward ceiling.
         teamCommission: sumCommissionStr(totalPurchaseRows),
+        directByTier: histogram(directPurchaseRows),
+        teamByTier: histogram(totalPurchaseRows),
         hasPurchased: !!ownPurchase,
         ownedNodeId: ownPurchase?.nodeId ?? null,
       };

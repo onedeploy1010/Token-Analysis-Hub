@@ -43,6 +43,10 @@ export interface PersonalStats {
   directCommission: string;
   /** Gross commission volume across the entire transitive team (18-dec). */
   teamCommission: string;
+  /** Per-nodeId histogram of direct downlines' purchased tiers. */
+  directByTier: { nodeId: number; count: number }[];
+  /** Per-nodeId histogram of transitive-downstream purchased tiers. */
+  teamByTier: { nodeId: number; count: number }[];
   hasPurchased: boolean;
   ownedNodeId: number | null;
 }
@@ -73,6 +77,8 @@ const PERSONAL_STATS_QUERY = gql`
       totalDownstreamInvested
       directCommission
       teamCommission
+      directByTier { nodeId count }
+      teamByTier   { nodeId count }
       hasPurchased
       ownedNodeId
     }
