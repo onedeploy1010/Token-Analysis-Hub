@@ -656,86 +656,64 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
 
   const meta = NODE_META[ownedNodeId as NodeId];
   const theme = HERO_THEME[ownedNodeId as NodeId];
-  const def = overview?.nodes?.find((n) => n.level === meta?.level);
   const cfg = (configs as any)?.find?.((c: { nodeId: bigint }) => Number(c.nodeId) === ownedNodeId);
   const rateBps = cfg ? Number(cfg.directRate) : undefined;
   const airdrop = AIRDROP_PER_TIER[ownedNodeId as NodeId];
   const weight = WEIGHT_PER_TIER[ownedNodeId as NodeId];
   const isStrategic = ownedNodeId === 101;
 
-  // Daily USDT dividend proxy from the REST overview (0.468%/day roughly
-  // tracks the QEP monthly target). The 2026 spec replaces the old
-  // private-price / instant-P&L model with a pure airdrop, so the
-  // mother-token purchase calcs were removed.
-  const daily = def?.dailyUsdt ?? 0;
-  const dailyRatePct = def?.investment ? (daily / def.investment) * 100 : 0;
+  // Launch prices come from the REST overview so ops can re-tune them
+  // without redeploying the SPA — fall back to the documented defaults
+  // (母币 $0.028 / 子币 $0.038) if the field is missing.
+  const motherLaunch = overview?.motherToken?.launchPrice ?? 0.028;
+  const subLaunch    = overview?.subToken?.launchPrice    ?? 0.038;
 
   return (
     <div className="space-y-4">
 
-      {/* ── 1. 收益 ── yield overview for the held tier */}
-      <BenefitGroup icon={TrendingUp} title={t("mr.dash.benefits.groupYield")} subtitle="YIELD" delay={0}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          <BenefitCell label={t("mr.dash.owned.daily")}    value={`$${daily.toLocaleString("en-US")}`} sub={`${dailyRatePct.toFixed(3)}% / day`} theme={theme} highlight />
-          <BenefitCell label={t("mr.dash.owned.total180")} value={`$${(daily * 180).toLocaleString("en-US")}`} sub="180 days" theme={theme} />
-          <BenefitCell label={t("mr.dash.benefits.weightCoeff")} value={weight ? `${weight.coeff.toFixed(1)}×` : "—"} sub={weight ? `${t("mr.dash.benefits.yourShare")} · ${weight.share}` : undefined} theme={theme} />
-          <BenefitCell label={t("mr.dash.owned.rate")}     value={rateBps !== undefined ? `${(rateBps / 100).toFixed(rateBps % 100 === 0 ? 0 : 1)}%` : "—"} sub={t("mr.dash.owned.rateSub")} theme={theme} highlight />
-        </div>
-        {/* 六脉 at a glance — two-line badges (short name + tagline) in
-            a 3-col grid so the six streams read as a compact legend
-            instead of a wall of prose. */}
-        <div className="mt-4 pt-4 border-t border-border/25">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.sixTitle")}</div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {SIX_STREAMS.map((s, i) => (
-              <div
-                key={s.key}
-                className="flex items-center gap-2 rounded-md border border-border/30 bg-card/30 px-2 py-1.5"
-              >
-                <span className="shrink-0 h-5 w-5 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[10px] font-mono text-amber-300 tabular-nums">
-                  {i + 1}
-                </span>
-                <div className="min-w-0 leading-tight">
-                  <div className="text-[11px] font-semibold text-foreground/90 truncate">{t(s.shortKey)}</div>
-                  <div className="text-[10px] text-muted-foreground/75 truncate">{t(s.tagKey)}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* ── 1. 开盘价格 ── launch prices only (per 2026 spec).
+             The earlier private-price / instant-P&L / daily-yield
+             numbers aren't part of the current spec, so the card now
+             shows just the two canonical opening prices. */}
+      <BenefitGroup icon={Coins} title={t("mr.dash.benefits.groupPrices")} subtitle="OPENING PRICES" delay={0}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <BenefitCell label={t("mr.dash.benefits.motherLaunch")} value={`$${motherLaunch}`} sub={t("mr.dash.benefits.perToken")} theme={theme} highlight />
+          <BenefitCell label={t("mr.dash.benefits.subLaunch")}    value={`$${subLaunch}`}    sub={t("mr.dash.benefits.perToken")} theme={theme} highlight />
         </div>
       </BenefitGroup>
 
-      {/* ── 2. 母币空投 ── per-tier airdrop quantity + 4-stage unlock.
-             The old member doc modelled the mother token as a private-
-             purchase at a discount ($0.024 etc.), but the 2026 spec
-             distributes it entirely via this staged airdrop (2500 /
-             5750 / 16200 / 75000 per seat). We keep one group instead
-             of the old "mother vs sub" split. */}
+      {/* ── 2. 达标分配 ── everything tier-allocated: airdrop 4-stage
+             unlock + direct-commission matrix + dividend-weight matrix. */}
       <BenefitGroup
         icon={Gift}
-        title={t("mr.dash.benefits.groupMother")}
-        subtitle="MOTHER TOKEN · AIRDROP"
+        title={t("mr.dash.benefits.groupAllocations")}
+        subtitle="STAGE-GATED ALLOCATIONS"
         rightTag={airdrop ? `${airdrop.perSeat.toLocaleString("en-US")} / ${t("mr.dash.benefits.airdropSeat")}` : undefined}
         delay={0.04}
       >
-        <div className="space-y-1.5">
-          {AIRDROP_BATCHES.map((b, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-md border border-border/30 bg-card/25 px-3 py-2">
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400/90 w-12 shrink-0">{t(b.titleKey)}</span>
-              <span className="text-base font-bold tabular-nums text-amber-300 w-10 shrink-0">{b.pct}%</span>
-              <p className="text-[11px] text-muted-foreground/85 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
-              <span className="text-[11px] font-mono tabular-nums text-emerald-400 shrink-0">${b.priceAt}</span>
-            </div>
-          ))}
-        </div>
-      </BenefitGroup>
-
-      {/* ── 4. 其他权益 ── direct commission + strategic pool + platform */}
-      <BenefitGroup icon={Sparkles} title={t("mr.dash.benefits.groupOther")} subtitle="OTHER BENEFITS" delay={0.12}>
         <div className="space-y-4">
-          {/* Direct commission matrix */}
+          {/* Mother-token airdrop · 4 stages */}
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.commTitle")}</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+              {t("mr.dash.benefits.airdropSection")}
+            </div>
+            <div className="space-y-1.5">
+              {AIRDROP_BATCHES.map((b, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-md border border-border/30 bg-card/25 px-3 py-2">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400/90 w-12 shrink-0">{t(b.titleKey)}</span>
+                  <span className="text-base font-bold tabular-nums text-amber-300 w-10 shrink-0">{b.pct}%</span>
+                  <p className="text-[11px] text-muted-foreground/85 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
+                  <span className="text-[11px] font-mono tabular-nums text-emerald-400 shrink-0">${b.priceAt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Direct commission matrix · per tier */}
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+              {t("mr.dash.benefits.commTitle")}
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {([401, 301, 201, 101] as NodeId[]).map((id) => {
                 const m = NODE_META[id];
@@ -756,9 +734,11 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             </div>
           </div>
 
-          {/* Dividend weight matrix — quick reference card per new spec. */}
+          {/* Dividend weight matrix · per tier */}
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.weightTitle")}</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+              {t("mr.dash.benefits.weightTitle")}
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {([401, 301, 201, 101] as NodeId[]).map((id) => {
                 const m = NODE_META[id];
@@ -779,28 +759,93 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
               })}
             </div>
           </div>
+        </div>
+      </BenefitGroup>
 
-          {/* Platform feature matrix — 2-col grid on desktop for density */}
+      {/* ── 3. 分红池 · 六脉常态分红 ── income sources + the user's weight
+             share in the pool. Shows where dividend dollars come from
+             (QEP, token taxes, IPO, treasury) and what fraction of the
+             pool this node captures. */}
+      <BenefitGroup
+        icon={TrendingUp}
+        title={t("mr.dash.benefits.groupPool")}
+        subtitle="DIVIDEND POOL"
+        rightTag={rateBps !== undefined ? `${t("mr.dash.owned.rate")}: ${(rateBps / 100).toFixed(rateBps % 100 === 0 ? 0 : 1)}%` : undefined}
+        delay={0.08}
+      >
+        <div className="space-y-4">
+          {/* Your weight + network share prominent — this is the "you"
+              side of the `userReward = (yourWeight / totalWeight) × pool`
+              equation from the spec. */}
+          <div className="rounded-lg border border-amber-500/30 bg-gradient-to-br from-amber-950/25 to-transparent p-3">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-amber-300/85 mb-2">
+              {t("mr.dash.benefits.poolShareTitle")}
+            </div>
+            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 tabular-nums">
+              <div>
+                <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
+                <div className={`text-2xl font-bold ${theme.accentBright}`}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
+                <div className="text-2xl font-bold text-foreground">{weight?.share ?? "—"}</div>
+              </div>
+              {meta && (
+                <div className="flex-1 min-w-0 text-right">
+                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.owned.tier")}</div>
+                  <div className={`text-sm font-semibold ${meta.color}`}>{meta.nameEn} · {meta.nameCn}</div>
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] font-mono text-muted-foreground/65 mt-2 tabular-nums border-t border-amber-500/10 pt-2">
+              {t("mr.dash.benefits.poolFormula")}
+            </p>
+          </div>
+
+          {/* Six-stream sources — where dividend pool money comes from. */}
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">{t("mr.dash.benefits.featTitle")}</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-              {PLATFORM_FEATURES.map((f) => {
-                const available = f.all || (isStrategic && (f as any).strategicOnly);
-                const boosted = f.strategicBoost && isStrategic;
-                return (
-                  <div key={f.labelKey} className="flex items-center gap-2.5 rounded-md border border-border/30 bg-card/25 px-2.5 py-1.5">
-                    <span className={`text-xs shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/50"}`}>
-                      {available ? "✓" : "—"}
-                    </span>
-                    <p className="text-[11px] text-foreground/90 flex-1 min-w-0">{t(f.labelKey)}</p>
-                    {boosted && (
-                      <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-purple-300 shrink-0">×1.5</span>
-                    )}
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+              {t("mr.dash.benefits.poolSourcesTitle")}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {SIX_STREAMS.map((s, i) => (
+                <div
+                  key={s.key}
+                  className="flex items-center gap-2 rounded-md border border-border/30 bg-card/30 px-2 py-1.5"
+                >
+                  <span className="shrink-0 h-5 w-5 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[10px] font-mono text-amber-300 tabular-nums">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 leading-tight">
+                    <div className="text-[11px] font-semibold text-foreground/90 truncate">{t(s.shortKey)}</div>
+                    <div className="text-[10px] text-muted-foreground/75 truncate">{t(s.tagKey)}</div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+      </BenefitGroup>
+
+      {/* ── 4. 平台功能 ── API / AI / predict / quant. STRATEGIC tier
+             gets a 1.5× quota boost on the marked rows. */}
+      <BenefitGroup icon={Sparkles} title={t("mr.dash.benefits.groupFeatures")} subtitle="PLATFORM FEATURES" delay={0.12}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+          {PLATFORM_FEATURES.map((f) => {
+            const available = f.all || (isStrategic && (f as any).strategicOnly);
+            const boosted = f.strategicBoost && isStrategic;
+            return (
+              <div key={f.labelKey} className="flex items-center gap-2.5 rounded-md border border-border/30 bg-card/25 px-2.5 py-1.5">
+                <span className={`text-xs shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/50"}`}>
+                  {available ? "✓" : "—"}
+                </span>
+                <p className="text-[11px] text-foreground/90 flex-1 min-w-0">{t(f.labelKey)}</p>
+                {boosted && (
+                  <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-purple-300 shrink-0">×1.5</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </BenefitGroup>
 
