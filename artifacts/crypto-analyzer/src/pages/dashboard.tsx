@@ -4,7 +4,7 @@ import { useActiveAccount } from "thirdweb/react";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
-  TrendingUp, Wallet, Link as LinkIcon,
+  TrendingUp, Wallet, Link as LinkIcon, Gift,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,14 +12,14 @@ import { useUsdtBalance } from "@/hooks/rune/use-usdt";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
-import { useTeam, usePersonalStats, type ReferrerRow } from "@/hooks/rune/use-team";
+import { useTeam, usePersonalStats, useRewards, type ReferrerRow, type RewardRow } from "@/hooks/rune/use-team";
 import { NODE_META, type NodeId, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
 import { runeChain } from "@/lib/thirdweb/chains";
 import { buildReferralUrl } from "@/hooks/rune/use-referral-param";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/language-context";
 
-type Tab = "overview" | "team";
+type Tab = "overview" | "team" | "rewards";
 
 /** Short-hand 0x123…abcd formatter for display. */
 const short = (a: string | undefined) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "—");
@@ -139,6 +139,7 @@ export default function Dashboard() {
         {[
           { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
           { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
+          { id: "rewards"  as const, Icon: Gift,            label: t("mr.dash.tab.rewards") },
         ].map(({ id, Icon, label }) => {
           const active = tab === id;
           return (
@@ -164,7 +165,13 @@ export default function Dashboard() {
       </div>
 
       {/* ── Tab panels ── */}
-      {tab === "overview" ? <OverviewTab address={address} /> : <TeamTab address={address} />}
+      {tab === "overview" ? (
+        <OverviewTab address={address} />
+      ) : tab === "team" ? (
+        <TeamTab address={address} />
+      ) : (
+        <RewardsTab address={address} />
+      )}
     </div>
   );
 }
@@ -424,6 +431,124 @@ function SelfRootNode({ address, directCount }: { address: string; directCount: 
         </div>
       )}
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Rewards tab — per-payout detail of direct-commission USDT earned
+──────────────────────────────────────────────────────────────────────────── */
+function RewardsTab({ address }: { address: string }) {
+  const { t } = useLanguage();
+  const { data: stats } = usePersonalStats(address);
+  const { data: rewards, isLoading } = useRewards(address);
+
+  // Break the rewards list down by tier so the summary shows "where your
+  // commissions came from" — derived client-side from the same rows the
+  // table below renders so numbers can never drift.
+  const byTier = new Map<number, { count: number; commission: bigint }>();
+  for (const r of rewards ?? []) {
+    const entry = byTier.get(r.nodeId) ?? { count: 0, commission: 0n };
+    entry.count += 1;
+    entry.commission += BigInt(r.commission);
+    byTier.set(r.nodeId, entry);
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Top summary — three tiles the user already sees elsewhere, but
+          with the rewards-tab framing. Total earned mirrors
+          personalStats.directCommission; count mirrors directPurchaseCount. */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <Kpi label={t("mr.dash.reward.total")}   value={stats ? `$${fmtUsdt(stats.directCommission, 2)}` : "…"} sub="USDT" highlight />
+        <Kpi label={t("mr.dash.reward.count")}   value={stats ? String(stats.directPurchaseCount) : "…"}       sub={t("mr.dash.reward.countSub")} />
+        <Kpi label={t("mr.dash.reward.teamAll")} value={stats ? `$${fmtUsdt(stats.teamCommission, 2)}` : "…"}  sub="USDT" />
+      </div>
+
+      {/* Per-tier breakdown — only render tiers the user has actually
+          earned from, so a new wallet doesn't see four empty rows. */}
+      {byTier.size > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from(byTier.entries())
+            .sort(([a], [b]) => a - b)
+            .map(([nodeId, { count, commission }]) => {
+              const meta = NODE_META[nodeId as NodeId];
+              return (
+                <div key={nodeId} className="border border-border/40 bg-card/40 rounded-xl p-4">
+                  <div className={`text-[10px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>{meta.nameEn}</div>
+                  <div className="text-sm font-bold text-foreground mt-0.5">{meta.nameCn}</div>
+                  <div className="num text-lg num-gold mt-2">${fmtUsdt(commission.toString(), 2)}</div>
+                  <div className="text-[10px] text-muted-foreground/60 mt-1">
+                    {count} × {t("mr.dash.reward.payouts")}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      )}
+
+      {/* Detail list — each on-chain commission payout as its own row.
+          rewards are already ordered by paidAt DESC on the server. */}
+      <Card className="bg-card/70 backdrop-blur border-border">
+        <CardHeader className="pb-3 border-b border-border/40">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Gift className="h-4 w-4 text-amber-400" /> {t("mr.dash.reward.listTitle")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">{t("mr.dash.reward.loading")}</p>
+          ) : !rewards || rewards.length === 0 ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">
+              <Gift className="h-8 w-8 mx-auto mb-3 opacity-30" />
+              {t("mr.dash.reward.empty")}
+            </div>
+          ) : (
+            <ul className="divide-y divide-border/30">
+              {rewards.map((r) => <RewardRowItem key={r.txHash} row={r} />)}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <p className="text-[10px] text-muted-foreground/50 text-center">
+        {t("mr.dash.reward.note")}
+      </p>
+    </div>
+  );
+}
+
+function RewardRowItem({ row }: { row: RewardRow }) {
+  const { t } = useLanguage();
+  const meta = NODE_META[row.nodeId as NodeId];
+  const explorerBase = row.chainId === 56
+    ? "https://bscscan.com/tx/"
+    : "https://testnet.bscscan.com/tx/";
+  return (
+    <li className="py-3 flex items-center gap-3 flex-wrap">
+      <span className={`text-[10px] font-mono uppercase tracking-[0.18em] w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
+        {meta?.nameEn ?? `#${row.nodeId}`}
+      </span>
+      <CopyableAddress address={row.downline} short />
+      <div className="flex-1 min-w-0" />
+      <span className="text-[11px] text-muted-foreground shrink-0">
+        {new Date(row.paidAt).toLocaleString()}
+      </span>
+      <span className="text-[11px] text-muted-foreground/70 shrink-0">
+        {(row.directRate / 100).toFixed(row.directRate % 100 === 0 ? 0 : 1)}%
+      </span>
+      <span className="text-sm font-semibold text-amber-400 shrink-0 tabular-nums">
+        +${fmtUsdt(row.commission, 4)}
+      </span>
+      <a
+        href={`${explorerBase}${row.txHash}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-muted-foreground/70 hover:text-foreground transition-colors shrink-0"
+        title={t("mr.dash.reward.viewTx")}
+      >
+        <ExternalLink className="h-3 w-3" />
+      </a>
+    </li>
   );
 }
 

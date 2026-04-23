@@ -4,6 +4,7 @@ import { builder } from "../builder";
 import { ReferrerType } from "../types/referrer";
 import { PurchaseType } from "../types/purchase";
 import { PersonalStatsType, type PersonalStatsShape } from "../types/stats";
+import { RewardType, type RewardShape } from "../types/reward";
 import { runeChainConfig } from "../../rune/chain";
 import { getDirectRateMap } from "../../rune/node-rates";
 
@@ -216,6 +217,72 @@ builder.queryFields((t) => ({
         hasPurchased: !!ownPurchase,
         ownedNodeId: ownPurchase?.nodeId ?? null,
       };
+    },
+  }),
+
+  // ─────────────────────────────────────────────────────────────────────
+  // rewards: per-payout detail for the dashboard Rewards tab. Each row
+  // is a single direct-downline purchase that earned this address a
+  // commission. On-chain the commission goes straight from buyer to
+  // referrer via USDT.safeTransferFrom — so the "rewards" list is the
+  // same as the direct downlines' purchase list, with the per-row
+  // commission computed from nodeId × live directRate bps.
+  // ─────────────────────────────────────────────────────────────────────
+  rewards: t.field({
+    type: [RewardType],
+    args: {
+      address: t.arg({ type: "Address", required: true }),
+      chainId: t.arg.int({ required: false }),
+      limit:   t.arg.int({ required: false, defaultValue: 100 }),
+      offset:  t.arg.int({ required: false, defaultValue: 0 }),
+    },
+    description: "On-chain direct-commission payouts earned by this address as a direct referrer.",
+    resolve: async (_root, args): Promise<RewardShape[]> => {
+      const chainId = resolveChain(args.chainId);
+      const addr = args.address.toLowerCase();
+      const rows = await db
+        .select({
+          user:        runePurchasesTable.user,
+          nodeId:      runePurchasesTable.nodeId,
+          amount:      runePurchasesTable.amount,
+          paidAt:      runePurchasesTable.paidAt,
+          blockNumber: runePurchasesTable.blockNumber,
+          txHash:      runePurchasesTable.txHash,
+        })
+        .from(runePurchasesTable)
+        .innerJoin(
+          runeReferrersTable,
+          and(
+            eq(runeReferrersTable.user, runePurchasesTable.user),
+            eq(runeReferrersTable.chainId, runePurchasesTable.chainId),
+          ),
+        )
+        .where(
+          and(
+            eq(runeReferrersTable.referrer, addr),
+            eq(runePurchasesTable.chainId, chainId),
+          ),
+        )
+        .orderBy(desc(runePurchasesTable.paidAt))
+        .limit(Math.min(args.limit ?? 100, 500))
+        .offset(args.offset ?? 0);
+
+      const rates = await getDirectRateMap();
+      return rows.map((r) => {
+        const rateBps = rates.get(r.nodeId) ?? 0n;
+        const commission = (BigInt(r.amount ?? "0") * rateBps) / BPS_BASE;
+        return {
+          downline:       r.user,
+          nodeId:         r.nodeId,
+          purchaseAmount: String(r.amount ?? "0"),
+          directRate:     Number(rateBps),
+          commission:     commission.toString(),
+          paidAt:         r.paidAt,
+          blockNumber:    r.blockNumber,
+          txHash:         r.txHash,
+          chainId,
+        };
+      });
     },
   }),
 }));

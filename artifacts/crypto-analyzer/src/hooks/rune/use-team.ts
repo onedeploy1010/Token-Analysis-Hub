@@ -19,6 +19,18 @@ export interface PurchaseRow {
   txHash: string;
 }
 
+export interface RewardRow {
+  downline: string;
+  nodeId: number;
+  purchaseAmount: string;
+  directRate: number;
+  commission: string;
+  paidAt: string;
+  blockNumber: number;
+  txHash: string;
+  chainId: number;
+}
+
 export interface PersonalStats {
   address: string;
   chainId: number;
@@ -75,6 +87,22 @@ const PURCHASES_QUERY = gql`
       amount
       paidAt
       txHash
+    }
+  }
+`;
+
+const REWARDS_QUERY = gql`
+  query Rewards($address: Address!, $limit: Int, $offset: Int) {
+    rewards(address: $address, limit: $limit, offset: $offset) {
+      downline
+      nodeId
+      purchaseAmount
+      directRate
+      commission
+      paidAt
+      blockNumber
+      txHash
+      chainId
     }
   }
 `;
@@ -147,6 +175,27 @@ export function useUserPurchases(address: string | undefined) {
         user: address,
       });
       return data.purchases;
+    },
+  });
+}
+
+/**
+ * Per-payout reward detail for the dashboard Rewards tab — one row per
+ * direct downline's purchase, with the USDT commission that flowed to
+ * the viewer's wallet on-chain.
+ */
+export function useRewards(address: string | undefined, opts?: { limit?: number; offset?: number }) {
+  return useQuery({
+    queryKey: ["rune", "rewards", address, opts?.limit, opts?.offset],
+    enabled: !!address,
+    ...graphqlQueryOpts,
+    queryFn: async () => {
+      const data = await graphqlClient.request<{ rewards: RewardRow[] }>(REWARDS_QUERY, {
+        address,
+        limit:  opts?.limit  ?? 100,
+        offset: opts?.offset ?? 0,
+      });
+      return data.rewards;
     },
   });
 }
