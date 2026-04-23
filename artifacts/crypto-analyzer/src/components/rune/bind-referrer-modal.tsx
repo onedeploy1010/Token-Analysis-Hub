@@ -70,7 +70,11 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
   // "Referrer not invited" rule and fails loudly before the user pays gas.
   useEffect(() => {
     if (!isHex || isSelf) { setPreCheck({ state: "idle" }); return; }
-    if (isRoot)           { setPreCheck({ state: "ok", label: t("mr.bind.okRoot") }); return; }
+    // ROOT is a valid upstream but we deliberately don't surface it —
+    // the alias is for internal use only, so show the same generic
+    // "validated" label external users would see after a successful
+    // referrer lookup.
+    if (isRoot)           { setPreCheck({ state: "ok", label: t("mr.bind.okValidated") }); return; }
 
     setPreCheck({ state: "checking" });
     const handle = setTimeout(async () => {
@@ -121,10 +125,6 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
     }
   }
 
-  function useRoot() {
-    setInput(COMMUNITY_ROOT);
-  }
-
   const canSubmit =
     isHex && !isSelf && !submitting &&
     (preCheck.state === "ok" || preCheck.state === "idle");
@@ -147,13 +147,8 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
 
         <div className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="ref-addr" className="text-xs text-muted-foreground flex items-center justify-between">
-              <span>{t("mr.bind.addrLabel")}</span>
-              {isRoot && (
-                <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-widest">
-                  {t("mr.bind.rootSelected")}
-                </span>
-              )}
+            <Label htmlFor="ref-addr" className="text-xs text-muted-foreground">
+              {t("mr.bind.addrLabel")}
             </Label>
             <Input
               id="ref-addr"
@@ -191,17 +186,6 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
               </p>
             ) : null}
           </div>
-
-          {/* One-tap ROOT shortcut — kept minimal, no explanatory copy. */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full h-8 text-[11px] border-amber-500/40 text-amber-200 hover:bg-amber-500/10 hover:text-amber-100"
-            onClick={useRoot}
-            disabled={submitting || isRoot}
-          >
-            {isRoot ? t("mr.bind.rootSelected") : t("mr.bind.useRoot")}
-          </Button>
 
           <div className="flex gap-2 pt-1">
             <Button variant="ghost" onClick={onClose} disabled={submitting} className="flex-1">

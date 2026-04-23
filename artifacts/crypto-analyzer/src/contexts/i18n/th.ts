@@ -543,6 +543,7 @@ const th: Dict = {
   "mr.bind.errInvalid": "ไม่ใช่ที่อยู่ EVM ที่ถูกต้อง",
   "mr.bind.checking": "กำลังตรวจสอบบนเชน…",
   "mr.bind.okRoot": "ROOT — ยอดสุดของต้นไม้",
+  "mr.bind.okValidated": "Address validated",
   "mr.bind.okMember": "อยู่ในคอมมิวนิตี้ สายบน",
   "mr.bind.rejectNotMember": "ที่อยู่นี้ยังไม่เป็นสมาชิกคอมมิวนิตี้ — สัญญาจะ revert เป็น \"Referrer not invited\"",
   "mr.bind.rejectRpc": "เข้าถึงสัญญา Community ไม่สำเร็จ",

@@ -543,6 +543,7 @@ const zhTW: Dict = {
   "mr.bind.errInvalid": "不是有效的 EVM 地址",
   "mr.bind.checking": "鏈上校驗中…",
   "mr.bind.okRoot": "ROOT — 樹的根節點",
+  "mr.bind.okValidated": "地址驗證通過",
   "mr.bind.okMember": "已在社群，上級",
   "mr.bind.rejectNotMember": "該地址還不是社群成員，合約會以 \"Referrer not invited\" 回滾。",
   "mr.bind.rejectRpc": "無法存取 Community 合約。",

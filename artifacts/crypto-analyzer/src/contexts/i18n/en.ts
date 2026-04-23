@@ -543,6 +543,7 @@ const en: Dict = {
   "mr.bind.errInvalid": "Not a valid EVM address",
   "mr.bind.checking": "Checking on-chain…",
   "mr.bind.okRoot": "ROOT — top of the tree",
+  "mr.bind.okValidated": "Address validated",
   "mr.bind.okMember": "In community, upstream",
   "mr.bind.rejectNotMember": "This address is not a member of the community yet — the contract will revert with \"Referrer not invited\".",
   "mr.bind.rejectRpc": "Failed to reach the Community contract.",

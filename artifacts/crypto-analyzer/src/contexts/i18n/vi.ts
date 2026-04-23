@@ -543,6 +543,7 @@ const vi: Dict = {
   "mr.bind.errInvalid": "Không phải địa chỉ EVM hợp lệ",
   "mr.bind.checking": "Đang kiểm tra on-chain…",
   "mr.bind.okRoot": "ROOT — đỉnh của cây",
+  "mr.bind.okValidated": "Address validated",
   "mr.bind.okMember": "Đã trong cộng đồng, tuyến trên",
   "mr.bind.rejectNotMember": "Địa chỉ này chưa thuộc cộng đồng — hợp đồng sẽ revert với \"Referrer not invited\".",
   "mr.bind.rejectRpc": "Không thể kết nối với Community contract.",

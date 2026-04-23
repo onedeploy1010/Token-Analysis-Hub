@@ -543,6 +543,7 @@ const ja: Dict = {
   "mr.bind.errInvalid": "有効な EVM アドレスではありません",
   "mr.bind.checking": "オンチェーン確認中…",
   "mr.bind.okRoot": "ROOT — ツリーの最上位",
+  "mr.bind.okValidated": "Address validated",
   "mr.bind.okMember": "コミュニティ内 · 上位",
   "mr.bind.rejectNotMember": "このアドレスはまだコミュニティメンバーではありません — 契約は \"Referrer not invited\" でリバートします。",
   "mr.bind.rejectRpc": "Community コントラクトにアクセスできません。",

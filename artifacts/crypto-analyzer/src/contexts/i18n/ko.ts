@@ -543,6 +543,7 @@ const ko: Dict = {
   "mr.bind.errInvalid": "유효한 EVM 주소가 아닙니다",
   "mr.bind.checking": "온체인 확인 중…",
   "mr.bind.okRoot": "ROOT — 트리 최상위",
+  "mr.bind.okValidated": "Address validated",
   "mr.bind.okMember": "커뮤니티 내, 상위",
   "mr.bind.rejectNotMember": "이 주소는 아직 커뮤니티 회원이 아닙니다 — 계약이 'Referrer not invited' 오류로 되돌아갑니다.",
   "mr.bind.rejectRpc": "Community 계약에 접근할 수 없습니다.",
