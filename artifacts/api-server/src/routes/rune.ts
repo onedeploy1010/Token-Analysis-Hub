@@ -133,7 +133,10 @@ router.post("/rune/calculator", async (req, res): Promise<void> => {
   const totalUsdtIncome = dailyUsdt * durationDays;
 
   const motherTokenValue = motherTokens * selectedStage.motherPrice;
-  const airdropTokenValue = airdropTokens * selectedStage.subPrice;
+  // Per the 2026 spec the airdrop is mother-token (§六 "节点母TOKEN空投 ·
+  // 10,000,000 枚母TOKEN"), so it prices off motherPrice. subPrice used
+  // here earlier overstated airdrop value by ~35% at every stage.
+  const airdropTokenValue = airdropTokens * selectedStage.motherPrice;
   const totalAssets = motherTokenValue + airdropTokenValue + totalUsdtIncome;
   const roi = ((totalAssets - investment) / investment) * 100;
   const roiMultiplier = totalAssets / investment;
@@ -147,13 +150,13 @@ router.post("/rune/calculator", async (req, res): Promise<void> => {
     { label: "Total Investment", labelCn: "总投资额", value: `$${fmt(investment)} USDT` },
     { label: "Private Price", labelCn: "母TOKEN私募价", value: `$${node.privatePrice}/枚` },
     { label: "Mother Tokens", labelCn: "获得母TOKEN", value: `${motherTokens.toLocaleString()} 枚` },
-    { label: "Sub-Token Airdrop", labelCn: "子TOKEN空投", value: `${airdropTokens.toLocaleString()} 枚` },
+    { label: "Mother-Token Airdrop", labelCn: "母TOKEN空投", value: `${airdropTokens.toLocaleString()} 枚` },
     { label: "Daily USDT Income", labelCn: "每日USDT收益", value: `$${fmt(dailyUsdt)}/天` },
     { label: "Duration", labelCn: "持仓周期", value: `${durationDays} 天` },
     { label: "Total USDT Income", labelCn: "USDT总收益", value: `$${fmt(totalUsdtIncome)}` },
     { label: "Price Stage", labelCn: "价格阶段", value: `${selectedStage.labelCn} (母TOKEN $${selectedStage.motherPrice})` },
     { label: "Mother Token Value", labelCn: "母TOKEN持仓市值", value: `$${fmt(motherTokenValue)}` },
-    { label: "Sub-Token Value", labelCn: "子TOKEN空投价值", value: `$${fmt(airdropTokenValue)}` },
+    { label: "Airdrop Value", labelCn: "母TOKEN空投价值", value: `$${fmt(airdropTokenValue)}` },
     { label: "Total Assets", labelCn: "总资产", value: `$${fmt(totalAssets)}` },
     { label: "ROI", labelCn: "投资回报率", value: `${fmt(roi)}%` },
     { label: "ROI Multiplier", labelCn: "资产倍数", value: `${fmt(roiMultiplier)}×` },

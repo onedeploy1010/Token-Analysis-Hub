@@ -295,7 +295,10 @@ export default function Rune() {
       const row: Record<string, string | number> = { label: stageLabel(stage, i) };
       nodes.forEach(n => {
         const motherVal   = n.motherTokensPerSeat * stage.motherPrice;
-        const airdropVal  = n.airdropPerSeat      * stage.subPrice;
+        // The airdrop is mother-token per the 2026 spec (§六 "节点母TOKEN
+        // 空投 · 10,000,000 枚母TOKEN"), so it prices off motherPrice —
+        // using subPrice here was overstating airdrop value ~35%.
+        const airdropVal  = n.airdropPerSeat      * stage.motherPrice;
         const usdtVal     = n.dailyUsdt * 180;
         const total       = motherVal + airdropVal + usdtVal;
         row[n.level]      = Math.round(total);
@@ -330,7 +333,7 @@ export default function Rune() {
 
   const resultPieData = calcMutation.data ? [
     { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: calcMutation.data.motherTokenValue  },
-    { name: isEn ? "Sub Token Airdrop"  : t("mr.rune.kpi.airdropValue"), value: calcMutation.data.airdropTokenValue },
+    { name: isEn ? "Mother Token Airdrop"  : t("mr.rune.kpi.airdropValue"), value: calcMutation.data.airdropTokenValue },
     { name: isEn ? "USDT Income"        : t("mr.rune.kpi.usdtIncome"),   value: calcMutation.data.totalUsdtIncome   },
   ] : [];
 
@@ -1060,7 +1063,7 @@ export default function Rune() {
                       <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-orange-800/30 bg-orange-950/20">
-                      <p className="text-[10px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Sub Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
+                      <p className="text-[10px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
                       <p className="num text-lg text-orange-300">${fmt(calcMutation.data.airdropTokenValue)}</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
                     </div>
@@ -1153,9 +1156,10 @@ export default function Rune() {
                           <BarChart
                             data={(overview.priceStages ?? []).map((s, i) => ({
                               label: stageLabel(s, i),
+                              // Airdrop is mother-token, so it prices off motherPrice (not subPrice).
                               totalAssets: Math.round(
                                 selectedNode.motherTokensPerSeat * seats * s.motherPrice +
-                                selectedNode.airdropPerSeat      * seats * s.subPrice    +
+                                selectedNode.airdropPerSeat      * seats * s.motherPrice +
                                 selectedNode.dailyUsdt           * seats * durationDays
                               ),
                               isActive: i === priceStageIndex,

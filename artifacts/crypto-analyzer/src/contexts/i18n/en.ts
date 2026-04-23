@@ -319,7 +319,7 @@ const en: Dict = {
   "mr.rune.kpi.stage": "stage",
   "mr.rune.kpi.invest": "investment",
   "mr.rune.kpi.motherValue": "Mother Token Value",
-  "mr.rune.kpi.airdropValue": "Sub Token Airdrop",
+  "mr.rune.kpi.airdropValue": "Mother Token Airdrop",
   "mr.rune.kpi.usdtIncome": "USDT Income",
   "mr.rune.kpi.tokensUnit": "tokens",
   "mr.rune.kpi.perDay": "/day",
