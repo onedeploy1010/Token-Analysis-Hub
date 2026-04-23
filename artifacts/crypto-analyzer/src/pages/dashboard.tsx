@@ -194,10 +194,14 @@ const HERO_THEME: Record<NodeId, {
    *  Strong enough to register on the dark bg, never competing with `.num-gold`. */
   chip: string;
 }> = {
+  // Per the member-facing 节点权益说明: STRATEGIC (50k) is the apex tier and
+  // gets the purple + strongest glow; GUARDIAN (10k) is amber; BUILDER
+  // (5k) emerald; PIONEER (2.5k) blue. On-chain nodeIds 101 → STRATEGIC,
+  // 201 → GUARDIAN — matching NODE_META.
   401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.32)]",   ring: "border-blue-500/50",    from: "from-blue-950/70",    to: "to-slate-950/95", accent: "text-blue-300",    accentBright: "text-blue-200",    gradient: "from-blue-500/20 via-blue-700/5 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/10 border-blue-500/40 text-blue-200" },
   301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.30)]",   ring: "border-emerald-500/50", from: "from-emerald-950/70", to: "to-slate-950/95", accent: "text-emerald-300", accentBright: "text-emerald-200", gradient: "from-emerald-500/20 via-emerald-700/5 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/10 border-emerald-500/40 text-emerald-200" },
-  101: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.38)]",   ring: "border-amber-500/60",   from: "from-amber-950/70",   to: "to-slate-950/95", accent: "text-amber-300",   accentBright: "text-amber-200",   gradient: "from-amber-500/24 via-amber-700/6 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/10 border-amber-500/45 text-amber-200" },
-  201: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.30)]",  ring: "border-purple-500/50",  from: "from-purple-950/70",  to: "to-slate-950/95", accent: "text-purple-300",  accentBright: "text-purple-200",  gradient: "from-purple-500/20 via-purple-700/5 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/10 border-purple-500/40 text-purple-200" },
+  201: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.34)]",   ring: "border-amber-500/55",   from: "from-amber-950/70",   to: "to-slate-950/95", accent: "text-amber-300",   accentBright: "text-amber-200",   gradient: "from-amber-500/22 via-amber-700/5 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/10 border-amber-500/45 text-amber-200" },
+  101: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.38)]",  ring: "border-purple-500/60",  from: "from-purple-950/70",  to: "to-slate-950/95", accent: "text-purple-300",  accentBright: "text-purple-200",  gradient: "from-purple-500/24 via-purple-700/6 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/10 border-purple-500/45 text-purple-200" },
 };
 
 /** Unified easing — every dashboard entrance + hover rides this curve so

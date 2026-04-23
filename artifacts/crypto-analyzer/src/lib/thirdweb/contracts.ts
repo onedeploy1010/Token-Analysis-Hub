@@ -53,9 +53,15 @@ export type NodeId = typeof NODE_IDS[number];
  *  and glows without string parsing (`rgba(var(--tier-rgb), 0.3)`).
  *  Keep it in sync with `color` — they're both pointing at the same
  *  tailwind shade, just expressed differently. */
+// The member-facing "节点权益说明" ranks 符魂 STRATEGIC at the top (50k U,
+// 15% direct) and 符主 GUARDIAN below it (10k U, 10% direct), while the
+// earlier `runeapi 2/对接文档.md` swapped those two names. On-chain the
+// nodeId → price/directRate mapping is fixed (101 = 50k/15%, 201 = 10k/10%),
+// so the reconciliation is: keep nodeId 101 as the 50k tier but call it
+// STRATEGIC/符魂 to match the public-facing spec and the REST overview.
 export const NODE_META: Record<NodeId, { level: string; nameCn: string; nameEn: string; color: string; rgb: string; priceUsdt: number }> = {
-  101: { level: "guardian",  nameCn: "符主", nameEn: "GUARDIAN",  color: "text-amber-400",  rgb: "251, 191, 36",  priceUsdt: 50000 },
-  201: { level: "strategic", nameCn: "符魂", nameEn: "STRATEGIC", color: "text-purple-400", rgb: "192, 132, 252", priceUsdt: 10000 },
+  101: { level: "strategic", nameCn: "符魂", nameEn: "STRATEGIC", color: "text-purple-400", rgb: "192, 132, 252", priceUsdt: 50000 },
+  201: { level: "guardian",  nameCn: "符主", nameEn: "GUARDIAN",  color: "text-amber-400",  rgb: "251, 191, 36",  priceUsdt: 10000 },
   301: { level: "builder",   nameCn: "符印", nameEn: "BUILDER",   color: "text-green-400",  rgb: "52, 211, 153",  priceUsdt:  5000 },
   401: { level: "pioneer",   nameCn: "符胚", nameEn: "PIONEER",   color: "text-blue-400",   rgb: "96, 165, 250",  priceUsdt:  2500 },
 };
