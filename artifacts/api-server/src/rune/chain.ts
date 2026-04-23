@@ -33,7 +33,11 @@ const bscMainnetConfig: RuneChainConfig = {
 
 const bscTestnetConfig: RuneChainConfig = {
   chainId: 97,
-  rpcUrl: process.env.RUNE_RPC_URL_TESTNET ?? "https://data-seed-prebsc-1-s1.binance.org:8545",
+  // Binance's public RPC (`data-seed-prebsc-1-s1`) aggressively rate-limits
+  // sustained eth_getLogs from server IPs (Railway/Fly/etc.), which wedges
+  // the indexer. publicnode.com handles the workload cleanly; operators can
+  // still point at a paid provider (Ankr/QuickNode) via RUNE_RPC_URL_TESTNET.
+  rpcUrl: process.env.RUNE_RPC_URL_TESTNET ?? "https://bsc-testnet.publicnode.com",
   usdt: "0xa87cC1e59598CD0C33bBe38746a81279BFfea0B8",
   community: "0x42a06ac2208E9F8e25673BA0F6c44bc56fD2aa62",
   nodePresell: "0x6a30f26338742670637f47dfC04600B4d1eF1E9a",
