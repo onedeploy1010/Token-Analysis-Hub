@@ -16,6 +16,16 @@ const PRICE_STAGES = [
   { index: 5, label: "Stage 6 · Target High", labelCn: "⑥ 目标价（高）", trigger: "24个月 120× 预测", motherPrice: 3.36, subPrice: 4.56, multiplier: 120 },
 ];
 
+// Airdrop numbers come from the 2026 spec's pool model:
+//   10,000,000 mother-token pool × (tierWeight × seats / 1,680)
+// i.e. tier's share of the pool is its aggregate weight fraction
+// (47.6% / 28.6% / 19.0% / 4.8%). Per-seat = tier total / seats, which
+// reduces to (tierWeight / 1,680) × 10,000,000.
+// `motherTokensPerSeat` is 0 — the 2026 spec has no private-purchase
+// path, so the airdrop is the sole mother-token source. Keeping the
+// field (rather than dropping it) preserves the zod schema; setting it
+// to 0 makes `motherTokenValue` drop out of the calculator's total so
+// airdrop isn't double-counted alongside it.
 const NODES = [
   {
     level: "pioneer",
@@ -27,9 +37,9 @@ const NODES = [
     privatePrice: 0.026,
     dailyUsdt: 11.7,
     weight: 1,
-    airdropTotal: 2000000,
-    airdropPerSeat: 2500,
-    motherTokensPerSeat: Math.round(2500 / 0.026),
+    airdropTotal: 4761905,
+    airdropPerSeat: 5952,
+    motherTokensPerSeat: 0,
   },
   {
     level: "builder",
@@ -41,9 +51,9 @@ const NODES = [
     privatePrice: 0.024,
     dailyUsdt: 23.4,
     weight: 1.2,
-    airdropTotal: 2300000,
-    airdropPerSeat: 5750,
-    motherTokensPerSeat: Math.round(5000 / 0.024),
+    airdropTotal: 2857143,
+    airdropPerSeat: 7143,
+    motherTokensPerSeat: 0,
   },
   {
     level: "guardian",
@@ -55,9 +65,9 @@ const NODES = [
     privatePrice: 0.02,
     dailyUsdt: 46.8,
     weight: 1.6,
-    airdropTotal: 3240000,
-    airdropPerSeat: 16200,
-    motherTokensPerSeat: Math.round(10000 / 0.02),
+    airdropTotal: 1904762,
+    airdropPerSeat: 9524,
+    motherTokensPerSeat: 0,
   },
   {
     level: "strategic",
@@ -69,9 +79,9 @@ const NODES = [
     privatePrice: 0.016,
     dailyUsdt: 234,
     weight: 2,
-    airdropTotal: 3000000,
-    airdropPerSeat: 75000,
-    motherTokensPerSeat: Math.round(50000 / 0.016),
+    airdropTotal: 476190,
+    airdropPerSeat: 11905,
+    motherTokensPerSeat: 0,
   },
 ];
 

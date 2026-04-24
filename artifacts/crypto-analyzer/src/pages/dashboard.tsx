@@ -587,12 +587,26 @@ const AIRDROP_BATCHES = [
   { pct: 40, priceAt: 0.350, titleKey: "mr.dash.benefits.ad.b4", trig: "mr.dash.benefits.ad.b4Trig" },
 ] as const;
 
-/** Per-tier airdrop allocation — seats × per-seat value in SUB tokens. */
+/** Per-tier airdrop allocation.
+ *
+ *  The 2026 spec (§六) distributes a 10,000,000-token mother-token pool
+ *  over 4 stages (10% / 20% / 30% / 40%), with each stage's release
+ *  split across nodes by weight. For one seat at tier T the full-
+ *  schedule allocation is therefore:
+ *
+ *    perSeat = (tierWeight / 1680) × 10,000,000
+ *
+ *  which gives 5,952 / 7,143 / 9,524 / 11,905 at L1 / L2 / L3 / L4.
+ *  `total` is `perSeat × seats`, i.e. the tier's total slice of the
+ *  10M pool (shares: 47.6% / 28.6% / 19.0% / 4.8% — the same weights
+ *  used for dividend allocation). Earlier figures (75000 / 16200 /
+ *  5750 / 2500) were flat per-seat caps that didn't come from the
+ *  pool formula and overstated L4 7-10×. */
 const AIRDROP_PER_TIER: Record<NodeId, { perSeat: number; total: string }> = {
-  101: { perSeat: 75000, total: "300万" },
-  201: { perSeat: 16200, total: "324万" },
-  301: { perSeat:  5750, total: "230万" },
-  401: { perSeat:  2500, total: "200万" },
+  101: { perSeat: 11905, total: "476K" },
+  201: { perSeat:  9524, total: "1.90M" },
+  301: { perSeat:  7143, total: "2.86M" },
+  401: { perSeat:  5952, total: "4.76M" },
 };
 
 /** Six-stream dividend weight coefficients per tier.
