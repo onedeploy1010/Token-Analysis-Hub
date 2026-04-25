@@ -103,7 +103,7 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v && !busy) onClose(); }}>
-      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-xl">
+      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-xl max-h-[92dvh] overflow-y-auto">
         <DialogHeader>
           <div className="inline-flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
@@ -117,7 +117,9 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-3 mt-2">
+        {/* 5-tier grid — 2 cols on phones (compact rows) so we don't
+            push the CTA off-screen, expands to 3 cols on sm+. */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
           {ALL_NODE_IDS.map((id) => {
             const meta = NODE_META[id];
             const cfg = configArray?.find((c) => Number(c.nodeId) === id);
@@ -132,16 +134,16 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
                 type="button"
                 disabled={busy || soldOut}
                 onClick={() => setSelected(id)}
-                className={`text-left rounded-xl border p-4 transition-all ${
+                className={`text-left rounded-xl border p-2.5 transition-all ${
                   isActive
                     ? "border-amber-500 bg-amber-500/5 shadow-[0_0_0_1px_hsl(38,90%,50%,0.4)]"
                     : "border-border/40 bg-card/40 hover:border-border/80"
                 } ${soldOut ? "opacity-40 cursor-not-allowed" : ""}`}
               >
-                <div className={`text-[10px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>{meta.nameEn}</div>
-                <div className="text-lg font-bold text-foreground mt-0.5">{meta.nameCn}</div>
-                <div className="num text-xl num-gold mt-2">{priceLabel}</div>
-                <div className="text-[10px] text-muted-foreground mt-1">
+                <div className={`text-[9px] font-mono uppercase tracking-[0.18em] ${meta.color}`}>{meta.nameEn}</div>
+                <div className="text-sm font-bold text-foreground mt-0.5 leading-tight">{meta.nameCn}</div>
+                <div className="num text-sm num-gold mt-1.5 leading-tight">{priceLabel}</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">
                   {soldOut ? t("mr.buy.soldOut") : cfg ? `${remaining} ${t("mr.buy.seatsLeft")}` : t("mr.buy.loadingCfg")}
                 </div>
               </button>

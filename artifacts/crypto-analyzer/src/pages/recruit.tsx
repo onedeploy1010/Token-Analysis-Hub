@@ -317,9 +317,14 @@ export default function Recruit() {
 
                 const investment    = onChain ? Number(onChain.payAmount / 10n ** 18n) : meta.priceUsdt;
                 const seats         = onChain ? Number(onChain.maxLimit) : (rest?.seats ?? stat.seats);
+                // seatsRemaining must be authoritative — only the on-chain
+                // `curNum` reflects real purchases. REST `seatsRemaining` is
+                // a static placeholder in the overview table and would lie
+                // about occupancy on a freshly-deployed contract. Default
+                // to full-available while the chain read is in flight.
                 const seatsRemaining = onChain
                   ? Number(onChain.maxLimit - onChain.curNum)
-                  : (rest?.seatsRemaining ?? stat.seats);
+                  : seats;
                 // directRate is basis points (PREVISION = 10000).
                 const directRatePct = onChain ? Number(onChain.directRate) / 100 : null;
                 const occupiedPct = seats > 0

@@ -28,6 +28,10 @@ const PRICE_STAGES = [
 // airdrop isn't double-counted alongside it.
 const NODES = [
   {
+    // Placeholder seatsRemaining = seats. Real-time consumption comes
+    // from the NodePresell contract's curNum on the frontend; the REST
+    // overview is just static marketing metadata and would lie if it
+    // pretended to track sales.
     level: "initial",
     nameEn: "INITIAL",
     nameCn: "符胚",
@@ -47,7 +51,7 @@ const NODES = [
     nameCn: "符源",
     investment: 2500,
     seats: 800,
-    seatsRemaining: 532,
+    seatsRemaining: 800,
     privatePrice: 0.026,
     dailyUsdt: 11.7,
     weight: 1.2,
@@ -61,7 +65,7 @@ const NODES = [
     nameCn: "符印",
     investment: 5000,
     seats: 400,
-    seatsRemaining: 218,
+    seatsRemaining: 400,
     privatePrice: 0.024,
     dailyUsdt: 23.4,
     weight: 1.4,
@@ -75,7 +79,7 @@ const NODES = [
     nameCn: "符魂",
     investment: 10000,
     seats: 200,
-    seatsRemaining: 87,
+    seatsRemaining: 200,
     privatePrice: 0.02,
     dailyUsdt: 46.8,
     weight: 1.6,
@@ -89,7 +93,7 @@ const NODES = [
     nameCn: "符主",
     investment: 50000,
     seats: 20,
-    seatsRemaining: 11,
+    seatsRemaining: 20,
     privatePrice: 0.016,
     dailyUsdt: 234,
     weight: 2,
