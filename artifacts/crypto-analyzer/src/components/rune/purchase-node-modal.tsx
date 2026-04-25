@@ -103,34 +103,32 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v && !busy) onClose(); }}>
-      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-md max-h-[92dvh] overflow-y-auto p-5 sm:p-6">
-        <DialogHeader className="space-y-2.5">
-          {/* Step badge — bigger / more prominent than the previous text-[10px] */}
-          <div className="inline-flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-              <Coins className="h-4.5 w-4.5 text-amber-400" />
+      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-md max-h-[88dvh] overflow-y-auto p-4 gap-3">
+        <DialogHeader className="space-y-1.5">
+          {/* Step badge + title on one line so the header stays compact. */}
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <Coins className="h-3.5 w-3.5 text-amber-400" />
             </div>
-            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-300">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-300 truncate">
               {t("mr.buy.step")}
             </span>
           </div>
-          <DialogTitle className="text-xl font-bold leading-tight">
+          <DialogTitle className="text-base font-bold leading-tight">
             {t("mr.buy.title")}
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground text-[13px] leading-relaxed">
+          <DialogDescription className="text-muted-foreground text-[11px] leading-snug">
             {t("mr.buy.desc")}
           </DialogDescription>
-          {/* Single-purchase warning — visually de-emphasized to read as
-              a footnote, but still legible above the tier list. */}
-          <p className="text-[11px] leading-relaxed text-amber-300/70 font-medium">
+          <p className="text-[10px] leading-snug text-amber-300/70 font-medium">
             {t("mr.buy.descHint")}
           </p>
         </DialogHeader>
 
-        {/* Vertical tier list — entry tier (1,000 U) at the top, apex
-            (50,000 U) at the bottom. One column always, so the five
-            rows stack predictably on phones without horizontal overflow. */}
-        <div className="flex flex-col gap-2 mt-3">
+        {/* Vertical tier list — entry tier (1,000 U) on top, apex
+            (50,000 U) on bottom. One column always so the five rows
+            stack predictably on phones; row height kept tight. */}
+        <div className="flex flex-col gap-1.5">
           {[...ALL_NODE_IDS].sort((a, b) => b - a).map((id) => {
             const meta = NODE_META[id];
             const cfg = configArray?.find((c) => Number(c.nodeId) === id);
@@ -146,27 +144,22 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
                 type="button"
                 disabled={busy || soldOut}
                 onClick={() => setSelected(id)}
-                className={`group relative flex items-center gap-3 rounded-xl border px-3 py-3 transition-all text-left overflow-hidden ${
+                className={`group relative flex items-center gap-2.5 rounded-lg border px-2.5 py-2 transition-all text-left overflow-hidden ${
                   isActive
-                    ? "border-amber-500 bg-amber-500/[0.06] shadow-[0_0_0_1px_hsl(38,90%,50%,0.45),0_0_24px_-4px_hsl(38,90%,50%,0.35)]"
+                    ? "border-amber-500 bg-amber-500/[0.06] shadow-[0_0_0_1px_hsl(38,90%,50%,0.45)]"
                     : "border-border/40 bg-card/40 hover:border-border/80"
                 } ${soldOut ? "opacity-40 cursor-not-allowed" : ""}`}
-                style={isActive ? { ["--tier-rgb" as string]: meta.rgb } : undefined}
               >
-                {/* Tier-color spine on the left edge — keeps each row
-                    visually anchored to its tier without filling the
-                    background. Mirrors the dashboard hero's accent
-                    treatment. */}
+                {/* Tier-color spine on the left edge */}
                 <span
                   className="absolute left-0 top-0 bottom-0 w-[3px]"
                   style={{ backgroundColor: `rgb(${meta.rgb})`, opacity: isActive ? 1 : 0.55 }}
                   aria-hidden
                 />
 
-                {/* Symbol tile — soft tinted bg with the tier color, the
-                    Chinese symbol's first glyph (符) inside. */}
+                {/* Symbol tile */}
                 <span
-                  className="ml-1 h-10 w-10 rounded-lg shrink-0 flex items-center justify-center font-bold text-base"
+                  className="ml-0.5 h-8 w-8 rounded-md shrink-0 flex items-center justify-center font-bold text-sm"
                   style={{
                     backgroundColor: `rgba(${meta.rgb}, 0.14)`,
                     color: `rgb(${meta.rgb})`,
@@ -176,15 +169,15 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
                   {meta.nameCn.charAt(meta.nameCn.length - 1)}
                 </span>
 
-                {/* Center — tier names + meta line (seats / direct rate) */}
+                {/* Center — tier name + meta line (seats / direct rate) */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[15px] font-bold text-foreground truncate">{meta.nameCn}</span>
-                    <span className={`text-[10px] font-mono uppercase tracking-[0.18em] ${meta.color} truncate`}>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[13px] font-bold text-foreground truncate">{meta.nameCn}</span>
+                    <span className={`text-[9px] font-mono uppercase tracking-[0.16em] ${meta.color} truncate`}>
                       {meta.nameEn}
                     </span>
                   </div>
-                  <div className="text-[11px] text-muted-foreground/85 mt-0.5 truncate">
+                  <div className="text-[10px] text-muted-foreground/85 truncate leading-tight">
                     {soldOut ? (
                       t("mr.buy.soldOut")
                     ) : cfg ? (
@@ -192,8 +185,8 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
                         <span>{remaining} {t("mr.buy.seatsLeft")}</span>
                         {directPct !== null && (
                           <>
-                            <span className="opacity-40 mx-1.5">·</span>
-                            <span className="text-amber-300/85">{directPct}% direct</span>
+                            <span className="opacity-40 mx-1">·</span>
+                            <span className="text-amber-300/85">{directPct}%</span>
                           </>
                         )}
                       </>
@@ -204,11 +197,11 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
                 </div>
 
                 {/* Right — price */}
-                <div className="text-right shrink-0">
-                  <div className="text-lg font-bold tabular-nums leading-none text-amber-300">
+                <div className="text-right shrink-0 leading-none">
+                  <div className="text-sm font-bold tabular-nums text-amber-300">
                     {priceLabel}
                   </div>
-                  <div className="text-[9px] text-muted-foreground/70 mt-1 font-mono uppercase tracking-[0.18em]">
+                  <div className="text-[8px] text-muted-foreground/70 mt-0.5 font-mono uppercase tracking-[0.18em]">
                     USDT
                   </div>
                 </div>
@@ -217,43 +210,43 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
           })}
         </div>
 
-        {/* Status strip */}
+        {/* Status strip — only takes vertical space while a tx is pending */}
         {step === "approving" && (
-          <div className="flex items-center gap-2 rounded-lg border border-blue-700/30 bg-blue-950/20 px-3 py-2 text-xs text-blue-200">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <div className="flex items-center gap-2 rounded-md border border-blue-700/30 bg-blue-950/20 px-2.5 py-1.5 text-[11px] text-blue-200">
+            <Loader2 className="h-3 w-3 animate-spin" />
             <span>{t("mr.buy.approving")}</span>
           </div>
         )}
         {step === "buying" && (
-          <div className="flex items-center gap-2 rounded-lg border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <div className="flex items-center gap-2 rounded-md border border-amber-700/30 bg-amber-950/20 px-2.5 py-1.5 text-[11px] text-amber-200">
+            <Loader2 className="h-3 w-3 animate-spin" />
             <span>{t("mr.buy.sending")}</span>
           </div>
         )}
         {step === "done" && (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-700/30 bg-emerald-950/20 px-3 py-2 text-xs text-emerald-200">
-            <CheckCircle2 className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 rounded-md border border-emerald-700/30 bg-emerald-950/20 px-2.5 py-1.5 text-[11px] text-emerald-200">
+            <CheckCircle2 className="h-3 w-3" />
             <span>{t("mr.buy.confirmed")}</span>
           </div>
         )}
         {step === "select" && !selected && (
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/60">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
             <AlertCircle className="h-3 w-3" /> {t("mr.buy.selectHint")}
           </div>
         )}
 
-        <div className="flex gap-2 pt-2">
-          <Button variant="ghost" onClick={onSkip} disabled={busy} className="flex-1">
+        <div className="flex gap-2 pt-1">
+          <Button variant="ghost" onClick={onSkip} disabled={busy} className="flex-1 h-9 text-sm">
             {t("mr.buy.later")}
           </Button>
           <Button
-            className="flex-1 font-semibold gap-2"
+            className="flex-1 font-semibold gap-1.5 h-9 text-sm"
             disabled={!selected || busy || step === "done"}
             onClick={handleBuy}
           >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (
               <>
-                <ShieldCheck className="h-4 w-4" /> {t("mr.buy.approveBuy")} <ArrowRight className="h-4 w-4" />
+                <ShieldCheck className="h-3.5 w-3.5" /> {t("mr.buy.approveBuy")} <ArrowRight className="h-3.5 w-3.5" />
               </>
             )}
           </Button>

@@ -238,14 +238,27 @@ export default function Dashboard() {
   // bought a node yet we bounce back to /recruit and fire the purchase
   // signal so RuneOnboarding re-opens the purchase modal. Disconnect
   // does the same — the dashboard is never shown with no address.
-  const { hasPurchased, isLoading: purchaseLoading, nodeId: ownedNodeId, amount: ownedAmount } = useUserPurchase(address);
+  //
+  // Two purchase signals — chain-side `getUserPurchaseData` (fast, no
+  // indexer) and DB-side `personalStats.hasPurchased` (covers test
+  // fixtures and any wallet whose tx is in the indexer but not yet
+  // hot-cached client-side). EITHER must be true to gain access.
+  const { hasPurchased: chainHasPurchased, isLoading: purchaseLoading, nodeId: chainNodeId, amount: ownedAmount } = useUserPurchase(address);
+  const { data: gateStats, isLoading: statsLoading } = usePersonalStats(address);
+  const dbHasPurchased = !!gateStats?.hasPurchased;
+  const dbNodeId       = gateStats?.ownedNodeId ?? null;
+  const hasPurchased   = chainHasPurchased || dbHasPurchased;
+  const ownedNodeId    = chainNodeId ?? (dbNodeId ?? undefined);
+
   useEffect(() => {
     if (!address) { navigate("/recruit"); return; }
-    if (!purchaseLoading && !hasPurchased) {
+    // Wait until *both* signals have settled before redirecting; otherwise
+    // a slow GraphQL roundtrip would bounce a DB-only fixture mid-load.
+    if (!purchaseLoading && !statsLoading && !hasPurchased) {
       navigate("/recruit");
       emitOpenPurchase();
     }
-  }, [address, hasPurchased, purchaseLoading, navigate]);
+  }, [address, hasPurchased, purchaseLoading, statsLoading, navigate]);
 
   if (!address || !hasPurchased) return null;
 
