@@ -239,26 +239,36 @@ export default function Dashboard() {
   // signal so RuneOnboarding re-opens the purchase modal. Disconnect
   // does the same — the dashboard is never shown with no address.
   //
-  // Two purchase signals — chain-side `getUserPurchaseData` (fast, no
-  // indexer) and DB-side `personalStats.hasPurchased` (covers test
-  // fixtures and any wallet whose tx is in the indexer but not yet
-  // hot-cached client-side). EITHER must be true to gain access.
+  // Three purchase signals (any one suffices):
+  //   1. on-chain getUserPurchaseData (the real production path)
+  //   2. DB-side personalStats.hasPurchased (indexer-cached fallback)
+  //   3. PREVIEW_ADDRESSES whitelist — explicit test fixtures so QA
+  //      can walk the dashboard without burning a real tx.
+  // Address keys are lowercase (EVM normalisation).
+  const PREVIEW_ADDRESSES: Record<string, NodeId> = {
+    "0xc8d0ab0b4e4d52a2f0ce920c43067973bee8f7ec": 501,
+  };
+  const previewNodeId = address ? PREVIEW_ADDRESSES[address.toLowerCase()] : undefined;
+
   const { hasPurchased: chainHasPurchased, isLoading: purchaseLoading, nodeId: chainNodeId, amount: ownedAmount } = useUserPurchase(address);
   const { data: gateStats, isLoading: statsLoading } = usePersonalStats(address);
   const dbHasPurchased = !!gateStats?.hasPurchased;
   const dbNodeId       = gateStats?.ownedNodeId ?? null;
-  const hasPurchased   = chainHasPurchased || dbHasPurchased;
-  const ownedNodeId    = chainNodeId ?? (dbNodeId ?? undefined);
+  const hasPurchased   = chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
+  const ownedNodeId    = chainNodeId ?? (dbNodeId ?? previewNodeId);
 
   useEffect(() => {
     if (!address) { navigate("/recruit"); return; }
-    // Wait until *both* signals have settled before redirecting; otherwise
-    // a slow GraphQL roundtrip would bounce a DB-only fixture mid-load.
+    // Whitelisted preview addresses bypass the loading wait — we know
+    // they're allowed in. Otherwise wait until both async signals
+    // settle before redirecting so a slow roundtrip doesn't kick a
+    // legitimately-purchased user mid-load.
+    if (previewNodeId !== undefined) return;
     if (!purchaseLoading && !statsLoading && !hasPurchased) {
       navigate("/recruit");
       emitOpenPurchase();
     }
-  }, [address, hasPurchased, purchaseLoading, statsLoading, navigate]);
+  }, [address, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
 
   if (!address || !hasPurchased) return null;
 
