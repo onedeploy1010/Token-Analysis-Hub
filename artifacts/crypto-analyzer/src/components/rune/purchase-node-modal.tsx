@@ -5,7 +5,7 @@ import { Loader2, Coins, ShieldCheck, ArrowRight, CheckCircle2, AlertCircle } fr
 import { useSendTransaction, useActiveAccount } from "thirdweb/react";
 import { prepareContractCall } from "thirdweb";
 import { maxUint256 } from "thirdweb/utils";
-import { nodePresellContract, usdtContract, NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
+import { nodePresellContract, usdtContract, NODE_META, NODE_IDS, type NodeId } from "@/lib/thirdweb/contracts";
 import { readUsdtAllowance } from "@/hooks/rune/use-usdt";
 import { useNodeConfigs } from "@/hooks/rune/use-node-presell";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +20,7 @@ interface Props {
   onSkip: () => void;
 }
 
-const ALL_NODE_IDS: NodeId[] = [101, 201, 301, 401];
+const ALL_NODE_IDS: readonly NodeId[] = NODE_IDS;
 
 /** Format a bigint with 18 decimals as "50,000". */
 function fmt18(raw: bigint, decimals = 0): string {

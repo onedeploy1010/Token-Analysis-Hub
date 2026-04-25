@@ -10,7 +10,7 @@ import { useGetRuneOverview } from "@rune/api-client-react";
 import { useShowZh } from "@/contexts/language-context";
 import { useActiveAccount } from "thirdweb/react";
 import { useNodeConfigs, useUserPurchase } from "@/hooks/rune/use-node-presell";
-import { type NodeId } from "@/lib/thirdweb/contracts";
+import { NODE_IDS, NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 
@@ -22,6 +22,26 @@ const LEVEL_TO_NODE_ID: Record<string, NodeId> = {
   advanced: 301,
   mid:      401,
   initial:  501,
+};
+
+/** Card render order — entry tier first (cheapest left, apex right). */
+const TIER_ORDER: readonly NodeId[] = [501, 401, 301, 201, 101] as const;
+
+/** Off-chain marketing metadata that REST normally supplies. Baked
+ *  client-side too so we still render all 5 cards if the api-server is
+ *  stale or returns fewer nodes. Values come from 节点招募计划. */
+type TierStatic = {
+  privatePrice: number;
+  dailyUsdt:    number;
+  airdropPerSeat: number;
+  seats:        number;
+};
+const TIER_STATIC: Record<NodeId, TierStatic> = {
+  101: { privatePrice: 0.016, dailyUsdt: 234,  airdropPerSeat: 75000, seats:   20 },
+  201: { privatePrice: 0.020, dailyUsdt: 46.8, airdropPerSeat: 13000, seats:  200 },
+  301: { privatePrice: 0.024, dailyUsdt: 23.4, airdropPerSeat:  6250, seats:  400 },
+  401: { privatePrice: 0.026, dailyUsdt: 11.7, airdropPerSeat:  3000, seats:  800 },
+  501: { privatePrice: 0.028, dailyUsdt:  4.7, airdropPerSeat:  1000, seats: 1000 },
 };
 
 /** Shape of one element returned by NodePresell.getNodeConfigs.
@@ -282,49 +302,53 @@ export default function Recruit() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-          {isLoading
+          {isLoading && nodes.length === 0
             ? Array.from({ length: 5 }).map((_, i) => <NodeCardSkeleton key={i} />)
-            : nodes.map((node, i) => {
-                // Prefer on-chain tier stats (live) and fall back to REST (seed
-                // metadata) while the chain read is still loading or if the
-                // nodeId isn't deployed yet. payAmount is an 18-decimal USDT
-                // value; convert to whole USDT for display.
-                const onChain = onChainByNodeId.get(LEVEL_TO_NODE_ID[node.level]);
-                const seats = onChain ? Number(onChain.maxLimit) : node.seats;
+            : TIER_ORDER.map((nodeId, i) => {
+                // The card source-of-truth is the static tier table plus
+                // NODE_META; REST overlays whatever extra metadata it has
+                // for that level (so an out-of-date api-server doesn't
+                // hide a tier). On-chain takes priority for live numbers.
+                const meta   = NODE_META[nodeId];
+                const stat   = TIER_STATIC[nodeId];
+                const rest   = nodes.find((n) => LEVEL_TO_NODE_ID[n.level] === nodeId);
+                const onChain = onChainByNodeId.get(nodeId);
+                const level  = meta.level;
+
+                const investment    = onChain ? Number(onChain.payAmount / 10n ** 18n) : meta.priceUsdt;
+                const seats         = onChain ? Number(onChain.maxLimit) : (rest?.seats ?? stat.seats);
                 const seatsRemaining = onChain
                   ? Number(onChain.maxLimit - onChain.curNum)
-                  : node.seatsRemaining;
-                const investment = onChain
-                  ? Number(onChain.payAmount / 10n ** 18n)
-                  : node.investment;
-                // directRate is basis points out of 10000 (PREVISION), so
-                // divide by 100 to render a percent. No REST fallback — if
-                // the chain read hasn't landed yet we simply omit the row.
-                const directRatePct = onChain
-                  ? Number(onChain.directRate) / 100
-                  : null;
+                  : (rest?.seatsRemaining ?? stat.seats);
+                // directRate is basis points (PREVISION = 10000).
+                const directRatePct = onChain ? Number(onChain.directRate) / 100 : null;
                 const occupiedPct = seats > 0
                   ? Math.round(((seats - seatsRemaining) / seats) * 100)
                   : 0;
-                const accent = NODE_ACCENT[node.level];
-                const progressCls = NODE_PROGRESS_BAR[node.level];
+                const accent = NODE_ACCENT[level];
+                const progressCls = NODE_PROGRESS_BAR[level];
+
+                const privatePrice    = rest?.privatePrice    ?? stat.privatePrice;
+                const dailyUsdt       = rest?.dailyUsdt       ?? stat.dailyUsdt;
+                const airdropPerSeat  = rest?.airdropPerSeat  ?? stat.airdropPerSeat;
+
                 return (
                   <motion.div
-                    key={node.level}
+                    key={nodeId}
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, delay: i * 0.1 }}
-                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[node.level]} ${NODE_GLOW[node.level]}`}
+                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[level]} ${NODE_GLOW[level]}`}
                   >
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${accent}`}>
-                          {node.nameEn}
+                          {meta.nameEn}
                         </div>
-                        <div className="text-xl font-bold text-foreground">{showZh ? node.nameCn : node.nameEn}</div>
+                        <div className="text-xl font-bold text-foreground">{showZh ? meta.nameCn : meta.nameEn}</div>
                       </div>
-                      <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[node.level]}`}>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[level]}`}>
                         Lv.{i + 1}
                       </span>
                     </div>
@@ -333,10 +357,10 @@ export default function Recruit() {
                     <div className="space-y-2.5 flex-1">
                       {[
                         { labelZh: "投资门槛",     labelEn: "Investment",  val: `$${fmt(investment)}`, accent: true },
-                        { labelZh: "私募价格",     labelEn: "Private",     val: `$${node.privatePrice.toFixed(3)}` },
+                        { labelZh: "私募价格",     labelEn: "Private",     val: `$${privatePrice.toFixed(3)}` },
                         { labelZh: "席位总量",     labelEn: "Total Seats", val: showZh ? `${fmt(seats)} 席` : `${fmt(seats)}` },
-                        { labelZh: "每日USDT收益", labelEn: "Daily USDT",  val: `$${node.dailyUsdt}`, accent: true },
-                        { labelZh: "子TOKEN空投",  labelEn: "Airdrop",     val: `${fmt(node.airdropPerSeat)} SUB` },
+                        { labelZh: "每日USDT收益", labelEn: "Daily USDT",  val: `$${dailyUsdt}`, accent: true },
+                        { labelZh: "子TOKEN空投",  labelEn: "Airdrop",     val: `${fmt(airdropPerSeat)} SUB` },
                         ...(directRatePct !== null
                           ? [{ labelZh: "直推返佣", labelEn: "Direct Commission", val: `${directRatePct}%`, accent: true }]
                           : []),
@@ -382,7 +406,7 @@ export default function Recruit() {
                     ) : (
                       <Button
                         onClick={() => emitOpenPurchase()}
-                        className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[node.level]}`}
+                        className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[level]}`}
                       >
                         {showZh ? "立即购买 · Buy Now" : "Buy Now"}
                       </Button>
