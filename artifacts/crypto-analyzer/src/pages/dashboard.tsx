@@ -277,7 +277,10 @@ export default function Dashboard() {
     }
   }, [address, hasPurchased, purchaseLoading, statsLoading, previewNodeId, isPreviewMode, navigate]);
 
-  if (!address || !hasPurchased) return null;
+  // Preview mode renders even without a wallet — wallet-dependent
+  // hooks (useUserPurchase / usePersonalStats / useReferrerOf) just
+  // stay disabled and the cards fall back to defaults.
+  if (!isPreviewMode && (!address || !hasPurchased)) return null;
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
