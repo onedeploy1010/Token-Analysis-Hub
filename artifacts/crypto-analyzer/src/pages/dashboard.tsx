@@ -590,36 +590,33 @@ const AIRDROP_BATCHES = [
 
 /** Per-tier airdrop allocation.
  *
- *  Per-seat numbers mirror the api-server's NODES table. L1–L4 (101/
- *  201/301/401) keep their original allocation derived from the 4-tier
- *  formula; L5 (501, INITIAL) was added with the BSC mainnet
- *  deployment — its 3,571 per-seat figure ships from the runeapi 3
- *  config and is independent of the original 1,680-weight denominator.
- *  `total` is `perSeat × seats`. Earlier figures (75000 / 16200 /
- *  5750 / 2500) were flat per-seat caps that didn't come from the
- *  pool formula and overstated L4 7-10×. */
+ *  Per-seat numbers come from the 节点招募计划 spec. The five tiers
+ *  consume the full 10,000,000-token mother-token pool exactly:
+ *    1k×1000 + 800×3000 + 400×6250 + 200×13000 + 20×75000 = 10,000,000.
+ *  `total` is `perSeat × seats`. */
 const AIRDROP_PER_TIER: Record<NodeId, { perSeat: number; total: string }> = {
-  101: { perSeat: 11905, total: "238K" },
-  201: { perSeat:  9524, total: "1.90M" },
-  301: { perSeat:  7143, total: "2.86M" },
-  401: { perSeat:  5952, total: "4.76M" },
-  501: { perSeat:  3571, total: "3.57M" },
+  101: { perSeat: 75000, total: "1.50M" },
+  201: { perSeat: 13000, total: "2.60M" },
+  301: { perSeat:  6250, total: "2.50M" },
+  401: { perSeat:  3000, total: "2.40M" },
+  501: { perSeat:  1000, total: "1.00M" },
 };
 
 /** Six-stream dividend weight coefficients per tier.
  *
- *  `share` = (seats × coeff) / totalWeight. With the 501 tier and
- *  20-seat strategic cap from runeapi 3, totalWeight at full sell-out is:
- *    1000×0.6 + 800×1.0 + 400×1.2 + 200×1.6 + 20×2.0 = 2,240
- *
- *  Tier shares: L5 = 600/2240, L4 = 800/2240, L3 = 480/2240,
- *               L2 = 320/2240, L1 = 40/2240. */
+ *  `share` = (seats × coeff) / totalWeight. Per the 节点招募计划 spec
+ *  the coefficients are 1.0 / 1.2 / 1.4 / 1.6 / 2.0 (initial → founder),
+ *  so totalWeight at full sell-out is:
+ *    1000×1.0 + 800×1.2 + 400×1.4 + 200×1.6 + 20×2.0 = 2,876
+ *  Tier shares: L1 = 1000/2876 ≈ 34.8%, L2 = 960/2876 ≈ 33.4%,
+ *               L3 = 560/2876 ≈ 19.5%, L4 = 320/2876 ≈ 11.1%,
+ *               L5 = 40/2876 ≈ 1.4%. */
 const WEIGHT_PER_TIER: Record<NodeId, { coeff: number; share: string }> = {
-  101: { coeff: 2.0, share: "1.8%"  },
-  201: { coeff: 1.6, share: "14.3%" },
-  301: { coeff: 1.2, share: "21.4%" },
-  401: { coeff: 1.0, share: "35.7%" },
-  501: { coeff: 0.6, share: "26.8%" },
+  101: { coeff: 2.0, share: "1.4%"  },
+  201: { coeff: 1.6, share: "11.1%" },
+  301: { coeff: 1.4, share: "19.5%" },
+  401: { coeff: 1.2, share: "33.4%" },
+  501: { coeff: 1.0, share: "34.8%" },
 };
 
 /** Six revenue streams in the ongoing dividend pool. Split each row into
@@ -906,9 +903,15 @@ function BenefitGroup({
    fields; while those land we surface a "pending settlement" state so
    the qualification itself is visible immediately.
 ──────────────────────────────────────────────────────────────────────────── */
-const GENESIS_DIRECT_THRESHOLD = 5;
-const GENESIS_TEAM_THRESHOLD = 10;
-const GENESIS_APEX_NODE_ID: NodeId = 101; // 符主 L4
+// Genesis triggers (per 节点招募计划 spec — ANY ONE qualifies):
+//   1. ≥ 3 direct 联创 (founder, 50,000 U) referrals
+//   2. ≥ 5 联创 nodes anywhere in the team
+//   3. ≥ 30 超级 (super, 10,000 U) nodes anywhere in the team
+const GENESIS_DIRECT_FOUNDER_THRESHOLD = 3;
+const GENESIS_TEAM_FOUNDER_THRESHOLD   = 5;
+const GENESIS_TEAM_SUPER_THRESHOLD     = 30;
+const GENESIS_APEX_NODE_ID: NodeId = 101; // 联创节点 · 符主 · L5
+const GENESIS_SUPER_NODE_ID: NodeId = 201; // 超级节点 · 符魂 · L4
 
 /* ─────────────────────────────────────────────────────────────────────────
    Pool-progress card — "全网底池达标进度"
@@ -1176,15 +1179,20 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
 
   // Eligibility comes entirely from the server-computed tier histograms
   // so we don't redo aggregation client-side.
-  const directL4 = stats?.directByTier?.find((b) => b.nodeId === GENESIS_APEX_NODE_ID)?.count ?? 0;
-  const teamL4   = stats?.teamByTier?.find((b)   => b.nodeId === GENESIS_APEX_NODE_ID)?.count ?? 0;
-  const isGenesis = directL4 >= GENESIS_DIRECT_THRESHOLD || teamL4 >= GENESIS_TEAM_THRESHOLD;
+  const directFounder = stats?.directByTier?.find((b) => b.nodeId === GENESIS_APEX_NODE_ID)?.count ?? 0;
+  const teamFounder   = stats?.teamByTier?.find((b)   => b.nodeId === GENESIS_APEX_NODE_ID)?.count ?? 0;
+  const teamSuper     = stats?.teamByTier?.find((b)   => b.nodeId === GENESIS_SUPER_NODE_ID)?.count ?? 0;
+  const directHit  = directFounder >= GENESIS_DIRECT_FOUNDER_THRESHOLD;
+  const teamFndHit = teamFounder   >= GENESIS_TEAM_FOUNDER_THRESHOLD;
+  const teamSupHit = teamSuper     >= GENESIS_TEAM_SUPER_THRESHOLD;
+  const isGenesis  = directHit || teamFndHit || teamSupHit;
 
   if (!isGenesis) return null;
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const weight = ownedNodeId ? WEIGHT_PER_TIER[ownedNodeId as NodeId] : null;
-  const triggeredBy = directL4 >= GENESIS_DIRECT_THRESHOLD ? "direct" : "team";
+  const triggeredBy: "direct" | "teamFounder" | "teamSuper" =
+    directHit ? "direct" : teamFndHit ? "teamFounder" : "teamSuper";
 
   return (
     <motion.div
@@ -1207,20 +1215,26 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4 space-y-4 relative z-10">
-          {/* Trigger stats — show both, highlight the one that actually
-              qualified the user. */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {/* Trigger stats — show all three, highlight the one that
+              actually qualified the user. */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
             <GenesisTriggerCell
               label={t("mr.dash.genesis.triggerDirect")}
-              value={directL4}
-              target={GENESIS_DIRECT_THRESHOLD}
+              value={directFounder}
+              target={GENESIS_DIRECT_FOUNDER_THRESHOLD}
               triggered={triggeredBy === "direct"}
             />
             <GenesisTriggerCell
               label={t("mr.dash.genesis.triggerTeam")}
-              value={teamL4}
-              target={GENESIS_TEAM_THRESHOLD}
-              triggered={triggeredBy === "team"}
+              value={teamFounder}
+              target={GENESIS_TEAM_FOUNDER_THRESHOLD}
+              triggered={triggeredBy === "teamFounder"}
+            />
+            <GenesisTriggerCell
+              label={t("mr.dash.genesis.triggerTeamSuper")}
+              value={teamSuper}
+              target={GENESIS_TEAM_SUPER_THRESHOLD}
+              triggered={triggeredBy === "teamSuper"}
             />
           </div>
 
@@ -1397,11 +1411,11 @@ function OverviewTab({ address }: { address: string }) {
             the next stage (tokens + USDT estimate). */}
         <PoolProgressCard ownedNodeId={nodeId} />
 
-        {/* Genesis (L5) earnings panel — only rendered once the viewer
-            has actually qualified (≥5 direct 符主 L4 referrals OR ≥10
-            符主 L4 across the team). Keeps non-qualified users from
-            seeing a mostly-empty panel that implies something they
-            don't yet have. */}
+        {/* Genesis (L6) earnings panel — only rendered once the viewer
+            has actually qualified (any one of: ≥3 direct 符主 L5
+            referrals, ≥5 团队 符主, or ≥30 团队 符魂). Keeps non-
+            qualified users from seeing a mostly-empty panel that
+            implies something they don't yet have. */}
         <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />
 
         {/* Full benefits digest below the referral panel — the same set

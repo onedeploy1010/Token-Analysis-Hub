@@ -202,7 +202,7 @@ export const GetRuneOverviewResponse = zod.object({
  * @summary Calculate RUNE staking/LP returns
  */
 export const CalculateRuneReturnsBody = zod.object({
-  nodeLevel: zod.enum(["initial", "pioneer", "builder", "guardian", "strategic"]),
+  nodeLevel: zod.enum(["initial", "mid", "advanced", "super", "founder"]),
   seats: zod.number(),
   durationDays: zod.number(),
   priceStageIndex: zod.number(),

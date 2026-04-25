@@ -11,8 +11,8 @@ export type RuneCalculatorInputNodeLevel =
 
 export const RuneCalculatorInputNodeLevel = {
   initial: "initial",
-  pioneer: "pioneer",
-  builder: "builder",
-  guardian: "guardian",
-  strategic: "strategic",
+  mid: "mid",
+  advanced: "advanced",
+  super: "super",
+  founder: "founder",
 } as const;

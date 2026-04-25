@@ -15,15 +15,13 @@ import { useReferrerOf } from "@/hooks/rune/use-community";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 
 /** Map the REST response's tier key to the on-chain nodeId.
- *  Note: REST keys are *role* names (guardian/strategic/...), but the
- *  on-chain nodeId order is reversed — 101 is the apex (50k STRATEGIC),
- *  501 is the entry-level (1k INITIAL). */
+ *  101 is the apex (FOUNDER 50k); 501 is the entry tier (INITIAL 1k). */
 const LEVEL_TO_NODE_ID: Record<string, NodeId> = {
-  strategic: 101,
-  guardian:  201,
-  builder:   301,
-  pioneer:   401,
-  initial:   501,
+  founder:  101,
+  super:    201,
+  advanced: 301,
+  mid:      401,
+  initial:  501,
 };
 
 /** Shape of one element returned by NodePresell.getNodeConfigs.
@@ -40,45 +38,45 @@ interface OnChainNodeConfig {
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
   initial:  "from-slate-900/70 to-slate-800/20 border-slate-600/40",
-  pioneer:  "from-blue-950/70 to-blue-900/20 border-blue-700/40",
-  builder:  "from-green-950/70 to-green-900/20 border-green-700/40",
-  guardian: "from-amber-950/70 to-amber-900/20 border-amber-700/40",
-  strategic:"from-purple-950/70 to-purple-900/20 border-purple-700/40",
+  mid:      "from-blue-950/70 to-blue-900/20 border-blue-700/40",
+  advanced: "from-green-950/70 to-green-900/20 border-green-700/40",
+  super:    "from-amber-950/70 to-amber-900/20 border-amber-700/40",
+  founder:  "from-purple-950/70 to-purple-900/20 border-purple-700/40",
 };
 const NODE_ACCENT: Record<string, string> = {
   initial:  "text-slate-300",
-  pioneer:  "text-blue-400",
-  builder:  "text-green-400",
-  guardian: "text-amber-400",
-  strategic:"text-purple-400",
+  mid:      "text-blue-400",
+  advanced: "text-green-400",
+  super:    "text-amber-400",
+  founder:  "text-purple-400",
 };
 const NODE_BADGE: Record<string, string> = {
   initial:  "bg-slate-800/60 text-slate-200 border-slate-600/40",
-  pioneer:  "bg-blue-900/50 text-blue-300 border-blue-700/40",
-  builder:  "bg-green-900/50 text-green-300 border-green-700/40",
-  guardian: "bg-amber-900/50 text-amber-300 border-amber-700/40",
-  strategic:"bg-purple-900/50 text-purple-300 border-purple-700/40",
+  mid:      "bg-blue-900/50 text-blue-300 border-blue-700/40",
+  advanced: "bg-green-900/50 text-green-300 border-green-700/40",
+  super:    "bg-amber-900/50 text-amber-300 border-amber-700/40",
+  founder:  "bg-purple-900/50 text-purple-300 border-purple-700/40",
 };
 const NODE_BTN: Record<string, string> = {
   initial:  "bg-slate-600 hover:bg-slate-500 text-white",
-  pioneer:  "bg-blue-600 hover:bg-blue-500 text-white",
-  builder:  "bg-green-600 hover:bg-green-500 text-white",
-  guardian: "bg-amber-600 hover:bg-amber-500 text-white",
-  strategic:"bg-purple-600 hover:bg-purple-500 text-white",
+  mid:      "bg-blue-600 hover:bg-blue-500 text-white",
+  advanced: "bg-green-600 hover:bg-green-500 text-white",
+  super:    "bg-amber-600 hover:bg-amber-500 text-white",
+  founder:  "bg-purple-600 hover:bg-purple-500 text-white",
 };
 const NODE_GLOW: Record<string, string> = {
   initial:  "shadow-[0_0_40px_rgba(148,163,184,0.12)]",
-  pioneer:  "shadow-[0_0_40px_rgba(59,130,246,0.15)]",
-  builder:  "shadow-[0_0_40px_rgba(34,197,94,0.15)]",
-  guardian: "shadow-[0_0_40px_rgba(251,191,36,0.15)]",
-  strategic:"shadow-[0_0_40px_rgba(168,85,247,0.15)]",
+  mid:      "shadow-[0_0_40px_rgba(59,130,246,0.15)]",
+  advanced: "shadow-[0_0_40px_rgba(34,197,94,0.15)]",
+  super:    "shadow-[0_0_40px_rgba(251,191,36,0.15)]",
+  founder:  "shadow-[0_0_40px_rgba(168,85,247,0.15)]",
 };
 const NODE_PROGRESS_BAR: Record<string, string> = {
   initial:  "[&>div]:bg-slate-400",
-  pioneer:  "[&>div]:bg-blue-500",
-  builder:  "[&>div]:bg-green-500",
-  guardian: "[&>div]:bg-amber-500",
-  strategic:"[&>div]:bg-purple-500",
+  mid:      "[&>div]:bg-blue-500",
+  advanced: "[&>div]:bg-green-500",
+  super:    "[&>div]:bg-amber-500",
+  founder:  "[&>div]:bg-purple-500",
 };
 
 const FAQ_ITEMS = [
@@ -423,24 +421,32 @@ export default function Recruit() {
             </div>
             <p className="text-sm text-foreground/90 leading-relaxed">
               {showZh
-                ? "创世节点非购买获得。任一等级节点持有者达成以下条件之一，即自动升级为创世节点，除保留已购节点的权重分红外，额外从核心激励池 10% 中按创世权重比例分配收益。"
-                : "Genesis is not purchasable — any tier holder who meets either condition below is auto-upgraded. Genesis peers keep their base-tier dividends and additionally share 10% of the core incentive pool by weighted allocation."}
+                ? "创世节点非购买获得。任一等级节点持有者达成以下任意一个条件，即自动升级为创世节点，除保留已购节点的权重分红外，额外从核心激励池 10% 中按创世权重比例分配收益。"
+                : "Genesis is not purchasable — any tier holder who meets any one of the conditions below is auto-upgraded. Genesis peers keep their base-tier dividends and additionally share 10% of the core incentive pool by weighted allocation."}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
                 <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
-                  {showZh ? "条件一 · 直推达成" : "Condition 1 · Direct"}
+                  {showZh ? "条件一 · 直推联创" : "Condition 1 · Direct Founders"}
                 </div>
                 <p className="text-sm text-foreground/95 leading-snug">
-                  {showZh ? "直推 ≥ 5 个超级节点（符主 · L4）" : "Refer ≥ 5 super-tier (符主 · L4) nodes directly"}
+                  {showZh ? "直推 ≥ 3 个联创节点（符主 · L5）" : "Refer ≥ 3 founder-tier (符主 · L5) nodes directly"}
                 </p>
               </div>
               <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
                 <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
-                  {showZh ? "条件二 · 团队达成" : "Condition 2 · Team"}
+                  {showZh ? "条件二 · 团队联创" : "Condition 2 · Team Founders"}
                 </div>
                 <p className="text-sm text-foreground/95 leading-snug">
-                  {showZh ? "团队矩阵累计 ≥ 10 个超级节点（符主 · L4）" : "Accumulate ≥ 10 super-tier (符主 · L4) nodes across the full team"}
+                  {showZh ? "团队矩阵累计 ≥ 5 个联创节点（符主 · L5）" : "Accumulate ≥ 5 founder-tier (符主 · L5) nodes across the full team"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
+                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
+                  {showZh ? "条件三 · 团队超级" : "Condition 3 · Team Supers"}
+                </div>
+                <p className="text-sm text-foreground/95 leading-snug">
+                  {showZh ? "团队矩阵累计 ≥ 30 个超级节点（符魂 · L4）" : "Accumulate ≥ 30 super-tier (符魂 · L4) nodes across the full team"}
                 </p>
               </div>
             </div>

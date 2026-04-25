@@ -56,12 +56,13 @@ export type NodeId = typeof NODE_IDS[number];
  *  tailwind shade, just expressed differently. */
 // On-chain the nodeId → price/directRate mapping is fixed
 // (101 = 50k / 15%, 201 = 10k / 12%, 301 = 5k / 10%, 401 = 2.5k / 8%,
-//  501 = 1k / 5%). 101 stays the apex slot ("STRATEGIC" + purple,
-// 符主); 501 is the new entry tier ("INITIAL" + slate, 初级).
+//  501 = 1k / 5%). 101 is the apex purchase tier 联创节点·符主 (purple);
+// 501 is the entry tier 初级节点·符胚 (slate). Symbol 符胚 moved from
+// 401 to 501 with the 1,000-U tier addition; 401 is now 符源.
 export const NODE_META: Record<NodeId, { level: string; nameCn: string; nameEn: string; color: string; rgb: string; priceUsdt: number }> = {
-  101: { level: "strategic", nameCn: "符主", nameEn: "STRATEGIC", color: "text-purple-400", rgb: "192, 132, 252", priceUsdt: 50000 },
-  201: { level: "guardian",  nameCn: "符魂", nameEn: "GUARDIAN",  color: "text-amber-400",  rgb: "251, 191, 36",  priceUsdt: 10000 },
-  301: { level: "builder",   nameCn: "符印", nameEn: "BUILDER",   color: "text-green-400",  rgb: "52, 211, 153",  priceUsdt:  5000 },
-  401: { level: "pioneer",   nameCn: "符胚", nameEn: "PIONEER",   color: "text-blue-400",   rgb: "96, 165, 250",  priceUsdt:  2500 },
-  501: { level: "initial",   nameCn: "初级", nameEn: "INITIAL",   color: "text-slate-300",  rgb: "203, 213, 225", priceUsdt:  1000 },
+  101: { level: "founder",  nameCn: "符主", nameEn: "FOUNDER",  color: "text-purple-400", rgb: "192, 132, 252", priceUsdt: 50000 },
+  201: { level: "super",    nameCn: "符魂", nameEn: "SUPER",    color: "text-amber-400",  rgb: "251, 191, 36",  priceUsdt: 10000 },
+  301: { level: "advanced", nameCn: "符印", nameEn: "ADVANCED", color: "text-green-400",  rgb: "52, 211, 153",  priceUsdt:  5000 },
+  401: { level: "mid",      nameCn: "符源", nameEn: "MID",      color: "text-blue-400",   rgb: "96, 165, 250",  priceUsdt:  2500 },
+  501: { level: "initial",  nameCn: "符胚", nameEn: "INITIAL",  color: "text-slate-300",  rgb: "203, 213, 225", priceUsdt:  1000 },
 };
