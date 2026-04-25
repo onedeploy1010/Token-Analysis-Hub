@@ -196,7 +196,7 @@ export default function Recruit() {
     onChainArray.map((c) => [Number(c.nodeId), c]),
   );
 
-  const { isBound, referrer, isRoot } = useReferrerOf(account?.address);
+  const { isBound } = useReferrerOf(account?.address);
   const { hasPurchased } = useUserPurchase(account?.address);
 
   const nodes = overview?.nodes ?? [];
@@ -260,33 +260,21 @@ export default function Recruit() {
           bind / purchase / dashboard-redirect flow fires from any page the
           moment the user connects via the header. No page-level mount here. */}
 
-      {/* ── Binding status strip ── Only rendered when a wallet is
-          connected; reads `referrerOf` on-chain so the state reflects the
-          network, not the URL param. */}
-      {account && (
+      {/* ── Binding status strip ── Only render the "not bound yet"
+          prompt; once bound, we don't surface the relationship on this
+          page (it lives on the dashboard). */}
+      {account && !isBound && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className={`rounded-xl border px-4 py-3 text-xs flex items-center justify-between gap-3 ${
-            isBound
-              ? isRoot
-                ? "border-amber-700/40 bg-amber-950/30 text-amber-200"
-                : "border-green-700/40 bg-green-950/30 text-green-200"
-              : "border-amber-700/40 bg-amber-950/30 text-amber-200"
-          }`}
+          className="rounded-xl border px-4 py-3 text-xs flex items-center justify-between gap-3 border-amber-700/40 bg-amber-950/30 text-amber-200"
         >
           <span className="font-mono uppercase tracking-[0.18em] text-[10px] opacity-60">
             {showZh ? "链上绑定 · On-chain" : "On-chain"}
           </span>
           <span className="text-right font-medium">
-            {!isBound
-              ? showZh ? "尚未绑定推荐人" : "Not bound yet"
-              : isRoot
-              ? showZh ? "已绑定 ROOT · 顶级节点" : "Bound to ROOT"
-              : showZh
-              ? `已绑定 ${referrer!.slice(0, 6)}…${referrer!.slice(-4)}`
-              : `Bound to ${referrer!.slice(0, 6)}…${referrer!.slice(-4)}`}
+            {showZh ? "尚未绑定推荐人" : "Not bound yet"}
           </span>
         </motion.div>
       )}
