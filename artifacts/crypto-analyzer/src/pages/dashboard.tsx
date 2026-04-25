@@ -234,17 +234,20 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<Tab>("overview");
 
-  // Dashboard is gated on hasPurchased. If the connected wallet hasn't
-  // bought a node yet we bounce back to /recruit and fire the purchase
-  // signal so RuneOnboarding re-opens the purchase modal. Disconnect
-  // does the same — the dashboard is never shown with no address.
+  // Dashboard is gated on hasPurchased in production. If the connected
+  // wallet hasn't bought a node yet we bounce back to /recruit and
+  // fire the purchase signal so RuneOnboarding re-opens the purchase
+  // modal. Disconnect does the same.
   //
-  // Three purchase signals (any one suffices):
+  // Three production purchase signals (any one suffices):
   //   1. on-chain getUserPurchaseData (the real production path)
   //   2. DB-side personalStats.hasPurchased (indexer-cached fallback)
   //   3. PREVIEW_ADDRESSES whitelist — explicit test fixtures so QA
   //      can walk the dashboard without burning a real tx.
-  // Address keys are lowercase (EVM normalisation).
+  //
+  // VITE_PREVIEW_MODE=1 short-circuits the gate entirely (preview
+  // bundle for stakeholder/UX walkthroughs).
+  const isPreviewMode = import.meta.env.VITE_PREVIEW_MODE === "1";
   const PREVIEW_ADDRESSES: Record<string, NodeId> = {
     "0xc8d0ab0b4e4d52a2f0ce920c43067973bee8f7ec": 501,
   };
@@ -254,10 +257,14 @@ export default function Dashboard() {
   const { data: gateStats, isLoading: statsLoading } = usePersonalStats(address);
   const dbHasPurchased = !!gateStats?.hasPurchased;
   const dbNodeId       = gateStats?.ownedNodeId ?? null;
-  const hasPurchased   = chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
-  const ownedNodeId    = chainNodeId ?? (dbNodeId ?? previewNodeId);
+  const hasPurchased   = isPreviewMode || chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
+  // In preview mode default to 501 (initial / 符胚) so the hero +
+  // tier-themed widgets have a target. Real connected wallets keep
+  // their on-chain / DB-resolved tier.
+  const ownedNodeId    = chainNodeId ?? dbNodeId ?? previewNodeId ?? (isPreviewMode ? 501 : undefined);
 
   useEffect(() => {
+    if (isPreviewMode) return;          // preview build: never bounce
     if (!address) { navigate("/recruit"); return; }
     // Whitelisted preview addresses bypass the loading wait — we know
     // they're allowed in. Otherwise wait until both async signals
@@ -268,7 +275,7 @@ export default function Dashboard() {
       navigate("/recruit");
       emitOpenPurchase();
     }
-  }, [address, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
+  }, [address, hasPurchased, purchaseLoading, statsLoading, previewNodeId, isPreviewMode, navigate]);
 
   if (!address || !hasPurchased) return null;
 
