@@ -103,29 +103,41 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v && !busy) onClose(); }}>
-      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-md max-h-[92dvh] overflow-y-auto">
-        <DialogHeader>
-          <div className="inline-flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
-              <Coins className="h-4 w-4 text-amber-400" />
+      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-md max-h-[92dvh] overflow-y-auto p-5 sm:p-6">
+        <DialogHeader className="space-y-2.5">
+          {/* Step badge — bigger / more prominent than the previous text-[10px] */}
+          <div className="inline-flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <Coins className="h-4.5 w-4.5 text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">{t("mr.buy.step")}</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-300">
+              {t("mr.buy.step")}
+            </span>
           </div>
-          <DialogTitle className="text-lg font-bold">{t("mr.buy.title")}</DialogTitle>
-          <DialogDescription className="text-muted-foreground text-xs">
+          <DialogTitle className="text-xl font-bold leading-tight">
+            {t("mr.buy.title")}
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground text-[13px] leading-relaxed">
             {t("mr.buy.desc")}
           </DialogDescription>
+          {/* Single-purchase warning — visually de-emphasized to read as
+              a footnote, but still legible above the tier list. */}
+          <p className="text-[11px] leading-relaxed text-amber-300/70 font-medium">
+            {t("mr.buy.descHint")}
+          </p>
         </DialogHeader>
 
-        {/* Vertical list — one row per tier. Always one column, so the
-            five tiers stack predictably on phones without overflowing. */}
-        <div className="flex flex-col gap-2 mt-2">
-          {ALL_NODE_IDS.map((id) => {
+        {/* Vertical tier list — entry tier (1,000 U) at the top, apex
+            (50,000 U) at the bottom. One column always, so the five
+            rows stack predictably on phones without horizontal overflow. */}
+        <div className="flex flex-col gap-2 mt-3">
+          {[...ALL_NODE_IDS].sort((a, b) => b - a).map((id) => {
             const meta = NODE_META[id];
             const cfg = configArray?.find((c) => Number(c.nodeId) === id);
-            const priceLabel = cfg ? `$${fmt18(cfg.payAmount)}` : "—";
+            const priceLabel = cfg ? fmt18(cfg.payAmount) : "—";
             const soldOut = cfg && cfg.curNum >= cfg.maxLimit;
             const remaining = cfg ? Number(cfg.maxLimit - cfg.curNum) : 0;
+            const directPct = cfg ? Number(cfg.directRate) / 100 : null;
             const isActive = selected === id;
 
             return (
@@ -134,38 +146,71 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
                 type="button"
                 disabled={busy || soldOut}
                 onClick={() => setSelected(id)}
-                className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all text-left ${
+                className={`group relative flex items-center gap-3 rounded-xl border px-3 py-3 transition-all text-left overflow-hidden ${
                   isActive
-                    ? "border-amber-500 bg-amber-500/5 shadow-[0_0_0_1px_hsl(38,90%,50%,0.4)]"
+                    ? "border-amber-500 bg-amber-500/[0.06] shadow-[0_0_0_1px_hsl(38,90%,50%,0.45),0_0_24px_-4px_hsl(38,90%,50%,0.35)]"
                     : "border-border/40 bg-card/40 hover:border-border/80"
                 } ${soldOut ? "opacity-40 cursor-not-allowed" : ""}`}
+                style={isActive ? { ["--tier-rgb" as string]: meta.rgb } : undefined}
               >
-                {/* Left — color dot + tier name */}
+                {/* Tier-color spine on the left edge — keeps each row
+                    visually anchored to its tier without filling the
+                    background. Mirrors the dashboard hero's accent
+                    treatment. */}
                 <span
-                  className="h-7 w-7 rounded-full shrink-0 flex items-center justify-center font-bold text-xs text-white"
-                  style={{ backgroundColor: `rgb(${meta.rgb})` }}
+                  className="absolute left-0 top-0 bottom-0 w-[3px]"
+                  style={{ backgroundColor: `rgb(${meta.rgb})`, opacity: isActive ? 1 : 0.55 }}
+                  aria-hidden
+                />
+
+                {/* Symbol tile — soft tinted bg with the tier color, the
+                    Chinese symbol's first glyph (符) inside. */}
+                <span
+                  className="ml-1 h-10 w-10 rounded-lg shrink-0 flex items-center justify-center font-bold text-base"
+                  style={{
+                    backgroundColor: `rgba(${meta.rgb}, 0.14)`,
+                    color: `rgb(${meta.rgb})`,
+                    border: `1px solid rgba(${meta.rgb}, 0.32)`,
+                  }}
                 >
-                  {meta.nameCn[0]}
+                  {meta.nameCn.charAt(meta.nameCn.length - 1)}
                 </span>
+
+                {/* Center — tier names + meta line (seats / direct rate) */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-bold text-foreground truncate">{meta.nameCn}</span>
-                    <span className={`text-[10px] font-mono uppercase tracking-[0.16em] ${meta.color} truncate`}>
+                    <span className="text-[15px] font-bold text-foreground truncate">{meta.nameCn}</span>
+                    <span className={`text-[10px] font-mono uppercase tracking-[0.18em] ${meta.color} truncate`}>
                       {meta.nameEn}
                     </span>
                   </div>
-                  <div className="text-[10px] text-muted-foreground truncate">
-                    {soldOut
-                      ? t("mr.buy.soldOut")
-                      : cfg
-                      ? `${remaining} ${t("mr.buy.seatsLeft")}`
-                      : t("mr.buy.loadingCfg")}
+                  <div className="text-[11px] text-muted-foreground/85 mt-0.5 truncate">
+                    {soldOut ? (
+                      t("mr.buy.soldOut")
+                    ) : cfg ? (
+                      <>
+                        <span>{remaining} {t("mr.buy.seatsLeft")}</span>
+                        {directPct !== null && (
+                          <>
+                            <span className="opacity-40 mx-1.5">·</span>
+                            <span className="text-amber-300/85">{directPct}% direct</span>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      t("mr.buy.loadingCfg")
+                    )}
                   </div>
                 </div>
-                {/* Right — price (USDT) */}
+
+                {/* Right — price */}
                 <div className="text-right shrink-0">
-                  <div className="num text-base num-gold leading-none">{priceLabel}</div>
-                  <div className="text-[9px] text-muted-foreground/70 mt-0.5">USDT</div>
+                  <div className="text-lg font-bold tabular-nums leading-none text-amber-300">
+                    {priceLabel}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground/70 mt-1 font-mono uppercase tracking-[0.18em]">
+                    USDT
+                  </div>
                 </div>
               </button>
             );
