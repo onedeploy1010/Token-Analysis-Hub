@@ -523,7 +523,7 @@ components:
       properties:
         nodeLevel:
           type: string
-          enum: [pioneer, builder, guardian, strategic]
+          enum: [initial, pioneer, builder, guardian, strategic]
         seats:
           type: integer
         durationDays:

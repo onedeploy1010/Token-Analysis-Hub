@@ -6,7 +6,7 @@ import {
   SimulateInvestmentResponse,
   CalculateImpermanentLossBody,
   CalculateImpermanentLossResponse,
-} from "@workspace/api-zod";
+} from "@rune/api-zod";
 
 const router: IRouter = Router();
 

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useUsdtBalance } from "@/hooks/rune/use-usdt";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { useUserPurchase, useNodeConfigs, type NodeConfig } from "@/hooks/rune/use-node-presell";
-import { useGetRuneOverview } from "@workspace/api-client-react";
+import { useGetRuneOverview } from "@rune/api-client-react";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 import { useTeam, usePersonalStats, useRewards, type ReferrerRow, type RewardRow, type PersonalStats } from "@/hooks/rune/use-team";
 import { NODE_META, type NodeId, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
@@ -215,6 +215,7 @@ const HERO_THEME: Record<NodeId, {
   // gets the purple + strongest glow; GUARDIAN (10k) is amber; BUILDER
   // (5k) emerald; PIONEER (2.5k) blue. On-chain nodeIds 101 → STRATEGIC,
   // 201 → GUARDIAN — matching NODE_META.
+  501: { glow: "shadow-[0_0_80px_rgba(148,163,184,0.24)]",  ring: "border-slate-500/50",   from: "from-slate-900/70",   to: "to-slate-950/95", accent: "text-slate-300",   accentBright: "text-slate-200",   gradient: "from-slate-500/18 via-slate-700/5 to-transparent",   rgb: "148, 163, 184", chip: "bg-slate-500/10 border-slate-500/40 text-slate-200" },
   401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.32)]",   ring: "border-blue-500/50",    from: "from-blue-950/70",    to: "to-slate-950/95", accent: "text-blue-300",    accentBright: "text-blue-200",    gradient: "from-blue-500/20 via-blue-700/5 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/10 border-blue-500/40 text-blue-200" },
   301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.30)]",   ring: "border-emerald-500/50", from: "from-emerald-950/70", to: "to-slate-950/95", accent: "text-emerald-300", accentBright: "text-emerald-200", gradient: "from-emerald-500/20 via-emerald-700/5 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/10 border-emerald-500/40 text-emerald-200" },
   201: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.34)]",   ring: "border-amber-500/55",   from: "from-amber-950/70",   to: "to-slate-950/95", accent: "text-amber-300",   accentBright: "text-amber-200",   gradient: "from-amber-500/22 via-amber-700/5 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/10 border-amber-500/45 text-amber-200" },
@@ -589,41 +590,36 @@ const AIRDROP_BATCHES = [
 
 /** Per-tier airdrop allocation.
  *
- *  The 2026 spec (§六) distributes a 10,000,000-token mother-token pool
- *  over 4 stages (10% / 20% / 30% / 40%), with each stage's release
- *  split across nodes by weight. For one seat at tier T the full-
- *  schedule allocation is therefore:
- *
- *    perSeat = (tierWeight / 1680) × 10,000,000
- *
- *  which gives 5,952 / 7,143 / 9,524 / 11,905 at L1 / L2 / L3 / L4.
- *  `total` is `perSeat × seats`, i.e. the tier's total slice of the
- *  10M pool (shares: 47.6% / 28.6% / 19.0% / 4.8% — the same weights
- *  used for dividend allocation). Earlier figures (75000 / 16200 /
+ *  Per-seat numbers mirror the api-server's NODES table. L1–L4 (101/
+ *  201/301/401) keep their original allocation derived from the 4-tier
+ *  formula; L5 (501, INITIAL) was added with the BSC mainnet
+ *  deployment — its 3,571 per-seat figure ships from the runeapi 3
+ *  config and is independent of the original 1,680-weight denominator.
+ *  `total` is `perSeat × seats`. Earlier figures (75000 / 16200 /
  *  5750 / 2500) were flat per-seat caps that didn't come from the
  *  pool formula and overstated L4 7-10×. */
 const AIRDROP_PER_TIER: Record<NodeId, { perSeat: number; total: string }> = {
-  101: { perSeat: 11905, total: "476K" },
+  101: { perSeat: 11905, total: "238K" },
   201: { perSeat:  9524, total: "1.90M" },
   301: { perSeat:  7143, total: "2.86M" },
   401: { perSeat:  5952, total: "4.76M" },
+  501: { perSeat:  3571, total: "3.57M" },
 };
 
 /** Six-stream dividend weight coefficients per tier.
  *
- *  `share` = (seats × coeff) / totalWeight, where totalWeight is the
- *  full-network sum across all four tiers at max seat count:
- *    800×1.0 + 400×1.2 + 200×1.6 + 40×2.0 = 1,680
+ *  `share` = (seats × coeff) / totalWeight. With the 501 tier and
+ *  20-seat strategic cap from runeapi 3, totalWeight at full sell-out is:
+ *    1000×0.6 + 800×1.0 + 400×1.2 + 200×1.6 + 20×2.0 = 2,240
  *
- *  So each tier's aggregate share of the pool (if every seat were sold)
- *  is:  L1 = 800/1680, L2 = 480/1680, L3 = 320/1680, L4 = 80/1680.
- *  Earlier figures (27.8 / 33.3 / 22.2 / 16.7) didn't match the
- *  formula — these do. */
+ *  Tier shares: L5 = 600/2240, L4 = 800/2240, L3 = 480/2240,
+ *               L2 = 320/2240, L1 = 40/2240. */
 const WEIGHT_PER_TIER: Record<NodeId, { coeff: number; share: string }> = {
-  101: { coeff: 2.0, share: "4.8%"  },
-  201: { coeff: 1.6, share: "19.0%" },
-  301: { coeff: 1.2, share: "28.6%" },
-  401: { coeff: 1.0, share: "47.6%" },
+  101: { coeff: 2.0, share: "1.8%"  },
+  201: { coeff: 1.6, share: "14.3%" },
+  301: { coeff: 1.2, share: "21.4%" },
+  401: { coeff: 1.0, share: "35.7%" },
+  501: { coeff: 0.6, share: "26.8%" },
 };
 
 /** Six revenue streams in the ongoing dividend pool. Split each row into
@@ -1466,7 +1462,7 @@ function TeamTab({ address }: { address: string }) {
         <Kpi icon={TrendingUp}  label={t("mr.dash.team.teamInvested")}      value={rootStats ? `$${fmtUsdt(rootStats.totalDownstreamInvested, 0)}` : "…"}    sub="USDT" delay={0.14} highlight />
       </div>
 
-      {/* Tier composition — 4 tier bars, toggleable between the user's
+      {/* Tier composition — 5 tier bars, toggleable between the user's
           direct downlines and the full transitive team. Gives a shape to
           the team in one glance without having to drill through levels. */}
       {rootStats && (rootStats.directByTier.length > 0 || rootStats.teamByTier.length > 0) && (
@@ -1823,10 +1819,11 @@ function RewardRowItem({ row }: { row: RewardRow }) {
  *  fill/stroke) can render tier-accented bars that match the rest of the
  *  UI. Kept local since NODE_META only knows Tailwind classes. */
 const TIER_FILL: Record<NodeId, string> = {
-  101: "#fbbf24", // amber-400
-  201: "#c084fc", // purple-400
-  301: "#34d399", // emerald-400
-  401: "#60a5fa", // blue-400
+  101: "#c084fc", // purple-400 — STRATEGIC (符主)
+  201: "#fbbf24", // amber-400  — GUARDIAN  (符魂)
+  301: "#34d399", // emerald-400 — BUILDER  (符印)
+  401: "#60a5fa", // blue-400   — PIONEER   (符胚)
+  501: "#cbd5e1", // slate-300  — INITIAL   (初级)
 };
 
 /**

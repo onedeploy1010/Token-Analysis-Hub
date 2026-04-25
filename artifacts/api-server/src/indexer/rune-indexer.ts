@@ -1,4 +1,4 @@
-import { db, runeReferrersTable, runePurchasesTable } from "@workspace/db";
+import { db, runeReferrersTable, runePurchasesTable } from "@rune/db";
 import { logger } from "../lib/logger";
 import { runeChainConfig, runePublicClient } from "../rune/chain";
 import { eventAddReferrer, eventNodePresell } from "../rune/abis";

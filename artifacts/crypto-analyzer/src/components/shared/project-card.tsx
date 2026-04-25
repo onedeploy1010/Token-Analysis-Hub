@@ -3,7 +3,7 @@ import { ArrowUpRight, FlaskConical, ShieldCheck, ShieldAlert, Shield } from "lu
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { formatPercent } from "@/lib/format";
-import { Project, ProjectRiskLevel } from "@workspace/api-client-react";
+import { Project, ProjectRiskLevel } from "@rune/api-client-react";
 import { useLanguage } from "@/contexts/language-context";
 
 /** Deterministic pseudo-random sparkline from a seed string.

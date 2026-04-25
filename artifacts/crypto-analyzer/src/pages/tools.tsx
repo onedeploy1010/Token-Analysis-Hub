@@ -23,7 +23,7 @@ import {
   Activity, TrendingUp, AlertTriangle, Coins, Droplets, BarChart3, Users, Target,
   ChevronRight, Pickaxe,
 } from "lucide-react";
-import { useCalculateApy, useSimulateInvestment, useCalculateImpermanentLoss, ApyCalculatorInputCompoundFrequency } from "@workspace/api-client-react";
+import { useCalculateApy, useSimulateInvestment, useCalculateImpermanentLoss, ApyCalculatorInputCompoundFrequency } from "@rune/api-client-react";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,

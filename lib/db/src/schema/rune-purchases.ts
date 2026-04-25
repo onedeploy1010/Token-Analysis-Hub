@@ -9,7 +9,7 @@ export const runePurchasesTable = pgTable(
   "rune_purchases",
   {
     user: text("user").notNull(),            // buyer address, lowercase
-    nodeId: integer("node_id").notNull(),    // 101 / 201 / 301 / 401
+    nodeId: integer("node_id").notNull(),    // 101 / 201 / 301 / 401 / 501
     payToken: text("pay_token").notNull(),   // USDT address, lowercase
     // 18-decimal amount — e.g. "50000000000000000000000" for 50,000 USDT.
     // Using numeric(78,0) — 78 digits is the ceiling for uint256.

@@ -10,6 +10,7 @@ export type RuneCalculatorInputNodeLevel =
   (typeof RuneCalculatorInputNodeLevel)[keyof typeof RuneCalculatorInputNodeLevel];
 
 export const RuneCalculatorInputNodeLevel = {
+  initial: "initial",
   pioneer: "pioneer",
   builder: "builder",
   guardian: "guardian",

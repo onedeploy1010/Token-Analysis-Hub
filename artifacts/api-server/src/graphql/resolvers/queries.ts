@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { db, runePurchasesTable, runeReferrersTable } from "@workspace/db";
+import { db, runePurchasesTable, runeReferrersTable } from "@rune/db";
 import { builder } from "../builder";
 import { ReferrerType } from "../types/referrer";
 import { PurchaseType } from "../types/purchase";

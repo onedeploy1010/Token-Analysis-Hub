@@ -1,5 +1,5 @@
 import { useParams, Link } from "wouter";
-import { useGetProject } from "@workspace/api-client-react";
+import { useGetProject } from "@rune/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { RiskBadge } from "@/components/shared/project-card";

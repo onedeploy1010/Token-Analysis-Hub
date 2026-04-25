@@ -6,8 +6,9 @@ import { createPublicClient, http, type PublicClient } from "viem";
  * shipped to. `startBlock` is used as the initial cursor if the DB has no
  * indexer state for that (chain, contract).
  *
- * Mainnet addresses are still TBD — the presale lives on BSC testnet for
- * now. Flip `RUNE_CHAIN=bsc` once the mainnet deployment happens.
+ * Mainnet addresses come from the runeapi 3 integration doc — Community
+ * and NodePresell are deployed on BSC mainnet (chainId 56). Env overrides
+ * remain available for staging swaps without a redeploy.
  */
 export interface RuneChainConfig {
   chainId: 56 | 97;
@@ -25,8 +26,8 @@ const bscMainnetConfig: RuneChainConfig = {
   chainId: 56,
   rpcUrl: process.env.RUNE_RPC_URL_MAINNET ?? "https://bsc-dataseed.binance.org",
   usdt: "0x55d398326f99059fF775485246999027B3197955",
-  community: (process.env.RUNE_COMMUNITY_MAINNET ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
-  nodePresell: (process.env.RUNE_NODE_PRESELL_MAINNET ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
+  community: (process.env.RUNE_COMMUNITY_MAINNET ?? "0xe6f1d4B5ea4B5a025e1E45C9E3d83F31201B6C9c") as `0x${string}`,
+  nodePresell: (process.env.RUNE_NODE_PRESELL_MAINNET ?? "0xF32747E7c120BB6333Ac83F25192c089e8d9b62E") as `0x${string}`,
   startBlock: { community: 0n, nodePresell: 0n },
   chain: bsc,
 };
@@ -53,9 +54,11 @@ const bscTestnetConfig: RuneChainConfig = {
 };
 
 function resolveRuneChain(): RuneChainConfig {
-  const mode = (process.env.RUNE_CHAIN ?? "bsc_testnet").toLowerCase();
-  if (mode === "bsc" || mode === "bsc_mainnet" || mode === "mainnet") return bscMainnetConfig;
-  return bscTestnetConfig;
+  // Mainnet contracts are live (see runeapi 3/对接文档.md), so default to
+  // BSC mainnet. Set RUNE_CHAIN=bsc_testnet to force the testnet config.
+  const mode = (process.env.RUNE_CHAIN ?? "bsc_mainnet").toLowerCase();
+  if (mode === "bsc_testnet" || mode === "testnet") return bscTestnetConfig;
+  return bscMainnetConfig;
 }
 
 export const runeChainConfig = resolveRuneChain();

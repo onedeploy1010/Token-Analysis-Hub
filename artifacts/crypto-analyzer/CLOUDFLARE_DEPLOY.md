@@ -12,7 +12,7 @@ When you create the project in the Cloudflare dashboard → **Workers & Pages**
 
 | Setting | Value |
 | --- | --- |
-| Repository | `onedeploy1010/Token-Analysis-Hub` |
+| Repository | `onedeploy1010/RUNE` |
 | Production branch | `main` |
 | Framework preset | **None** (don't let Pages auto-detect — our build is custom) |
 | Build command | `corepack enable && pnpm install --no-frozen-lockfile && pnpm -C artifacts/crypto-analyzer run build` |
@@ -50,7 +50,7 @@ a Node that supports the repo's TypeScript and Vite versions.
 VITE_SUPABASE_URL=https://wxdefpyjntxvowayvvcc.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=<your sb_publishable_... key>
 VITE_THIRDWEB_CLIENT_ID=<your thirdweb client id>
-VITE_RUNE_CHAIN=bsc_testnet
+VITE_RUNE_CHAIN=bsc_mainnet
 VITE_API_BASE_URL=
 ```
 

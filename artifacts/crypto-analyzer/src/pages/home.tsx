@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { useGetProjectsSummary, useListProjects } from "@workspace/api-client-react";
+import { useGetProjectsSummary, useListProjects } from "@rune/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowUpRight, ArrowUp, ArrowDown, TrendingUp, Minus } from "lucide-react";
 import { ProjectCard } from "@/components/shared/project-card";
 import { Link } from "wouter";
 import { motion, useInView } from "framer-motion";
-import type { Project } from "@workspace/api-client-react";
+import type { Project } from "@rune/api-client-react";
 import { useLanguage } from "@/contexts/language-context";
 
 function AnimatedCounter({ value, isCurrency = false, isPercent = false, isInteger = false }: { value: number | string, isCurrency?: boolean, isPercent?: boolean, isInteger?: boolean }) {

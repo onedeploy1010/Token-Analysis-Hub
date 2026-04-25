@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useListProjects } from "@workspace/api-client-react";
+import { useListProjects } from "@rune/api-client-react";
 import { ProjectCard } from "@/components/shared/project-card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";

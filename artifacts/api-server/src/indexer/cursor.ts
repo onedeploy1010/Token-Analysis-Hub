@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db, runeIndexerStateTable } from "@workspace/db";
+import { db, runeIndexerStateTable } from "@rune/db";
 
 export type RuneContract = "community" | "nodePresell";
 

@@ -5,7 +5,7 @@ import {
   useGetRuneOverview,
   useCalculateRuneReturns,
   RuneCalculatorInputNodeLevel,
-} from "@workspace/api-client-react";
+} from "@rune/api-client-react";
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area, ComposedChart,
   PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,

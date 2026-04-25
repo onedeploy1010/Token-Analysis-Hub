@@ -5,7 +5,7 @@ import { logger } from "../lib/logger";
 /**
  * Lightweight read-through cache of the on-chain `directRate` bps for
  * each node tier. Read from `NodePresell.getNodeConfigs([101, 201, 301,
- * 401])` on demand and re-read whenever the cache ages past TTL so
+ * 401, 501])` on demand and re-read whenever the cache ages past TTL so
  * commission stats stay accurate if the project re-tunes rates.
  *
  * Everything here is a best-effort helper — if the RPC is down we
@@ -15,19 +15,21 @@ import { logger } from "../lib/logger";
  */
 
 /** Node IDs the contract ships with. Mirrors frontend `NODE_IDS`. */
-const NODE_IDS = [101n, 201n, 301n, 401n] as const;
+const NODE_IDS = [101n, 201n, 301n, 401n, 501n] as const;
 
 /** Cache TTL — 10 min is plenty; directRate changes only on contract
  *  re-deploy or a governance call, not per-block. */
 const TTL_MS = 10 * 60 * 1000;
 
-/** Document-provided defaults (Guardian 15 / Strategic 10 / Builder 8
- *  / Pioneer 5 %). Used only if the first-ever chain read fails. */
+/** Document-provided defaults (101=15% / 201=12% / 301=10% / 401=8% /
+ *  501=5%, see runeapi 3 doc §4.1). Used only if the first-ever chain
+ *  read fails. */
 const FALLBACK: ReadonlyMap<number, bigint> = new Map([
   [101, 1500n],
-  [201, 1000n],
-  [301,  800n],
-  [401,  500n],
+  [201, 1200n],
+  [301, 1000n],
+  [401,  800n],
+  [501,  500n],
 ]);
 
 let cache: Map<number, bigint> | null = null;
@@ -68,7 +70,7 @@ async function refresh(): Promise<Map<number, bigint>> {
 }
 
 /**
- * Returns the directRate (bps) map for the four tiers. Cheap after the
+ * Returns the directRate (bps) map for the five tiers. Cheap after the
  * first call — the hot path reads the cached map directly.
  */
 export async function getDirectRateMap(): Promise<Map<number, bigint>> {

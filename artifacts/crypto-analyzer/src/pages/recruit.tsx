@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetRuneOverview } from "@workspace/api-client-react";
+import { useGetRuneOverview } from "@rune/api-client-react";
 import { useShowZh } from "@/contexts/language-context";
 import { useActiveAccount } from "thirdweb/react";
 import { useNodeConfigs, useUserPurchase } from "@/hooks/rune/use-node-presell";
@@ -14,12 +14,16 @@ import { type NodeId } from "@/lib/thirdweb/contracts";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 
-/** Map the REST response's tier key to the on-chain nodeId. */
+/** Map the REST response's tier key to the on-chain nodeId.
+ *  Note: REST keys are *role* names (guardian/strategic/...), but the
+ *  on-chain nodeId order is reversed — 101 is the apex (50k STRATEGIC),
+ *  501 is the entry-level (1k INITIAL). */
 const LEVEL_TO_NODE_ID: Record<string, NodeId> = {
-  guardian:  101,
-  strategic: 201,
+  strategic: 101,
+  guardian:  201,
   builder:   301,
   pioneer:   401,
+  initial:   501,
 };
 
 /** Shape of one element returned by NodePresell.getNodeConfigs.
@@ -35,36 +39,42 @@ interface OnChainNodeConfig {
 
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
+  initial:  "from-slate-900/70 to-slate-800/20 border-slate-600/40",
   pioneer:  "from-blue-950/70 to-blue-900/20 border-blue-700/40",
   builder:  "from-green-950/70 to-green-900/20 border-green-700/40",
   guardian: "from-amber-950/70 to-amber-900/20 border-amber-700/40",
   strategic:"from-purple-950/70 to-purple-900/20 border-purple-700/40",
 };
 const NODE_ACCENT: Record<string, string> = {
+  initial:  "text-slate-300",
   pioneer:  "text-blue-400",
   builder:  "text-green-400",
   guardian: "text-amber-400",
   strategic:"text-purple-400",
 };
 const NODE_BADGE: Record<string, string> = {
+  initial:  "bg-slate-800/60 text-slate-200 border-slate-600/40",
   pioneer:  "bg-blue-900/50 text-blue-300 border-blue-700/40",
   builder:  "bg-green-900/50 text-green-300 border-green-700/40",
   guardian: "bg-amber-900/50 text-amber-300 border-amber-700/40",
   strategic:"bg-purple-900/50 text-purple-300 border-purple-700/40",
 };
 const NODE_BTN: Record<string, string> = {
+  initial:  "bg-slate-600 hover:bg-slate-500 text-white",
   pioneer:  "bg-blue-600 hover:bg-blue-500 text-white",
   builder:  "bg-green-600 hover:bg-green-500 text-white",
   guardian: "bg-amber-600 hover:bg-amber-500 text-white",
   strategic:"bg-purple-600 hover:bg-purple-500 text-white",
 };
 const NODE_GLOW: Record<string, string> = {
+  initial:  "shadow-[0_0_40px_rgba(148,163,184,0.12)]",
   pioneer:  "shadow-[0_0_40px_rgba(59,130,246,0.15)]",
   builder:  "shadow-[0_0_40px_rgba(34,197,94,0.15)]",
   guardian: "shadow-[0_0_40px_rgba(251,191,36,0.15)]",
   strategic:"shadow-[0_0_40px_rgba(168,85,247,0.15)]",
 };
 const NODE_PROGRESS_BAR: Record<string, string> = {
+  initial:  "[&>div]:bg-slate-400",
   pioneer:  "[&>div]:bg-blue-500",
   builder:  "[&>div]:bg-green-500",
   guardian: "[&>div]:bg-amber-500",
@@ -107,7 +117,7 @@ const FAQ_ITEMS = [
 const STEPS = [
   { en: "Connect Wallet",   zh: "连接钱包",      descEn: "Connect a Web3 wallet (MetaMask, TokenPocket, Trust, OKX…)",   descZh: "连接 Web3 钱包（MetaMask、TokenPocket、Trust、OKX 等）" },
   { en: "Bind Referrer",    zh: "绑定推荐关系",  descEn: "Submit the on-chain bind-referrer transaction once per wallet", descZh: "每个钱包提交一次链上绑定推荐人交易" },
-  { en: "Choose Node",      zh: "选择节点",      descEn: "Pick the tier that matches your stake — L1 to L4",              descZh: "按投资规模选择节点等级（L1–L4）" },
+  { en: "Choose Node",      zh: "选择节点",      descEn: "Pick the tier that matches your stake — L1 to L5",              descZh: "按投资规模选择节点等级（L1–L5）" },
   { en: "Pay & Activate",   zh: "支付激活",      descEn: "Approve USDT and pay; the node activates on contract confirm",  descZh: "授权并支付 USDT，合约确认后节点即时激活" },
 ];
 
@@ -158,7 +168,7 @@ export default function Recruit() {
   // on-chain — these are project constants, fine to keep off-chain.
   const { data: overview, isLoading } = useGetRuneOverview();
 
-  // On-chain live reads: NodePresell.getNodeConfigs returns the four tiers'
+  // On-chain live reads: NodePresell.getNodeConfigs returns the five tiers'
   // real-time `curNum` / `maxLimit`, and Community.referrerOf tells us
   // whether the connected wallet is already bound. We overlay both on top
   // of the REST rows so the UI reflects the chain within 15 s of any tx.
@@ -204,17 +214,17 @@ export default function Recruit() {
             {showZh ? "符·节点权柄重铸" : "Node Tier Reforge"}
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-2">
-            {showZh ? "四级节点体系 · 双TOKEN通缩经济 · 机构级收益结构" : "4-Tier Nodes · Dual-Token Deflation · Institutional Returns"}
+            {showZh ? "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构" : "5-Tier Nodes · Dual-Token Deflation · Institutional Returns"}
           </p>
           <p className="text-sm text-muted-foreground/60 max-w-xl mx-auto">
-            RUNE Protocol Node Recruitment · Four-Tier System · Dual-Token Deflationary Economy
+            RUNE Protocol Node Recruitment · Five-Tier System · Dual-Token Deflationary Economy
           </p>
 
           {/* Global metric strip */}
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/30">
             {[
-              { en: "Total Seats",    zh: "总席位",     val: "1,440"  },
-              { en: "Node Tiers",     zh: "节点等级",   val: "4"      },
+              { en: "Total Seats",    zh: "总席位",     val: "2,420"  },
+              { en: "Node Tiers",     zh: "节点等级",   val: "5"      },
               { en: "Opening Price",  zh: "开盘价",     val: "$0.028" },
               { en: "USDT APY",       zh: "年化收益率", val: "170.82%", gold: true },
             ].map(({ en, zh, val, gold }) => (
@@ -273,9 +283,9 @@ export default function Recruit() {
           <div className="h-px flex-1 bg-border/30" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => <NodeCardSkeleton key={i} />)
+            ? Array.from({ length: 5 }).map((_, i) => <NodeCardSkeleton key={i} />)
             : nodes.map((node, i) => {
                 // Prefer on-chain tier stats (live) and fall back to REST (seed
                 // metadata) while the chain read is still loading or if the

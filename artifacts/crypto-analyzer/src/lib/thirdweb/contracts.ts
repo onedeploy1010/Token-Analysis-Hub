@@ -37,8 +37,9 @@ export const nodePresellContract: ThirdwebContract = getContract({
 /** ROOT referrer constant — a user whose referrer is this value is "at the top". */
 export const COMMUNITY_ROOT = "0x0000000000000000000000000000000000000001" as const;
 
-/** Node IDs from the spec — 101/201/301/401. */
-export const NODE_IDS = [101, 201, 301, 401] as const;
+/** Node IDs from the spec — 101/201/301/401/501. The 501 (initial / 1000 U)
+ *  tier was added at the BSC mainnet deployment per runeapi 3 §4.1. */
+export const NODE_IDS = [101, 201, 301, 401, 501] as const;
 export type NodeId = typeof NODE_IDS[number];
 
 /** Human-friendly meta — backend also owns these labels, duplicated here
@@ -53,14 +54,14 @@ export type NodeId = typeof NODE_IDS[number];
  *  and glows without string parsing (`rgba(var(--tier-rgb), 0.3)`).
  *  Keep it in sync with `color` — they're both pointing at the same
  *  tailwind shade, just expressed differently. */
-// Member spec ranks 符主 at the top (L4 · 50k U · 15% direct) and 符魂
-// second (L3 · 10k U · 10% direct). On-chain the nodeId → price/directRate
-// mapping is fixed (101 = 50k/15%, 201 = 10k/10%), so 101 stays the apex
-// slot (English "STRATEGIC" + purple accent) with Chinese label 符主, and
-// 201 is the second tier ("GUARDIAN" + amber) labelled 符魂.
+// On-chain the nodeId → price/directRate mapping is fixed
+// (101 = 50k / 15%, 201 = 10k / 12%, 301 = 5k / 10%, 401 = 2.5k / 8%,
+//  501 = 1k / 5%). 101 stays the apex slot ("STRATEGIC" + purple,
+// 符主); 501 is the new entry tier ("INITIAL" + slate, 初级).
 export const NODE_META: Record<NodeId, { level: string; nameCn: string; nameEn: string; color: string; rgb: string; priceUsdt: number }> = {
   101: { level: "strategic", nameCn: "符主", nameEn: "STRATEGIC", color: "text-purple-400", rgb: "192, 132, 252", priceUsdt: 50000 },
   201: { level: "guardian",  nameCn: "符魂", nameEn: "GUARDIAN",  color: "text-amber-400",  rgb: "251, 191, 36",  priceUsdt: 10000 },
   301: { level: "builder",   nameCn: "符印", nameEn: "BUILDER",   color: "text-green-400",  rgb: "52, 211, 153",  priceUsdt:  5000 },
   401: { level: "pioneer",   nameCn: "符胚", nameEn: "PIONEER",   color: "text-blue-400",   rgb: "96, 165, 250",  priceUsdt:  2500 },
+  501: { level: "initial",   nameCn: "初级", nameEn: "INITIAL",   color: "text-slate-300",  rgb: "203, 213, 225", priceUsdt:  1000 },
 };

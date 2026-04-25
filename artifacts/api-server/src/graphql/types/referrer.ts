@@ -1,4 +1,4 @@
-import type { RuneReferrer } from "@workspace/db";
+import type { RuneReferrer } from "@rune/db";
 import { builder } from "../builder";
 
 /**

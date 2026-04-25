@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { db } from "@workspace/db";
-import { adminUsersTable } from "@workspace/db/schema";
+import { db } from "@rune/db";
+import { adminUsersTable } from "@rune/db/schema";
 
 export async function seedAdminUser(): Promise<void> {
   const username = process.env.ADMIN_USERNAME;

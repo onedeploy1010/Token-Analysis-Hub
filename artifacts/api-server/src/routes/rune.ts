@@ -3,7 +3,7 @@ import {
   CalculateRuneReturnsBody,
   CalculateRuneReturnsResponse,
   GetRuneOverviewResponse,
-} from "@workspace/api-zod";
+} from "@rune/api-zod";
 
 const router: IRouter = Router();
 
@@ -18,15 +18,29 @@ const PRICE_STAGES = [
 
 // Airdrop numbers come from the 2026 spec's pool model:
 //   10,000,000 mother-token pool × (tierWeight × seats / 1,680)
-// i.e. tier's share of the pool is its aggregate weight fraction
-// (47.6% / 28.6% / 19.0% / 4.8%). Per-seat = tier total / seats, which
-// reduces to (tierWeight / 1,680) × 10,000,000.
+// i.e. tier's share of the pool is its aggregate weight fraction.
+// Per-seat = tier total / seats. The 501 (initial) tier was added
+// alongside the mainnet deployment per runeapi 3/对接文档.md §4.1.
 // `motherTokensPerSeat` is 0 — the 2026 spec has no private-purchase
 // path, so the airdrop is the sole mother-token source. Keeping the
 // field (rather than dropping it) preserves the zod schema; setting it
 // to 0 makes `motherTokenValue` drop out of the calculator's total so
 // airdrop isn't double-counted alongside it.
 const NODES = [
+  {
+    level: "initial",
+    nameEn: "INITIAL",
+    nameCn: "初级",
+    investment: 1000,
+    seats: 1000,
+    seatsRemaining: 1000,
+    privatePrice: 0.028,
+    dailyUsdt: 4.7,
+    weight: 0.6,
+    airdropTotal: 3571429,
+    airdropPerSeat: 3571,
+    motherTokensPerSeat: 0,
+  },
   {
     level: "pioneer",
     nameEn: "PIONEER",
@@ -74,7 +88,7 @@ const NODES = [
     nameEn: "STRATEGIC",
     nameCn: "符主",
     investment: 50000,
-    seats: 40,
+    seats: 20,
     seatsRemaining: 11,
     privatePrice: 0.016,
     dailyUsdt: 234,

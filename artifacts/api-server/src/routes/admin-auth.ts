@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
-import { db } from "@workspace/db";
-import { adminUsersTable } from "@workspace/db/schema";
+import { db } from "@rune/db";
+import { adminUsersTable } from "@rune/db/schema";
 import { eq } from "drizzle-orm";
 import { signAdminToken } from "../lib/auth.js";
 
