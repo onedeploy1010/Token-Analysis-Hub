@@ -537,7 +537,7 @@ const zh: Dict = {
   "mr.bind.title": "连接你的推荐线",
   "mr.bind.desc": "支付 gas fee 链上绑定推荐人关系。",
   "mr.bind.addrLabel": "推荐人地址",
-  "mr.bind.addrPh": "0x…  或输入 ROOT",
+  "mr.bind.addrPh": "0x…",
   "mr.bind.rootSelected": "已选 ROOT",
   "mr.bind.errSelf": "不能推荐自己",
   "mr.bind.errInvalid": "不是有效的 EVM 地址",

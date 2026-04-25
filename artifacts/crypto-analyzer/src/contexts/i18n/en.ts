@@ -537,7 +537,7 @@ const en: Dict = {
   "mr.bind.title": "Connect your referral line",
   "mr.bind.desc": "Pay a gas fee to bind your referrer on-chain.",
   "mr.bind.addrLabel": "Referrer address",
-  "mr.bind.addrPh": "0x…  or type ROOT",
+  "mr.bind.addrPh": "0x…",
   "mr.bind.rootSelected": "ROOT selected",
   "mr.bind.errSelf": "You can't refer yourself",
   "mr.bind.errInvalid": "Not a valid EVM address",

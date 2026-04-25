@@ -263,6 +263,9 @@ importers:
       '@replit/vite-plugin-runtime-error-modal':
         specifier: 'catalog:'
         version: 0.0.6
+      '@rune/api-client-react':
+        specifier: workspace:*
+        version: link:../../lib/api-client-react
       '@tailwindcss/typography':
         specifier: ^0.5.15
         version: 0.5.19(tailwindcss@4.2.1)
@@ -284,9 +287,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 5.1.4(vite@7.3.2(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
-      '@workspace/api-client-react':
-        specifier: workspace:*
-        version: link:../../lib/api-client-react
       class-variance-authority:
         specifier: 'catalog:'
         version: 0.7.1
@@ -371,10 +371,10 @@ importers:
       '@pothos/plugin-dataloader':
         specifier: ^4.4.3
         version: 4.4.3(@pothos/core@4.12.0(graphql@16.13.2))(dataloader@2.2.3)(graphql@16.13.2)
-      '@workspace/api-zod':
+      '@rune/api-zod':
         specifier: workspace:*
         version: link:../../lib/api-zod
-      '@workspace/db':
+      '@rune/db':
         specifier: workspace:*
         version: link:../../lib/db
       bcryptjs:
@@ -565,6 +565,9 @@ importers:
       '@replit/vite-plugin-runtime-error-modal':
         specifier: 'catalog:'
         version: 0.0.6
+      '@rune/api-client-react':
+        specifier: workspace:*
+        version: link:../../lib/api-client-react
       '@tailwindcss/typography':
         specifier: ^0.5.15
         version: 0.5.19(tailwindcss@4.2.1)
@@ -586,9 +589,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 5.1.4(vite@7.3.2(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
-      '@workspace/api-client-react':
-        specifier: workspace:*
-        version: link:../../lib/api-client-react
       class-variance-authority:
         specifier: 'catalog:'
         version: 0.7.1

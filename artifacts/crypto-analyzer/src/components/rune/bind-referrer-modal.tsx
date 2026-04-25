@@ -22,12 +22,11 @@ interface Props {
 
 const ZERO = "0x0000000000000000000000000000000000000000";
 
-/** Treat "ROOT" / "root" typed into the field as an alias for the real
- *  ROOT address. Non-hex input stays as-is so validation still flags it. */
+/** Strip whitespace so the hex pattern check sees a clean string. The
+ *  ROOT alias is intentionally not surfaced — users paste a 0x address
+ *  or nothing. */
 function resolveAlias(raw: string): string {
-  const trimmed = raw.trim();
-  if (trimmed.toLowerCase() === "root") return COMMUNITY_ROOT;
-  return trimmed;
+  return raw.trim();
 }
 
 /** Short 0x…abcd formatter for display. */
@@ -164,7 +163,7 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
               <p className="text-[11px] text-destructive flex items-center gap-1.5">
                 <AlertCircle className="h-3 w-3" /> {t("mr.bind.errSelf")}
               </p>
-            ) : input && !isHex && resolved.toLowerCase() !== "root" ? (
+            ) : input && !isHex ? (
               <p className="text-[11px] text-destructive flex items-center gap-1.5">
                 <AlertCircle className="h-3 w-3" /> {t("mr.bind.errInvalid")}
               </p>
