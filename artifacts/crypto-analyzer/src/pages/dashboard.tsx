@@ -217,11 +217,11 @@ const HERO_THEME: Record<NodeId, {
   // gets the purple + strongest glow; GUARDIAN (10k) is amber; BUILDER
   // (5k) emerald; PIONEER (2.5k) blue. On-chain nodeIds 101 → STRATEGIC,
   // 201 → GUARDIAN — matching NODE_META.
-  501: { glow: "shadow-[0_0_80px_rgba(148,163,184,0.24)]",  ring: "border-slate-500/50",   from: "from-slate-900/70",   to: "to-slate-950/95", accent: "text-slate-300",   accentBright: "text-slate-200",   gradient: "from-slate-500/18 via-slate-700/5 to-transparent",   rgb: "148, 163, 184", chip: "bg-slate-500/10 border-slate-500/40 text-slate-200" },
-  401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.32)]",   ring: "border-blue-500/50",    from: "from-blue-950/70",    to: "to-slate-950/95", accent: "text-blue-300",    accentBright: "text-blue-200",    gradient: "from-blue-500/20 via-blue-700/5 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/10 border-blue-500/40 text-blue-200" },
-  301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.30)]",   ring: "border-emerald-500/50", from: "from-emerald-950/70", to: "to-slate-950/95", accent: "text-emerald-300", accentBright: "text-emerald-200", gradient: "from-emerald-500/20 via-emerald-700/5 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/10 border-emerald-500/40 text-emerald-200" },
-  201: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.34)]",   ring: "border-amber-500/55",   from: "from-amber-950/70",   to: "to-slate-950/95", accent: "text-amber-300",   accentBright: "text-amber-200",   gradient: "from-amber-500/22 via-amber-700/5 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/10 border-amber-500/45 text-amber-200" },
-  101: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.38)]",  ring: "border-purple-500/60",  from: "from-purple-950/70",  to: "to-slate-950/95", accent: "text-purple-300",  accentBright: "text-purple-200",  gradient: "from-purple-500/24 via-purple-700/6 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/10 border-purple-500/45 text-purple-200" },
+  501: { glow: "shadow-[0_0_80px_rgba(148,163,184,0.42)]",  ring: "border-slate-400/55",   from: "from-slate-800/60",   to: "to-slate-900/85", accent: "text-slate-300",   accentBright: "text-slate-100",   gradient: "from-slate-400/32 via-slate-600/10 to-transparent",   rgb: "148, 163, 184", chip: "bg-slate-500/15 border-slate-400/50 text-slate-100" },
+  401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.52)]",   ring: "border-blue-400/55",    from: "from-blue-900/55",    to: "to-slate-900/85", accent: "text-blue-300",    accentBright: "text-blue-100",    gradient: "from-blue-400/36 via-blue-600/10 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/15 border-blue-400/50 text-blue-100" },
+  301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.48)]",   ring: "border-emerald-400/55", from: "from-emerald-900/55", to: "to-slate-900/85", accent: "text-emerald-300", accentBright: "text-emerald-100", gradient: "from-emerald-400/36 via-emerald-600/10 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/15 border-emerald-400/50 text-emerald-100" },
+  201: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.54)]",   ring: "border-amber-400/60",   from: "from-amber-900/55",   to: "to-slate-900/85", accent: "text-amber-300",   accentBright: "text-amber-100",   gradient: "from-amber-400/40 via-amber-600/10 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/15 border-amber-400/55 text-amber-100" },
+  101: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.58)]",  ring: "border-purple-400/65",  from: "from-purple-900/55",  to: "to-slate-900/85", accent: "text-purple-300",  accentBright: "text-purple-100",  gradient: "from-purple-400/44 via-purple-600/12 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/15 border-purple-400/55 text-purple-100" },
 };
 
 /** Unified easing — every dashboard entrance + hover rides this curve so
@@ -524,8 +524,8 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
       style={{ ["--tier-rgb" as string]: theme.rgb }}
       className={`surface-3d surface-3d-tinted relative overflow-hidden bg-gradient-to-br ${theme.from} ${theme.to} border ${theme.ring}`}
     >
-      <div className={`absolute -top-20 -right-20 w-56 h-56 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.05),transparent_55%)] pointer-events-none" />
+      <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_55%)] pointer-events-none" />
       <CardHeader className="pb-3 border-b border-border/40 relative z-10">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Sparkles className={`h-4 w-4 ${theme.accent}`} />
@@ -944,8 +944,8 @@ function BenefitGroup({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.035),transparent_55%)] pointer-events-none" />
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/65 to-slate-900/90 border-amber-500/30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.09),transparent_55%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-border/30 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
           <div className="flex items-center gap-2 min-w-0">
             <Icon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.45)] shrink-0" />
@@ -1055,9 +1055,9 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.03, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden border-emerald-500/25 bg-gradient-to-br from-slate-900/85 via-emerald-950/25 to-slate-950/95">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500/20 via-cyan-500/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.06),transparent_55%)] pointer-events-none" />
+      <Card className="surface-3d relative overflow-hidden border-emerald-500/40 bg-gradient-to-br from-slate-800/60 via-emerald-950/40 to-slate-900/85">
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500/35 via-cyan-500/20 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.12),transparent_55%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-emerald-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.55)]" />
@@ -1273,9 +1273,9 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.04, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/45 via-purple-950/30 to-amber-950/15">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-fuchsia-500/25 via-purple-500/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.12),transparent_60%)] pointer-events-none" />
+      <Card className="surface-3d relative overflow-hidden border-fuchsia-500/50 bg-gradient-to-br from-fuchsia-950/60 via-purple-950/40 to-amber-950/20">
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-fuchsia-500/40 via-purple-500/20 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.18),transparent_60%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-fuchsia-500/20 relative z-10">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Zap className="h-4 w-4 text-fuchsia-300 drop-shadow-[0_0_8px_rgba(217,70,239,0.55)]" />
@@ -1418,9 +1418,9 @@ function OverviewTab({ address }: { address: string }) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.02, ease: EASE }}>
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/90 border-amber-500/20">
-            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/15 via-amber-700/5 to-transparent blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/60 to-slate-900/85 border-amber-500/35">
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/30 via-amber-600/12 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
             <CardHeader className="pb-3 border-b border-border/40 relative z-10">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <LinkIcon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
