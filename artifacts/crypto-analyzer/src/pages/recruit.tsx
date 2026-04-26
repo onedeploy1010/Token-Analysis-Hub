@@ -605,11 +605,11 @@ export default function Recruit() {
             <div className="w-9 h-9 rounded-xl border border-cyan-500/30 bg-cyan-500/10 flex items-center justify-center shrink-0">
               <BookOpen className="h-4.5 w-4.5 text-cyan-400" />
             </div>
-            <div>
-              <p className="text-sm font-semibold text-cyan-200">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-cyan-200 break-words">
                 {showZh ? "初次接触？体验完整教学流程" : "New here? Walk through the full tutorial"}
               </p>
-              <p className="text-[12px] text-muted-foreground/70 leading-snug mt-0.5">
+              <p className="text-[12px] text-muted-foreground/70 leading-snug mt-0.5 break-words">
                 {showZh
                   ? "模拟连接钱包 → 绑定推荐人 → 购买节点 → 查看 Dashboard，零成本感受完整流程"
                   : "Simulate connect wallet → bind referrer → purchase node → explore dashboard — zero cost"}
@@ -619,7 +619,7 @@ export default function Recruit() {
           <Button
             variant="outline"
             onClick={() => navigate("/tutorial")}
-            className="shrink-0 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-500/60 gap-2"
+            className="w-full sm:w-auto shrink-0 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-500/60 gap-2"
           >
             <BookOpen className="h-4 w-4" />
             {showZh ? "进入教学模式" : "Start Tutorial"}
