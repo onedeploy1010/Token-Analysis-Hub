@@ -543,13 +543,10 @@ export default function Recruit() {
                     {/* Stats */}
                     <div className="space-y-2.5 flex-1">
                       {[
-                        { label: { en: "Investment",        zh: "投资门槛",     "zh-TW": "投資門檻",     ja: "投資額",       ko: "투자 금액",   th: "เงินลงทุน",     vi: "Mức đầu tư"     }, val: `$${fmt(investment)}`,             accent: true },
-                        { label: { en: "Private",           zh: "私募价格",     "zh-TW": "私募價格",     ja: "プライベート価格", ko: "프라이빗 가격", th: "ราคาพรีเซล",   vi: "Giá private"     }, val: `$${privatePrice.toFixed(3)}` },
-                        { label: { en: "Total Seats",       zh: "席位总量",     "zh-TW": "席位總量",     ja: "総席数",       ko: "총 좌석",     th: "ที่นั่งทั้งหมด", vi: "Tổng số ghế"   }, val: showZh ? `${fmt(seats)} 席` : `${fmt(seats)}` },
-                        { label: { en: "Daily USDT",        zh: "每日USDT收益", "zh-TW": "每日USDT收益", ja: "日次 USDT 収益", ko: "일 USDT 수익", th: "USDT ต่อวัน",   vi: "USDT mỗi ngày" }, val: `$${dailyUsdt}`,                   accent: true },
-                        { label: { en: "Airdrop",           zh: "子TOKEN空投",  "zh-TW": "子TOKEN空投",  ja: "サブトークン エアドロップ", ko: "서브토큰 에어드롭", th: "Airdrop ลูก",   vi: "Airdrop sub"   }, val: `${fmt(airdropPerSeat)} SUB` },
+                        { label: { en: "Price",   zh: "价格",   "zh-TW": "價格",   ja: "価格",  ko: "가격",  th: "ราคา",   vi: "Giá"  }, val: `$${fmt(investment)}`, accent: true },
+                        { label: { en: "Seats",   zh: "席位",   "zh-TW": "席位",   ja: "席数",  ko: "좌석",  th: "ที่นั่ง", vi: "Ghế"  }, val: showZh ? `${fmt(seats)} 席` : `${fmt(seats)}` },
                         ...(directRatePct !== null
-                          ? [{ label: { en: "Direct Commission", zh: "直推返佣", "zh-TW": "直推返佣", ja: "直推紹介報酬", ko: "직추천 커미션", th: "คอมมิชชันตรง", vi: "Hoa hồng trực tiếp" }, val: `${directRatePct}%`, accent: true }]
+                          ? [{ label: { en: "Direct Commission", zh: "直推返佣", "zh-TW": "直推返佣", ja: "直推報酬", ko: "직추천", th: "คอมตรง", vi: "Hoa hồng" }, val: `${directRatePct}%`, accent: true }]
                           : []),
                       ].map(({ label, val, accent: isAccent }) => (
                         <div key={label.en} className="flex items-center justify-between gap-1">
@@ -562,21 +559,10 @@ export default function Recruit() {
                     {/* Seat progress */}
                     <div className="mt-4 space-y-1.5">
                       <div className="flex justify-between text-[10px] text-zinc-500">
-                        <span>{tt({ zh: "席位占用 Occupancy", "zh-TW": "席位佔用 Occupancy", en: "Occupancy", ja: "席数充填", ko: "좌석 점유율", th: "อัตราจอง", vi: "Tỷ lệ lấp đầy" })}</span>
+                        <span>{tt({ zh: "占用", "zh-TW": "占用", en: "Occupancy", ja: "充填", ko: "점유율", th: "การจอง", vi: "Lấp đầy" })}</span>
                         <span className={`${accent} drop-shadow-[0_0_4px_currentColor]`}>{occupiedPct}%</span>
                       </div>
                       <Progress value={occupiedPct} className={`h-1.5 bg-white/8 ${progressCls}`} />
-                      <div className="text-[10px] text-zinc-500 text-right">
-                        {tt({
-                          zh: `剩余 ${fmt(seatsRemaining)} 席`,
-                          "zh-TW": `剩餘 ${fmt(seatsRemaining)} 席`,
-                          en: `${fmt(seatsRemaining)} left`,
-                          ja: `残り ${fmt(seatsRemaining)} 席`,
-                          ko: `${fmt(seatsRemaining)} 좌석 남음`,
-                          th: `เหลือ ${fmt(seatsRemaining)} ที่`,
-                          vi: `Còn ${fmt(seatsRemaining)} ghế`,
-                        })}
-                      </div>
                     </div>
 
                     {/* Buy CTA — three states tied to the on-chain user state:
