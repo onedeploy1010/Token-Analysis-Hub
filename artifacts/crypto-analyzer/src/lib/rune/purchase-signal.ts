@@ -3,17 +3,17 @@
  * recruit cards AND the "仪表盘" nav link re-open the Purchase modal
  * without having to hoist modal state into a provider.
  *
- * Fired whenever a place in the UI wants the user to confirm or
- * re-confirm a node purchase — e.g. clicking "立即购买" on a tier card
- * after dismissing the modal, or clicking "Dashboard" while still
- * unpurchased (since dashboard access is gated on hasPurchased).
+ * Pass a nodeId to pre-select a specific tier in the purchase modal.
+ * Omit it to open the modal with the full tier picker.
  */
-type Listener = () => void;
+import type { NodeId } from "@/lib/thirdweb/contracts";
+
+type Listener = (nodeId?: NodeId) => void;
 
 const listeners = new Set<Listener>();
 
-export function emitOpenPurchase(): void {
-  listeners.forEach((l) => l());
+export function emitOpenPurchase(nodeId?: NodeId): void {
+  listeners.forEach((l) => l(nodeId));
 }
 
 export function onOpenPurchase(l: Listener): () => void {

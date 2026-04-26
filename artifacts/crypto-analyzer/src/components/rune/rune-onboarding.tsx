@@ -8,6 +8,7 @@ import { useReferrerOf } from "@/hooks/rune/use-community";
 import { useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { onOpenPurchase } from "@/lib/rune/purchase-signal";
 import { useDemoStore } from "@/lib/demo-store";
+import type { NodeId } from "@/lib/thirdweb/contracts";
 
 /**
  * Sole piece of onboarding glue. Mounted once in App.tsx.
@@ -41,6 +42,7 @@ export function RuneOnboarding() {
 
   const [bindOpen, setBindOpen] = useState(false);
   const [buyOpen, setBuyOpen]   = useState(false);
+  const [preSelectedNodeId, setPreSelectedNodeId] = useState<NodeId | undefined>();
   // Buy modal is dismissable per session; bind modal is not (it only
   // closes once the on-chain tx confirms). Cleared on disconnect.
   const [buyDismissed, setBuyDismissed] = useState(false);
@@ -48,8 +50,10 @@ export function RuneOnboarding() {
   useEffect(() => { setBuyDismissed(false); }, [address]);
 
   // Re-open signal from outside (card clicks, nav clicks).
-  useEffect(() => onOpenPurchase(() => {
+  // Optionally carries a specific nodeId to pre-select in the modal.
+  useEffect(() => onOpenPurchase((nodeId) => {
     if (isDemoMode) return;
+    setPreSelectedNodeId(nodeId);
     setBuyDismissed(false);
     setBuyOpen(true);
   }), [isDemoMode]);
@@ -97,14 +101,16 @@ export function RuneOnboarding() {
       />
       <PurchaseNodeModal
         open={buyOpen}
-        onClose={() => { setBuyOpen(false); setBuyDismissed(true); }}
+        initialNodeId={preSelectedNodeId}
+        onClose={() => { setBuyOpen(false); setBuyDismissed(true); setPreSelectedNodeId(undefined); }}
         onSkip={() => {
-          // "Later" keeps the user on /recruit — dashboard requires a purchase.
           setBuyOpen(false);
           setBuyDismissed(true);
+          setPreSelectedNodeId(undefined);
         }}
         onPurchased={async () => {
           setBuyOpen(false);
+          setPreSelectedNodeId(undefined);
           await refetchPurchase();
           navigate("/dashboard");
         }}

@@ -600,7 +600,7 @@ export default function Recruit() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={() => emitOpenPurchase()}
+                        onClick={() => emitOpenPurchase(nodeId)}
                         className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[level]}`}
                       >
                         {tt({ zh: "立即购买 · Buy Now", "zh-TW": "立即購買 · Buy Now", en: "Buy Now", ja: "今すぐ購入", ko: "지금 구매", th: "ซื้อเลย", vi: "Mua ngay" })}

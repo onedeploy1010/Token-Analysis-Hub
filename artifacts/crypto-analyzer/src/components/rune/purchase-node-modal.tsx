@@ -13,6 +13,7 @@ import { useLanguage } from "@/contexts/language-context";
 
 interface Props {
   open: boolean;
+  initialNodeId?: NodeId;
   onClose: () => void;
   onPurchased: () => void;
   onSkip: () => void;
@@ -32,7 +33,7 @@ function fmt18(raw: bigint, decimals = 0): string {
 
 type Step = "select" | "approving" | "buying" | "done";
 
-export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props) {
+export function PurchaseNodeModal({ open, initialNodeId, onClose, onPurchased, onSkip }: Props) {
   const { t, language } = useLanguage();
   const account = useActiveAccount();
   const [selected, setSelected] = useState<NodeId | null>(null);
@@ -43,10 +44,10 @@ export function PurchaseNodeModal({ open, onClose, onPurchased, onSkip }: Props)
 
   useEffect(() => {
     if (open) {
-      setSelected(null);
+      setSelected(initialNodeId ?? null);
       setStep("select");
     }
-  }, [open]);
+  }, [open, initialNodeId]);
 
   const configArray = (configs as any) as undefined | { nodeId: bigint; payAmount: bigint; maxLimit: bigint; curNum: bigint; directRate: bigint }[];
   const selectedConfig = selected && configArray
