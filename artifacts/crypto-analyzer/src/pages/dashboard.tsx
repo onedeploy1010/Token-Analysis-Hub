@@ -845,7 +845,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
               {t("mr.dash.benefits.poolSourcesTitle")}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {SIX_STREAMS.map((s, i) => (
                 <div
                   key={s.key}
@@ -855,8 +855,8 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                     {i + 1}
                   </span>
                   <div className="min-w-0 leading-tight">
-                    <div className="text-[11px] font-semibold text-foreground/90 truncate">{t(s.shortKey)}</div>
-                    <div className="text-[10px] text-muted-foreground/75 truncate">{t(s.tagKey)}</div>
+                    <div className="text-[11px] font-semibold text-foreground/90">{t(s.shortKey)}</div>
+                    <div className="text-[10px] text-muted-foreground/75">{t(s.tagKey)}</div>
                   </div>
                 </div>
               ))}
