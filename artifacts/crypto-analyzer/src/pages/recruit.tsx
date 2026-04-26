@@ -386,20 +386,23 @@ export default function Recruit() {
         transition={{ duration: 0.55 }}
         className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-b from-zinc-900 to-black backdrop-blur-md px-5 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14 shadow-[0_0_80px_rgba(251,191,36,0.18),0_8px_48px_rgba(0,0,0,0.7)] text-center"
       >
-        {/* Animated background orbs */}
+        {/* Animated background orbs — opacity-only so blur is cached on GPU */}
         <motion.div
-          animate={{ scale: [1, 1.12, 1], opacity: [0.28, 0.42, 0.28] }}
+          animate={{ opacity: [0.28, 0.42, 0.28] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: "opacity" }}
           className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/30 rounded-full blur-[110px] pointer-events-none"
         />
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.18, 0.30, 0.18] }}
+          animate={{ opacity: [0.18, 0.30, 0.18] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          style={{ willChange: "opacity" }}
           className="absolute -bottom-24 -left-24 w-80 h-80 bg-cyan-500/22 rounded-full blur-[100px] pointer-events-none"
         />
         <motion.div
-          animate={{ scale: [1, 1.08, 1], opacity: [0.12, 0.22, 0.12] }}
+          animate={{ opacity: [0.12, 0.22, 0.12] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          style={{ willChange: "opacity" }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-purple-600/15 rounded-full blur-[90px] pointer-events-none"
         />
 
@@ -410,16 +413,19 @@ export default function Recruit() {
         <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-amber-400/60 rounded-br pointer-events-none" />
 
         <div className="relative z-10">
-          <motion.div
-            animate={{ boxShadow: ["0 0 12px rgba(251,191,36,0.3)", "0 0 24px rgba(251,191,36,0.6)", "0 0 12px rgba(251,191,36,0.3)"] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-            className="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-amber-950/60 px-4 py-1.5 mb-6"
-          >
-            <Zap className="h-3.5 w-3.5 text-amber-400" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-300">
+          <div className="relative inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-amber-950/60 px-4 py-1.5 mb-6">
+            {/* Glow layer — only opacity animates, shadow is static (GPU-composited) */}
+            <motion.div
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              style={{ willChange: "opacity" }}
+              className="absolute inset-0 rounded-full shadow-[0_0_20px_4px_rgba(251,191,36,0.5)] pointer-events-none"
+            />
+            <Zap className="h-3.5 w-3.5 text-amber-400 relative z-10" />
+            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-300 relative z-10">
               Node Recruitment · Open Now
             </span>
-          </motion.div>
+          </div>
 
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-3">
             <span className="bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
