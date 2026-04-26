@@ -15,10 +15,10 @@ paths = [ "/" ]
 localPort = 19086
 
 [services.development]
-run = "pnpm --filter @workspace/crypto-analyzer run dev"
+run = "pnpm --filter @rune/crypto-analyzer run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/crypto-analyzer", "run", "build" ]
+build = [ "pnpm", "--filter", "@rune/crypto-analyzer", "run", "build" ]
 publicDir = "artifacts/crypto-analyzer/dist/public"
 serve = "static"
 
