@@ -3,13 +3,14 @@ import { defineChain, type Chain } from "thirdweb/chains";
 export type RuneChainKey = "bsc_mainnet" | "bsc_testnet";
 
 /**
- * Pick the active chain from VITE_RUNE_CHAIN. Defaults to BSC mainnet —
- * the presale contracts are live on chainId 56 (see runeapi 3 doc). Set
- * VITE_RUNE_CHAIN=bsc_testnet to point at the testnet deployment.
+ * Pick the active chain from VITE_RUNE_CHAIN. On the `testnet` branch the
+ * default is BSC testnet so a build with no env override deploys testnet
+ * contracts — keeps branch identity and built artifact identity aligned.
+ * Set VITE_RUNE_CHAIN=bsc_mainnet to override (e.g. local mainnet QA).
  */
 export function resolveRuneChainKey(): RuneChainKey {
-  const v = (import.meta.env.VITE_RUNE_CHAIN as string | undefined)?.toLowerCase() ?? "bsc_mainnet";
-  return v === "bsc_testnet" || v === "testnet" ? "bsc_testnet" : "bsc_mainnet";
+  const v = (import.meta.env.VITE_RUNE_CHAIN as string | undefined)?.toLowerCase() ?? "bsc_testnet";
+  return v === "bsc_mainnet" || v === "mainnet" ? "bsc_mainnet" : "bsc_testnet";
 }
 
 /**
