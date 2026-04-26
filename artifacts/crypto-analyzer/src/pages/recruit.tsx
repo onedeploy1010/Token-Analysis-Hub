@@ -541,28 +541,58 @@ export default function Recruit() {
                     </div>
 
                     {/* Stats */}
-                    <div className="space-y-2.5 flex-1">
-                      {[
-                        { label: { en: "Price",   zh: "价格",   "zh-TW": "價格",   ja: "価格",  ko: "가격",  th: "ราคา",   vi: "Giá"  }, val: `$${fmt(investment)}`, accent: true },
-                        { label: { en: "Seats",   zh: "席位",   "zh-TW": "席位",   ja: "席数",  ko: "좌석",  th: "ที่นั่ง", vi: "Ghế"  }, val: showZh ? `${fmt(seats)} 席` : `${fmt(seats)}` },
-                        ...(directRatePct !== null
-                          ? [{ label: { en: "Direct Commission", zh: "直推返佣", "zh-TW": "直推返佣", ja: "直推報酬", ko: "직추천", th: "คอมตรง", vi: "Hoa hồng" }, val: `${directRatePct}%`, accent: true }]
-                          : []),
-                      ].map(({ label, val, accent: isAccent }) => (
-                        <div key={label.en} className="flex items-center justify-between gap-1">
-                          <span className="text-[11px] text-zinc-400">{tt(label)}</span>
-                          <span className={`text-sm font-semibold ${isAccent ? `${accent} drop-shadow-[0_0_6px_currentColor]` : "text-zinc-100"}`}>{val}</span>
+                    <div className="flex-1 space-y-4">
+
+                      {/* Price — hero number */}
+                      <div>
+                        <div className="text-[9px] uppercase tracking-[0.22em] text-zinc-500 font-medium mb-1.5">
+                          {tt({ zh: "价格", "zh-TW": "價格", en: "Price", ja: "価格", ko: "가격", th: "ราคา", vi: "Giá" })}
                         </div>
-                      ))}
+                        <div
+                          className="num text-[28px] leading-none"
+                          style={{
+                            color: `rgb(${meta.rgb})`,
+                            filter: `drop-shadow(0 0 10px rgba(${meta.rgb}, 0.55))`,
+                          }}
+                        >
+                          ${fmt(investment)}
+                        </div>
+                        <div className="text-[9px] text-zinc-600 mt-1 font-mono tracking-[0.15em] uppercase">USDT</div>
+                      </div>
+
+                      {/* Seats + Commission — 2-col */}
+                      <div className="grid grid-cols-2 gap-3 border-t border-white/[0.06] pt-3">
+                        <div>
+                          <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">
+                            {tt({ zh: "席位", "zh-TW": "席位", en: "Seats", ja: "席数", ko: "좌석", th: "ที่นั่ง", vi: "Ghế" })}
+                          </div>
+                          <div className="num text-lg leading-none text-zinc-100">
+                            {showZh ? `${fmt(seats)} 席` : fmt(seats)}
+                          </div>
+                        </div>
+                        {directRatePct !== null && (
+                          <div>
+                            <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">
+                              {tt({ zh: "直推返佣", "zh-TW": "直推返佣", en: "Commission", ja: "直推報酬", ko: "직추천", th: "คอมตรง", vi: "Hoa hồng" })}
+                            </div>
+                            <div
+                              className="num text-lg leading-none"
+                              style={{ color: `rgb(${meta.rgb})`, filter: `drop-shadow(0 0 6px rgba(${meta.rgb}, 0.4))` }}
+                            >
+                              {directRatePct}%
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Seat progress */}
                     <div className="mt-4 space-y-1.5">
-                      <div className="flex justify-between text-[10px] text-zinc-500">
+                      <div className="flex justify-between text-[9px] uppercase tracking-[0.18em] text-zinc-600">
                         <span>{tt({ zh: "占用", "zh-TW": "占用", en: "Occupancy", ja: "充填", ko: "점유율", th: "การจอง", vi: "Lấp đầy" })}</span>
-                        <span className={`${accent} drop-shadow-[0_0_4px_currentColor]`}>{occupiedPct}%</span>
+                        <span className={`${accent}`}>{occupiedPct}%</span>
                       </div>
-                      <Progress value={occupiedPct} className={`h-1.5 bg-white/8 ${progressCls}`} />
+                      <Progress value={occupiedPct} className={`h-1 bg-white/8 ${progressCls}`} />
                     </div>
 
                     {/* Buy CTA — three states tied to the on-chain user state:
