@@ -56,6 +56,22 @@ A professional DeFi investment analysis platform targeting crypto investors. Fea
 - `pnpm --filter @rune/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @rune/api-server run dev` — run API server locally
 
+## Demo & Tutorial Modes
+
+### Demo Mode (`/demo`)
+- Developer shortcut: pick a wallet address + node tier (101–501), jump straight to `/dashboard` or `/recruit` with all blockchain gates bypassed.
+- All data hooks (`usePersonalStats`, `useTeam`, `useRewards`, `useReferrerOf`, `useUserPurchase`, `useUsdtBalance`) check `useDemoStore.getState().isDemoMode` and return scaled mock data from `src/lib/demo-mock-data.ts`.
+- State stored in `src/lib/demo-store.ts` (Zustand + localStorage persist).
+- Cyan "Demo Mode" banner appears on Dashboard, Recruit, and the demo entry page with exit/navigate controls.
+
+### Tutorial Mode (`/tutorial`)
+- Full guided walkthrough of the user onboarding flow with zero blockchain interaction.
+- **Step 1**: Recruit page shown with "Connect Wallet" button in guide card — user clicks "Simulate Connect" to get a demo wallet address.
+- **Step 2**: Simulated `BindReferrerModal` auto-opens — ROOT address pre-filled, 1.4s fake tx animation, then "confirmed".
+- **Step 3**: Simulated `PurchaseNodeModal` auto-opens — user selects a tier, 1.6s approve + 1.8s buy animation, then calls `enterDemo()` + redirects to `/dashboard`.
+- Tutorial page at `src/pages/tutorial.tsx` — completely self-contained, no real wallet or contract calls.
+- Entry points: recruit page "Start Tutorial" CTA (below "How to Join"), demo page header link.
+
 ## Notes
 
 - RUNE calculator is using mock data — user will provide real tokenomics formulas and data to update

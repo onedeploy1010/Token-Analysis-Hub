@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronDown, ChevronUp, Zap, Shield, TrendingUp, FlaskConical, X,
+  ChevronDown, ChevronUp, Zap, Shield, TrendingUp, FlaskConical, X, BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -614,6 +614,40 @@ export default function Recruit() {
           </div>
         </div>
       </section>
+
+      {/* ── Tutorial CTA ── */}
+      {!isDemoMode && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="rounded-2xl border border-cyan-500/30 bg-cyan-500/5 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+        >
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-xl border border-cyan-500/30 bg-cyan-500/10 flex items-center justify-center shrink-0">
+              <BookOpen className="h-4.5 w-4.5 text-cyan-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-cyan-200">
+                {showZh ? "初次接触？体验完整教学流程" : "New here? Walk through the full tutorial"}
+              </p>
+              <p className="text-[12px] text-muted-foreground/70 leading-snug mt-0.5">
+                {showZh
+                  ? "模拟连接钱包 → 绑定推荐人 → 购买节点 → 查看 Dashboard，零成本感受完整流程"
+                  : "Simulate connect wallet → bind referrer → purchase node → explore dashboard — zero cost"}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/tutorial")}
+            className="shrink-0 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-500/60 gap-2"
+          >
+            <BookOpen className="h-4 w-4" />
+            {showZh ? "进入教学模式" : "Start Tutorial"}
+          </Button>
+        </motion.div>
+      )}
 
       {/* ── FAQ ── */}
       <section>

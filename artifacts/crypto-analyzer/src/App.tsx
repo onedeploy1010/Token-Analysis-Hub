@@ -18,6 +18,7 @@ import Recruit from "@/pages/recruit";
 import Resources from "@/pages/resources";
 import Dashboard from "@/pages/dashboard";
 import DemoPage from "@/pages/demo";
+import Tutorial from "@/pages/tutorial";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -46,6 +47,7 @@ function Router() {
         <Route path="/recruit" component={Recruit} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/demo" component={DemoPage} />
+        <Route path="/tutorial" component={Tutorial} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

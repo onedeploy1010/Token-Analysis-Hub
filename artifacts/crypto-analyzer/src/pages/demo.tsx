@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { FlaskConical, Zap, ArrowRight, LayoutDashboard, Users } from "lucide-react";
+import { FlaskConical, Zap, ArrowRight, LayoutDashboard, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDemoStore } from "@/lib/demo-store";
@@ -92,6 +92,19 @@ export default function DemoPage() {
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             选择钱包地址和节点等级，跳过合约交互，直接进入节点招募页或仪表板预览。
           </p>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <div className="h-px w-16 bg-border/30" />
+            <span className="text-[11px] text-muted-foreground/50 uppercase tracking-widest">或者</span>
+            <div className="h-px w-16 bg-border/30" />
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/tutorial")}
+            className="inline-flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/8 px-5 py-2.5 text-sm font-medium text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-500/50 transition-colors"
+          >
+            <BookOpen className="h-4 w-4" />
+            教学模式：模拟完整购买流程 →
+          </button>
         </motion.div>
 
         {/* Address + destination */}
