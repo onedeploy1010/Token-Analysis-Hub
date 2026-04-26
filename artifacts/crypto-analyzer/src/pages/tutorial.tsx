@@ -629,14 +629,77 @@ export default function Tutorial() {
   return (
     <div className="container mx-auto px-4 py-10 space-y-14 max-w-6xl">
 
-      {/* ── Tutorial guide card ── */}
-      <GuideCard
-        step={step}
-        realAddress={account?.address}
-        connectedAddr={walletAddress}
-        onConnect={handleConnect}
-        onExit={handleExit}
-      />
+      {/* ── Step 0: wallet connect entry banner ── */}
+      {step === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="rounded-2xl border border-cyan-500/30 bg-cyan-500/6 px-4 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3"
+        >
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-xl border border-cyan-500/30 bg-cyan-500/15 flex items-center justify-center shrink-0">
+              <BookOpen className="h-4 w-4 text-cyan-400" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400 block">
+                教学模式 · Tutorial
+              </span>
+              <span className="text-[12px] text-muted-foreground leading-snug">
+                {showZh
+                  ? "连接钱包后开始模拟完整的节点购买流程"
+                  : "Connect your wallet to simulate the full node purchase flow"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {account?.address ? (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-300 font-mono border border-emerald-500/30 bg-emerald-500/10 rounded-lg px-2.5 py-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {account.address.slice(0, 6)}…{account.address.slice(-6)}
+                </div>
+                <Button
+                  onClick={() => handleConnect(account.address)}
+                  size="sm"
+                  className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
+                >
+                  <ArrowRight className="h-3 w-3" />
+                  {showZh ? "使用此钱包" : "Use This Wallet"}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => handleConnect()}
+                size="sm"
+                className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
+              >
+                <Wallet className="h-3 w-3" />
+                {showZh ? "模拟连接钱包" : "Simulate Connect"}
+              </Button>
+            )}
+            <button
+              type="button"
+              onClick={handleExit}
+              className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-white/20 transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Step 1+: full tutorial guide card ── */}
+      {step >= 1 && (
+        <GuideCard
+          step={step}
+          realAddress={account?.address}
+          connectedAddr={walletAddress}
+          onConnect={handleConnect}
+          onExit={handleExit}
+        />
+      )}
 
       {/* ── Hero ── */}
       <motion.div
