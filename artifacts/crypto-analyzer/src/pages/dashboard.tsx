@@ -12,7 +12,7 @@ import {
 import { useDemoStore } from "@/lib/demo-store";
 import {
   ComposedChart, Bar, Line, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid,
+  CartesianGrid, PieChart, Pie, AreaChart, Area,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -557,6 +557,50 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             />
           ))}
         </div>
+
+        {/* 180-day cumulative USDT earnings sparkline */}
+        {def && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.28, ease: EASE }}
+            className="mt-4 pt-4 border-t border-border/30"
+          >
+            <div className="flex items-baseline justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">180-Day Cumulative USDT</span>
+              <span className={`text-xs font-mono font-semibold ${theme.accent}`}>${(def.dailyUsdt * 180).toLocaleString("en-US")}</span>
+            </div>
+            <ResponsiveContainer width="100%" height={64}>
+              <AreaChart
+                data={Array.from({ length: 19 }, (_, i) => ({ day: i * 10, usdt: Math.round(def.dailyUsdt * i * 10) }))}
+                margin={{ top: 2, right: 2, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id={`spark-fill-${nodeId}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={`rgba(${theme.rgb},0.50)`} />
+                    <stop offset="100%" stopColor={`rgba(${theme.rgb},0.02)`} />
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="usdt"
+                  stroke={`rgba(${theme.rgb},0.9)`}
+                  strokeWidth={1.5}
+                  fill={`url(#spark-fill-${nodeId})`}
+                  dot={false}
+                  isAnimationActive
+                />
+                <XAxis dataKey="day" hide />
+                <YAxis hide />
+                <Tooltip
+                  contentStyle={{ background: "rgba(10,12,18,0.92)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "6px", fontSize: "10px" }}
+                  labelFormatter={(v) => `Day ${v}`}
+                  formatter={(v: number) => [`$${v.toLocaleString("en-US")}`, "Cumulative"]}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
+        )}
       </CardContent>
     </Card>
   );
@@ -1115,6 +1159,49 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               {t("mr.dash.pool.tlpNote")}
             </span>
           </div>
+
+          {/* Fund allocation donut + legend */}
+          {(() => {
+            const ALLOC = [
+              { name: "TLP Pool",   pct: 40, color: "#34d399" },
+              { name: "Operations", pct: 25, color: "#60a5fa" },
+              { name: "Treasury",   pct: 25, color: "#a78bfa" },
+              { name: "Sub LP",     pct: 10, color: "#fbbf24" },
+            ];
+            return (
+              <div className="rounded-md border border-border/25 bg-black/25 p-3 flex flex-col sm:flex-row items-center gap-4">
+                <div className="shrink-0">
+                  <PieChart width={88} height={88}>
+                    <Pie
+                      data={ALLOC}
+                      cx={40}
+                      cy={40}
+                      innerRadius={24}
+                      outerRadius={40}
+                      dataKey="pct"
+                      strokeWidth={0}
+                      paddingAngle={2}
+                      isAnimationActive
+                    >
+                      {ALLOC.map((e, i) => (
+                        <Cell key={i} fill={e.color} fillOpacity={0.85} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </div>
+                <div className="flex flex-col gap-1.5 flex-1 w-full">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 mb-0.5">Fund Allocation</div>
+                  {ALLOC.map((e) => (
+                    <div key={e.name} className="flex items-center gap-2 text-[10px]">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: e.color }} />
+                      <span className="text-muted-foreground/80 flex-1">{e.name}</span>
+                      <span className="font-mono font-semibold tabular-nums" style={{ color: e.color }}>{e.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Four stage milestones */}
           <div className="pt-1">
