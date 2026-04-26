@@ -64,53 +64,53 @@ interface OnChainNodeConfig {
 
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
-  initial:  "from-slate-900 to-slate-800/60 border-slate-400/50",
-  mid:      "from-blue-950 to-blue-800/40 border-blue-500/60",
-  advanced: "from-green-950 to-green-800/40 border-green-500/60",
-  super:    "from-amber-950 to-amber-800/40 border-amber-500/60",
-  founder:  "from-purple-950 to-purple-800/40 border-purple-500/60",
+  initial:  "from-[#0c1624] to-[#08111e] border-white/[0.07]",
+  mid:      "from-[#0c1624] to-[#08111e] border-white/[0.07]",
+  advanced: "from-[#0c1624] to-[#08111e] border-white/[0.07]",
+  super:    "from-[#0c1624] to-[#08111e] border-amber-400/[0.18]",
+  founder:  "from-[#0c1624] to-[#08111e] border-white/[0.07]",
 };
 const NODE_ACCENT: Record<string, string> = {
-  initial:  "text-slate-200",
-  mid:      "text-blue-300",
-  advanced: "text-green-300",
+  initial:  "text-amber-400",
+  mid:      "text-amber-400",
+  advanced: "text-amber-400",
   super:    "text-amber-300",
-  founder:  "text-purple-300",
+  founder:  "text-amber-400",
 };
 const NODE_BADGE: Record<string, string> = {
-  initial:  "bg-slate-700/80 text-white border-slate-400/60 shadow-[0_0_8px_rgba(148,163,184,0.3)]",
-  mid:      "bg-blue-800/80 text-blue-100 border-blue-400/60 shadow-[0_0_8px_rgba(96,165,250,0.3)]",
-  advanced: "bg-green-800/80 text-green-100 border-green-400/60 shadow-[0_0_8px_rgba(74,222,128,0.3)]",
-  super:    "bg-amber-800/80 text-amber-100 border-amber-400/60 shadow-[0_0_8px_rgba(251,191,36,0.4)]",
-  founder:  "bg-purple-800/80 text-purple-100 border-purple-400/60 shadow-[0_0_8px_rgba(192,132,252,0.4)]",
+  initial:  "bg-zinc-800/70 text-zinc-300 border-zinc-600/50",
+  mid:      "bg-zinc-800/70 text-zinc-300 border-zinc-600/50",
+  advanced: "bg-zinc-800/70 text-zinc-300 border-zinc-600/50",
+  super:    "bg-amber-900/50 text-amber-200 border-amber-500/50 shadow-[0_0_8px_rgba(251,191,36,0.2)]",
+  founder:  "bg-zinc-800/70 text-zinc-300 border-zinc-600/50",
 };
 const NODE_BTN: Record<string, string> = {
-  initial:  "bg-slate-500 hover:bg-slate-400 text-white shadow-[0_0_16px_rgba(148,163,184,0.35)]",
-  mid:      "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_16px_rgba(59,130,246,0.45)]",
-  advanced: "bg-green-600 hover:bg-green-500 text-white shadow-[0_0_16px_rgba(34,197,94,0.45)]",
-  super:    "bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_16px_rgba(251,191,36,0.55)]",
-  founder:  "bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_16px_rgba(168,85,247,0.55)]",
+  initial:  "bg-amber-500/85 hover:bg-amber-400 text-black font-bold shadow-[0_0_18px_rgba(251,191,36,0.3)]",
+  mid:      "bg-amber-500/85 hover:bg-amber-400 text-black font-bold shadow-[0_0_18px_rgba(251,191,36,0.3)]",
+  advanced: "bg-amber-500/85 hover:bg-amber-400 text-black font-bold shadow-[0_0_18px_rgba(251,191,36,0.3)]",
+  super:    "bg-amber-500 hover:bg-amber-400 text-black font-bold shadow-[0_0_24px_rgba(251,191,36,0.5)]",
+  founder:  "bg-amber-500/85 hover:bg-amber-400 text-black font-bold shadow-[0_0_18px_rgba(251,191,36,0.3)]",
 };
 const NODE_GLOW: Record<string, string> = {
-  initial:  "shadow-[0_0_48px_rgba(148,163,184,0.22),inset_0_1px_0_rgba(255,255,255,0.07)]",
-  mid:      "shadow-[0_0_48px_rgba(59,130,246,0.28),inset_0_1px_0_rgba(96,165,250,0.1)]",
-  advanced: "shadow-[0_0_48px_rgba(34,197,94,0.28),inset_0_1px_0_rgba(74,222,128,0.1)]",
-  super:    "shadow-[0_0_56px_rgba(251,191,36,0.32),inset_0_1px_0_rgba(251,191,36,0.12)]",
-  founder:  "shadow-[0_0_56px_rgba(168,85,247,0.35),inset_0_1px_0_rgba(192,132,252,0.12)]",
+  initial:  "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
+  mid:      "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
+  advanced: "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
+  super:    "shadow-[0_2px_48px_rgba(251,191,36,0.12),inset_0_1px_0_rgba(251,191,36,0.06)]",
+  founder:  "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
 };
 const NODE_PROGRESS_BAR: Record<string, string> = {
-  initial:  "[&>div]:bg-gradient-to-r [&>div]:from-slate-400 [&>div]:to-slate-300",
-  mid:      "[&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-blue-300",
-  advanced: "[&>div]:bg-gradient-to-r [&>div]:from-green-500 [&>div]:to-green-300",
+  initial:  "[&>div]:bg-gradient-to-r [&>div]:from-amber-600/70 [&>div]:to-amber-400/70",
+  mid:      "[&>div]:bg-gradient-to-r [&>div]:from-amber-600/70 [&>div]:to-amber-400/70",
+  advanced: "[&>div]:bg-gradient-to-r [&>div]:from-amber-600/70 [&>div]:to-amber-400/70",
   super:    "[&>div]:bg-gradient-to-r [&>div]:from-amber-500 [&>div]:to-amber-300",
-  founder:  "[&>div]:bg-gradient-to-r [&>div]:from-purple-500 [&>div]:to-purple-300",
+  founder:  "[&>div]:bg-gradient-to-r [&>div]:from-amber-600/70 [&>div]:to-amber-400/70",
 };
 const NODE_TOP_GLOW: Record<string, string> = {
-  initial:  "from-slate-400/30 to-transparent",
-  mid:      "from-blue-400/40 to-transparent",
-  advanced: "from-green-400/40 to-transparent",
-  super:    "from-amber-400/50 to-transparent",
-  founder:  "from-purple-400/50 to-transparent",
+  initial:  "from-white/8 to-transparent",
+  mid:      "from-white/8 to-transparent",
+  advanced: "from-white/8 to-transparent",
+  super:    "from-amber-400/45 to-transparent",
+  founder:  "from-white/8 to-transparent",
 };
 
 interface FaqItem { q: LocaleMap; a: LocaleMap }
