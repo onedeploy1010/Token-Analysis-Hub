@@ -7,6 +7,7 @@ import { useReferralParam } from "@/hooks/rune/use-referral-param";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { onOpenPurchase } from "@/lib/rune/purchase-signal";
+import { useDemoStore } from "@/lib/demo-store";
 
 /**
  * Sole piece of onboarding glue. Mounted once in App.tsx.
@@ -30,6 +31,7 @@ import { onOpenPurchase } from "@/lib/rune/purchase-signal";
  */
 export function RuneOnboarding() {
   const account = useActiveAccount();
+  const { isDemoMode } = useDemoStore();
   const address = account?.address;
   const [, navigate] = useLocation();
 
@@ -47,11 +49,14 @@ export function RuneOnboarding() {
 
   // Re-open signal from outside (card clicks, nav clicks).
   useEffect(() => onOpenPurchase(() => {
+    if (isDemoMode) return;
     setDismissed((d) => ({ ...d, buy: false }));
     setBuyOpen(true);
-  }), []);
+  }), [isDemoMode]);
 
   useEffect(() => {
+    // Demo mode bypasses all onboarding gates — the /demo page handles entry.
+    if (isDemoMode) return;
     if (!address || referrer === undefined || purchaseLoading) return;
 
     // Already bought — skip modals, go straight to dashboard.

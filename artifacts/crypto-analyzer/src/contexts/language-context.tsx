@@ -83,3 +83,25 @@ export function useShowZh() {
   const { language } = useLanguage();
   return language === "zh" || language === "zh-TW";
 }
+
+/**
+ * Inline-translation hook — return the value matching the active
+ * language from a partial Record<Language, T>, falling back to `en`,
+ * then `zh`, then any defined entry.
+ *
+ * Use for one-off page strings that don't warrant entries across
+ * every locale dictionary. The dictionary-based `t(key)` flow stays
+ * the right tool for shared / re-used copy.
+ *
+ *   const tt = useT();
+ *   <h1>{tt({ zh: "你好", en: "Hello", ja: "こんにちは" })}</h1>
+ */
+export function useT() {
+  const { language } = useLanguage();
+  return <T,>(map: Partial<Record<Language, T>>): T => {
+    if (map[language] !== undefined) return map[language] as T;
+    if (map.en !== undefined) return map.en as T;
+    if (map.zh !== undefined) return map.zh as T;
+    return Object.values(map)[0] as T;
+  };
+}

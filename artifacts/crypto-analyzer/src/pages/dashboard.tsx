@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { useLocation } from "wouter";
 import { useActiveAccount } from "thirdweb/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { getAddress } from "thirdweb/utils";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
   TrendingUp, Wallet, Link as LinkIcon, Gift, ChevronRight, Sparkles,
-  Coins, DollarSign, Search, ArrowUp, ArrowDown, Zap,
+  Coins, DollarSign, Search, ArrowUp, ArrowDown, Zap, FlaskConical, X,
+  Megaphone, Code2, Bot, BarChart3,
 } from "lucide-react";
+import { useDemoStore } from "@/lib/demo-store";
 import {
   ComposedChart, Bar, Line, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid,
+  CartesianGrid, PieChart, Pie, AreaChart, Area,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -215,11 +217,11 @@ const HERO_THEME: Record<NodeId, {
   // gets the purple + strongest glow; GUARDIAN (10k) is amber; BUILDER
   // (5k) emerald; PIONEER (2.5k) blue. On-chain nodeIds 101 → STRATEGIC,
   // 201 → GUARDIAN — matching NODE_META.
-  501: { glow: "shadow-[0_0_80px_rgba(148,163,184,0.24)]",  ring: "border-slate-500/50",   from: "from-slate-900/70",   to: "to-slate-950/95", accent: "text-slate-300",   accentBright: "text-slate-200",   gradient: "from-slate-500/18 via-slate-700/5 to-transparent",   rgb: "148, 163, 184", chip: "bg-slate-500/10 border-slate-500/40 text-slate-200" },
-  401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.32)]",   ring: "border-blue-500/50",    from: "from-blue-950/70",    to: "to-slate-950/95", accent: "text-blue-300",    accentBright: "text-blue-200",    gradient: "from-blue-500/20 via-blue-700/5 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/10 border-blue-500/40 text-blue-200" },
-  301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.30)]",   ring: "border-emerald-500/50", from: "from-emerald-950/70", to: "to-slate-950/95", accent: "text-emerald-300", accentBright: "text-emerald-200", gradient: "from-emerald-500/20 via-emerald-700/5 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/10 border-emerald-500/40 text-emerald-200" },
-  201: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.34)]",   ring: "border-amber-500/55",   from: "from-amber-950/70",   to: "to-slate-950/95", accent: "text-amber-300",   accentBright: "text-amber-200",   gradient: "from-amber-500/22 via-amber-700/5 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/10 border-amber-500/45 text-amber-200" },
-  101: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.38)]",  ring: "border-purple-500/60",  from: "from-purple-950/70",  to: "to-slate-950/95", accent: "text-purple-300",  accentBright: "text-purple-200",  gradient: "from-purple-500/24 via-purple-700/6 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/10 border-purple-500/45 text-purple-200" },
+  501: { glow: "shadow-[0_0_80px_rgba(148,163,184,0.42)]",  ring: "border-slate-400/55",   from: "from-slate-800/60",   to: "to-slate-900/85", accent: "text-slate-300",   accentBright: "text-slate-100",   gradient: "from-slate-400/32 via-slate-600/10 to-transparent",   rgb: "148, 163, 184", chip: "bg-slate-500/15 border-slate-400/50 text-slate-100" },
+  401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.52)]",   ring: "border-blue-400/55",    from: "from-blue-900/55",    to: "to-slate-900/85", accent: "text-blue-300",    accentBright: "text-blue-100",    gradient: "from-blue-400/36 via-blue-600/10 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/15 border-blue-400/50 text-blue-100" },
+  301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.48)]",   ring: "border-emerald-400/55", from: "from-emerald-900/55", to: "to-slate-900/85", accent: "text-emerald-300", accentBright: "text-emerald-100", gradient: "from-emerald-400/36 via-emerald-600/10 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/15 border-emerald-400/50 text-emerald-100" },
+  201: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.54)]",   ring: "border-amber-400/60",   from: "from-amber-900/55",   to: "to-slate-900/85", accent: "text-amber-300",   accentBright: "text-amber-100",   gradient: "from-amber-400/40 via-amber-600/10 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/15 border-amber-400/55 text-amber-100" },
+  101: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.58)]",  ring: "border-purple-400/65",  from: "from-purple-900/55",  to: "to-slate-900/85", accent: "text-purple-300",  accentBright: "text-purple-100",  gradient: "from-purple-400/44 via-purple-600/12 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/15 border-purple-400/55 text-purple-100" },
 };
 
 /** Unified easing — every dashboard entrance + hover rides this curve so
@@ -227,10 +229,24 @@ const HERO_THEME: Record<NodeId, {
  *  idea". Matches the project's `.token-card-3d` transition choice. */
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+/** Spring-powered count-up number display.
+ *  Mounts at 0 and springs to `to` using Framer Motion's physics engine.
+ *  `fmt` lets callers supply any formatter (currency, short-USD, etc.). */
+function CountUp({ to, fmt }: { to: number; fmt?: (n: number) => string }) {
+  const mv     = useMotionValue(0);
+  const spring = useSpring(mv, { stiffness: 46, damping: 13, restDelta: 0.5 });
+  const [n, setN] = useState(0);
+  useEffect(() => { mv.set(to); }, [mv, to]);
+  useEffect(() => spring.on("change", (v) => setN(v)), [spring]);
+  return <>{fmt ? fmt(n) : Math.round(n).toLocaleString("en-US")}</>;
+}
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const account = useActiveAccount();
-  const address = account?.address;
+  const { isDemoMode, demoAddress, demoNodeId: demoPurchasedNodeId, exitDemo } = useDemoStore();
+  // In demo mode use the demo address; otherwise use the real connected wallet.
+  const address = isDemoMode ? (demoAddress ?? undefined) : account?.address;
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<Tab>("overview");
 
@@ -239,32 +255,35 @@ export default function Dashboard() {
   // fire the purchase signal so RuneOnboarding re-opens the purchase
   // modal. Disconnect does the same.
   //
-  // Three production purchase signals (any one suffices):
+  // Five purchase signals (any one suffices):
   //   1. on-chain getUserPurchaseData (the real production path)
   //   2. DB-side personalStats.hasPurchased (indexer-cached fallback)
   //   3. PREVIEW_ADDRESSES whitelist — explicit test fixtures so QA
   //      can walk the dashboard without burning a real tx.
-  //
-  // VITE_PREVIEW_MODE=1 short-circuits the gate entirely (preview
-  // bundle for stakeholder/UX walkthroughs).
+  //   4. Demo mode — selected tier from the /demo test page.
+  //   5. VITE_PREVIEW_MODE=1 — preview-branch build for stakeholder
+  //      walkthroughs (Cloudflare `preview` branch alias).
+  // Address keys are lowercase (EVM normalisation).
   const isPreviewMode = import.meta.env.VITE_PREVIEW_MODE === "1";
   const PREVIEW_ADDRESSES: Record<string, NodeId> = {
     "0xc8d0ab0b4e4d52a2f0ce920c43067973bee8f7ec": 501,
   };
-  const previewNodeId = address ? PREVIEW_ADDRESSES[address.toLowerCase()] : undefined;
+  const previewNodeId = isDemoMode
+    ? (demoPurchasedNodeId ?? undefined)
+    : address ? PREVIEW_ADDRESSES[address.toLowerCase()] : undefined;
 
   const { hasPurchased: chainHasPurchased, isLoading: purchaseLoading, nodeId: chainNodeId, amount: ownedAmount } = useUserPurchase(address);
   const { data: gateStats, isLoading: statsLoading } = usePersonalStats(address);
   const dbHasPurchased = !!gateStats?.hasPurchased;
   const dbNodeId       = gateStats?.ownedNodeId ?? null;
-  const hasPurchased   = isPreviewMode || chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
-  // In preview mode default to 501 (initial / 符胚) so the hero +
-  // tier-themed widgets have a target. Real connected wallets keep
-  // their on-chain / DB-resolved tier.
+  const hasPurchased   = isPreviewMode || isDemoMode || chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
+  // Preview-mode default to 501 (initial / 符胚) so the hero + tier-
+  // themed widgets have a target. Real connected wallets / demo-mode
+  // selections keep their resolved tier.
   const ownedNodeId    = chainNodeId ?? dbNodeId ?? previewNodeId ?? (isPreviewMode ? 501 : undefined);
 
   useEffect(() => {
-    if (isPreviewMode) return;          // preview build: never bounce
+    if (isPreviewMode || isDemoMode) return;
     if (!address) { navigate("/recruit"); return; }
     // Whitelisted preview addresses bypass the loading wait — we know
     // they're allowed in. Otherwise wait until both async signals
@@ -275,18 +294,41 @@ export default function Dashboard() {
       navigate("/recruit");
       emitOpenPurchase();
     }
+<<<<<<< HEAD
   }, [address, hasPurchased, purchaseLoading, statsLoading, previewNodeId, isPreviewMode, navigate]);
 
   // Preview mode renders even without a wallet — wallet-dependent
   // hooks (useUserPurchase / usePersonalStats / useReferrerOf) just
   // stay disabled and the cards fall back to defaults.
   if (!isPreviewMode && (!address || !hasPurchased)) return null;
+=======
+  }, [address, isDemoMode, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
+
+  if (!isDemoMode && (!address || !hasPurchased)) return null;
+>>>>>>> main
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
+      {/* ── Demo mode banner ── */}
+      {isDemoMode && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-300">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="h-4 w-4 shrink-0" />
+            <span className="font-medium">教学模式 Tutorial</span>
+            <span className="text-cyan-400/60 hidden sm:inline">— 当前地址：{address ? `${address.slice(0, 8)}…${address.slice(-6)}` : "—"}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => { exitDemo(); navigate("/recruit"); }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 px-3 py-1 text-xs font-medium hover:bg-cyan-500/20 transition-colors"
+          >
+            <X className="h-3 w-3" /> 退出 Exit
+          </button>
+        </div>
+      )}
       {/* ── Hero banner ── tier-themed, with slow-pulse glow + big level title.
           Stays stable at first render so reloading mid-session doesn't reshuffle
           the layout; motion is limited to the decorative orb, a horizontal
@@ -334,6 +376,75 @@ export default function Dashboard() {
             WebkitMaskImage: "radial-gradient(ellipse at top right, black 10%, transparent 55%)",
           }}
         />
+
+        {/* ── rune.homes brand DNA ─────────────────────────────────────
+            Three decorative layers that echo the official site's
+            cinematic dark-gold aesthetic. All aria-hidden / pointer-
+            events-none so they never interfere with layout or UX.     */}
+
+        {/* 1. Cinematic photo wash — opengraph.jpg at 4 % luminosity so
+               the hero feels like it has depth behind the gradient.    */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: "url('/opengraph.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center 30%",
+            opacity: 0.045,
+            mixBlendMode: "luminosity",
+          }}
+        />
+
+        {/* 2. Ghost "符" rune — the same glyph the homepage uses as its
+               hero character; rendered huge on the right side as a
+               very-faint watermark that bleeds off the banner edge.    */}
+        <div
+          aria-hidden
+          className="absolute bottom-[-10%] right-3 select-none pointer-events-none leading-none text-[clamp(8rem,40vw,17rem)] font-bold"
+          style={{
+            color: `rgba(${theme.rgb}, 0.055)`,
+            fontFamily: "'Cinzel', 'Noto Serif SC', 'Songti SC', STSong, serif",
+            filter: `blur(0.5px) drop-shadow(0 0 24px rgba(${theme.rgb},0.15))`,
+          }}
+        >
+          符
+        </div>
+
+        {/* 3. Circular RUNE Protocol emblem — top-right corner,
+               matches the logo on rune.homes exactly.                 */}
+        <img
+          src="/rune-logo-new.png"
+          alt=""
+          aria-hidden
+          className="absolute top-4 right-5 w-10 h-10 object-contain pointer-events-none"
+          style={{ opacity: 0.22, filter: "grayscale(30%)" }}
+        />
+
+        {/* Floating micro-particles — 9 tiny tier-tinted orbs drifting at
+            independent speeds/offsets so the banner reads as "alive".     */}
+        {[0,1,2,3,4,5,6,7,8].map((i) => (
+          <motion.span
+            key={`hprt${i}`}
+            aria-hidden
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width:  i % 3 === 0 ? 3 : i % 3 === 1 ? 2.5 : 1.5,
+              height: i % 3 === 0 ? 3 : i % 3 === 1 ? 2.5 : 1.5,
+              left: `${9 + (i * 11.3) % 78}%`,
+              top:  `${12 + (i * 14.7) % 72}%`,
+              background: `rgba(${theme.rgb}, 0.7)`,
+              boxShadow: `0 0 7px 2px rgba(${theme.rgb}, 0.45)`,
+            }}
+            animate={{
+              y:       [0, -(9 + (i % 4) * 4), 0],
+              x:       [0, i % 2 === 0 ?  4 : -4, 0],
+              opacity: [0.22 + (i % 3) * 0.07, 0.78 + (i % 3) * 0.07, 0.22 + (i % 3) * 0.07],
+              scale:   [1, 1.3, 1],
+            }}
+            transition={{ duration: 4 + (i % 5) * 0.9, delay: i * 0.38, repeat: Infinity, ease: "easeInOut" }}
+          />
+        ))}
 
         <div className="relative z-10 px-5 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div className="space-y-2 md:space-y-3 min-w-0">
@@ -396,13 +507,46 @@ export default function Dashboard() {
                   className={`num text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
                   style={{ textShadow: `0 0 24px rgba(${theme.rgb}, 0.4)` }}
                 >
-                  ${ownedAmount ? fmtUsdt(ownedAmount, 0) : meta.priceUsdt.toLocaleString("en-US")}
+                  $<CountUp
+                    to={ownedAmount ? Number(ownedAmount) / 1e18 : meta.priceUsdt}
+                    fmt={(n) => Math.round(n).toLocaleString("en-US")}
+                  />
                 </p>
                 <p className="text-[10px] text-muted-foreground/80 mt-1.5 tracking-[0.18em] uppercase">USDT</p>
               </div>
             </motion.div>
           )}
         </div>
+      </motion.div>
+
+      {/* ── Brand tagline divider — echoes the 刻·下·即·永·恒 gold rule
+          on rune.homes. Appears between the hero card and the tab bar
+          so the "portal" transition from brand landing → app data
+          reads as intentional. Fades in after the hero settles.     */}
+      <motion.div
+        initial={{ opacity: 0, scaleX: 0.6 }}
+        animate={{ opacity: 1, scaleX: 1 }}
+        transition={{ duration: 0.9, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="flex items-center gap-3"
+      >
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+        <motion.span
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="shrink-0 text-[10px] tracking-[0.45em] font-medium select-none"
+          style={{
+            background: "linear-gradient(90deg, #92400e, #d97706, #fbbf24, #fef08a, #fbbf24, #d97706, #92400e)",
+            backgroundSize: "200% 100%",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            animation: "rune-shine 5s ease-in-out infinite",
+          }}
+        >
+          刻·下·即·永·恒
+        </motion.span>
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
       </motion.div>
 
       {/* ── Tabs ── indicator uses `layoutId="dashTab"` so the underline
@@ -509,8 +653,8 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
       style={{ ["--tier-rgb" as string]: theme.rgb }}
       className={`surface-3d surface-3d-tinted relative overflow-hidden bg-gradient-to-br ${theme.from} ${theme.to} border ${theme.ring}`}
     >
-      <div className={`absolute -top-20 -right-20 w-56 h-56 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.05),transparent_55%)] pointer-events-none" />
+      <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_55%)] pointer-events-none" />
       <CardHeader className="pb-3 border-b border-border/40 relative z-10">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Sparkles className={`h-4 w-4 ${theme.accent}`} />
@@ -542,6 +686,50 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             />
           ))}
         </div>
+
+        {/* 180-day cumulative USDT earnings sparkline */}
+        {def && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.28, ease: EASE }}
+            className="mt-4 pt-4 border-t border-border/30"
+          >
+            <div className="flex items-baseline justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">180-Day Cumulative USDT</span>
+              <span className={`text-xs font-mono font-semibold ${theme.accent}`}>${(def.dailyUsdt * 180).toLocaleString("en-US")}</span>
+            </div>
+            <ResponsiveContainer width="100%" height={64}>
+              <AreaChart
+                data={Array.from({ length: 19 }, (_, i) => ({ day: i * 10, usdt: Math.round(def.dailyUsdt * i * 10) }))}
+                margin={{ top: 2, right: 2, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id={`spark-fill-${nodeId}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={`rgba(${theme.rgb},0.50)`} />
+                    <stop offset="100%" stopColor={`rgba(${theme.rgb},0.02)`} />
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="usdt"
+                  stroke={`rgba(${theme.rgb},0.9)`}
+                  strokeWidth={1.5}
+                  fill={`url(#spark-fill-${nodeId})`}
+                  dot={false}
+                  isAnimationActive
+                />
+                <XAxis dataKey="day" hide />
+                <YAxis hide />
+                <Tooltip
+                  contentStyle={{ background: "rgba(10,12,18,0.92)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "6px", fontSize: "10px" }}
+                  labelFormatter={(v) => `Day ${v}`}
+                  formatter={(v: number) => [`$${v.toLocaleString("en-US")}`, "Cumulative"]}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
+        )}
       </CardContent>
     </Card>
   );
@@ -566,10 +754,10 @@ function BenefitRow({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay, ease: EASE }}
-      whileHover={{ y: -2 }}
+      initial={{ opacity: 0, y: 16, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 55, damping: 14, delay }}
+      whileHover={{ y: -3, scale: 1.02, transition: { type: "spring", stiffness: 320, damping: 18 } }}
       style={highlight ? { ["--tier-rgb" as string]: theme.rgb } : undefined}
       className={`relative rounded-xl border p-3 overflow-hidden transition-colors duration-300 ${
         highlight
@@ -668,12 +856,47 @@ const SIX_STREAMS = [
  *  The core-pool access row was moved into its own dedicated Genesis card
  *  since the Genesis (L5) path is now the sole route to pool share. */
 const PLATFORM_FEATURES = [
-  { labelKey: "mr.dash.benefits.feat.promo", all: true, strategicBoost: false },
-  { labelKey: "mr.dash.benefits.feat.api",   all: true, strategicBoost: true  },
-  { labelKey: "mr.dash.benefits.feat.ai",    all: true, strategicBoost: true  },
-  { labelKey: "mr.dash.benefits.feat.pred",  all: true, strategicBoost: true  },
-  { labelKey: "mr.dash.benefits.feat.quant", all: true, strategicBoost: true  },
-] as const;
+  {
+    labelKey: "mr.dash.benefits.feat.promo",
+    icon: Megaphone,
+    all: true, strategicBoost: false,
+    iconCls:   "text-cyan-400",
+    glowFrom:  "from-cyan-500/10",
+    borderCls: "border-cyan-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.api",
+    icon: Code2,
+    all: true, strategicBoost: true,
+    iconCls:   "text-blue-400",
+    glowFrom:  "from-blue-500/10",
+    borderCls: "border-blue-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.ai",
+    icon: Bot,
+    all: true, strategicBoost: true,
+    iconCls:   "text-purple-400",
+    glowFrom:  "from-purple-500/10",
+    borderCls: "border-purple-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.pred",
+    icon: BarChart3,
+    all: true, strategicBoost: true,
+    iconCls:   "text-amber-400",
+    glowFrom:  "from-amber-500/10",
+    borderCls: "border-amber-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.quant",
+    icon: Coins,
+    all: true, strategicBoost: true,
+    iconCls:   "text-emerald-400",
+    glowFrom:  "from-emerald-500/10",
+    borderCls: "border-emerald-500/20",
+  },
+];
 
 /* ─────────────────────────────────────────────────────────────────────────
    Benefits section — full member-doc digest laid out as 4 grouped cards:
@@ -757,32 +980,6 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             </div>
           </div>
 
-          {/* Direct commission matrix · per tier. Weight matrix was
-              removed here — it lives prominently on the dividend-pool
-              card with the formula, so duplicating it was noise. */}
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
-              {t("mr.dash.benefits.commTitle")}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              {([401, 301, 201, 101] as NodeId[]).map((id) => {
-                const m = NODE_META[id];
-                const th = HERO_THEME[id];
-                const pct = id === 401 ? 5 : id === 301 ? 8 : id === 201 ? 10 : 15;
-                const isSelf = id === ownedNodeId;
-                return (
-                  <div
-                    key={id}
-                    className={`rounded-md border p-2.5 ${isSelf ? `${th.ring} bg-gradient-to-br ${th.from} ${th.to}` : "border-border/30 bg-card/25"}`}
-                  >
-                    <div className={`text-[9px] font-mono uppercase tracking-[0.22em] ${m.color}`}>{m.nameEn}</div>
-                    <div className="text-[11px] font-semibold text-foreground/90 mt-0.5">{m.nameCn}</div>
-                    <div className={`num text-lg font-bold mt-1.5 tabular-nums ${th.accentBright}`}>{pct}%</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
       </BenefitGroup>
 
@@ -805,17 +1002,19 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             <div className="text-[10px] uppercase tracking-[0.22em] text-amber-300/85 mb-2">
               {t("mr.dash.benefits.poolShareTitle")}
             </div>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 tabular-nums">
-              <div>
-                <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
-                <div className={`text-2xl font-bold ${theme.accentBright}`}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
-                <div className="text-2xl font-bold text-foreground">{weight?.share ?? "—"}</div>
+            <div className="space-y-2 tabular-nums">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
+                  <div className={`text-2xl font-bold ${theme.accentBright}`}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
+                  <div className="text-2xl font-bold text-foreground">{weight?.share ?? "—"}</div>
+                </div>
               </div>
               {meta && (
-                <div className="flex-1 min-w-0 text-right">
+                <div>
                   <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.owned.tier")}</div>
                   <div className={`text-sm font-semibold ${meta.color}`}>{meta.nameEn} · {meta.nameCn}</div>
                 </div>
@@ -831,7 +1030,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
               {t("mr.dash.benefits.poolSourcesTitle")}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {SIX_STREAMS.map((s, i) => (
                 <div
                   key={s.key}
@@ -841,8 +1040,8 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                     {i + 1}
                   </span>
                   <div className="min-w-0 leading-tight">
-                    <div className="text-[11px] font-semibold text-foreground/90 truncate">{t(s.shortKey)}</div>
-                    <div className="text-[10px] text-muted-foreground/75 truncate">{t(s.tagKey)}</div>
+                    <div className="text-[11px] font-semibold text-foreground/90">{t(s.shortKey)}</div>
+                    <div className="text-[10px] text-muted-foreground/75">{t(s.tagKey)}</div>
                   </div>
                 </div>
               ))}
@@ -854,19 +1053,33 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
       {/* ── 4. 平台功能 ── API / AI / predict / quant. STRATEGIC tier
              gets a 1.5× quota boost on the marked rows. */}
       <BenefitGroup icon={Sparkles} title={t("mr.dash.benefits.groupFeatures")} subtitle="PLATFORM FEATURES" delay={0.12}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-          {PLATFORM_FEATURES.map((f) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {PLATFORM_FEATURES.map((f, idx) => {
             const available = f.all || (isStrategic && (f as any).strategicOnly);
             const boosted = f.strategicBoost && isStrategic;
+            const Icon = f.icon;
             return (
-              <div key={f.labelKey} className="flex items-center gap-2.5 rounded-md border border-border/30 bg-card/25 px-2.5 py-1.5">
-                <span className={`text-xs shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/50"}`}>
-                  {available ? "✓" : "—"}
-                </span>
-                <p className="text-[11px] text-foreground/90 flex-1 min-w-0">{t(f.labelKey)}</p>
+              <div
+                key={f.labelKey}
+                className={`relative rounded-xl border bg-gradient-to-br ${f.glowFrom} to-transparent p-3 overflow-hidden transition-opacity
+                  ${f.borderCls}
+                  ${!available ? "opacity-40 grayscale" : ""}
+                  ${idx === 4 ? "sm:col-span-1 col-span-2" : ""}`}
+              >
                 {boosted && (
-                  <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-purple-300 shrink-0">×1.5</span>
+                  <span className="absolute top-2 right-2 text-[8px] font-mono tracking-widest text-purple-300 bg-purple-950/70 border border-purple-500/30 rounded-full px-1.5 py-0.5 leading-none">
+                    ×1.5
+                  </span>
                 )}
+                <div className={`mb-2 ${f.iconCls}`}>
+                  <Icon className="h-5 w-5 drop-shadow-[0_0_6px_currentColor]" />
+                </div>
+                <p className="text-[11px] font-medium text-foreground/90 leading-snug pr-1">
+                  {t(f.labelKey)}
+                </p>
+                <div className={`mt-2 text-[9px] font-mono uppercase tracking-[0.18em] ${available ? "text-emerald-400/80" : "text-muted-foreground/40"}`}>
+                  {available ? "● ACTIVE" : "○ LOCKED"}
+                </div>
               </div>
             );
           })}
@@ -904,8 +1117,8 @@ function BenefitGroup({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.035),transparent_55%)] pointer-events-none" />
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/65 to-slate-900/90 border-amber-500/30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.09),transparent_55%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-border/30 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
           <div className="flex items-center gap-2 min-w-0">
             <Icon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.45)] shrink-0" />
@@ -1015,9 +1228,9 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.03, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden border-emerald-500/25 bg-gradient-to-br from-slate-900/85 via-emerald-950/25 to-slate-950/95">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500/20 via-cyan-500/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.06),transparent_55%)] pointer-events-none" />
+      <Card className="surface-3d relative overflow-hidden border-emerald-500/40 bg-gradient-to-br from-slate-800/60 via-emerald-950/40 to-slate-900/85">
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500/35 via-cyan-500/20 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.12),transparent_55%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-emerald-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.55)]" />
@@ -1025,7 +1238,11 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               {t("mr.dash.pool.title")}
             </span>
           </CardTitle>
-          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-emerald-300/80">
+          <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.22em] text-emerald-300/80">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-live-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
             {t("mr.dash.pool.networkTag")}
           </span>
         </CardHeader>
@@ -1042,17 +1259,21 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             </div>
             <div className="flex items-baseline gap-2 tabular-nums mb-2">
               <span className="text-2xl font-bold text-foreground">
-                ${formatShortUsd(totalRaised)}
+                $<CountUp to={totalRaised} fmt={formatShortUsd} />
               </span>
               <span className="text-xs text-muted-foreground/65">
                 / ${formatShortUsd(fundraiseCap)} USDT
               </span>
             </div>
-            <div className="h-2 rounded-full bg-black/40 overflow-hidden border border-emerald-500/10">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-teal-400 transition-[width] duration-500"
-                style={{ width: `${raisedPct}%` }}
-              />
+            <div className="h-2.5 rounded-full bg-black/40 overflow-hidden border border-emerald-500/15 relative">
+              <motion.div
+                className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-teal-400 relative overflow-hidden"
+                initial={{ width: 0 }}
+                animate={{ width: `${raisedPct}%` }}
+                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+              >
+                <div className="animate-bar-sweep absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
+              </motion.div>
             </div>
             <div className="text-[10px] text-muted-foreground/65 mt-2">
               {fundraiseComplete
@@ -1075,6 +1296,49 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               {t("mr.dash.pool.tlpNote")}
             </span>
           </div>
+
+          {/* Fund allocation donut + legend */}
+          {(() => {
+            const ALLOC = [
+              { name: "TLP Pool",   pct: 40, color: "#34d399" },
+              { name: "Operations", pct: 25, color: "#60a5fa" },
+              { name: "Treasury",   pct: 25, color: "#a78bfa" },
+              { name: "Sub LP",     pct: 10, color: "#fbbf24" },
+            ];
+            return (
+              <div className="rounded-md border border-border/25 bg-black/25 p-3 flex flex-col sm:flex-row items-center gap-4">
+                <div className="shrink-0">
+                  <PieChart width={88} height={88}>
+                    <Pie
+                      data={ALLOC}
+                      cx={40}
+                      cy={40}
+                      innerRadius={24}
+                      outerRadius={40}
+                      dataKey="pct"
+                      strokeWidth={0}
+                      paddingAngle={2}
+                      isAnimationActive
+                    >
+                      {ALLOC.map((e, i) => (
+                        <Cell key={i} fill={e.color} fillOpacity={0.85} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </div>
+                <div className="flex flex-col gap-1.5 flex-1 w-full">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 mb-0.5">Fund Allocation</div>
+                  {ALLOC.map((e) => (
+                    <div key={e.name} className="flex items-center gap-2 text-[10px]">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: e.color }} />
+                      <span className="text-muted-foreground/80 flex-1">{e.name}</span>
+                      <span className="font-mono font-semibold tabular-nums" style={{ color: e.color }}>{e.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Four stage milestones */}
           <div className="pt-1">
@@ -1233,9 +1497,9 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.04, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/45 via-purple-950/30 to-amber-950/15">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-fuchsia-500/25 via-purple-500/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.12),transparent_60%)] pointer-events-none" />
+      <Card className="surface-3d relative overflow-hidden border-fuchsia-500/50 bg-gradient-to-br from-fuchsia-950/60 via-purple-950/40 to-amber-950/20">
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-fuchsia-500/40 via-purple-500/20 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.18),transparent_60%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-fuchsia-500/20 relative z-10">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Zap className="h-4 w-4 text-fuchsia-300 drop-shadow-[0_0_8px_rgba(217,70,239,0.55)]" />
@@ -1378,9 +1642,9 @@ function OverviewTab({ address }: { address: string }) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.02, ease: EASE }}>
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/90 border-amber-500/20">
-            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/15 via-amber-700/5 to-transparent blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/60 to-slate-900/85 border-amber-500/35">
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/30 via-amber-600/12 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
             <CardHeader className="pb-3 border-b border-border/40 relative z-10">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <LinkIcon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />

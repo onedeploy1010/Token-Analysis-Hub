@@ -97,41 +97,41 @@
 }
 
 :root, .dark {
-  --background: 230 30% 5%;
+  --background: 228 28% 8%;
   --foreground: 210 40% 98%;
   
-  --card: 230 25% 8%;
+  --card: 228 24% 12%;
   --card-foreground: 210 40% 98%;
-  --card-border: 230 20% 18%;
+  --card-border: 228 22% 22%;
   
-  --popover: 230 25% 8%;
+  --popover: 228 24% 12%;
   --popover-foreground: 210 40% 98%;
-  --popover-border: 230 20% 18%;
+  --popover-border: 228 22% 22%;
   
-  --primary: 38 90% 50%;
+  --primary: 38 95% 55%;
   --primary-foreground: 230 30% 5%;
-  --primary-border: 38 90% 38%;
-  --glow-primary: 0 0 20px hsl(38, 90%, 50%, 0.35);
+  --primary-border: 38 90% 42%;
+  --glow-primary: 0 0 24px hsl(38, 95%, 55%, 0.5);
   
-  --secondary: 230 20% 12%;
+  --secondary: 228 22% 16%;
   --secondary-foreground: 210 40% 98%;
-  --secondary-border: 230 20% 20%;
+  --secondary-border: 228 22% 26%;
   
-  --muted: 230 20% 12%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --muted-border: 230 20% 20%;
+  --muted: 228 22% 16%;
+  --muted-foreground: 215 22% 72%;
+  --muted-border: 228 22% 26%;
   
-  --accent: 230 20% 12%;
+  --accent: 228 22% 16%;
   --accent-foreground: 210 40% 98%;
-  --accent-border: 230 20% 20%;
+  --accent-border: 228 22% 26%;
   
-  --destructive: 0 62.8% 40.6%;
+  --destructive: 0 70% 45%;
   --destructive-foreground: 210 40% 98%;
-  --destructive-border: 0 62.8% 50%;
+  --destructive-border: 0 70% 55%;
   
-  --border: 230 20% 18%;
-  --input: 230 20% 18%;
-  --ring: 38 90% 50%;
+  --border: 228 22% 22%;
+  --input: 228 22% 22%;
+  --ring: 38 95% 55%;
   
   --chart-1: 38 90% 50%;
   --chart-2: 173 58% 39%;
@@ -167,7 +167,7 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
-    background-image: radial-gradient(circle at 1px 1px, hsl(38, 90%, 50%, 0.06) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, hsl(38, 95%, 55%, 0.12) 1px, transparent 0);
     background-size: 32px 32px;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -480,11 +480,11 @@
   position: relative;
   isolation: isolate;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
-    0 1px 0 rgba(0, 0, 0, 0.35),
-    0 10px 32px -12px rgba(0, 0, 0, 0.55),
-    0 24px 60px -28px rgba(0, 0, 0, 0.85);
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(0, 0, 0, 0.25),
+    0 10px 32px -12px rgba(0, 0, 0, 0.45),
+    0 24px 60px -28px rgba(0, 0, 0, 0.7);
   transition:
     transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -542,3 +542,10 @@
   100% { transform: translateX(120%); opacity: 0; }
 }
 .animate-hero-sweep { animation: hero-sweep 8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+
+/* Progress-bar shimmer sweep — short bright band crossing left→right */
+@keyframes bar-sweep {
+  0%   { transform: translateX(-150%); }
+  100% { transform: translateX(400%); }
+}
+.animate-bar-sweep { animation: bar-sweep 2.2s ease-in-out infinite; }

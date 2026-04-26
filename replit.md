@@ -56,6 +56,19 @@ A professional DeFi investment analysis platform targeting crypto investors. Fea
 - `pnpm --filter @rune/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @rune/api-server run dev` — run API server locally
 
+## Tutorial Mode (`/tutorial`)
+
+Full guided walkthrough of the user onboarding flow with zero blockchain interaction.
+
+- **Step 1**: Recruit page shown with "Connect Wallet" guide card — user clicks "模拟连接 · Simulate Connect".
+- **Step 2**: Simulated Bind Referrer modal auto-opens — ROOT address pre-filled, 1.4s fake tx animation → "confirmed".
+- **Step 3**: Simulated Purchase Node modal auto-opens — user selects a tier, 1.6s approve + 1.8s buy animation → calls `enterDemo()` + redirects to `/dashboard`.
+- After tutorial, the dashboard runs in tutorial/demo mode with realistic mock data scaled to the chosen node tier.
+- Cyan "教学模式 Tutorial" banner on Dashboard and Recruit shows the active session with an exit button.
+- All data hooks (`usePersonalStats`, `useTeam`, `useRewards`, `useReferrerOf`, `useUserPurchase`, `useUsdtBalance`) detect `useDemoStore.getState().isDemoMode` and return mock data from `src/lib/demo-mock-data.ts`.
+- State persisted in `src/lib/demo-store.ts` (Zustand + localStorage).
+- Entry point: recruit page "进入教学模式" CTA (below "How to Join" section).
+
 ## Notes
 
 - RUNE calculator is using mock data — user will provide real tokenomics formulas and data to update
