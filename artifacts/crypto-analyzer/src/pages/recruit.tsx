@@ -441,12 +441,12 @@ export default function Recruit() {
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.15),transparent_55%)]" />
           <div className="relative space-y-5">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full border border-fuchsia-500/50 bg-fuchsia-950/40 flex items-center justify-center">
+              <div className="h-10 w-10 shrink-0 rounded-full border border-fuchsia-500/50 bg-fuchsia-950/40 flex items-center justify-center">
                 <Zap className="h-5 w-5 text-fuchsia-300" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs font-mono uppercase tracking-[0.22em] text-fuchsia-300/80">GENESIS · L5</div>
-                <div className="text-xl md:text-2xl font-bold bg-gradient-to-r from-fuchsia-200 via-purple-200 to-amber-200 bg-clip-text text-transparent">
+                <div className="text-base sm:text-xl md:text-2xl font-bold leading-snug bg-gradient-to-r from-fuchsia-200 via-purple-200 to-amber-200 bg-clip-text text-transparent break-words">
                   {showZh ? "创世节点 · 条件触发" : "Genesis Node · Condition-triggered"}
                 </div>
               </div>
