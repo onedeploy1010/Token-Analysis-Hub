@@ -29,9 +29,6 @@ function resolveAlias(raw: string): string {
   return raw.trim();
 }
 
-/** Short 0x…abcd formatter for display. */
-const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
-
 type PreCheck =
   | { state: "idle" }
   | { state: "checking" }
@@ -90,7 +87,7 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
             reason: t("mr.bind.rejectNotMember"),
           });
         } else {
-          setPreCheck({ state: "ok", label: `${t("mr.bind.okMember")} ${short(upstreamOfRef)}` });
+          setPreCheck({ state: "ok", label: t("mr.bind.okValidated") });
         }
       } catch (e: any) {
         setPreCheck({ state: "reject", reason: e?.message ?? t("mr.bind.rejectRpc") });
