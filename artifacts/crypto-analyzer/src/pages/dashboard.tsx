@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { useLocation } from "wouter";
 import { useActiveAccount } from "thirdweb/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { getAddress } from "thirdweb/utils";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
@@ -229,6 +229,18 @@ const HERO_THEME: Record<NodeId, {
  *  idea". Matches the project's `.token-card-3d` transition choice. */
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+/** Spring-powered count-up number display.
+ *  Mounts at 0 and springs to `to` using Framer Motion's physics engine.
+ *  `fmt` lets callers supply any formatter (currency, short-USD, etc.). */
+function CountUp({ to, fmt }: { to: number; fmt?: (n: number) => string }) {
+  const mv     = useMotionValue(0);
+  const spring = useSpring(mv, { stiffness: 46, damping: 13, restDelta: 0.5 });
+  const [n, setN] = useState(0);
+  useEffect(() => { mv.set(to); }, [mv, to]);
+  useEffect(() => spring.on("change", (v) => setN(v)), [spring]);
+  return <>{fmt ? fmt(n) : Math.round(n).toLocaleString("en-US")}</>;
+}
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const account = useActiveAccount();
@@ -349,6 +361,30 @@ export default function Dashboard() {
             WebkitMaskImage: "radial-gradient(ellipse at top right, black 10%, transparent 55%)",
           }}
         />
+        {/* Floating micro-particles — 9 tiny tier-tinted orbs drifting at
+            independent speeds/offsets so the banner reads as "alive".     */}
+        {[0,1,2,3,4,5,6,7,8].map((i) => (
+          <motion.span
+            key={`hprt${i}`}
+            aria-hidden
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width:  i % 3 === 0 ? 3 : i % 3 === 1 ? 2.5 : 1.5,
+              height: i % 3 === 0 ? 3 : i % 3 === 1 ? 2.5 : 1.5,
+              left: `${9 + (i * 11.3) % 78}%`,
+              top:  `${12 + (i * 14.7) % 72}%`,
+              background: `rgba(${theme.rgb}, 0.7)`,
+              boxShadow: `0 0 7px 2px rgba(${theme.rgb}, 0.45)`,
+            }}
+            animate={{
+              y:       [0, -(9 + (i % 4) * 4), 0],
+              x:       [0, i % 2 === 0 ?  4 : -4, 0],
+              opacity: [0.22 + (i % 3) * 0.07, 0.78 + (i % 3) * 0.07, 0.22 + (i % 3) * 0.07],
+              scale:   [1, 1.3, 1],
+            }}
+            transition={{ duration: 4 + (i % 5) * 0.9, delay: i * 0.38, repeat: Infinity, ease: "easeInOut" }}
+          />
+        ))}
 
         <div className="relative z-10 px-5 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div className="space-y-2 md:space-y-3 min-w-0">
@@ -411,7 +447,10 @@ export default function Dashboard() {
                   className={`num text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
                   style={{ textShadow: `0 0 24px rgba(${theme.rgb}, 0.4)` }}
                 >
-                  ${ownedAmount ? fmtUsdt(ownedAmount, 0) : meta.priceUsdt.toLocaleString("en-US")}
+                  $<CountUp
+                    to={ownedAmount ? Number(ownedAmount) / 1e18 : meta.priceUsdt}
+                    fmt={(n) => Math.round(n).toLocaleString("en-US")}
+                  />
                 </p>
                 <p className="text-[10px] text-muted-foreground/80 mt-1.5 tracking-[0.18em] uppercase">USDT</p>
               </div>
@@ -625,10 +664,10 @@ function BenefitRow({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay, ease: EASE }}
-      whileHover={{ y: -2 }}
+      initial={{ opacity: 0, y: 16, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 55, damping: 14, delay }}
+      whileHover={{ y: -3, scale: 1.02, transition: { type: "spring", stiffness: 320, damping: 18 } }}
       style={highlight ? { ["--tier-rgb" as string]: theme.rgb } : undefined}
       className={`relative rounded-xl border p-3 overflow-hidden transition-colors duration-300 ${
         highlight
@@ -1109,7 +1148,11 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               {t("mr.dash.pool.title")}
             </span>
           </CardTitle>
-          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-emerald-300/80">
+          <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.22em] text-emerald-300/80">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-live-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
             {t("mr.dash.pool.networkTag")}
           </span>
         </CardHeader>
@@ -1126,17 +1169,21 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             </div>
             <div className="flex items-baseline gap-2 tabular-nums mb-2">
               <span className="text-2xl font-bold text-foreground">
-                ${formatShortUsd(totalRaised)}
+                $<CountUp to={totalRaised} fmt={formatShortUsd} />
               </span>
               <span className="text-xs text-muted-foreground/65">
                 / ${formatShortUsd(fundraiseCap)} USDT
               </span>
             </div>
-            <div className="h-2 rounded-full bg-black/40 overflow-hidden border border-emerald-500/10">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-teal-400 transition-[width] duration-500"
-                style={{ width: `${raisedPct}%` }}
-              />
+            <div className="h-2.5 rounded-full bg-black/40 overflow-hidden border border-emerald-500/15 relative">
+              <motion.div
+                className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-teal-400 relative overflow-hidden"
+                initial={{ width: 0 }}
+                animate={{ width: `${raisedPct}%` }}
+                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+              >
+                <div className="animate-bar-sweep absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
+              </motion.div>
             </div>
             <div className="text-[10px] text-muted-foreground/65 mt-2">
               {fundraiseComplete

@@ -542,3 +542,10 @@
   100% { transform: translateX(120%); opacity: 0; }
 }
 .animate-hero-sweep { animation: hero-sweep 8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+
+/* Progress-bar shimmer sweep — short bright band crossing left→right */
+@keyframes bar-sweep {
+  0%   { transform: translateX(-150%); }
+  100% { transform: translateX(400%); }
+}
+.animate-bar-sweep { animation: bar-sweep 2.2s ease-in-out infinite; }
