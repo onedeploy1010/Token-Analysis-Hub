@@ -710,16 +710,37 @@ export default function Tutorial() {
   const [bindOpen, setBindOpen] = useState(false);
   const [buyOpen, setBuyOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  // "connect" → spotlight on connect button (no wallet)
+  // "purchase" → spotlight on purchase button (wallet already connected)
+  // null → no spotlight (modal open or step > 0)
+  const [spotlight, setSpotlight] = useState<"connect" | "purchase" | null>(null);
+
+  useEffect(() => {
+    if (step === 0 && !bindOpen && !buyOpen) {
+      setSpotlight(account?.address ? "purchase" : "connect");
+    } else {
+      setSpotlight(null);
+    }
+  }, [account?.address, step, bindOpen, buyOpen]);
 
   // Simulate: connect → contract checks community registration → not found → bind required
   function handleConnect(addr?: string) {
+    setSpotlight(null);
     const resolved = addr ?? DEMO_ADDRESS;
     setWalletAddress(resolved);
     setIsChecking(true);
     setTimeout(() => {
       setIsChecking(false);
-      setBindOpen(true); // contract check finds no registration → open bind modal
+      setBindOpen(true);
     }, 1200);
+  }
+
+  // Already-connected wallet: skip bind, go straight to purchase (assumed already bound)
+  function handleBuyDirectly() {
+    setSpotlight(null);
+    setWalletAddress(account!.address);
+    setStep(1);
+    setBuyOpen(true);
   }
 
   // After bind confirmed → wallet is now fully connected (connected + registered)
@@ -741,9 +762,24 @@ export default function Tutorial() {
   }
 
   const walletConnected = step >= 1;
+  const showSpotlight = spotlight !== null && !bindOpen && !buyOpen;
 
   return (
     <div className="container mx-auto px-4 py-10 space-y-14 max-w-6xl">
+
+      {/* ── Full-page spotlight overlay ── */}
+      <AnimatePresence>
+        {showSpotlight && (
+          <motion.div
+            key="spotlight-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="fixed inset-0 z-40 bg-black/72 backdrop-blur-[3px] pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Step 0: wallet connect entry banner ── */}
       {step === 0 && (
@@ -751,7 +787,8 @@ export default function Tutorial() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="rounded-2xl border border-cyan-500/30 bg-cyan-500/6 px-4 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3"
+          style={{ zIndex: showSpotlight ? 50 : undefined, position: showSpotlight ? "relative" : undefined }}
+          className="rounded-2xl border border-cyan-500/30 bg-[#060e1c]/95 backdrop-blur-md px-4 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3 shadow-[0_0_0_1px_rgba(34,211,238,0.15)]"
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="w-8 h-8 rounded-xl border border-cyan-500/30 bg-cyan-500/15 flex items-center justify-center shrink-0">
@@ -763,16 +800,10 @@ export default function Tutorial() {
               </span>
               <span className="text-[12px] text-muted-foreground leading-snug">
                 {isChecking
-                  ? tt({ zh: "正在检测 community 合约注册状态...", "zh-TW": "正在檢測 community 合約註冊狀態...", en: "Checking community contract registration...", ja: "community 契約の登録状況を確認中…", ko: "community 컨트랙트 등록 상태 확인 중…", th: "กำลังตรวจสอบการลงทะเบียนสัญญา community…", vi: "Đang kiểm tra đăng ký hợp đồng community…" })
-                  : tt({
-                      zh: "连接钱包时合约自动检测是否已绑定推荐关系，未注册则需立即完成绑定",
-                      "zh-TW": "連接錢包時合約自動檢測是否已綁定推薦關係，未註冊則需立即完成綁定",
-                      en: "On connect, the contract checks your community registration — if unbound, binding is required first",
-                      ja: "ウォレット接続時に契約が登録状況を確認 — 未登録なら先に登録が必要です",
-                      ko: "지갑 연결 시 컨트랙트가 등록 여부를 확인 — 미등록이면 먼저 바인딩이 필요합니다",
-                      th: "เมื่อเชื่อมกระเป๋า สัญญาจะตรวจสอบการลงทะเบียน — ยังไม่ผูกต้องผูกก่อน",
-                      vi: "Khi kết nối ví, hợp đồng kiểm tra đăng ký — chưa liên kết thì phải làm trước",
-                    })}
+                  ? tt({ zh: "正在检测推荐关系注册状态...", "zh-TW": "正在檢測推薦關係註冊狀態...", en: "Checking community contract registration...", ja: "登録状況を確認中…", ko: "등록 상태 확인 중…", th: "กำลังตรวจสอบ…", vi: "Đang kiểm tra đăng ký…" })
+                  : account?.address
+                  ? tt({ zh: "钱包已连接 · 点击按钮直接进入模拟购买节点", "zh-TW": "錢包已連接 · 點擊按鈕直接進入模擬購買節點", en: "Wallet connected — click to simulate purchasing a node", ja: "ウォレット接続済 — ノード購入を模擬", ko: "지갑 연결됨 — 버튼을 눌러 노드 구매 시뮬레이션", th: "เชื่อมกระเป๋าแล้ว — กดเพื่อจำลองการซื้อโหนด", vi: "Ví đã kết nối — bấm để mô phỏng mua node" })
+                  : tt({ zh: "点击连接钱包，系统将自动检测推荐关系并引导绑定", "zh-TW": "點擊連接錢包，系統將自動檢測推薦關係並引導綁定", en: "Click to connect — the contract checks registration and guides you through binding", ja: "クリックして接続 — 登録状況を確認してバインドを案内", ko: "클릭하여 연결 — 등록 여부 확인 후 바인딩 안내", th: "คลิกเชื่อมต่อ — ตรวจสอบและแนะนำการผูก", vi: "Bấm kết nối — hệ thống kiểm tra và hướng dẫn liên kết" })}
               </span>
             </div>
           </div>
@@ -789,24 +820,66 @@ export default function Tutorial() {
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   {account.address.slice(0, 6)}…{account.address.slice(-6)}
                 </div>
-                <Button
-                  onClick={() => handleConnect(account.address)}
-                  size="sm"
-                  className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
-                >
-                  <ArrowRight className="h-3 w-3" />
-                  {tt({ zh: "使用此钱包", "zh-TW": "使用此錢包", en: "Use This Wallet", ja: "このウォレットを使用", ko: "이 지갑 사용", th: "ใช้กระเป๋านี้", vi: "Dùng ví này" })}
-                </Button>
+                {/* Spotlighted purchase button for already-connected wallet */}
+                <div className="relative flex flex-col items-center">
+                  <Button
+                    onClick={handleBuyDirectly}
+                    size="sm"
+                    className={`h-8 px-3 text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black gap-1.5 transition-all ${
+                      spotlight === "purchase"
+                        ? "ring-2 ring-amber-400/90 ring-offset-2 ring-offset-[#060e1c] shadow-[0_0_28px_8px_rgba(251,191,36,0.45)]"
+                        : ""
+                    }`}
+                  >
+                    <Coins className="h-3 w-3" />
+                    {tt({ zh: "模拟购买节点", "zh-TW": "模擬購買節點", en: "Simulate Purchase", ja: "購入を模擬", ko: "구매 시뮬레이션", th: "จำลองซื้อโหนด", vi: "Mô phỏng mua node" })}
+                  </Button>
+                  <AnimatePresence>
+                    {spotlight === "purchase" && (
+                      <motion.span
+                        key="hint-purchase"
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: [0, 3, 0] }}
+                        exit={{ opacity: 0 }}
+                        transition={{ y: { repeat: Infinity, duration: 1.4, ease: "easeInOut" }, opacity: { duration: 0.25 } }}
+                        className="absolute top-full mt-2 text-[10px] text-amber-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
+                      >
+                        ↑ {tt({ zh: "点此进入模拟购买", "zh-TW": "點此進入模擬購買", en: "Click to simulate purchase", ja: "クリックして購入を模擬", ko: "클릭해서 구매 시뮬레이션", th: "คลิกเพื่อจำลองการซื้อ", vi: "Bấm để mô phỏng mua" })}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             ) : (
-              <Button
-                onClick={() => handleConnect()}
-                size="sm"
-                className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
-              >
-                <Wallet className="h-3 w-3" />
-                {tt({ zh: "模拟连接钱包", "zh-TW": "模擬連接錢包", en: "Simulate Connect", ja: "接続を模擬", ko: "연결 시뮬레이션", th: "จำลองเชื่อมต่อ", vi: "Mô phỏng kết nối" })}
-              </Button>
+              /* Spotlighted connect button for no-wallet state */
+              <div className="relative flex flex-col items-center">
+                <Button
+                  onClick={() => handleConnect()}
+                  size="sm"
+                  className={`h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5 transition-all ${
+                    spotlight === "connect"
+                      ? "ring-2 ring-cyan-400/90 ring-offset-2 ring-offset-[#060e1c] shadow-[0_0_28px_8px_rgba(34,211,238,0.45)]"
+                      : ""
+                  }`}
+                >
+                  <Wallet className="h-3 w-3" />
+                  {tt({ zh: "模拟连接钱包", "zh-TW": "模擬連接錢包", en: "Simulate Connect", ja: "接続を模擬", ko: "연결 시뮬레이션", th: "จำลองเชื่อมต่อ", vi: "Mô phỏng kết nối" })}
+                </Button>
+                <AnimatePresence>
+                  {spotlight === "connect" && (
+                    <motion.span
+                      key="hint-connect"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: [0, 3, 0] }}
+                      exit={{ opacity: 0 }}
+                      transition={{ y: { repeat: Infinity, duration: 1.4, ease: "easeInOut" }, opacity: { duration: 0.25 } }}
+                      className="absolute top-full mt-2 text-[10px] text-cyan-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
+                    >
+                      ↑ {tt({ zh: "点此连接钱包", "zh-TW": "點此連接錢包", en: "Click to connect wallet", ja: "クリックして接続", ko: "클릭해서 지갑 연결", th: "คลิกเชื่อมต่อกระเป๋า", vi: "Bấm kết nối ví" })}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
             <button
               type="button"
