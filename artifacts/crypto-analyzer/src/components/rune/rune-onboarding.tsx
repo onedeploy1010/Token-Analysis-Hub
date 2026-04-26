@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useActiveAccount } from "thirdweb/react";
+import { useActiveAccount, useActiveWallet, useDisconnect } from "thirdweb/react";
 import { useLocation } from "wouter";
 import { BindReferrerModal } from "./bind-referrer-modal";
 import { PurchaseNodeModal } from "./purchase-node-modal";
@@ -15,11 +15,10 @@ import type { NodeId } from "@/lib/thirdweb/contracts";
  *
  * Flow (per user 2026-04-26):
  *   1. Wallet connects → read `referrerOf` and `getUserPurchaseData`.
- *   2. Not bound → BindReferrerModal stays open until the bind tx
- *      confirms. Connecting the wallet *is* registering as a member,
- *      and member registration requires a referrer — there is no
- *      "Later" escape hatch, no close button, no outside-click
- *      dismissal. Pre-fills the input from `?ref=` if present.
+ *   2. Not bound → BindReferrerModal opens. The user can either bind
+ *      (success → step 3) or close the modal (X / Escape / outside-click
+ *      → wallet disconnects → UI returns to the unauthenticated state).
+ *      Pre-fills the input from `?ref=` if present.
  *   3. Bound + not purchased → pop PurchaseNodeModal. User may close
  *      it ("Later"), in which case they STAY on /recruit — dashboard
  *      is not accessible yet. The modal can be re-opened from:
@@ -32,6 +31,8 @@ import type { NodeId } from "@/lib/thirdweb/contracts";
  */
 export function RuneOnboarding() {
   const account = useActiveAccount();
+  const wallet = useActiveWallet();
+  const { disconnect } = useDisconnect();
   const { isDemoMode } = useDemoStore();
   const address = account?.address;
   const [, navigate] = useLocation();
@@ -91,8 +92,12 @@ export function RuneOnboarding() {
       <BindReferrerModal
         open={bindOpen}
         initialReferrer={refFromUrl}
-        // No-op: the modal can only close after a successful bind tx.
-        onClose={() => { /* mandatory step */ }}
+        // Closing without binding rolls the wallet back to disconnected —
+        // there's nothing useful a connected-but-unbound wallet can do here.
+        onClose={() => {
+          setBindOpen(false);
+          if (wallet) disconnect(wallet);
+        }}
         onBound={async () => {
           setBindOpen(false);
           await refetchReferrer();
