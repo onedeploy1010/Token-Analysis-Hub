@@ -28,7 +28,10 @@ const bscMainnetConfig: RuneChainConfig = {
   usdt: "0x55d398326f99059fF775485246999027B3197955",
   community: (process.env.RUNE_COMMUNITY_MAINNET ?? "0xe6f1d4B5ea4B5a025e1E45C9E3d83F31201B6C9c") as `0x${string}`,
   nodePresell: (process.env.RUNE_NODE_PRESELL_MAINNET ?? "0xF32747E7c120BB6333Ac83F25192c089e8d9b62E") as `0x${string}`,
-  startBlock: { community: 0n, nodePresell: 0n },
+  // Anchored to each contract's actual deploy block on BSC mainnet — verified
+  // by binary-searching `eth_getCode` against an archive RPC. Avoids scanning
+  // ~94M empty blocks from genesis on a cold-start indexer.
+  startBlock: { community: 94_392_255n, nodePresell: 94_392_402n },
   chain: bsc,
 };
 
