@@ -361,6 +361,51 @@ export default function Dashboard() {
             WebkitMaskImage: "radial-gradient(ellipse at top right, black 10%, transparent 55%)",
           }}
         />
+
+        {/* ── rune.homes brand DNA ─────────────────────────────────────
+            Three decorative layers that echo the official site's
+            cinematic dark-gold aesthetic. All aria-hidden / pointer-
+            events-none so they never interfere with layout or UX.     */}
+
+        {/* 1. Cinematic photo wash — opengraph.jpg at 4 % luminosity so
+               the hero feels like it has depth behind the gradient.    */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: "url('/opengraph.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center 30%",
+            opacity: 0.045,
+            mixBlendMode: "luminosity",
+          }}
+        />
+
+        {/* 2. Ghost "符" rune — the same glyph the homepage uses as its
+               hero character; rendered huge on the right side as a
+               very-faint watermark that bleeds off the banner edge.    */}
+        <div
+          aria-hidden
+          className="absolute bottom-[-10%] right-3 select-none pointer-events-none leading-none text-[clamp(8rem,40vw,17rem)] font-bold"
+          style={{
+            color: `rgba(${theme.rgb}, 0.055)`,
+            fontFamily: "'Cinzel', 'Noto Serif SC', 'Songti SC', STSong, serif",
+            filter: `blur(0.5px) drop-shadow(0 0 24px rgba(${theme.rgb},0.15))`,
+          }}
+        >
+          符
+        </div>
+
+        {/* 3. Circular RUNE Protocol emblem — top-right corner,
+               matches the logo on rune.homes exactly.                 */}
+        <img
+          src="/rune-logo-new.png"
+          alt=""
+          aria-hidden
+          className="absolute top-4 right-5 w-10 h-10 object-contain pointer-events-none"
+          style={{ opacity: 0.22, filter: "grayscale(30%)" }}
+        />
+
         {/* Floating micro-particles — 9 tiny tier-tinted orbs drifting at
             independent speeds/offsets so the banner reads as "alive".     */}
         {[0,1,2,3,4,5,6,7,8].map((i) => (
@@ -457,6 +502,36 @@ export default function Dashboard() {
             </motion.div>
           )}
         </div>
+      </motion.div>
+
+      {/* ── Brand tagline divider — echoes the 刻·下·即·永·恒 gold rule
+          on rune.homes. Appears between the hero card and the tab bar
+          so the "portal" transition from brand landing → app data
+          reads as intentional. Fades in after the hero settles.     */}
+      <motion.div
+        initial={{ opacity: 0, scaleX: 0.6 }}
+        animate={{ opacity: 1, scaleX: 1 }}
+        transition={{ duration: 0.9, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="flex items-center gap-3"
+      >
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+        <motion.span
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="shrink-0 text-[10px] tracking-[0.45em] font-medium select-none"
+          style={{
+            background: "linear-gradient(90deg, #92400e, #d97706, #fbbf24, #fef08a, #fbbf24, #d97706, #92400e)",
+            backgroundSize: "200% 100%",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            animation: "rune-shine 5s ease-in-out infinite",
+          }}
+        >
+          刻·下·即·永·恒
+        </motion.span>
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
       </motion.div>
 
       {/* ── Tabs ── indicator uses `layoutId="dashTab"` so the underline
