@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { gql } from "graphql-request";
 import { graphqlClient } from "@/lib/graphql/client";
+import { useDemoStore } from "@/lib/demo-store";
+import { getMockPersonalStats, getMockTeam, getMockRewards } from "@/lib/demo-mock-data";
+import type { NodeId } from "@/lib/thirdweb/contracts";
 
 // ── GraphQL shapes (mirror the server-side Pothos types) ────────────────────
 export interface ReferrerRow {
@@ -139,11 +142,13 @@ const graphqlQueryOpts = {
  * level — recursion is handled by rendering children recursively.
  */
 export function useTeam(address: string | undefined, opts?: { limit?: number; offset?: number }) {
+  const { isDemoMode, demoNodeId } = useDemoStore.getState();
   return useQuery({
-    queryKey: ["rune", "team", address, opts?.limit, opts?.offset],
-    enabled: !!address,
+    queryKey: ["rune", "team", isDemoMode ? "demo" : address, opts?.limit, opts?.offset],
+    enabled: isDemoMode || !!address,
     ...graphqlQueryOpts,
     queryFn: async () => {
+      if (isDemoMode && demoNodeId) return getMockTeam(demoNodeId as NodeId);
       const data = await graphqlClient.request<{ team: ReferrerRow[] }>(TEAM_QUERY, {
         address,
         limit: opts?.limit ?? 100,
@@ -156,11 +161,13 @@ export function useTeam(address: string | undefined, opts?: { limit?: number; of
 
 /** Aggregate stats for the Overview card. */
 export function usePersonalStats(address: string | undefined) {
+  const { isDemoMode, demoNodeId } = useDemoStore.getState();
   return useQuery({
-    queryKey: ["rune", "personalStats", address],
-    enabled: !!address,
+    queryKey: ["rune", "personalStats", isDemoMode ? "demo" : address],
+    enabled: isDemoMode || !!address,
     ...graphqlQueryOpts,
     queryFn: async () => {
+      if (isDemoMode && demoNodeId) return getMockPersonalStats(demoNodeId as NodeId);
       const data = await graphqlClient.request<{ personalStats: PersonalStats }>(
         PERSONAL_STATS_QUERY,
         { address },
@@ -191,11 +198,13 @@ export function useUserPurchases(address: string | undefined) {
  * the viewer's wallet on-chain.
  */
 export function useRewards(address: string | undefined, opts?: { limit?: number; offset?: number }) {
+  const { isDemoMode, demoNodeId } = useDemoStore.getState();
   return useQuery({
-    queryKey: ["rune", "rewards", address, opts?.limit, opts?.offset],
-    enabled: !!address,
+    queryKey: ["rune", "rewards", isDemoMode ? "demo" : address, opts?.limit, opts?.offset],
+    enabled: isDemoMode || !!address,
     ...graphqlQueryOpts,
     queryFn: async () => {
+      if (isDemoMode && demoNodeId) return getMockRewards(demoNodeId as NodeId);
       const data = await graphqlClient.request<{ rewards: RewardRow[] }>(REWARDS_QUERY, {
         address,
         limit:  opts?.limit  ?? 100,
