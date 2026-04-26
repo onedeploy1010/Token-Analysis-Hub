@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { useActiveAccount } from "thirdweb/react";
 import { useDemoStore } from "@/lib/demo-store";
 import { DEMO_ADDRESS } from "@/lib/demo-mock-data";
 import { NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
@@ -141,11 +142,13 @@ const GUIDE_STEPS = [
 
 interface GuideCardProps {
   step: TStep;
-  onConnect: () => void;
+  realAddress?: string;
+  connectedAddr: string;
+  onConnect: (addr?: string) => void;
   onExit: () => void;
 }
 
-function GuideCard({ step, onConnect, onExit }: GuideCardProps) {
+function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: GuideCardProps) {
   const showZh = useShowZh();
   const guideIdx = Math.min(step, 2);
   const guide = GUIDE_STEPS[guideIdx];
@@ -202,16 +205,25 @@ function GuideCard({ step, onConnect, onExit }: GuideCardProps) {
 
         {/* Action / exit */}
         <div className="flex items-center gap-2 shrink-0">
-          {step === 0 && (
+          {step === 0 && realAddress ? (
             <Button
-              onClick={onConnect}
+              onClick={() => onConnect(realAddress)}
+              size="sm"
+              className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
+            >
+              <Wallet className="h-3 w-3" />
+              {showZh ? "使用此钱包" : "Use This Wallet"}
+            </Button>
+          ) : step === 0 ? (
+            <Button
+              onClick={() => onConnect()}
               size="sm"
               className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
             >
               <Wallet className="h-3 w-3" />
               {showZh ? "模拟连接" : "Simulate Connect"}
             </Button>
-          )}
+          ) : null}
           {step === 3 && (
             <div className="flex items-center gap-1.5 text-xs text-emerald-300">
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -228,15 +240,28 @@ function GuideCard({ step, onConnect, onExit }: GuideCardProps) {
         </div>
       </div>
 
-      {/* Wallet address strip after connect */}
-      {step >= 1 && (
+      {/* Real wallet detected strip (step 0) */}
+      {step === 0 && realAddress && (
         <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-[11px] text-emerald-300 font-mono">
-            {DEMO_ADDRESS.slice(0, 6)}…{DEMO_ADDRESS.slice(-6)}
+            {realAddress.slice(0, 6)}…{realAddress.slice(-6)}
           </span>
           <span className="text-[10px] text-muted-foreground/50 ml-1">
-            {showZh ? "· 钱包已连接（模拟）" : "· Wallet connected (simulated)"}
+            {showZh ? "· 检测到已连接钱包" : "· Wallet detected"}
+          </span>
+        </div>
+      )}
+
+      {/* Wallet address strip after connect */}
+      {step >= 1 && connectedAddr && (
+        <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] text-emerald-300 font-mono">
+            {connectedAddr.slice(0, 6)}…{connectedAddr.slice(-6)}
+          </span>
+          <span className="text-[10px] text-muted-foreground/50 ml-1">
+            {showZh ? "· 钱包已连接" : "· Wallet connected"}
           </span>
         </div>
       )}
@@ -568,12 +593,16 @@ export default function Tutorial() {
   const showZh = useShowZh();
   const { enterDemo } = useDemoStore();
   const [, navigate] = useLocation();
+  const account = useActiveAccount();
   const [step, setStep] = useState<TStep>(0);
+  const [walletAddress, setWalletAddress] = useState<string>(DEMO_ADDRESS);
   const [bindOpen, setBindOpen] = useState(false);
   const [buyOpen, setBuyOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  function handleConnect() {
+  function handleConnect(addr?: string) {
+    const resolved = addr ?? DEMO_ADDRESS;
+    setWalletAddress(resolved);
     setStep(1);
     setBindOpen(true);
   }
@@ -587,7 +616,7 @@ export default function Tutorial() {
   function handlePurchased(nodeId: NodeId) {
     setBuyOpen(false);
     setStep(3);
-    enterDemo(DEMO_ADDRESS, nodeId);
+    enterDemo(walletAddress, nodeId);
     setTimeout(() => navigate("/dashboard"), 1500);
   }
 
@@ -601,7 +630,13 @@ export default function Tutorial() {
     <div className="container mx-auto px-4 py-10 space-y-14 max-w-6xl">
 
       {/* ── Tutorial guide card ── */}
-      <GuideCard step={step} onConnect={handleConnect} onExit={handleExit} />
+      <GuideCard
+        step={step}
+        realAddress={account?.address}
+        connectedAddr={walletAddress}
+        onConnect={handleConnect}
+        onExit={handleExit}
+      />
 
       {/* ── Hero ── */}
       <motion.div
