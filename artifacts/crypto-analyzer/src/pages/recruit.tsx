@@ -422,7 +422,7 @@ export default function Recruit() {
               className="absolute inset-0 rounded-full shadow-[0_0_20px_4px_rgba(251,191,36,0.5)] pointer-events-none"
             />
             <Zap className="h-3.5 w-3.5 text-amber-400 relative z-10" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-300 relative z-10">
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-300 relative z-10 whitespace-nowrap">
               Node Recruitment · Open Now
             </span>
           </div>
