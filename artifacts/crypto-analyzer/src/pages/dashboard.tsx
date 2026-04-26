@@ -217,11 +217,11 @@ const HERO_THEME: Record<NodeId, {
   // gets the purple + strongest glow; GUARDIAN (10k) is amber; BUILDER
   // (5k) emerald; PIONEER (2.5k) blue. On-chain nodeIds 101 → STRATEGIC,
   // 201 → GUARDIAN — matching NODE_META.
-  501: { glow: "shadow-[0_0_80px_rgba(148,163,184,0.42)]",  ring: "border-slate-400/55",   from: "from-slate-800/60",   to: "to-slate-900/85", accent: "text-slate-300",   accentBright: "text-slate-100",   gradient: "from-slate-400/32 via-slate-600/10 to-transparent",   rgb: "148, 163, 184", chip: "bg-slate-500/15 border-slate-400/50 text-slate-100" },
-  401: { glow: "shadow-[0_0_80px_rgba(96,165,250,0.52)]",   ring: "border-blue-400/55",    from: "from-blue-900/55",    to: "to-slate-900/85", accent: "text-blue-300",    accentBright: "text-blue-100",    gradient: "from-blue-400/36 via-blue-600/10 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/15 border-blue-400/50 text-blue-100" },
-  301: { glow: "shadow-[0_0_80px_rgba(52,211,153,0.48)]",   ring: "border-emerald-400/55", from: "from-emerald-900/55", to: "to-slate-900/85", accent: "text-emerald-300", accentBright: "text-emerald-100", gradient: "from-emerald-400/36 via-emerald-600/10 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/15 border-emerald-400/50 text-emerald-100" },
-  201: { glow: "shadow-[0_0_80px_rgba(251,191,36,0.54)]",   ring: "border-amber-400/60",   from: "from-amber-900/55",   to: "to-slate-900/85", accent: "text-amber-300",   accentBright: "text-amber-100",   gradient: "from-amber-400/40 via-amber-600/10 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/15 border-amber-400/55 text-amber-100" },
-  101: { glow: "shadow-[0_0_80px_rgba(192,132,252,0.58)]",  ring: "border-purple-400/65",  from: "from-purple-900/55",  to: "to-slate-900/85", accent: "text-purple-300",  accentBright: "text-purple-100",  gradient: "from-purple-400/44 via-purple-600/12 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/15 border-purple-400/55 text-purple-100" },
+  501: { glow: "shadow-[0_0_120px_rgba(148,163,184,0.65)]",  ring: "border-slate-400/70",   from: "from-slate-800/70",   to: "to-slate-900/95", accent: "text-slate-300",   accentBright: "text-slate-100",   gradient: "from-slate-400/50 via-slate-600/18 to-transparent",   rgb: "148, 163, 184", chip: "bg-slate-500/25 border-slate-400/65 text-slate-100" },
+  401: { glow: "shadow-[0_0_120px_rgba(96,165,250,0.72)]",   ring: "border-blue-400/70",    from: "from-blue-900/65",    to: "to-slate-900/95", accent: "text-blue-300",    accentBright: "text-blue-100",    gradient: "from-blue-400/55 via-blue-600/18 to-transparent",    rgb: "96, 165, 250",  chip: "bg-blue-500/25 border-blue-400/65 text-blue-100" },
+  301: { glow: "shadow-[0_0_120px_rgba(52,211,153,0.68)]",   ring: "border-emerald-400/70", from: "from-emerald-900/65", to: "to-slate-900/95", accent: "text-emerald-300", accentBright: "text-emerald-100", gradient: "from-emerald-400/55 via-emerald-600/18 to-transparent", rgb: "52, 211, 153",  chip: "bg-emerald-500/25 border-emerald-400/65 text-emerald-100" },
+  201: { glow: "shadow-[0_0_120px_rgba(251,191,36,0.75)]",   ring: "border-amber-400/75",   from: "from-amber-900/65",   to: "to-slate-900/95", accent: "text-amber-300",   accentBright: "text-amber-100",   gradient: "from-amber-400/58 via-amber-600/18 to-transparent",   rgb: "251, 191, 36",  chip: "bg-amber-500/25 border-amber-400/70 text-amber-100" },
+  101: { glow: "shadow-[0_0_120px_rgba(192,132,252,0.78)]",  ring: "border-purple-400/80",  from: "from-purple-900/65",  to: "to-slate-900/95", accent: "text-purple-300",  accentBright: "text-purple-100",  gradient: "from-purple-400/62 via-purple-600/20 to-transparent",  rgb: "192, 132, 252", chip: "bg-purple-500/25 border-purple-400/70 text-purple-100" },
 };
 
 /** Unified easing — every dashboard entrance + hover rides this curve so
@@ -244,7 +244,18 @@ function CountUp({ to, fmt }: { to: number; fmt?: (n: number) => string }) {
 export default function Dashboard() {
   const { t } = useLanguage();
   const account = useActiveAccount();
-  const { isDemoMode, demoAddress, demoNodeId: demoPurchasedNodeId, exitDemo } = useDemoStore();
+  const { isDemoMode, demoAddress, demoNodeId: demoPurchasedNodeId, exitDemo, enterDemo } = useDemoStore();
+  // Auto-activate demo mode when ?demo=<nodeId> URL param is present.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const d = p.get("demo");
+    if (d && !isDemoMode) {
+      const id = parseInt(d) as NodeId;
+      if ([101, 201, 301, 401, 501].includes(id))
+        enterDemo("0xdemo00000000000000000000000000000000000", id);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // In demo mode use the demo address; otherwise use the real connected wallet.
   const address = isDemoMode ? (demoAddress ?? undefined) : account?.address;
   const [, navigate] = useLocation();
@@ -437,9 +448,9 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.08, ease: EASE }}
-              className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-foreground/60"
+              className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-amber-300/80"
             >
-              <Sparkles className="h-3 w-3 text-amber-400/90" /> {t("mr.dash.hub")}
+              <Sparkles className="h-3 w-3 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.65)]" /> {t("mr.dash.hub")}
             </motion.span>
             {meta ? (
               <motion.div
@@ -448,11 +459,11 @@ export default function Dashboard() {
                 transition={{ duration: 0.45, delay: 0.14, ease: EASE }}
                 className="space-y-1"
               >
-                <p className={`text-[11px] font-mono uppercase tracking-[0.32em] ${meta.color} drop-shadow-[0_0_12px_rgba(var(--tier-rgb),0.35)]`}>{meta.nameEn}</p>
+                <p className={`text-[11px] font-mono uppercase tracking-[0.32em] ${meta.color} drop-shadow-[0_0_18px_rgba(var(--tier-rgb),0.65)]`}>{meta.nameEn}</p>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-none">
                   <span
                     className={theme.accent}
-                    style={{ textShadow: `0 0 32px rgba(${theme.rgb}, 0.35)` }}
+                    style={{ textShadow: `0 0 48px rgba(${theme.rgb}, 0.7), 0 0 20px rgba(${theme.rgb}, 0.4)` }}
                   >
                     {meta.nameCn}
                   </span>
@@ -490,7 +501,7 @@ export default function Dashboard() {
                 <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/85">{t("mr.dash.owned.paid")}</p>
                 <p
                   className={`num text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
-                  style={{ textShadow: `0 0 24px rgba(${theme.rgb}, 0.4)` }}
+                  style={{ textShadow: `0 0 36px rgba(${theme.rgb}, 0.65), 0 0 16px rgba(${theme.rgb}, 0.4)` }}
                 >
                   $<CountUp
                     to={ownedAmount ? Number(ownedAmount) / 1e18 : meta.priceUsdt}
@@ -514,7 +525,7 @@ export default function Dashboard() {
         transition={{ duration: 0.9, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="flex items-center gap-3"
       >
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/70 to-transparent" />
         <motion.span
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
@@ -638,7 +649,7 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
       style={{ ["--tier-rgb" as string]: theme.rgb }}
       className={`surface-3d surface-3d-tinted relative overflow-hidden bg-gradient-to-br ${theme.from} ${theme.to} border ${theme.ring}`}
     >
-      <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none`} />
+      <div className={`absolute -top-20 -right-20 w-72 h-72 rounded-full bg-gradient-to-br ${theme.gradient} blur-3xl pointer-events-none opacity-90`} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_55%)] pointer-events-none" />
       <CardHeader className="pb-3 border-b border-border/40 relative z-10">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -746,26 +757,26 @@ function BenefitRow({
       style={highlight ? { ["--tier-rgb" as string]: theme.rgb } : undefined}
       className={`relative rounded-xl border p-3 overflow-hidden transition-colors duration-300 ${
         highlight
-          ? "surface-3d surface-3d-tinted border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01]"
-          : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20"
+          ? "surface-3d surface-3d-tinted border-white/20 bg-gradient-to-br from-white/[0.07] to-white/[0.02]"
+          : "border-white/12 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25"
       }`}
     >
       {highlight && (
         <div
           aria-hidden
-          className="absolute inset-0 pointer-events-none opacity-60"
+          className="absolute inset-0 pointer-events-none opacity-80"
           style={{
-            background: `radial-gradient(circle at 85% -20%, rgba(${theme.rgb}, 0.15), transparent 55%)`,
+            background: `radial-gradient(circle at 85% -20%, rgba(${theme.rgb}, 0.28), transparent 55%)`,
           }}
         />
       )}
-      <div className="relative flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/75 mb-1.5">
-        <Icon className={`h-3 w-3 ${highlight ? theme.accent : "text-muted-foreground/80"}`} />
+      <div className="relative flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80 mb-1.5">
+        <Icon className={`h-3 w-3 ${highlight ? theme.accent : "text-muted-foreground/80"}`} style={highlight ? { filter: `drop-shadow(0 0 6px rgba(${theme.rgb}, 0.5))` } : undefined} />
         <span>{label}</span>
       </div>
       <div
         className={`relative text-xl font-bold tabular-nums num ${highlight ? theme.accentBright : "text-foreground"}`}
-        style={highlight ? { textShadow: `0 0 18px rgba(${theme.rgb}, 0.35)` } : undefined}
+        style={highlight ? { textShadow: `0 0 24px rgba(${theme.rgb}, 0.6), 0 0 10px rgba(${theme.rgb}, 0.35)` } : undefined}
       >
         {value}
       </div>
@@ -956,10 +967,11 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             </div>
             <div className="space-y-1.5">
               {AIRDROP_BATCHES.map((b, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-md border border-border/30 bg-card/25 px-3 py-2">
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400/90 w-12 shrink-0">{t(b.titleKey)}</span>
-                  <span className="text-base font-bold tabular-nums text-amber-300 w-10 shrink-0">{b.pct}%</span>
-                  <p className="text-[11px] text-muted-foreground/85 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
+                <div key={i} className="flex items-center gap-3 rounded-md border border-amber-500/28 bg-gradient-to-r from-amber-950/30 to-card/15 px-3 py-2 relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-amber-400/70 via-amber-500/50 to-amber-600/30 rounded-l pointer-events-none" />
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)] w-12 shrink-0">{t(b.titleKey)}</span>
+                  <span className="text-base font-bold tabular-nums text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.55)] w-10 shrink-0">{b.pct}%</span>
+                  <p className="text-[11px] text-muted-foreground/90 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
                 </div>
               ))}
             </div>
@@ -983,19 +995,19 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
           {/* Your weight + network share prominent — this is the "you"
               side of the `userReward = (yourWeight / totalWeight) × pool`
               equation from the spec. */}
-          <div className="rounded-lg border border-amber-500/30 bg-gradient-to-br from-amber-950/25 to-transparent p-3">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-amber-300/85 mb-2">
+          <div className="rounded-lg border border-amber-500/45 bg-gradient-to-br from-amber-950/40 to-transparent p-3 shadow-[inset_0_1px_0_rgba(251,191,36,0.18),0_0_20px_rgba(251,191,36,0.08)]">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)] mb-2">
               {t("mr.dash.benefits.poolShareTitle")}
             </div>
             <div className="space-y-2 tabular-nums">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
-                  <div className={`text-2xl font-bold ${theme.accentBright}`}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
+                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
+                  <div className={`text-2xl font-bold ${theme.accentBright}`} style={{ textShadow: `0 0 20px rgba(${theme.rgb}, 0.5)` }}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
-                  <div className="text-2xl font-bold text-foreground">{weight?.share ?? "—"}</div>
+                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
+                  <div className="text-2xl font-bold text-white">{weight?.share ?? "—"}</div>
                 </div>
               </div>
               {meta && (
@@ -1019,14 +1031,14 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
               {SIX_STREAMS.map((s, i) => (
                 <div
                   key={s.key}
-                  className="flex items-center gap-2 rounded-md border border-border/30 bg-card/30 px-2 py-1.5"
+                  className="flex items-center gap-2 rounded-md border border-amber-500/22 bg-gradient-to-r from-amber-950/20 to-card/20 px-2 py-1.5 hover:border-amber-500/40 hover:from-amber-950/35 transition-colors duration-300"
                 >
-                  <span className="shrink-0 h-5 w-5 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[10px] font-mono text-amber-300 tabular-nums">
+                  <span className="shrink-0 h-5 w-5 rounded-full bg-amber-500/22 border border-amber-500/50 flex items-center justify-center text-[10px] font-mono text-amber-300 tabular-nums drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]">
                     {i + 1}
                   </span>
                   <div className="min-w-0 leading-tight">
-                    <div className="text-[11px] font-semibold text-foreground/90">{t(s.shortKey)}</div>
-                    <div className="text-[10px] text-muted-foreground/75">{t(s.tagKey)}</div>
+                    <div className="text-[11px] font-semibold text-foreground">{t(s.shortKey)}</div>
+                    <div className="text-[10px] text-muted-foreground/80">{t(s.tagKey)}</div>
                   </div>
                 </div>
               ))}
@@ -1102,11 +1114,12 @@ function BenefitGroup({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/65 to-slate-900/90 border-amber-500/30">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.09),transparent_55%)] pointer-events-none" />
-        <CardHeader className="pb-3 border-b border-border/30 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/80 to-slate-950/95 border-amber-500/45">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_55%)] pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent pointer-events-none" />
+        <CardHeader className="pb-3 border-b border-amber-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
           <div className="flex items-center gap-2 min-w-0">
-            <Icon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.45)] shrink-0" />
+            <Icon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)] shrink-0" />
             <span className="text-sm font-semibold text-foreground truncate">{title}</span>
             {subtitle && (
               <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70 hidden sm:inline truncate">{subtitle}</span>
@@ -1243,10 +1256,10 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               </span>
             </div>
             <div className="flex items-baseline gap-2 tabular-nums mb-2">
-              <span className="text-2xl font-bold text-foreground">
+              <span className="text-2xl font-bold text-emerald-200 drop-shadow-[0_0_14px_rgba(52,211,153,0.5)]">
                 $<CountUp to={totalRaised} fmt={formatShortUsd} />
               </span>
-              <span className="text-xs text-muted-foreground/65">
+              <span className="text-xs text-muted-foreground/70">
                 / ${formatShortUsd(fundraiseCap)} USDT
               </span>
             </div>
@@ -1268,12 +1281,12 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
           </div>
 
           {/* Projected initial TLP once the raise fills */}
-          <div className="rounded-md border border-cyan-500/20 bg-cyan-950/15 p-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <div className="rounded-md border border-cyan-500/35 bg-cyan-950/25 p-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 shadow-[inset_0_1px_0_rgba(34,211,238,0.15)]">
             <div className="min-w-0">
-              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyan-300/85 mb-0.5">
+              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.4)] mb-0.5">
                 {fundraiseComplete ? t("mr.dash.pool.tlpInitial") : t("mr.dash.pool.tlpProjected")}
               </div>
-              <div className="text-base font-bold tabular-nums text-cyan-200">
+              <div className="text-base font-bold tabular-nums text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]">
                 ${formatShortUsd(fundraiseComplete ? tlpInitial : projectedTlp)} USDT
               </div>
             </div>
@@ -1338,12 +1351,12 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                 return (
                   <div
                     key={i}
-                    className={`rounded-md border p-2.5 transition-colors ${
+                    className={`rounded-md border p-2.5 transition-colors relative overflow-hidden ${
                       unlocked
-                        ? "border-emerald-500/50 bg-emerald-950/25"
+                        ? "border-emerald-500/60 bg-emerald-950/35 shadow-[inset_0_1px_0_rgba(52,211,153,0.2)]"
                         : isNext
-                        ? "border-amber-500/50 bg-amber-950/20 ring-1 ring-amber-500/20"
-                        : "border-border/30 bg-card/25"
+                        ? "border-amber-500/60 bg-amber-950/30 ring-1 ring-amber-500/30 shadow-[0_0_16px_rgba(251,191,36,0.15)]"
+                        : "border-border/35 bg-card/30"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
@@ -1367,14 +1380,14 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                       </span>
                     </div>
                     <div className="flex items-baseline gap-1 tabular-nums">
-                      <span className="text-lg font-bold text-foreground">
+                      <span className={`text-lg font-bold ${unlocked ? "text-emerald-200 drop-shadow-[0_0_10px_rgba(52,211,153,0.55)]" : isNext ? "text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" : "text-foreground/80"}`}>
                         {stage.pct}%
                       </span>
                       <span className="text-[10px] text-muted-foreground/65">
                         {t("mr.dash.pool.airdropRelease")}
                       </span>
                     </div>
-                    <div className="text-[10px] text-muted-foreground/75 tabular-nums mt-0.5">
+                    <div className={`text-[10px] tabular-nums mt-0.5 ${unlocked ? "text-emerald-400/80" : isNext ? "text-amber-400/80" : "text-muted-foreground/75"}`}>
                       TLP ≥ ${stage.tlpM}M
                     </div>
                     <div className="text-[9px] text-muted-foreground/55 mt-1">
@@ -1393,9 +1406,9 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               viewer actually holds a node; otherwise there's nothing to
               project, so we hide the panel instead of rendering zeros. */}
           {userAirdrop && userTierMeta && (
-            <div className="rounded-lg border border-amber-500/35 bg-gradient-to-br from-amber-950/30 via-amber-950/10 to-transparent p-3.5 space-y-3">
+            <div className="rounded-lg border border-amber-500/55 bg-gradient-to-br from-amber-950/45 via-amber-950/15 to-transparent p-3.5 space-y-3 shadow-[0_0_20px_rgba(251,191,36,0.1),inset_0_1px_0_rgba(251,191,36,0.2)]">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300/90">
+                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">
                   {t("mr.dash.pool.nextStageTitle")}
                 </span>
                 <span className="text-[9px] font-mono uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-950/40 text-amber-300 shrink-0">
@@ -1591,10 +1604,17 @@ function BenefitCell({
   highlight?: boolean;
 }) {
   return (
-    <div className="rounded-md border border-border/30 bg-card/25 p-2.5">
+    <div className={`rounded-md border p-2.5 ${
+      highlight
+        ? "border-amber-500/40 bg-gradient-to-br from-amber-950/30 to-card/20 shadow-[inset_0_1px_0_rgba(251,191,36,0.15)]"
+        : "border-border/35 bg-card/30"
+    }`}>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground/80 mb-1">{label}</div>
-      <div className={`text-lg font-bold tabular-nums leading-tight ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}>{value}</div>
-      {sub && <div className="text-[10px] text-muted-foreground/65 mt-0.5">{sub}</div>}
+      <div
+        className={`text-lg font-bold tabular-nums leading-tight ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}
+        style={highlight ? { textShadow: "0 0 18px rgba(251,191,36,0.5)" } : undefined}
+      >{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground/70 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -1627,12 +1647,13 @@ function OverviewTab({ address }: { address: string }) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.02, ease: EASE }}>
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/60 to-slate-900/85 border-amber-500/35">
-            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/30 via-amber-600/12 to-transparent blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
-            <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/70 to-slate-900/95 border-amber-500/50">
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/40 via-amber-600/20 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_55%)] pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/55 to-transparent pointer-events-none" />
+            <CardHeader className="pb-3 border-b border-amber-500/20 relative z-10">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <LinkIcon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+                <LinkIcon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]" />
                 {t("mr.dash.ref.title")}
               </CardTitle>
             </CardHeader>
@@ -1765,12 +1786,13 @@ function TeamTab({ address }: { address: string }) {
         <TierCompositionChart stats={rootStats} />
       )}
 
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-        <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
-        <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+        <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-amber-500/20 via-transparent to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
+        <CardHeader className="pb-3 border-b border-amber-500/15 relative z-10">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Users className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> {t("mr.dash.team.treeTitle")}
+            <Users className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)]" /> {t("mr.dash.team.treeTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4 space-y-4 relative z-10">
@@ -1991,12 +2013,13 @@ function RewardsTab({ address }: { address: string }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.18, ease: EASE }}
         >
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-            <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/8 via-transparent to-transparent blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
-            <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+            <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/20 via-transparent to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
+            <CardHeader className="pb-3 border-b border-amber-500/15 relative z-10">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> {t("mr.dash.reward.monthlyTitle")}
+                <TrendingUp className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)]" /> {t("mr.dash.reward.monthlyTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 relative z-10">
@@ -2014,11 +2037,13 @@ function RewardsTab({ address }: { address: string }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.24, ease: EASE }}
       >
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.04),transparent_55%)] pointer-events-none" />
-          <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+          <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/15 via-transparent to-transparent blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.10),transparent_55%)] pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
+          <CardHeader className="pb-3 border-b border-amber-500/15 relative z-10">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Gift className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> {t("mr.dash.reward.listTitle")}
+              <Gift className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)]" /> {t("mr.dash.reward.listTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4 relative z-10 space-y-3">
@@ -2334,13 +2359,14 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.22, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/15">
-        <div className="absolute -top-20 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_55%)] pointer-events-none" />
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+        <div className="absolute -top-20 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/22 via-transparent to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
 
-        <CardHeader className="pb-3 border-b border-border/40 relative z-10">
+        <CardHeader className="pb-3 border-b border-amber-500/15 relative z-10">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Coins className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+            <Coins className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)]" />
             {t("mr.dash.team.compTitle")}
             <span className="text-[10px] font-mono text-muted-foreground/80 tabular-nums ml-1">
               {total} {t("mr.dash.team.compTotal")}
@@ -2454,8 +2480,8 @@ function Kpi({
       whileHover={{ y: -3 }}
       className={`group relative border rounded-xl p-4 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
         highlight
-          ? "border-amber-500/40 bg-gradient-to-br from-amber-950/30 via-slate-900/80 to-slate-950/90 hover:border-amber-400/60 hover:shadow-[0_0_28px_rgba(251,191,36,0.25),inset_0_1px_0_rgba(251,191,36,0.15)]"
-          : "border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-950/85 hover:border-white/25 hover:bg-slate-900/80"
+          ? "border-amber-500/55 bg-gradient-to-br from-amber-950/40 via-slate-900/80 to-slate-950/90 hover:border-amber-400/75 hover:shadow-[0_0_36px_rgba(251,191,36,0.35),inset_0_1px_0_rgba(251,191,36,0.2)]"
+          : "border-white/15 bg-gradient-to-br from-slate-800/60 to-slate-900/85 hover:border-amber-500/20 hover:shadow-[0_0_20px_rgba(251,191,36,0.08)]"
       }`}
     >
       {/* Hover glow aurora — appears behind content on hover */}
@@ -2463,14 +2489,14 @@ function Kpi({
         aria-hidden
         className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${
           highlight
-            ? "bg-[radial-gradient(circle_at_75%_-20%,rgba(251,191,36,0.18),transparent_55%)]"
-            : "bg-[radial-gradient(circle_at_75%_-20%,rgba(255,255,255,0.06),transparent_55%)]"
+            ? "bg-[radial-gradient(circle_at_75%_-20%,rgba(251,191,36,0.22),transparent_55%)]"
+            : "bg-[radial-gradient(circle_at_75%_-20%,rgba(251,191,36,0.08),transparent_55%)]"
         }`}
       />
       <div className="relative flex items-center justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/85">{label}</span>
         {Icon && (
-          <Icon className={`h-3.5 w-3.5 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]" : "text-muted-foreground/55 group-hover:text-foreground/80"}`} />
+          <Icon className={`h-3.5 w-3.5 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-muted-foreground/60 group-hover:text-amber-400/70"}`} />
         )}
       </div>
       <div className={`relative text-xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>

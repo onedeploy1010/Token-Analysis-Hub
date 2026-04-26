@@ -358,6 +358,7 @@ const zh: Dict = {
   "mr.dash.benefits.subLaunch": "子币 符火 · 开盘价",
   "mr.dash.benefits.airdropSection": "母币空投 · 四阶段达标解锁",
   "mr.dash.benefits.poolSourcesTitle": "收益来源 · 六脉常态分红",
+  "mr.dash.owned.tier": "你的节点等级",
   "mr.dash.benefits.poolShareTitle": "你在分红池的占比",
   "mr.dash.benefits.poolFormula": "你的分红 = (你的权重 / 全网总权重) × 分红池",
   "mr.dash.benefits.groupOther": "其他权益",

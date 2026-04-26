@@ -358,6 +358,7 @@ const en: Dict = {
   "mr.dash.benefits.subLaunch": "Sub-token 符火 · launch",
   "mr.dash.benefits.airdropSection": "Mother-token airdrop · 4-stage unlock",
   "mr.dash.benefits.poolSourcesTitle": "Pool sources · Six-stream dividend",
+  "mr.dash.owned.tier": "Your Node Tier",
   "mr.dash.benefits.poolShareTitle": "Your share of the pool",
   "mr.dash.benefits.poolFormula": "your reward = (your weight / total weight) × pool",
   "mr.dash.benefits.groupOther": "Other Benefits",
