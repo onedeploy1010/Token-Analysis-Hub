@@ -7,6 +7,7 @@ import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
   TrendingUp, Wallet, Link as LinkIcon, Gift, ChevronRight, Sparkles,
   Coins, DollarSign, Search, ArrowUp, ArrowDown, Zap, FlaskConical, X,
+  Megaphone, Code2, Bot, BarChart3,
 } from "lucide-react";
 import { useDemoStore } from "@/lib/demo-store";
 import {
@@ -682,12 +683,47 @@ const SIX_STREAMS = [
  *  The core-pool access row was moved into its own dedicated Genesis card
  *  since the Genesis (L5) path is now the sole route to pool share. */
 const PLATFORM_FEATURES = [
-  { labelKey: "mr.dash.benefits.feat.promo", all: true, strategicBoost: false },
-  { labelKey: "mr.dash.benefits.feat.api",   all: true, strategicBoost: true  },
-  { labelKey: "mr.dash.benefits.feat.ai",    all: true, strategicBoost: true  },
-  { labelKey: "mr.dash.benefits.feat.pred",  all: true, strategicBoost: true  },
-  { labelKey: "mr.dash.benefits.feat.quant", all: true, strategicBoost: true  },
-] as const;
+  {
+    labelKey: "mr.dash.benefits.feat.promo",
+    icon: Megaphone,
+    all: true, strategicBoost: false,
+    iconCls:   "text-cyan-400",
+    glowFrom:  "from-cyan-500/10",
+    borderCls: "border-cyan-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.api",
+    icon: Code2,
+    all: true, strategicBoost: true,
+    iconCls:   "text-blue-400",
+    glowFrom:  "from-blue-500/10",
+    borderCls: "border-blue-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.ai",
+    icon: Bot,
+    all: true, strategicBoost: true,
+    iconCls:   "text-purple-400",
+    glowFrom:  "from-purple-500/10",
+    borderCls: "border-purple-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.pred",
+    icon: BarChart3,
+    all: true, strategicBoost: true,
+    iconCls:   "text-amber-400",
+    glowFrom:  "from-amber-500/10",
+    borderCls: "border-amber-500/20",
+  },
+  {
+    labelKey: "mr.dash.benefits.feat.quant",
+    icon: Coins,
+    all: true, strategicBoost: true,
+    iconCls:   "text-emerald-400",
+    glowFrom:  "from-emerald-500/10",
+    borderCls: "border-emerald-500/20",
+  },
+];
 
 /* ─────────────────────────────────────────────────────────────────────────
    Benefits section — full member-doc digest laid out as 4 grouped cards:
@@ -793,17 +829,19 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             <div className="text-[10px] uppercase tracking-[0.22em] text-amber-300/85 mb-2">
               {t("mr.dash.benefits.poolShareTitle")}
             </div>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 tabular-nums">
-              <div>
-                <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
-                <div className={`text-2xl font-bold ${theme.accentBright}`}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
-                <div className="text-2xl font-bold text-foreground">{weight?.share ?? "—"}</div>
+            <div className="space-y-2 tabular-nums">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
+                  <div className={`text-2xl font-bold ${theme.accentBright}`}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
+                  <div className="text-2xl font-bold text-foreground">{weight?.share ?? "—"}</div>
+                </div>
               </div>
               {meta && (
-                <div className="flex-1 min-w-0 text-right">
+                <div>
                   <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.owned.tier")}</div>
                   <div className={`text-sm font-semibold ${meta.color}`}>{meta.nameEn} · {meta.nameCn}</div>
                 </div>
@@ -842,19 +880,33 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
       {/* ── 4. 平台功能 ── API / AI / predict / quant. STRATEGIC tier
              gets a 1.5× quota boost on the marked rows. */}
       <BenefitGroup icon={Sparkles} title={t("mr.dash.benefits.groupFeatures")} subtitle="PLATFORM FEATURES" delay={0.12}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-          {PLATFORM_FEATURES.map((f) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {PLATFORM_FEATURES.map((f, idx) => {
             const available = f.all || (isStrategic && (f as any).strategicOnly);
             const boosted = f.strategicBoost && isStrategic;
+            const Icon = f.icon;
             return (
-              <div key={f.labelKey} className="flex items-center gap-2.5 rounded-md border border-border/30 bg-card/25 px-2.5 py-1.5">
-                <span className={`text-xs shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/50"}`}>
-                  {available ? "✓" : "—"}
-                </span>
-                <p className="text-[11px] text-foreground/90 flex-1 min-w-0">{t(f.labelKey)}</p>
+              <div
+                key={f.labelKey}
+                className={`relative rounded-xl border bg-gradient-to-br ${f.glowFrom} to-transparent p-3 overflow-hidden transition-opacity
+                  ${f.borderCls}
+                  ${!available ? "opacity-40 grayscale" : ""}
+                  ${idx === 4 ? "sm:col-span-1 col-span-2" : ""}`}
+              >
                 {boosted && (
-                  <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-purple-300 shrink-0">×1.5</span>
+                  <span className="absolute top-2 right-2 text-[8px] font-mono tracking-widest text-purple-300 bg-purple-950/70 border border-purple-500/30 rounded-full px-1.5 py-0.5 leading-none">
+                    ×1.5
+                  </span>
                 )}
+                <div className={`mb-2 ${f.iconCls}`}>
+                  <Icon className="h-5 w-5 drop-shadow-[0_0_6px_currentColor]" />
+                </div>
+                <p className="text-[11px] font-medium text-foreground/90 leading-snug pr-1">
+                  {t(f.labelKey)}
+                </p>
+                <div className={`mt-2 text-[9px] font-mono uppercase tracking-[0.18em] ${available ? "text-emerald-400/80" : "text-muted-foreground/40"}`}>
+                  {available ? "● ACTIVE" : "○ LOCKED"}
+                </div>
               </div>
             );
           })}

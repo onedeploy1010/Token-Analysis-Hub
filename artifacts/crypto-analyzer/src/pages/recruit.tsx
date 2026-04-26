@@ -210,21 +210,16 @@ export default function Recruit() {
   const nodes = overview?.nodes ?? [];
 
   return (
-    <div className="container mx-auto px-4 py-10 space-y-14 max-w-6xl">
+    <div className="container mx-auto px-4 py-6 sm:py-10 space-y-10 sm:space-y-14 max-w-6xl">
 
       {/* ── Demo banner ── */}
       {isDemoMode && (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-300">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-300">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <FlaskConical className="h-4 w-4 shrink-0" />
-            <span className="font-medium">教学模式 Tutorial</span>
-            {demoNodeId && (
-              <span className="text-cyan-400/60 hidden sm:inline">
-                — 模拟持有节点 #{demoNodeId}
-              </span>
-            )}
+            <span className="font-medium truncate">教学模式 Tutorial</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => navigate("/dashboard")}
@@ -235,9 +230,9 @@ export default function Recruit() {
             <button
               type="button"
               onClick={() => { exitDemo(); navigate("/demo"); }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 px-3 py-1 text-xs font-medium hover:bg-cyan-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 px-2 py-1 text-xs font-medium hover:bg-cyan-500/20 transition-colors"
             >
-              <X className="h-3 w-3" /> 退出
+              <X className="h-3 w-3" />
             </button>
           </div>
         </div>
@@ -248,7 +243,7 @@ export default function Recruit() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55 }}
-        className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md px-6 py-10 md:px-12 md:py-14 shadow-[0_8px_48px_rgba(0,0,0,0.5)] text-center"
+        className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md px-5 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14 shadow-[0_8px_48px_rgba(0,0,0,0.5)] text-center"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none" />
         <div className="absolute -top-32 -right-32 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
@@ -267,27 +262,27 @@ export default function Recruit() {
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground leading-tight mb-4">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight mb-3">
             {showZh ? "符·节点权柄重铸" : "Node Tier Reforge"}
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-2">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-1.5">
             {showZh ? "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构" : "5-Tier Nodes · Dual-Token Deflation · Institutional Returns"}
           </p>
-          <p className="text-sm text-muted-foreground/60 max-w-xl mx-auto">
+          <p className="text-xs text-muted-foreground/50 max-w-xl mx-auto hidden sm:block">
             RUNE Protocol Node Recruitment · Five-Tier System · Dual-Token Deflationary Economy
           </p>
 
           {/* Global metric strip */}
-          <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/30">
+          <div className="mt-7 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-border/30">
             {[
               { en: "Total Seats",    zh: "总席位",     val: "2,420"  },
               { en: "Node Tiers",     zh: "节点等级",   val: "5"      },
               { en: "Opening Price",  zh: "开盘价",     val: "$0.028" },
               { en: "USDT APY",       zh: "年化收益率", val: "170.82%", gold: true },
             ].map(({ en, zh, val, gold }) => (
-              <div key={en} className="space-y-1">
+              <div key={en} className="space-y-0.5">
                 <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/50 font-medium">{en}</div>
-                <div className={`text-2xl sm:text-3xl font-bold leading-none ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
+                <div className={`text-xl sm:text-3xl font-bold leading-none tabular-nums ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
                 {showZh && <div className="text-[10px] text-muted-foreground/65">{zh}</div>}
               </div>
             ))}
@@ -328,7 +323,12 @@ export default function Recruit() {
           <div className="h-px flex-1 bg-border/30" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+        {/* On mobile: horizontal snap-scroll strip so all 5 cards are
+            reachable without 5× full-width stacks. Larger viewports get
+            the regular grid. */}
+        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 -mx-4 px-4
+                        sm:mx-0 sm:px-0 sm:overflow-visible sm:pb-0
+                        sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {isLoading && nodes.length === 0
             ? Array.from({ length: 5 }).map((_, i) => <NodeCardSkeleton key={i} />)
             : TIER_ORDER.map((nodeId, i) => {
@@ -370,7 +370,7 @@ export default function Recruit() {
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, delay: i * 0.1 }}
-                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[level]} ${NODE_GLOW[level]}`}
+                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 shrink-0 w-[78vw] max-w-[300px] snap-center sm:w-auto sm:max-w-none ${NODE_BG[level]} ${NODE_GLOW[level]}`}
                   >
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
@@ -461,7 +461,7 @@ export default function Recruit() {
           </h2>
           <div className="h-px flex-1 bg-border/30" />
         </div>
-        <div className="relative overflow-hidden rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-950/50 via-purple-950/30 to-amber-950/15 p-6 md:p-8">
+        <div className="relative overflow-hidden rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-950/50 via-purple-950/30 to-amber-950/15 p-5 sm:p-6 md:p-8">
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.15),transparent_55%)]" />
           <div className="relative space-y-5">
             <div className="flex items-center gap-3">
@@ -587,27 +587,29 @@ export default function Recruit() {
           <div className="h-px flex-1 bg-border/30" />
         </div>
 
+        {/* Mobile: vertical list with step number inline (left-aligned).
+            Desktop: 4-column centered grid with the classic divider line. */}
         <div className="relative">
-          {/* Timeline line */}
           <div className="hidden md:block absolute left-1/2 -translate-x-px top-8 bottom-8 w-px bg-border/30" />
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-4 md:gap-6">
             {STEPS.map((step, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.12, duration: 0.4 }}
-                className="flex flex-col items-center text-center gap-3"
+                className="flex flex-row items-start gap-4 rounded-xl border border-border/25 bg-card/20 p-4
+                           md:flex-col md:items-center md:text-center md:rounded-none md:border-0 md:bg-transparent md:p-0 md:gap-3"
               >
-                <div className="relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 border-amber-500/50 bg-amber-950/60 text-amber-400 font-bold text-sm shadow-[0_0_20px_rgba(251,191,36,0.15)]">
+                <div className="relative z-10 flex items-center justify-center w-10 h-10 shrink-0 rounded-full border-2 border-amber-500/50 bg-amber-950/60 text-amber-400 font-bold text-sm shadow-[0_0_20px_rgba(251,191,36,0.15)]">
                   {i + 1}
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className="font-bold text-foreground text-sm mb-0.5">{showZh ? step.zh : step.en}</div>
-                  {showZh && <div className="text-[10px] text-amber-400/70 uppercase tracking-wider mb-2">{step.en}</div>}
+                  {showZh && <div className="text-[10px] text-amber-400/70 uppercase tracking-wider mb-1.5">{step.en}</div>}
                   <p className="text-xs text-muted-foreground/70 leading-relaxed">{showZh ? step.descZh : step.descEn}</p>
-                  {showZh && <p className="text-[11px] text-muted-foreground/40 leading-relaxed mt-1">{step.descEn}</p>}
+                  {showZh && <p className="text-[11px] text-muted-foreground/40 leading-relaxed mt-1 hidden sm:block">{step.descEn}</p>}
                 </div>
               </motion.div>
             ))}
