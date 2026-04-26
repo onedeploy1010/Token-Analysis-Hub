@@ -771,32 +771,6 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             </div>
           </div>
 
-          {/* Direct commission matrix · per tier. Weight matrix was
-              removed here — it lives prominently on the dividend-pool
-              card with the formula, so duplicating it was noise. */}
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
-              {t("mr.dash.benefits.commTitle")}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              {([401, 301, 201, 101] as NodeId[]).map((id) => {
-                const m = NODE_META[id];
-                const th = HERO_THEME[id];
-                const pct = id === 401 ? 5 : id === 301 ? 8 : id === 201 ? 10 : 15;
-                const isSelf = id === ownedNodeId;
-                return (
-                  <div
-                    key={id}
-                    className={`rounded-md border p-2.5 ${isSelf ? `${th.ring} bg-gradient-to-br ${th.from} ${th.to}` : "border-border/30 bg-card/25"}`}
-                  >
-                    <div className={`text-[9px] font-mono uppercase tracking-[0.22em] ${m.color}`}>{m.nameEn}</div>
-                    <div className="text-[11px] font-semibold text-foreground/90 mt-0.5">{m.nameCn}</div>
-                    <div className={`num text-lg font-bold mt-1.5 tabular-nums ${th.accentBright}`}>{pct}%</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
       </BenefitGroup>
 
