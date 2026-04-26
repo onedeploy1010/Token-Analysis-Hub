@@ -125,18 +125,14 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
     isHex && !isSelf && !submitting &&
     (preCheck.state === "ok" || preCheck.state === "idle");
 
-  // The bind step is mandatory — connecting a wallet *is* registering as
-  // a member, and member registration requires a referrer. Suppress the
-  // implicit close-on-outside-click and remove the "Later" button so the
-  // user can't dismiss without finishing the binding.
+  // The bind step is required to use the app, but the user can back out:
+  // closing the modal (X, Escape, or outside click) disconnects the wallet
+  // via the parent's `onClose`, returning the UI to the unauthenticated
+  // "Connect Wallet" state. This avoids the soft-lock where a connected-
+  // but-unbound wallet was stuck staring at a non-dismissable dialog.
   return (
-    <Dialog open={open} onOpenChange={() => { /* no-op: bind is mandatory */ }}>
-      <DialogContent
-        className="bg-[#080f1e] border border-amber-700/30 max-w-md [&>button[aria-label='Close']]:hidden"
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-      >
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-md">
         <DialogHeader>
           <div className="inline-flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
