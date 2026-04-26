@@ -289,7 +289,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-300">
           <div className="flex items-center gap-2">
             <FlaskConical className="h-4 w-4 shrink-0" />
-            <span className="font-medium">测试模式 Demo Mode</span>
+            <span className="font-medium">教学模式 Tutorial</span>
             <span className="text-cyan-400/60 hidden sm:inline">— 当前地址：{address ? `${address.slice(0, 8)}…${address.slice(-6)}` : "—"}</span>
           </div>
           <button
