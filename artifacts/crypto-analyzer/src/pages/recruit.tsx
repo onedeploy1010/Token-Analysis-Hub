@@ -64,46 +64,53 @@ interface OnChainNodeConfig {
 
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
-  initial:  "from-slate-900/70 to-slate-800/20 border-slate-600/40",
-  mid:      "from-blue-950/70 to-blue-900/20 border-blue-700/40",
-  advanced: "from-green-950/70 to-green-900/20 border-green-700/40",
-  super:    "from-amber-950/70 to-amber-900/20 border-amber-700/40",
-  founder:  "from-purple-950/70 to-purple-900/20 border-purple-700/40",
+  initial:  "from-slate-900 to-slate-800/60 border-slate-400/50",
+  mid:      "from-blue-950 to-blue-800/40 border-blue-500/60",
+  advanced: "from-green-950 to-green-800/40 border-green-500/60",
+  super:    "from-amber-950 to-amber-800/40 border-amber-500/60",
+  founder:  "from-purple-950 to-purple-800/40 border-purple-500/60",
 };
 const NODE_ACCENT: Record<string, string> = {
-  initial:  "text-slate-300",
-  mid:      "text-blue-400",
-  advanced: "text-green-400",
-  super:    "text-amber-400",
-  founder:  "text-purple-400",
+  initial:  "text-slate-200",
+  mid:      "text-blue-300",
+  advanced: "text-green-300",
+  super:    "text-amber-300",
+  founder:  "text-purple-300",
 };
 const NODE_BADGE: Record<string, string> = {
-  initial:  "bg-slate-800/60 text-slate-200 border-slate-600/40",
-  mid:      "bg-blue-900/50 text-blue-300 border-blue-700/40",
-  advanced: "bg-green-900/50 text-green-300 border-green-700/40",
-  super:    "bg-amber-900/50 text-amber-300 border-amber-700/40",
-  founder:  "bg-purple-900/50 text-purple-300 border-purple-700/40",
+  initial:  "bg-slate-700/80 text-white border-slate-400/60 shadow-[0_0_8px_rgba(148,163,184,0.3)]",
+  mid:      "bg-blue-800/80 text-blue-100 border-blue-400/60 shadow-[0_0_8px_rgba(96,165,250,0.3)]",
+  advanced: "bg-green-800/80 text-green-100 border-green-400/60 shadow-[0_0_8px_rgba(74,222,128,0.3)]",
+  super:    "bg-amber-800/80 text-amber-100 border-amber-400/60 shadow-[0_0_8px_rgba(251,191,36,0.4)]",
+  founder:  "bg-purple-800/80 text-purple-100 border-purple-400/60 shadow-[0_0_8px_rgba(192,132,252,0.4)]",
 };
 const NODE_BTN: Record<string, string> = {
-  initial:  "bg-slate-600 hover:bg-slate-500 text-white",
-  mid:      "bg-blue-600 hover:bg-blue-500 text-white",
-  advanced: "bg-green-600 hover:bg-green-500 text-white",
-  super:    "bg-amber-600 hover:bg-amber-500 text-white",
-  founder:  "bg-purple-600 hover:bg-purple-500 text-white",
+  initial:  "bg-slate-500 hover:bg-slate-400 text-white shadow-[0_0_16px_rgba(148,163,184,0.35)]",
+  mid:      "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_16px_rgba(59,130,246,0.45)]",
+  advanced: "bg-green-600 hover:bg-green-500 text-white shadow-[0_0_16px_rgba(34,197,94,0.45)]",
+  super:    "bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_16px_rgba(251,191,36,0.55)]",
+  founder:  "bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_16px_rgba(168,85,247,0.55)]",
 };
 const NODE_GLOW: Record<string, string> = {
-  initial:  "shadow-[0_0_40px_rgba(148,163,184,0.12)]",
-  mid:      "shadow-[0_0_40px_rgba(59,130,246,0.15)]",
-  advanced: "shadow-[0_0_40px_rgba(34,197,94,0.15)]",
-  super:    "shadow-[0_0_40px_rgba(251,191,36,0.15)]",
-  founder:  "shadow-[0_0_40px_rgba(168,85,247,0.15)]",
+  initial:  "shadow-[0_0_48px_rgba(148,163,184,0.22),inset_0_1px_0_rgba(255,255,255,0.07)]",
+  mid:      "shadow-[0_0_48px_rgba(59,130,246,0.28),inset_0_1px_0_rgba(96,165,250,0.1)]",
+  advanced: "shadow-[0_0_48px_rgba(34,197,94,0.28),inset_0_1px_0_rgba(74,222,128,0.1)]",
+  super:    "shadow-[0_0_56px_rgba(251,191,36,0.32),inset_0_1px_0_rgba(251,191,36,0.12)]",
+  founder:  "shadow-[0_0_56px_rgba(168,85,247,0.35),inset_0_1px_0_rgba(192,132,252,0.12)]",
 };
 const NODE_PROGRESS_BAR: Record<string, string> = {
-  initial:  "[&>div]:bg-slate-400",
-  mid:      "[&>div]:bg-blue-500",
-  advanced: "[&>div]:bg-green-500",
-  super:    "[&>div]:bg-amber-500",
-  founder:  "[&>div]:bg-purple-500",
+  initial:  "[&>div]:bg-gradient-to-r [&>div]:from-slate-400 [&>div]:to-slate-300",
+  mid:      "[&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-blue-300",
+  advanced: "[&>div]:bg-gradient-to-r [&>div]:from-green-500 [&>div]:to-green-300",
+  super:    "[&>div]:bg-gradient-to-r [&>div]:from-amber-500 [&>div]:to-amber-300",
+  founder:  "[&>div]:bg-gradient-to-r [&>div]:from-purple-500 [&>div]:to-purple-300",
+};
+const NODE_TOP_GLOW: Record<string, string> = {
+  initial:  "from-slate-400/30 to-transparent",
+  mid:      "from-blue-400/40 to-transparent",
+  advanced: "from-green-400/40 to-transparent",
+  super:    "from-amber-400/50 to-transparent",
+  founder:  "from-purple-400/50 to-transparent",
 };
 
 interface FaqItem { q: LocaleMap; a: LocaleMap }
@@ -377,29 +384,49 @@ export default function Recruit() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55 }}
-        className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md px-5 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14 shadow-[0_8px_48px_rgba(0,0,0,0.5)] text-center"
+        className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-b from-zinc-900 to-black backdrop-blur-md px-5 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14 shadow-[0_0_80px_rgba(251,191,36,0.18),0_8px_48px_rgba(0,0,0,0.7)] text-center"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute -top-32 -right-32 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-blue-500/8 rounded-full blur-[80px] pointer-events-none" />
+        {/* Animated background orbs */}
+        <motion.div
+          animate={{ scale: [1, 1.12, 1], opacity: [0.28, 0.42, 0.28] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/30 rounded-full blur-[110px] pointer-events-none"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.18, 0.30, 0.18] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute -bottom-24 -left-24 w-80 h-80 bg-cyan-500/22 rounded-full blur-[100px] pointer-events-none"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.08, 1], opacity: [0.12, 0.22, 0.12] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-purple-600/15 rounded-full blur-[90px] pointer-events-none"
+        />
 
-        <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-primary/40 rounded-tl pointer-events-none" />
-        <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-primary/40 rounded-tr pointer-events-none" />
-        <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-primary/40 rounded-bl pointer-events-none" />
-        <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-primary/40 rounded-br pointer-events-none" />
+        {/* Corner brackets */}
+        <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-amber-400/60 rounded-tl pointer-events-none" />
+        <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-amber-400/60 rounded-tr pointer-events-none" />
+        <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-amber-400/60 rounded-bl pointer-events-none" />
+        <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-amber-400/60 rounded-br pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-900/20 px-4 py-1.5 mb-6">
+          <motion.div
+            animate={{ boxShadow: ["0 0 12px rgba(251,191,36,0.3)", "0 0 24px rgba(251,191,36,0.6)", "0 0 12px rgba(251,191,36,0.3)"] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            className="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-amber-950/60 px-4 py-1.5 mb-6"
+          >
             <Zap className="h-3.5 w-3.5 text-amber-400" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
+            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-300">
               Node Recruitment · Open Now
             </span>
-          </div>
+          </motion.div>
 
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight mb-3">
-            {tt({ zh: "符·节点权柄重铸", "zh-TW": "符·節點權柄重鑄", en: "Node Tier Reforge", ja: "符・ノード権限再構築", ko: "符・노드 권한 재구축", th: "การหลอมระดับโหนด · 符", vi: "Đúc lại Cấp Node · 符" })}
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-3">
+            <span className="bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
+              {tt({ zh: "符·节点权柄重铸", "zh-TW": "符·節點權柄重鑄", en: "Node Tier Reforge", ja: "符・ノード権限再構築", ko: "符・노드 권한 재구축", th: "การหลอมระดับโหนด · 符", vi: "Đúc lại Cấp Node · 符" })}
+            </span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-1.5">
+          <p className="text-sm sm:text-base text-zinc-300 max-w-2xl mx-auto leading-relaxed mb-1.5">
             {tt({
               zh: "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构",
               "zh-TW": "五級節點體系 · 雙TOKEN通縮經濟 · 機構級收益結構",
@@ -410,12 +437,12 @@ export default function Recruit() {
               vi: "Hệ thống 5 cấp · Kinh tế giảm phát hai token · Lợi suất cấp tổ chức",
             })}
           </p>
-          <p className="text-xs text-muted-foreground/50 max-w-xl mx-auto hidden sm:block">
+          <p className="text-xs text-zinc-500 max-w-xl mx-auto hidden sm:block">
             RUNE Protocol Node Recruitment · Five-Tier System · Dual-Token Deflationary Economy
           </p>
 
           {/* Global metric strip */}
-          <div className="mt-7 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-border/30">
+          <div className="mt-7 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-amber-500/20">
             {[
               { label: { en: "Total Seats",   zh: "总席位",     "zh-TW": "總席位",     ja: "総席数",       ko: "총 좌석",   th: "ที่นั่งทั้งหมด",   vi: "Tổng số ghế" },     val: "2,420"  },
               { label: { en: "Node Tiers",    zh: "节点等级",   "zh-TW": "節點等級",   ja: "ノード等級",   ko: "노드 등급", th: "ระดับโหนด",       vi: "Cấp node"     },     val: "5"      },
@@ -423,9 +450,9 @@ export default function Recruit() {
               { label: { en: "USDT APY",      zh: "年化收益率", "zh-TW": "年化收益率", ja: "年利",         ko: "연 수익률", th: "APY USDT",        vi: "APY USDT"     },     val: "170.82%", gold: true },
             ].map(({ label, val, gold }) => (
               <div key={label.en} className="space-y-0.5">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/50 font-medium">{label.en}</div>
-                <div className={`text-xl sm:text-3xl font-bold leading-none tabular-nums ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
-                {showZh && <div className="text-[10px] text-muted-foreground/65">{tt(label)}</div>}
+                <div className="text-[9px] uppercase tracking-[0.18em] text-zinc-500 font-medium">{label.en}</div>
+                <div className={`text-xl sm:text-3xl font-bold leading-none tabular-nums ${gold ? "text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]" : "text-white"}`}>{val}</div>
+                {showZh && <div className="text-[10px] text-zinc-500">{tt(label)}</div>}
               </div>
             ))}
           </div>
@@ -439,11 +466,11 @@ export default function Recruit() {
       {/* ── Node cards ── */}
       <section>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-px flex-1 bg-border/30" />
-          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-cyan-500/40" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300 px-3 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
             {tt({ zh: "节点等级 · Node Tiers", "zh-TW": "節點等級 · Node Tiers", en: "Node Tiers", ja: "ノード等級", ko: "노드 등급", th: "ระดับโหนด · Node Tiers", vi: "Cấp node · Node Tiers" })}
           </h2>
-          <div className="h-px flex-1 bg-border/30" />
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-cyan-500/40" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -488,17 +515,21 @@ export default function Recruit() {
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, delay: i * 0.1 }}
-                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[level]} ${NODE_GLOW[level]}`}
+                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[level]} ${NODE_GLOW[level]} transition-shadow duration-300`}
                   >
+                    {/* Top accent gradient strip */}
+                    <div className={`absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl bg-gradient-to-r ${NODE_TOP_GLOW[level]}`} />
+
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start justify-between mb-4 mt-1">
                       <div>
-                        <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${accent}`}>
+                        <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${accent} drop-shadow-[0_0_6px_currentColor]`}>
                           {meta.nameEn}
                         </div>
-                        <div className="text-xl font-bold text-foreground">{tt({ zh: meta.nameCn, "zh-TW": meta.nameCn, ja: meta.nameCn, ko: meta.nameCn, en: meta.nameEn, th: meta.nameEn, vi: meta.nameEn })}</div>
+                        <div className="text-xl font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">{tt({ zh: meta.nameCn, "zh-TW": meta.nameCn, ja: meta.nameCn, ko: meta.nameCn, en: meta.nameEn, th: meta.nameEn, vi: meta.nameEn })}</div>
                       </div>
-                      <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[level]}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[level]}`}>
                         Lv.{i + 1}
                       </span>
                     </div>
@@ -516,20 +547,20 @@ export default function Recruit() {
                           : []),
                       ].map(({ label, val, accent: isAccent }) => (
                         <div key={label.en} className="flex items-center justify-between gap-1">
-                          <span className="text-[11px] text-muted-foreground/60">{tt(label)}</span>
-                          <span className={`text-sm font-semibold ${isAccent ? accent : "text-foreground/90"}`}>{val}</span>
+                          <span className="text-[11px] text-zinc-400">{tt(label)}</span>
+                          <span className={`text-sm font-semibold ${isAccent ? `${accent} drop-shadow-[0_0_6px_currentColor]` : "text-zinc-100"}`}>{val}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Seat progress */}
                     <div className="mt-4 space-y-1.5">
-                      <div className="flex justify-between text-[10px] text-muted-foreground/50">
+                      <div className="flex justify-between text-[10px] text-zinc-500">
                         <span>{tt({ zh: "席位占用 Occupancy", "zh-TW": "席位佔用 Occupancy", en: "Occupancy", ja: "席数充填", ko: "좌석 점유율", th: "อัตราจอง", vi: "Tỷ lệ lấp đầy" })}</span>
-                        <span className={accent}>{occupiedPct}%</span>
+                        <span className={`${accent} drop-shadow-[0_0_4px_currentColor]`}>{occupiedPct}%</span>
                       </div>
-                      <Progress value={occupiedPct} className={`h-1.5 bg-white/5 ${progressCls}`} />
-                      <div className="text-[10px] text-muted-foreground/40 text-right">
+                      <Progress value={occupiedPct} className={`h-1.5 bg-white/8 ${progressCls}`} />
+                      <div className="text-[10px] text-zinc-500 text-right">
                         {tt({
                           zh: `剩余 ${fmt(seatsRemaining)} 席`,
                           "zh-TW": `剩餘 ${fmt(seatsRemaining)} 席`,
@@ -581,14 +612,15 @@ export default function Recruit() {
              L5 path before the generic value props. */}
       <section>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-px flex-1 bg-border/30" />
-          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-fuchsia-500/40" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.22em] text-fuchsia-300 px-3 drop-shadow-[0_0_8px_rgba(217,70,239,0.6)]">
             {tt({ zh: "创世节点 · GENESIS · L5", "zh-TW": "創世節點 · GENESIS · L5", en: "Genesis · L5", ja: "創世ノード · GENESIS · L5", ko: "제네시스 · GENESIS · L5", th: "Genesis Node · L5", vi: "Genesis Node · L5" })}
           </h2>
-          <div className="h-px flex-1 bg-border/30" />
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-fuchsia-500/40" />
         </div>
-        <div className="relative overflow-hidden rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-950/50 via-purple-950/30 to-amber-950/15 p-5 sm:p-6 md:p-8">
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.15),transparent_55%)]" />
+        <div className="relative overflow-hidden rounded-2xl border border-fuchsia-500/60 bg-gradient-to-br from-fuchsia-950/80 via-purple-950/50 to-amber-950/25 p-5 sm:p-6 md:p-8 shadow-[0_0_60px_rgba(217,70,239,0.2)]">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.25),transparent_55%)]" />
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.15),transparent_55%)]" />
           <div className="relative space-y-5">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 shrink-0 rounded-full border border-fuchsia-500/50 bg-fuchsia-950/40 flex items-center justify-center">
@@ -621,8 +653,8 @@ export default function Recruit() {
               })}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
-                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
+              <div className="rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 p-4 shadow-[0_0_20px_rgba(217,70,239,0.1)]">
+                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 mb-1.5 drop-shadow-[0_0_6px_rgba(217,70,239,0.6)]">
                   {tt({ zh: "条件一 · 直推联创", "zh-TW": "條件一 · 直推聯創", en: "Condition 1 · Direct Founders", ja: "条件 1 · 直推 联创", ko: "조건 1 · 직추 联创", th: "เงื่อนไข 1 · แนะนำตรง 联创", vi: "Điều kiện 1 · Trực tiếp 联创" })}
                 </div>
                 <p className="text-sm text-foreground/95 leading-snug">
@@ -637,9 +669,9 @@ export default function Recruit() {
                   })}
                 </p>
               </div>
-              <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
-                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
-                  {tt({ zh: "条件二 · 团队联创", "zh-TW": "條件二 · 團隊聯創", en: "Condition 2 · Team Founders", ja: "条件 2 · チーム 联创", ko: "조건 2 · 팀 联创", th: "เงื่อนไข 2 · ทีม 联创", vi: "Điều kiện 2 · Team 联创" })}
+              <div className="rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 p-4 shadow-[0_0_20px_rgba(217,70,239,0.1)]">
+                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 mb-1.5 drop-shadow-[0_0_6px_rgba(217,70,239,0.6)]">
+                  {tt({ zh: "条件二 · 团队联创", "zh-TW": "條件二 · 團隊聯創", en: "Condition 2 · Team Founders", ja: "条件 2 · チーム 联创", ko: "조건 2 · 팀 联창", th: "เงื่อนไข 2 · ทีม 联创", vi: "Điều kiện 2 · Team 联创" })}
                 </div>
                 <p className="text-sm text-foreground/95 leading-snug">
                   {tt({
@@ -653,8 +685,8 @@ export default function Recruit() {
                   })}
                 </p>
               </div>
-              <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-4">
-                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1.5">
+              <div className="rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 p-4 shadow-[0_0_20px_rgba(217,70,239,0.1)]">
+                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 mb-1.5 drop-shadow-[0_0_6px_rgba(217,70,239,0.6)]">
                   {tt({ zh: "条件三 · 团队超级", "zh-TW": "條件三 · 團隊超級", en: "Condition 3 · Team Supers", ja: "条件 3 · チーム 超级", ko: "조건 3 · 팀 超级", th: "เงื่อนไข 3 · ทีม 超级", vi: "Điều kiện 3 · Team 超级" })}
                 </div>
                 <p className="text-sm text-foreground/95 leading-snug">
@@ -670,14 +702,14 @@ export default function Recruit() {
                 </p>
               </div>
             </div>
-            <div className="rounded-xl border border-amber-500/30 bg-amber-950/25 p-4 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-              <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300/85 shrink-0">
+            <div className="rounded-xl border border-amber-500/50 bg-amber-950/40 p-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 shadow-[0_0_24px_rgba(251,191,36,0.15)]">
+              <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300 shrink-0 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]">
                 {tt({ zh: "创世专属奖励", "zh-TW": "創世專屬獎勵", en: "Genesis exclusive reward", ja: "創世専用リワード", ko: "제네시스 전용 보상", th: "รางวัลเฉพาะ Genesis", vi: "Phần thưởng Genesis" })}
               </span>
-              <span className="text-base font-bold tabular-nums text-amber-200">
+              <span className="text-base font-bold tabular-nums text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]">
                 {tt({ zh: "核心激励池 10%", "zh-TW": "核心激勵池 10%", en: "10% of core incentive pool", ja: "コア インセンティブ プール 10%", ko: "코어 인센티브 풀 10%", th: "10% ของพูลแรงจูงใจหลัก", vi: "10% pool khuyến khích chính" })}
               </span>
-              <span className="text-xs text-muted-foreground/80">
+              <span className="text-xs text-zinc-400">
                 {tt({ zh: "按创世节点权重占比加权分配", "zh-TW": "依創世節點權重佔比加權分配", en: "weighted by Genesis-peer node score", ja: "創世ノードの重み比率で按分", ko: "제네시스 노드 가중치 비율로 분배", th: "แบ่งตามน้ำหนักของโหนด Genesis", vi: "phân bổ theo trọng số node Genesis" })}
               </span>
             </div>
@@ -688,11 +720,11 @@ export default function Recruit() {
       {/* ── Why RUNE ── */}
       <section>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-px flex-1 bg-border/30" />
-          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-500/40" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.22em] text-amber-300 px-3 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">
             {tt({ zh: "为什么选择 RUNE · Why RUNE", "zh-TW": "為什麼選擇 RUNE · Why RUNE", en: "Why RUNE", ja: "なぜ RUNE か", ko: "왜 RUNE 인가", th: "ทำไมต้อง RUNE", vi: "Vì sao chọn RUNE" })}
           </h2>
-          <div className="h-px flex-1 bg-border/30" />
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-500/40" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -710,7 +742,9 @@ export default function Recruit() {
                 th: "MOTHER TOKEN (RUNE) ผูกกับ TLP pool, SUB เผาต่อเนื่อง — ดีเฟลชันสองทางขับเคลื่อนมูลค่าระยะยาว",
                 vi: "MOTHER TOKEN (RUNE) gắn TLP pool; SUB liên tục burn — giảm phát kép thúc đẩy giá trị dài hạn.",
               },
-              accent: "text-amber-400", border: "border-amber-700/30", bg: "from-amber-950/50 to-amber-900/10",
+              accent: "text-amber-300", iconGlow: "drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]",
+              border: "border-amber-500/50", bg: "from-amber-950/70 to-amber-900/20",
+              glow: "shadow-[0_0_30px_rgba(251,191,36,0.12)]",
             },
             {
               icon: Zap,
@@ -725,7 +759,9 @@ export default function Recruit() {
                 th: "จากราคาพรีเซล $0.016 ถึงราคาเปิด $0.028 และเป้าหมายระยะยาว $0.5 รวม 6 ขั้นชัดเจน",
                 vi: "Từ giá private $0.016 đến giá mở $0.028, mục tiêu dài hạn $0.5 — 6 giai đoạn giá rõ ràng.",
               },
-              accent: "text-blue-400", border: "border-blue-700/30", bg: "from-blue-950/50 to-blue-900/10",
+              accent: "text-blue-300", iconGlow: "drop-shadow-[0_0_8px_rgba(96,165,250,0.7)]",
+              border: "border-blue-500/50", bg: "from-blue-950/70 to-blue-900/20",
+              glow: "shadow-[0_0_30px_rgba(59,130,246,0.12)]",
             },
             {
               icon: Shield,
@@ -740,17 +776,25 @@ export default function Recruit() {
                 th: "ผู้ถือโหนดได้สิทธิ์โหวตธรรมาภิบาล, sub-token airdrop, whitelist โครงการใหม่ และช่อง OTC",
                 vi: "Chủ node nhận quyền governance ưu tiên, airdrop sub-token, whitelist dự án mới và kênh OTC.",
               },
-              accent: "text-green-400", border: "border-green-700/30", bg: "from-green-950/50 to-green-900/10",
+              accent: "text-green-300", iconGlow: "drop-shadow-[0_0_8px_rgba(74,222,128,0.7)]",
+              border: "border-green-500/50", bg: "from-green-950/70 to-green-900/20",
+              glow: "shadow-[0_0_30px_rgba(34,197,94,0.12)]",
             },
-          ].map(({ icon: Icon, title, titleEn, desc, accent, border, bg }) => (
-            <div key={titleEn} className={`rounded-2xl border ${border} bg-gradient-to-b ${bg} p-6 space-y-3`}>
-              <div className={`flex items-center gap-2 ${accent}`}>
-                <Icon className="h-5 w-5" />
-                <span className="font-bold text-base text-foreground">{tt(title)}</span>
+          ].map(({ icon: Icon, title, titleEn, desc, accent, iconGlow, border, bg, glow }) => (
+            <motion.div
+              key={titleEn}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className={`rounded-2xl border ${border} bg-gradient-to-b ${bg} p-6 space-y-3 ${glow}`}
+            >
+              <div className={`flex items-center gap-2.5 ${accent}`}>
+                <Icon className={`h-5 w-5 ${iconGlow}`} />
+                <span className="font-bold text-base text-white">{tt(title)}</span>
               </div>
-              {showZh && <p className={`text-xs font-mono uppercase tracking-widest ${accent} opacity-70`}>{titleEn}</p>}
-              <p className="text-sm text-muted-foreground/80 leading-relaxed">{tt(desc)}</p>
-            </div>
+              {showZh && <p className={`text-xs font-mono uppercase tracking-widest ${accent} opacity-80`}>{titleEn}</p>}
+              <p className="text-sm text-zinc-400 leading-relaxed">{tt(desc)}</p>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -758,17 +802,17 @@ export default function Recruit() {
       {/* ── Join flow ── */}
       <section>
         <div className="flex items-center gap-2 mb-8">
-          <div className="h-px flex-1 bg-border/30" />
-          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-500/40" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.22em] text-amber-300 px-3 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">
             {tt({ zh: "加入流程 · How to Join", "zh-TW": "加入流程 · How to Join", en: "How to Join", ja: "参加フロー", ko: "참여 절차", th: "วิธีเข้าร่วม", vi: "Cách tham gia" })}
           </h2>
-          <div className="h-px flex-1 bg-border/30" />
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-500/40" />
         </div>
 
         {/* Mobile: vertical list with step number inline (left-aligned).
             Desktop: 4-column centered grid with the classic divider line. */}
         <div className="relative">
-          <div className="hidden md:block absolute left-1/2 -translate-x-px top-8 bottom-8 w-px bg-border/30" />
+          <div className="hidden md:block absolute left-1/2 -translate-x-px top-8 bottom-8 w-px bg-gradient-to-b from-transparent via-amber-500/30 to-transparent" />
 
           <div className="flex flex-col gap-4 md:grid md:grid-cols-4 md:gap-6">
             {STEPS.map((step, i) => (
@@ -777,16 +821,20 @@ export default function Recruit() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.12, duration: 0.4 }}
-                className="flex flex-row items-start gap-4 rounded-xl border border-border/25 bg-card/20 p-4
+                className="flex flex-row items-start gap-4 rounded-xl border border-amber-500/20 bg-amber-950/10 p-4
                            md:flex-col md:items-center md:text-center md:rounded-none md:border-0 md:bg-transparent md:p-0 md:gap-3"
               >
-                <div className="relative z-10 flex items-center justify-center w-10 h-10 shrink-0 rounded-full border-2 border-amber-500/50 bg-amber-950/60 text-amber-400 font-bold text-sm shadow-[0_0_20px_rgba(251,191,36,0.15)]">
+                <motion.div
+                  animate={{ boxShadow: ["0 0 16px rgba(251,191,36,0.25)", "0 0 32px rgba(251,191,36,0.50)", "0 0 16px rgba(251,191,36,0.25)"] }}
+                  transition={{ duration: 2.5 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 }}
+                  className="relative z-10 flex items-center justify-center w-10 h-10 shrink-0 rounded-full border-2 border-amber-400/70 bg-amber-950/80 text-amber-300 font-bold text-sm"
+                >
                   {i + 1}
-                </div>
+                </motion.div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-foreground text-sm mb-0.5">{tt(step.title)}</div>
-                  {showZh && <div className="text-[10px] text-amber-400/70 uppercase tracking-wider mb-1.5">{step.title.en}</div>}
-                  <p className="text-xs text-muted-foreground/70 leading-relaxed">{tt(step.desc)}</p>
+                  <div className="font-bold text-white text-sm mb-0.5">{tt(step.title)}</div>
+                  {showZh && <div className="text-[10px] text-amber-400/80 uppercase tracking-wider mb-1.5">{step.title.en}</div>}
+                  <p className="text-xs text-zinc-400 leading-relaxed">{tt(step.desc)}</p>
                 </div>
               </motion.div>
             ))}
@@ -800,11 +848,11 @@ export default function Recruit() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="rounded-2xl border border-cyan-500/30 bg-cyan-500/5 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+          className="rounded-2xl border border-cyan-500/50 bg-cyan-950/30 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-[0_0_40px_rgba(34,211,238,0.12)]"
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-9 h-9 rounded-xl border border-cyan-500/30 bg-cyan-500/10 flex items-center justify-center shrink-0">
-              <BookOpen className="h-4.5 w-4.5 text-cyan-400" />
+            <div className="w-9 h-9 rounded-xl border border-cyan-500/50 bg-cyan-950/60 flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(34,211,238,0.3)]">
+              <BookOpen className="h-4.5 w-4.5 text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.8)]" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-cyan-200 break-words">
@@ -845,11 +893,11 @@ export default function Recruit() {
       {/* ── FAQ ── */}
       <section>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-px flex-1 bg-border/30" />
-          <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-zinc-500/40" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-300 px-3">
             {tt({ zh: "常见问题 · FAQ", "zh-TW": "常見問題 · FAQ", en: "FAQ", ja: "よくある質問", ko: "자주 묻는 질문", th: "คำถามที่พบบ่อย", vi: "Câu hỏi thường gặp" })}
           </h2>
-          <div className="h-px flex-1 bg-border/30" />
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-zinc-500/40" />
         </div>
 
         <div className="space-y-2 max-w-3xl mx-auto">
@@ -858,16 +906,16 @@ export default function Recruit() {
             return (
               <div
                 key={i}
-                className="rounded-xl border border-border/30 bg-card/30 overflow-hidden"
+                className={`rounded-xl border overflow-hidden transition-all duration-200 ${isOpen ? "border-amber-500/40 bg-amber-950/20 shadow-[0_0_20px_rgba(251,191,36,0.08)]" : "border-zinc-700/40 bg-zinc-900/40"}`}
               >
                 <button
                   onClick={() => setOpenFaq(isOpen ? null : i)}
                   className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-white/3 transition-colors"
                 >
-                  <span className="text-sm font-medium text-foreground/90">{tt(item.q)}</span>
+                  <span className={`text-sm font-medium ${isOpen ? "text-amber-200" : "text-zinc-200"}`}>{tt(item.q)}</span>
                   {isOpen
-                    ? <ChevronUp className="h-4 w-4 text-muted-foreground/50 shrink-0" />
-                    : <ChevronDown className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                    ? <ChevronUp className="h-4 w-4 text-amber-400 shrink-0" />
+                    : <ChevronDown className="h-4 w-4 text-zinc-500 shrink-0" />
                   }
                 </button>
                 <AnimatePresence initial={false}>
@@ -881,7 +929,7 @@ export default function Recruit() {
                       className="overflow-hidden"
                     >
                       <div className="px-5 pb-5 pt-1">
-                        <p className="text-sm leading-relaxed text-muted-foreground">
+                        <p className="text-sm leading-relaxed text-zinc-400">
                           {tt(item.a)}
                         </p>
                       </div>
