@@ -294,25 +294,6 @@ export default function Recruit() {
           bind / purchase / dashboard-redirect flow fires from any page the
           moment the user connects via the header. No page-level mount here. */}
 
-      {/* ── Binding status strip ── Only render the "not bound yet"
-          prompt; once bound, we don't surface the relationship on this
-          page (it lives on the dashboard). */}
-      {account && !isBound && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="rounded-xl border px-4 py-3 text-xs flex items-center justify-between gap-3 border-amber-700/40 bg-amber-950/30 text-amber-200"
-        >
-          <span className="font-mono uppercase tracking-[0.18em] text-[10px] opacity-60">
-            {showZh ? "链上绑定 · On-chain" : "On-chain"}
-          </span>
-          <span className="text-right font-medium">
-            {showZh ? "尚未绑定推荐人" : "Not bound yet"}
-          </span>
-        </motion.div>
-      )}
-
       {/* ── Node cards ── */}
       <section>
         <div className="flex items-center gap-2 mb-6">
@@ -323,12 +304,7 @@ export default function Recruit() {
           <div className="h-px flex-1 bg-border/30" />
         </div>
 
-        {/* On mobile: horizontal snap-scroll strip so all 5 cards are
-            reachable without 5× full-width stacks. Larger viewports get
-            the regular grid. */}
-        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 -mx-4 px-4
-                        sm:mx-0 sm:px-0 sm:overflow-visible sm:pb-0
-                        sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {isLoading && nodes.length === 0
             ? Array.from({ length: 5 }).map((_, i) => <NodeCardSkeleton key={i} />)
             : TIER_ORDER.map((nodeId, i) => {
@@ -370,7 +346,7 @@ export default function Recruit() {
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, delay: i * 0.1 }}
-                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 shrink-0 w-[78vw] max-w-[300px] snap-center sm:w-auto sm:max-w-none ${NODE_BG[level]} ${NODE_GLOW[level]}`}
+                    className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[level]} ${NODE_GLOW[level]}`}
                   >
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
