@@ -458,6 +458,8 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
 // ─── Tutorial Purchase Node Modal ────────────────────────────────────────────
 type BuyTxState = "select" | "approving" | "buying" | "done";
 
+const LEVEL_NUM: Record<string, number> = { initial: 1, mid: 2, advanced: 3, super: 4, founder: 5 };
+
 interface TutorialPurchaseModalProps {
   open: boolean;
   onClose: () => void;
@@ -488,55 +490,54 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v && !busy) onClose(); }}>
-      <DialogContent className="bg-[#080f1e] border border-amber-700/30 max-w-md max-h-[88dvh] overflow-y-auto p-4 gap-3">
-        <DialogHeader className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-              <Coins className="h-3.5 w-3.5 text-amber-400" />
+      <DialogContent className="bg-[#07101f] border border-white/10 max-w-md max-h-[88dvh] overflow-y-auto p-0 gap-0 overflow-hidden">
+
+        {/* ── Header ── */}
+        <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.07]">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/[0.06] via-transparent to-transparent pointer-events-none" />
+          <div className="flex items-center gap-2 mb-3">
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 shrink-0">
+              <Coins className="h-4 w-4 text-amber-400" />
+              <div className="absolute inset-0 rounded-xl shadow-[0_0_14px_rgba(245,158,11,0.35)]" />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-300 truncate">
-              {tt({ zh: "步骤 3 / 3 · 选择节点并购买", "zh-TW": "步驟 3 / 3 · 選擇節點並購買", en: "Step 3 / 3 · Select Node & Purchase", ja: "ステップ 3 / 3 · ノード選択 & 購入", ko: "3 / 3 단계 · 노드 선택 & 구매", th: "ขั้นที่ 3 / 3 · เลือกโหนด & ซื้อ", vi: "Bước 3 / 3 · Chọn node & mua" })}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-amber-400/70">
+                {tt({ zh: "步骤 3 / 3", "zh-TW": "步驟 3 / 3", en: "Step 3 / 3", ja: "ステップ 3 / 3", ko: "3 / 3 단계", th: "ขั้นที่ 3 / 3", vi: "Bước 3 / 3" })}
+              </span>
+              <DialogTitle className="text-[15px] font-bold leading-tight text-white">
+                {tt({ zh: "选择节点等级", "zh-TW": "選擇節點等級", en: "Select Node Tier", ja: "ノード等級を選択", ko: "노드 등급 선택", th: "เลือกระดับโหนด", vi: "Chọn cấp node" })}
+              </DialogTitle>
+            </div>
+            <div className="ml-auto flex items-center gap-1.5 rounded-full border border-cyan-500/25 bg-cyan-500/8 px-2.5 py-1">
+              <BookOpen className="h-2.5 w-2.5 text-cyan-400 shrink-0" />
+              <span className="text-[9px] font-medium text-cyan-300 whitespace-nowrap">
+                {tt({ zh: "教学模式", "zh-TW": "教學模式", en: "Tutorial", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Hướng dẫn" })}
+              </span>
+            </div>
           </div>
-          <DialogTitle className="text-base font-bold leading-tight">
-            {tt({ zh: "购买节点席位", "zh-TW": "購買節點席位", en: "Purchase Node Seat", ja: "ノード席を購入", ko: "노드 좌석 구매", th: "ซื้อที่นั่งโหนด", vi: "Mua ghế node" })}
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground text-[11px] leading-snug">
+          <DialogDescription className="text-[11px] text-muted-foreground/70 leading-snug">
             {tt({
-              zh: "选择适合你的节点等级，支付 USDT 即可立即激活。",
-              "zh-TW": "選擇適合你的節點等級，支付 USDT 即可立即啟動。",
-              en: "Choose your tier and pay USDT to activate instantly.",
-              ja: "等級を選び USDT を支払うと即時有効化されます。",
-              ko: "등급을 선택하고 USDT를 결제하면 즉시 활성화됩니다.",
-              th: "เลือกระดับและชำระ USDT เพื่อเปิดใช้งานทันที",
-              vi: "Chọn cấp và thanh toán USDT để kích hoạt ngay.",
+              zh: "选择节点等级后点击购买，系统将模拟完整的链上授权与购买流程。",
+              "zh-TW": "選擇節點等級後點擊購買，系統將模擬完整的鏈上授權與購買流程。",
+              en: "Select a tier and click purchase — the full on-chain approval & buy flow is simulated.",
+              ja: "等級を選択して購入をクリック — 承認と購入のフローを模擬します。",
+              ko: "등급을 선택하고 구매 클릭 — 전체 온체인 승인 및 구매 흐름을 시뮬레이션합니다.",
+              th: "เลือกระดับแล้วกดซื้อ — ระบบจะจำลองขั้นตอนอนุมัติและซื้อบนเชน",
+              vi: "Chọn cấp và bấm mua — quy trình approve & mua on-chain được mô phỏng đầy đủ.",
             })}
           </DialogDescription>
+        </div>
 
-          {/* Tutorial hint */}
-          <div className="flex items-center gap-2 rounded-lg border border-cyan-500/25 bg-cyan-500/8 px-3 py-2">
-            <BookOpen className="h-3 w-3 text-cyan-400 shrink-0" />
-            <span className="text-[10px] text-cyan-300">
-              {tt({
-                zh: "教学模式：选择节点后点击按钮，系统模拟链上购买流程",
-                "zh-TW": "教學模式：選擇節點後點擊按鈕，系統模擬鏈上購買流程",
-                en: "Tutorial: Select a tier then click purchase — the flow is fully simulated",
-                ja: "チュートリアル：ノードを選択してボタンを押すと、購入フローを模擬実行します",
-                ko: "튜토리얼: 등급을 선택하고 버튼을 누르면 구매 흐름이 시뮬레이션됩니다",
-                th: "ทูตอเรียล: เลือกโหนดแล้วกดปุ่ม ระบบจะจำลองขั้นตอนซื้อบนเชน",
-                vi: "Hướng dẫn: Chọn cấp rồi bấm nút — quy trình được mô phỏng đầy đủ",
-              })}
-            </span>
-          </div>
-        </DialogHeader>
-
-        {/* Tier list */}
-        <div className="flex flex-col gap-1.5">
+        {/* ── Tier list ── */}
+        <div className="flex flex-col gap-2 px-4 py-4">
           {[...TUTORIAL_CONFIGS].sort((a, b) => b.nodeId - a.nodeId).map((cfg) => {
             const meta = NODE_META[cfg.nodeId];
             const remaining = Number(cfg.maxLimit - cfg.curNum);
+            const totalSeats = Number(cfg.maxLimit);
+            const occupiedPct = Math.round(((totalSeats - remaining) / totalSeats) * 100);
             const directPct = Number(cfg.directRate) / 100;
             const isActive = selected === cfg.nodeId;
+            const lv = LEVEL_NUM[meta.level] ?? 1;
 
             return (
               <button
@@ -544,98 +545,141 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
                 type="button"
                 disabled={busy || txState === "done"}
                 onClick={() => setSelected(cfg.nodeId)}
-                className={`group relative flex items-center gap-2.5 rounded-lg border px-2.5 py-2 transition-all text-left overflow-hidden ${
-                  isActive
-                    ? "border-amber-500 bg-amber-500/[0.06] shadow-[0_0_0_1px_hsl(38,90%,50%,0.45)]"
-                    : "border-border/40 bg-card/40 hover:border-border/80"
-                }`}
+                className="group relative flex items-center gap-3 rounded-xl border-2 px-3.5 py-3 transition-all duration-150 text-left overflow-hidden cursor-pointer disabled:cursor-not-allowed"
+                style={{
+                  borderColor: isActive ? `rgb(${meta.rgb})` : "rgba(255,255,255,0.08)",
+                  background: isActive ? `rgba(${meta.rgb}, 0.07)` : "rgba(255,255,255,0.02)",
+                  boxShadow: isActive ? `0 0 22px rgba(${meta.rgb}, 0.22), inset 0 0 0 1px rgba(${meta.rgb}, 0.12)` : "none",
+                }}
               >
+                {/* Left accent bar */}
                 <span
-                  className="absolute left-0 top-0 bottom-0 w-[3px]"
-                  style={{ backgroundColor: `rgb(${meta.rgb})`, opacity: isActive ? 1 : 0.55 }}
+                  className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl transition-opacity"
+                  style={{ background: `rgb(${meta.rgb})`, opacity: isActive ? 1 : 0.35 }}
                   aria-hidden
                 />
+
+                {/* Tier icon */}
                 <span
-                  className="ml-0.5 h-8 w-8 rounded-md shrink-0 flex items-center justify-center font-bold text-sm"
+                  className="ml-0.5 h-11 w-11 rounded-xl shrink-0 flex items-center justify-center text-[18px] font-bold transition-shadow"
                   style={{
-                    backgroundColor: `rgba(${meta.rgb}, 0.14)`,
+                    background: `rgba(${meta.rgb}, 0.14)`,
                     color: `rgb(${meta.rgb})`,
-                    border: `1px solid rgba(${meta.rgb}, 0.32)`,
+                    border: `1px solid rgba(${meta.rgb}, 0.30)`,
+                    boxShadow: isActive ? `0 0 14px rgba(${meta.rgb}, 0.35)` : "none",
                   }}
                 >
                   {meta.nameCn.charAt(meta.nameCn.length - 1)}
                 </span>
+
+                {/* Info column */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[13px] font-bold text-foreground truncate">{meta.nameCn}</span>
-                    <span className={`text-[9px] font-mono uppercase tracking-[0.16em] ${meta.color} truncate`}>
-                      {meta.nameEn}
+                  {/* Name row */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[13px] font-bold text-white leading-none">{meta.nameCn}</span>
+                    <span className={`text-[9px] font-mono uppercase tracking-[0.18em] leading-none ${meta.color}`}>{meta.nameEn}</span>
+                    <span className="ml-auto text-[8px] font-mono tracking-wider text-white/25 border border-white/10 rounded px-1 py-0.5 leading-none">
+                      LV.{lv}
                     </span>
                   </div>
-                  <div className="text-[10px] text-muted-foreground/85 truncate leading-tight">
-                    <span>{remaining} {tt({ zh: "席位剩余", "zh-TW": "席位剩餘", en: "seats left", ja: "席残り", ko: "좌석 남음", th: "ที่เหลือ", vi: "ghế còn" })}</span>
-                    <span className="opacity-40 mx-1">·</span>
-                    <span className="text-amber-300/85">{directPct}% {tt({ zh: "直推返佣", "zh-TW": "直推返佣", en: "direct commission", ja: "直推報酬", ko: "직추천 커미션", th: "คอมมิชชันตรง", vi: "hoa hồng trực tiếp" })}</span>
+
+                  {/* Stats row */}
+                  <div className="flex items-center gap-2 text-[10px] mb-1.5">
+                    <span className="text-white/40">
+                      {tt({ zh: "剩余", "zh-TW": "剩餘", en: "Left", ja: "残り", ko: "남음", th: "เหลือ", vi: "Còn" })}{" "}
+                      <span className="text-white/80 font-semibold tabular-nums">{remaining}</span>
+                    </span>
+                    <span className="text-white/15">|</span>
+                    <span className="text-white/40">
+                      {tt({ zh: "返佣", "zh-TW": "返佣", en: "Comm.", ja: "報酬", ko: "커미션", th: "คอม", vi: "Hoa hồng" })}{" "}
+                      <span className="font-semibold" style={{ color: `rgb(${meta.rgb})` }}>{directPct}%</span>
+                    </span>
                   </div>
+
+                  {/* Occupancy bar */}
+                  <div className="h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${occupiedPct}%`,
+                        background: `rgba(${meta.rgb}, ${isActive ? 0.8 : 0.45})`,
+                        transition: "background 0.2s",
+                      }}
+                    />
+                  </div>
+                  <div className="text-[8px] text-white/20 mt-0.5 tabular-nums">{occupiedPct}% {tt({ zh: "已售", "zh-TW": "已售", en: "sold", ja: "販売済", ko: "판매됨", th: "ขายแล้ว", vi: "đã bán" })}</div>
                 </div>
-                <div className="text-right shrink-0 leading-none">
-                  <div className="text-sm font-bold tabular-nums text-amber-300">
+
+                {/* Price column */}
+                <div className="shrink-0 text-right leading-none pl-1">
+                  <div
+                    className="text-[17px] font-bold tabular-nums leading-none"
+                    style={{ color: isActive ? `rgb(${meta.rgb})` : "rgba(255,255,255,0.85)" }}
+                  >
                     {fmt18(cfg.payAmount)}
                   </div>
-                  <div className="text-[8px] text-muted-foreground/70 mt-0.5 font-mono uppercase tracking-[0.18em]">USDT</div>
+                  <div className="text-[8px] text-white/25 mt-1 font-mono uppercase tracking-[0.2em]">USDT</div>
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Tx status strips */}
-        <AnimatePresence mode="wait">
-          {txState === "approving" && (
-            <motion.div key="approving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex items-center gap-2 rounded-md border border-blue-700/30 bg-blue-950/20 px-2.5 py-1.5 text-[11px] text-blue-200">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              {tt({ zh: "模拟 USDT 授权中...", "zh-TW": "模擬 USDT 授權中...", en: "Simulating USDT approval…", ja: "USDT 承認を模擬中…", ko: "USDT 승인 시뮬레이션 중…", th: "กำลังจำลองอนุมัติ USDT…", vi: "Đang mô phỏng approve USDT…" })}
-            </motion.div>
-          )}
-          {txState === "buying" && (
-            <motion.div key="buying" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex items-center gap-2 rounded-md border border-amber-700/30 bg-amber-950/20 px-2.5 py-1.5 text-[11px] text-amber-200">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              {tt({ zh: "模拟节点购买交易中...", "zh-TW": "模擬節點購買交易中...", en: "Simulating node purchase transaction…", ja: "ノード購入トランザクションを模擬中…", ko: "노드 구매 트랜잭션 시뮬레이션 중…", th: "กำลังจำลองธุรกรรมซื้อโหนด…", vi: "Đang mô phỏng giao dịch mua node…" })}
-            </motion.div>
-          )}
-          {txState === "done" && (
-            <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex items-center gap-2 rounded-md border border-emerald-700/30 bg-emerald-950/20 px-2.5 py-1.5 text-[11px] text-emerald-200">
-              <CheckCircle2 className="h-3 w-3" />
-              {tt({ zh: "购买成功！节点已激活，正在跳转...", "zh-TW": "購買成功！節點已啟動，正在跳轉...", en: "Purchase confirmed! Node activated — redirecting…", ja: "購入完了！ノード有効化 — 移動中…", ko: "구매 완료! 노드 활성화 — 이동 중…", th: "ซื้อสำเร็จ! โหนดเปิดใช้งาน — กำลังเปลี่ยนหน้า…", vi: "Mua thành công! Node kích hoạt — đang chuyển…" })}
-            </motion.div>
-          )}
-          {txState === "select" && !selected && (
-            <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
-              <AlertCircle className="h-3 w-3" />
-              {tt({ zh: "请先选择一个节点等级", "zh-TW": "請先選擇一個節點等級", en: "Please select a node tier first", ja: "まずノード等級を選択してください", ko: "먼저 노드 등급을 선택하세요", th: "โปรดเลือกระดับโหนดก่อน", vi: "Vui lòng chọn cấp node trước" })}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* ── Status strip ── */}
+        <div className="px-4 pb-2">
+          <AnimatePresence mode="wait">
+            {txState === "approving" && (
+              <motion.div key="approving" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                className="flex items-center gap-2.5 rounded-xl border border-blue-500/25 bg-blue-500/8 px-3.5 py-2.5 text-[11px] text-blue-200">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-400 shrink-0" />
+                {tt({ zh: "模拟 USDT 授权中...", "zh-TW": "模擬 USDT 授權中...", en: "Simulating USDT approval…", ja: "USDT 承認を模擬中…", ko: "USDT 승인 시뮬레이션 중…", th: "กำลังจำลองอนุมัติ USDT…", vi: "Đang mô phỏng approve USDT…" })}
+              </motion.div>
+            )}
+            {txState === "buying" && (
+              <motion.div key="buying" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                className="flex items-center gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/8 px-3.5 py-2.5 text-[11px] text-amber-200">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-400 shrink-0" />
+                {tt({ zh: "模拟节点购买交易中...", "zh-TW": "模擬節點購買交易中...", en: "Simulating node purchase…", ja: "ノード購入を模擬中…", ko: "노드 구매 시뮬레이션 중…", th: "กำลังจำลองธุรกรรมซื้อโหนด…", vi: "Đang mô phỏng giao dịch mua node…" })}
+              </motion.div>
+            )}
+            {txState === "done" && (
+              <motion.div key="done" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                className="flex items-center gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-3.5 py-2.5 text-[11px] text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                {tt({ zh: "购买成功！节点已激活，正在跳转...", "zh-TW": "購買成功！節點已啟動，正在跳轉...", en: "Purchase confirmed! Node activated — redirecting…", ja: "購入完了！有効化 — 移動中…", ko: "구매 완료! 활성화 — 이동 중…", th: "ซื้อสำเร็จ! เปิดใช้งาน — กำลังเปลี่ยนหน้า…", vi: "Mua thành công! Kích hoạt — đang chuyển…" })}
+              </motion.div>
+            )}
+            {txState === "select" && !selected && (
+              <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="flex items-center gap-1.5 text-[10px] text-white/25 px-1">
+                <AlertCircle className="h-3 w-3 shrink-0" />
+                {tt({ zh: "请先选择一个节点等级", "zh-TW": "請先選擇一個節點等級", en: "Please select a tier first", ja: "等級を選択してください", ko: "등급을 먼저 선택하세요", th: "โปรดเลือกระดับโหนดก่อน", vi: "Vui lòng chọn cấp node trước" })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        <div className="flex gap-2 pt-1">
-          <Button variant="ghost" onClick={onClose} disabled={busy || txState === "done"} className="flex-1 h-9 text-sm">
+        {/* ── Action buttons ── */}
+        <div className="flex gap-2.5 px-4 pb-5 pt-1">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={busy || txState === "done"}
+            className="flex-[0_0_auto] w-24 h-11 text-sm border border-white/10 hover:bg-white/5 text-white/50 hover:text-white/80"
+          >
             {tt({ zh: "稍后", "zh-TW": "稍後", en: "Later", ja: "あとで", ko: "나중에", th: "ภายหลัง", vi: "Để sau" })}
           </Button>
           <Button
-            className="flex-1 font-semibold gap-1.5 h-9 text-sm"
+            className="flex-1 h-11 font-semibold gap-2 text-sm bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_20px_rgba(245,158,11,0.35)] disabled:opacity-40 disabled:shadow-none transition-all"
             disabled={!selected || busy || txState === "done"}
             onClick={handleBuy}
           >
             {busy
-              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ? <Loader2 className="h-4 w-4 animate-spin" />
               : <>
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  {tt({ zh: "授权并购买（模拟）", "zh-TW": "授權並購買（模擬）", en: "Approve & Buy (simulated)", ja: "承認 & 購入（模擬）", ko: "승인 & 구매 (시뮬레이션)", th: "อนุมัติ & ซื้อ (จำลอง)", vi: "Approve & mua (mô phỏng)" })}
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ShieldCheck className="h-4 w-4" />
+                  {tt({ zh: "授权并购买", "zh-TW": "授權並購買", en: "Approve & Buy", ja: "承認 & 購入", ko: "승인 & 구매", th: "อนุมัติ & ซื้อ", vi: "Approve & mua" })}
+                  <ArrowRight className="h-4 w-4" />
                 </>
             }
           </Button>
