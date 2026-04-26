@@ -15,7 +15,10 @@ import { useActiveAccount } from "thirdweb/react";
 import { useDemoStore } from "@/lib/demo-store";
 import { DEMO_ADDRESS } from "@/lib/demo-mock-data";
 import { NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
-import { useShowZh } from "@/contexts/language-context";
+import { useShowZh, useT, type Language } from "@/contexts/language-context";
+
+/** Compact per-locale string map — same convention as recruit.tsx. */
+type LocaleMap = Partial<Record<Language, string>>;
 
 // ─── Tutorial step state ────────────────────────────────────────────────────
 // 0: entry — bind referrer modal can open here (connect+bind are one action)
@@ -93,40 +96,98 @@ const TIER_STATIC: Record<NodeId, { privatePrice: number; dailyUsdt: number; air
   501: { privatePrice: 0.028, dailyUsdt:  4.7, airdropPerSeat:  1000, seats: 1000 },
 };
 
-const FAQ_ITEMS = [
+interface FaqItem { q: LocaleMap; a: LocaleMap }
+const FAQ_ITEMS: FaqItem[] = [
   {
-    qEn: "How are node funds used?", qZh: "节点购买资金如何使用？",
-    aEn: "Funds are allocated: 40% to TLP liquidity pool, 25% operations, 25% treasury, and 10% sub-token LP — all verifiable on-chain.",
-    aZh: "募集资金按比例分配至 TLP 流动池（40%）、运营资金（25%）、国库储备（25%）及子TOKEN LP（10%），全程链上透明可查。",
+    q: {
+      en: "How are node funds used?", zh: "节点购买资金如何使用？", "zh-TW": "節點購買資金如何使用？",
+      ja: "ノード購入資金はどのように使われますか？", ko: "노드 구매 자금은 어떻게 사용되나요?",
+      th: "เงินทุนจากการซื้อโหนดถูกนำไปใช้อย่างไร?", vi: "Quỹ từ việc mua node được sử dụng thế nào?",
+    },
+    a: {
+      en: "Funds are allocated: 40% to TLP liquidity pool, 25% operations, 25% treasury, and 10% sub-token LP — all verifiable on-chain.",
+      zh: "募集资金按比例分配至 TLP 流动池（40%）、运营资金（25%）、国库储备（25%）及子TOKEN LP（10%），全程链上透明可查。",
+      "zh-TW": "募集資金按比例分配至 TLP 流動池（40%）、營運資金（25%）、國庫儲備（25%）及子TOKEN LP（10%），全程鏈上透明可查。",
+      ja: "資金配分：TLP プール 40%、運営 25%、トレジャリー 25%、サブトークン LP 10%。すべてオンチェーンで検証可能。",
+      ko: "자금 배분: TLP 풀 40%, 운영 25%, 국고 25%, 서브토큰 LP 10% — 모두 온체인에서 검증 가능.",
+      th: "การจัดสรร: TLP pool 40%, ปฏิบัติการ 25%, คลัง 25%, sub-token LP 10% ตรวจสอบบนเชนได้",
+      vi: "Phân bổ: 40% TLP pool, 25% vận hành, 25% kho bạc, 10% sub-token LP — đều xác minh on-chain.",
+    },
   },
   {
-    qEn: "How is daily USDT income settled?", qZh: "每日 USDT 收益如何结算？",
-    aEn: "Settled automatically to your bound address every day at UTC 00:00 based on your node tier — no manual claim required.",
-    aZh: "每日 UTC 00:00 按持仓节点等级自动结算至绑定地址，无需手动领取。",
+    q: {
+      en: "How is daily USDT income settled?", zh: "每日 USDT 收益如何结算？", "zh-TW": "每日 USDT 收益如何結算？",
+      ja: "毎日の USDT 収益はどのように決済されますか？", ko: "일일 USDT 수익은 어떻게 정산되나요?",
+      th: "รายได้ USDT รายวันถูกชำระอย่างไร?", vi: "Thu nhập USDT hàng ngày được thanh toán thế nào?",
+    },
+    a: {
+      en: "Settled automatically to your bound address every day at UTC 00:00 based on your node tier — no manual claim required.",
+      zh: "每日 UTC 00:00 按持仓节点等级自动结算至绑定地址，无需手动领取。",
+      "zh-TW": "每日 UTC 00:00 依持有節點等級自動結算至綁定地址，無需手動領取。",
+      ja: "毎日 UTC 00:00 にノード等級に応じてバインド済みアドレスへ自動決済 — 手動請求不要。",
+      ko: "매일 UTC 00:00 노드 등급에 따라 바인딩된 주소로 자동 정산 — 수동 청구 불필요.",
+      th: "ชำระอัตโนมัติเข้าที่อยู่ที่ผูกไว้ทุกวันเวลา UTC 00:00 ตามระดับโหนด — ไม่ต้องเคลม",
+      vi: "Tự động thanh toán mỗi ngày 00:00 UTC vào địa chỉ đã liên kết theo cấp node — không cần claim thủ công.",
+    },
   },
   {
-    qEn: "When are sub-token airdrops distributed?", qZh: "子TOKEN空投何时发放？",
-    aEn: "First airdrop within 30 days of mainnet launch, with quarterly supplements.",
-    aZh: "主网上线后 30 天内完成首次空投，后续按季度补发。",
+    q: {
+      en: "When are sub-token airdrops distributed?", zh: "子TOKEN空投何时发放？", "zh-TW": "子TOKEN空投何時發放？",
+      ja: "サブトークン エアドロップはいつ配布されますか？", ko: "서브토큰 에어드롭은 언제 배포되나요?",
+      th: "Sub-token airdrop จะแจกจ่ายเมื่อใด?", vi: "Khi nào sub-token airdrop được phát?",
+    },
+    a: {
+      en: "First airdrop within 30 days of mainnet launch, with quarterly supplements.",
+      zh: "主网上线后 30 天内完成首次空投，后续按季度补发。",
+      "zh-TW": "主網上線後 30 天內完成首次空投，後續按季度補發。",
+      ja: "メインネット稼働後 30 日以内に初回エアドロップ、以降は四半期ごとに追加配布。",
+      ko: "메인넷 가동 후 30일 이내 첫 에어드롭, 이후 분기별 보충.",
+      th: "Airdrop รอบแรกภายใน 30 วันหลังเปิดเมนเน็ต และทยอยเพิ่มทุกไตรมาส",
+      vi: "Đợt airdrop đầu trong 30 ngày sau khi mainnet ra mắt, bổ sung hàng quý.",
+    },
   },
 ];
 
 // ─── Tutorial Guide Card ────────────────────────────────────────────────────
 // Only 2 guide steps — connect+bind happen BEFORE guide card appears
-const GUIDE_STEPS = [
+interface GuideStep { title: LocaleMap; desc: LocaleMap; icon: typeof Coins; color: string }
+const GUIDE_STEPS: GuideStep[] = [
   {
-    en: "Purchase Node",
-    zh: "选择并购买节点",
-    descEn: "Referrer bound. Now choose a node tier, approve USDT, and confirm. Your node activates on-chain instantly.",
-    descZh: "推荐关系已绑定。选择节点等级，授权 USDT 并确认支付，节点在链上立即激活。",
+    title: {
+      en: "Purchase Node", zh: "选择并购买节点", "zh-TW": "選擇並購買節點",
+      ja: "ノードを選んで購入", ko: "노드 선택 및 구매", th: "เลือกและซื้อโหนด", vi: "Chọn và mua node",
+    },
+    desc: {
+      en: "Referrer bound. Now choose a node tier, approve USDT, and confirm. Your node activates on-chain instantly.",
+      zh: "推荐关系已绑定。选择节点等级，授权 USDT 并确认支付，节点在链上立即激活。",
+      "zh-TW": "推薦關係已綁定。選擇節點等級，授權 USDT 並確認支付，節點在鏈上立即啟動。",
+      ja: "リファラーは登録済み。等級を選び USDT を承認・確定すると、ノードがオンチェーンで即時有効化されます。",
+      ko: "리퍼러 바인딩 완료. 등급을 선택하고 USDT를 승인/확정하면 노드가 즉시 활성화됩니다.",
+      th: "ผูกผู้แนะนำเรียบร้อย เลือกระดับโหนด อนุมัติ USDT และยืนยัน — โหนดจะเปิดใช้บนเชนทันที",
+      vi: "Đã liên kết người giới thiệu. Chọn cấp, approve USDT và xác nhận — node kích hoạt on-chain ngay.",
+    },
     icon: Coins,
     color: "emerald",
   },
   {
-    en: "All Done — Entering Dashboard",
-    zh: "完成 · 正在进入数据面板",
-    descEn: "Node purchased successfully. Loading your dashboard with simulated on-chain data.",
-    descZh: "节点购买成功，正在加载模拟链上数据面板。",
+    title: {
+      en: "All Done — Entering Dashboard",
+      zh: "完成 · 正在进入数据面板",
+      "zh-TW": "完成 · 正在進入資料面板",
+      ja: "完了 · ダッシュボードへ移動中",
+      ko: "완료 · 대시보드로 이동 중",
+      th: "เสร็จสิ้น · กำลังเข้าสู่ Dashboard",
+      vi: "Hoàn tất · Đang vào Dashboard",
+    },
+    desc: {
+      en: "Node purchased successfully. Loading your dashboard with simulated on-chain data.",
+      zh: "节点购买成功，正在加载模拟链上数据面板。",
+      "zh-TW": "節點購買成功，正在載入模擬鏈上數據面板。",
+      ja: "ノード購入成功。シミュレートされたオンチェーン データのダッシュボードを読み込み中。",
+      ko: "노드 구매 완료. 시뮬레이션된 온체인 데이터 대시보드를 불러오는 중.",
+      th: "ซื้อโหนดสำเร็จ กำลังโหลด Dashboard พร้อมข้อมูลจำลองบนเชน",
+      vi: "Mua node thành công. Đang tải Dashboard với dữ liệu on-chain mô phỏng.",
+    },
     icon: TrendingUp,
     color: "cyan",
   },
@@ -142,6 +203,7 @@ interface GuideCardProps {
 
 function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: GuideCardProps) {
   const showZh = useShowZh();
+  const tt = useT();
   // step 1 → guideIdx 0 (Purchase Node), step 2 → guideIdx 1 (Done)
   const guideIdx = Math.min(step - 1, 1);
   const guide = GUIDE_STEPS[guideIdx];
@@ -172,7 +234,7 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${c.text}`}>
-              教学模式 · Tutorial
+              {tt({ zh: "教学模式 · Tutorial", "zh-TW": "教學模式 · Tutorial", en: "Tutorial Mode", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Hướng dẫn" })}
             </span>
             {/* Step dots */}
             <div className="flex items-center gap-1 ml-1">
@@ -189,10 +251,10 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
           </div>
 
           <p className="text-sm font-semibold text-foreground mb-0.5">
-            {showZh ? guide.zh : guide.en}
+            {tt(guide.title)}
           </p>
           <p className="text-[12px] text-muted-foreground leading-relaxed">
-            {showZh ? guide.descZh : guide.descEn}
+            {tt(guide.desc)}
           </p>
         </div>
 
@@ -201,7 +263,7 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
           {step === 2 && (
             <div className="flex items-center gap-1.5 text-xs text-cyan-300">
               <Loader2 className="h-3 w-3 animate-spin" />
-              {showZh ? "跳转中..." : "Redirecting..."}
+              {tt({ zh: "跳转中...", "zh-TW": "跳轉中...", en: "Redirecting...", ja: "移動中…", ko: "이동 중…", th: "กำลังเปลี่ยนหน้า…", vi: "Đang chuyển hướng…" })}
             </div>
           )}
           <button
@@ -222,7 +284,7 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
             {connectedAddr.slice(0, 6)}…{connectedAddr.slice(-6)}
           </span>
           <span className="text-[10px] text-muted-foreground/50 ml-1">
-            {showZh ? "· 钱包已连接" : "· Wallet connected"}
+            {tt({ zh: "· 钱包已连接", "zh-TW": "· 錢包已連接", en: "· Wallet connected", ja: "· ウォレット接続済", ko: "· 지갑 연결됨", th: "· เชื่อมกระเป๋าแล้ว", vi: "· Ví đã kết nối" })}
           </span>
         </div>
       )}
@@ -240,7 +302,7 @@ interface TutorialBindModalProps {
 }
 
 function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
-  const showZh = useShowZh();
+  const tt = useT();
   const [input, setInput] = useState("0x0000000000000000000000000000000000000001");
   const [txState, setTxState] = useState<BindTxState>("idle");
 
@@ -268,16 +330,22 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
               <UserPlus className="h-4 w-4 text-amber-400" />
             </div>
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">
-              {showZh ? "步骤 2 / 3 · 绑定推荐关系" : "Step 2 / 3 · Bind Referrer"}
+              {tt({ zh: "步骤 2 / 3 · 绑定推荐关系", "zh-TW": "步驟 2 / 3 · 綁定推薦關係", en: "Step 2 / 3 · Bind Referrer", ja: "ステップ 2 / 3 · リファラー登録", ko: "2 / 3 단계 · 리퍼러 바인딩", th: "ขั้นที่ 2 / 3 · ผูกผู้แนะนำ", vi: "Bước 2 / 3 · Liên kết giới thiệu" })}
             </span>
           </div>
           <DialogTitle className="text-xl font-bold">
-            {showZh ? "绑定推荐人" : "Bind Referrer"}
+            {tt({ zh: "绑定推荐人", "zh-TW": "綁定推薦人", en: "Bind Referrer", ja: "リファラーを登録", ko: "리퍼러 바인딩", th: "ผูกผู้แนะนำ", vi: "Liên kết người giới thiệu" })}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
-            {showZh
-              ? "每个钱包只能绑定一次。绑定成功后即可购买节点。"
-              : "Each wallet binds exactly once. After binding you can purchase a node."}
+            {tt({
+              zh: "每个钱包只能绑定一次。绑定成功后即可购买节点。",
+              "zh-TW": "每個錢包只能綁定一次。綁定成功後即可購買節點。",
+              en: "Each wallet binds exactly once. After binding you can purchase a node.",
+              ja: "各ウォレットは一度だけ登録できます。登録後にノードを購入できます。",
+              ko: "지갑당 한 번만 바인딩됩니다. 바인딩 후 노드를 구매할 수 있습니다.",
+              th: "แต่ละกระเป๋าผูกได้ครั้งเดียว หลังจากนั้นจึงซื้อโหนดได้",
+              vi: "Mỗi ví chỉ liên kết một lần. Sau khi liên kết bạn có thể mua node.",
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -286,15 +354,21 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
           <div className="flex items-center gap-2 rounded-lg border border-cyan-500/25 bg-cyan-500/8 px-3 py-2">
             <BookOpen className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
             <span className="text-[11px] text-cyan-300">
-              {showZh
-                ? "教学模式：已预填 ROOT 地址，可直接点击「链上绑定」"
-                : "Tutorial: ROOT address pre-filled — click 'Bind On-chain' to proceed"}
+              {tt({
+                zh: "教学模式：已预填 ROOT 地址，可直接点击「链上绑定」",
+                "zh-TW": "教學模式：已預填 ROOT 地址，可直接點擊「鏈上綁定」",
+                en: "Tutorial: ROOT address pre-filled — click 'Bind On-chain' to proceed",
+                ja: "チュートリアル：ROOT アドレスを入力済み — 「オンチェーン登録」をクリックして進めてください",
+                ko: "튜토리얼: ROOT 주소가 미리 입력됨 — '온체인 바인딩'을 눌러 진행하세요",
+                th: "ทูตอเรียล: เติม ROOT ไว้แล้ว — คลิก 'ผูกบนเชน' เพื่อดำเนินการ",
+                vi: "Hướng dẫn: Đã điền sẵn ROOT — bấm 'Liên kết on-chain' để tiếp tục",
+              })}
             </span>
           </div>
 
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">
-              {showZh ? "推荐人钱包地址" : "Referrer Wallet Address"}
+              {tt({ zh: "推荐人钱包地址", "zh-TW": "推薦人錢包地址", en: "Referrer Wallet Address", ja: "リファラー ウォレット アドレス", ko: "리퍼러 지갑 주소", th: "ที่อยู่ผู้แนะนำ", vi: "Địa chỉ ví người giới thiệu" })}
             </Label>
             <Input
               value={input}
@@ -309,28 +383,36 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
                 <motion.p key="checking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  {showZh ? "校验推荐人..." : "Validating referrer…"}
+                  {tt({ zh: "校验推荐人...", "zh-TW": "驗證推薦人...", en: "Validating referrer…", ja: "リファラーを検証中…", ko: "리퍼러 검증 중…", th: "กำลังตรวจสอบผู้แนะนำ…", vi: "Đang xác thực người giới thiệu…" })}
                 </motion.p>
               )}
               {txState === "ok" && (
                 <motion.p key="ok" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="text-[11px] text-emerald-300 flex items-center gap-1.5">
                   <ShieldCheck className="h-3 w-3" />
-                  {showZh ? "已验证 · 推荐人有效（ROOT）" : "Validated · Referrer is ROOT (network origin)"}
+                  {tt({
+                    zh: "已验证 · 推荐人有效（ROOT）",
+                    "zh-TW": "已驗證 · 推薦人有效（ROOT）",
+                    en: "Validated · Referrer is ROOT (network origin)",
+                    ja: "検証済 · リファラーは ROOT（ネットワーク基点）",
+                    ko: "검증 완료 · 리퍼러는 ROOT (네트워크 기점)",
+                    th: "ตรวจสอบแล้ว · ผู้แนะนำคือ ROOT (ต้นทางเครือข่าย)",
+                    vi: "Đã xác thực · Người giới thiệu là ROOT (gốc mạng)",
+                  })}
                 </motion.p>
               )}
               {txState === "submitting" && (
                 <motion.p key="submitting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="text-[11px] text-amber-300 flex items-center gap-1.5">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  {showZh ? "模拟链上提交中..." : "Simulating on-chain submission…"}
+                  {tt({ zh: "模拟链上提交中...", "zh-TW": "模擬鏈上提交中...", en: "Simulating on-chain submission…", ja: "オンチェーン送信を模擬中…", ko: "온체인 제출 시뮬레이션 중…", th: "กำลังจำลองการส่งบนเชน…", vi: "Đang mô phỏng gửi on-chain…" })}
                 </motion.p>
               )}
               {txState === "confirmed" && (
                 <motion.p key="confirmed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="text-[11px] text-emerald-300 flex items-center gap-1.5">
                   <CheckCircle2 className="h-3 w-3" />
-                  {showZh ? "交易已确认 · 绑定成功！" : "Transaction confirmed · Bound successfully!"}
+                  {tt({ zh: "交易已确认 · 绑定成功！", "zh-TW": "交易已確認 · 綁定成功！", en: "Transaction confirmed · Bound successfully!", ja: "トランザクション確定 · 登録成功！", ko: "트랜잭션 확정 · 바인딩 성공!", th: "ธุรกรรมยืนยันแล้ว · ผูกสำเร็จ!", vi: "Giao dịch đã xác nhận · Liên kết thành công!" })}
                 </motion.p>
               )}
             </AnimatePresence>
@@ -343,7 +425,7 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
               disabled={txState === "submitting" || txState === "confirmed"}
               className="flex-1"
             >
-              {showZh ? "稍后" : "Later"}
+              {tt({ zh: "稍后", "zh-TW": "稍後", en: "Later", ja: "あとで", ko: "나중에", th: "ภายหลัง", vi: "Để sau" })}
             </Button>
             <Button
               className="flex-1 font-semibold"
@@ -352,14 +434,20 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
             >
               {txState === "submitting" || txState === "confirmed"
                 ? <Loader2 className="h-4 w-4 animate-spin" />
-                : showZh ? "链上绑定（模拟）" : "Bind On-chain (simulated)"}
+                : tt({ zh: "链上绑定（模拟）", "zh-TW": "鏈上綁定（模擬）", en: "Bind On-chain (simulated)", ja: "オンチェーン登録（模擬）", ko: "온체인 바인딩 (시뮬레이션)", th: "ผูกบนเชน (จำลอง)", vi: "Liên kết on-chain (mô phỏng)" })}
             </Button>
           </div>
 
           <p className="text-[10px] text-muted-foreground/50 text-center">
-            {showZh
-              ? "真实操作会消耗少量 BNB 作为 Gas 费"
-              : "Real usage consumes a small amount of BNB as gas fee"}
+            {tt({
+              zh: "真实操作会消耗少量 BNB 作为 Gas 费",
+              "zh-TW": "真實操作會消耗少量 BNB 作為 Gas 費",
+              en: "Real usage consumes a small amount of BNB as gas fee",
+              ja: "実運用ではガス代として少量の BNB を消費します",
+              ko: "실제 사용 시 가스비로 소량의 BNB를 소모합니다",
+              th: "การใช้งานจริงจะเสีย BNB เล็กน้อยเป็นค่าแก๊ส",
+              vi: "Khi dùng thật sẽ tốn một lượng nhỏ BNB làm phí gas",
+            })}
           </p>
         </div>
       </DialogContent>
@@ -377,7 +465,7 @@ interface TutorialPurchaseModalProps {
 }
 
 function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseModalProps) {
-  const showZh = useShowZh();
+  const tt = useT();
   const [selected, setSelected] = useState<NodeId | null>(null);
   const [txState, setTxState] = useState<BuyTxState>("select");
 
@@ -407,21 +495,37 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
               <Coins className="h-3.5 w-3.5 text-amber-400" />
             </div>
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-300 truncate">
-              {showZh ? "步骤 3 / 3 · 选择节点并购买" : "Step 3 / 3 · Select Node & Purchase"}
+              {tt({ zh: "步骤 3 / 3 · 选择节点并购买", "zh-TW": "步驟 3 / 3 · 選擇節點並購買", en: "Step 3 / 3 · Select Node & Purchase", ja: "ステップ 3 / 3 · ノード選択 & 購入", ko: "3 / 3 단계 · 노드 선택 & 구매", th: "ขั้นที่ 3 / 3 · เลือกโหนด & ซื้อ", vi: "Bước 3 / 3 · Chọn node & mua" })}
             </span>
           </div>
           <DialogTitle className="text-base font-bold leading-tight">
-            {showZh ? "购买节点席位" : "Purchase Node Seat"}
+            {tt({ zh: "购买节点席位", "zh-TW": "購買節點席位", en: "Purchase Node Seat", ja: "ノード席を購入", ko: "노드 좌석 구매", th: "ซื้อที่นั่งโหนด", vi: "Mua ghế node" })}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-[11px] leading-snug">
-            {showZh ? "选择适合你的节点等级，支付 USDT 即可立即激活。" : "Choose your tier and pay USDT to activate instantly."}
+            {tt({
+              zh: "选择适合你的节点等级，支付 USDT 即可立即激活。",
+              "zh-TW": "選擇適合你的節點等級，支付 USDT 即可立即啟動。",
+              en: "Choose your tier and pay USDT to activate instantly.",
+              ja: "等級を選び USDT を支払うと即時有効化されます。",
+              ko: "등급을 선택하고 USDT를 결제하면 즉시 활성화됩니다.",
+              th: "เลือกระดับและชำระ USDT เพื่อเปิดใช้งานทันที",
+              vi: "Chọn cấp và thanh toán USDT để kích hoạt ngay.",
+            })}
           </DialogDescription>
 
           {/* Tutorial hint */}
           <div className="flex items-center gap-2 rounded-lg border border-cyan-500/25 bg-cyan-500/8 px-3 py-2">
             <BookOpen className="h-3 w-3 text-cyan-400 shrink-0" />
             <span className="text-[10px] text-cyan-300">
-              {showZh ? "教学模式：选择节点后点击按钮，系统模拟链上购买流程" : "Tutorial: Select a tier then click purchase — the flow is fully simulated"}
+              {tt({
+                zh: "教学模式：选择节点后点击按钮，系统模拟链上购买流程",
+                "zh-TW": "教學模式：選擇節點後點擊按鈕，系統模擬鏈上購買流程",
+                en: "Tutorial: Select a tier then click purchase — the flow is fully simulated",
+                ja: "チュートリアル：ノードを選択してボタンを押すと、購入フローを模擬実行します",
+                ko: "튜토리얼: 등급을 선택하고 버튼을 누르면 구매 흐름이 시뮬레이션됩니다",
+                th: "ทูตอเรียล: เลือกโหนดแล้วกดปุ่ม ระบบจะจำลองขั้นตอนซื้อบนเชน",
+                vi: "Hướng dẫn: Chọn cấp rồi bấm nút — quy trình được mô phỏng đầy đủ",
+              })}
             </span>
           </div>
         </DialogHeader>
@@ -469,9 +573,9 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
                     </span>
                   </div>
                   <div className="text-[10px] text-muted-foreground/85 truncate leading-tight">
-                    <span>{remaining} {showZh ? "席位剩余" : "seats left"}</span>
+                    <span>{remaining} {tt({ zh: "席位剩余", "zh-TW": "席位剩餘", en: "seats left", ja: "席残り", ko: "좌석 남음", th: "ที่เหลือ", vi: "ghế còn" })}</span>
                     <span className="opacity-40 mx-1">·</span>
-                    <span className="text-amber-300/85">{directPct}% {showZh ? "直推返佣" : "direct commission"}</span>
+                    <span className="text-amber-300/85">{directPct}% {tt({ zh: "直推返佣", "zh-TW": "直推返佣", en: "direct commission", ja: "直推報酬", ko: "직추천 커미션", th: "คอมมิชชันตรง", vi: "hoa hồng trực tiếp" })}</span>
                   </div>
                 </div>
                 <div className="text-right shrink-0 leading-none">
@@ -491,35 +595,35 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
             <motion.div key="approving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="flex items-center gap-2 rounded-md border border-blue-700/30 bg-blue-950/20 px-2.5 py-1.5 text-[11px] text-blue-200">
               <Loader2 className="h-3 w-3 animate-spin" />
-              {showZh ? "模拟 USDT 授权中..." : "Simulating USDT approval…"}
+              {tt({ zh: "模拟 USDT 授权中...", "zh-TW": "模擬 USDT 授權中...", en: "Simulating USDT approval…", ja: "USDT 承認を模擬中…", ko: "USDT 승인 시뮬레이션 중…", th: "กำลังจำลองอนุมัติ USDT…", vi: "Đang mô phỏng approve USDT…" })}
             </motion.div>
           )}
           {txState === "buying" && (
             <motion.div key="buying" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="flex items-center gap-2 rounded-md border border-amber-700/30 bg-amber-950/20 px-2.5 py-1.5 text-[11px] text-amber-200">
               <Loader2 className="h-3 w-3 animate-spin" />
-              {showZh ? "模拟节点购买交易中..." : "Simulating node purchase transaction…"}
+              {tt({ zh: "模拟节点购买交易中...", "zh-TW": "模擬節點購買交易中...", en: "Simulating node purchase transaction…", ja: "ノード購入トランザクションを模擬中…", ko: "노드 구매 트랜잭션 시뮬레이션 중…", th: "กำลังจำลองธุรกรรมซื้อโหนด…", vi: "Đang mô phỏng giao dịch mua node…" })}
             </motion.div>
           )}
           {txState === "done" && (
             <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="flex items-center gap-2 rounded-md border border-emerald-700/30 bg-emerald-950/20 px-2.5 py-1.5 text-[11px] text-emerald-200">
               <CheckCircle2 className="h-3 w-3" />
-              {showZh ? "购买成功！节点已激活，正在跳转..." : "Purchase confirmed! Node activated — redirecting…"}
+              {tt({ zh: "购买成功！节点已激活，正在跳转...", "zh-TW": "購買成功！節點已啟動，正在跳轉...", en: "Purchase confirmed! Node activated — redirecting…", ja: "購入完了！ノード有効化 — 移動中…", ko: "구매 완료! 노드 활성화 — 이동 중…", th: "ซื้อสำเร็จ! โหนดเปิดใช้งาน — กำลังเปลี่ยนหน้า…", vi: "Mua thành công! Node kích hoạt — đang chuyển…" })}
             </motion.div>
           )}
           {txState === "select" && !selected && (
             <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
               <AlertCircle className="h-3 w-3" />
-              {showZh ? "请先选择一个节点等级" : "Please select a node tier first"}
+              {tt({ zh: "请先选择一个节点等级", "zh-TW": "請先選擇一個節點等級", en: "Please select a node tier first", ja: "まずノード等級を選択してください", ko: "먼저 노드 등급을 선택하세요", th: "โปรดเลือกระดับโหนดก่อน", vi: "Vui lòng chọn cấp node trước" })}
             </motion.div>
           )}
         </AnimatePresence>
 
         <div className="flex gap-2 pt-1">
           <Button variant="ghost" onClick={onClose} disabled={busy || txState === "done"} className="flex-1 h-9 text-sm">
-            {showZh ? "稍后" : "Later"}
+            {tt({ zh: "稍后", "zh-TW": "稍後", en: "Later", ja: "あとで", ko: "나중에", th: "ภายหลัง", vi: "Để sau" })}
           </Button>
           <Button
             className="flex-1 font-semibold gap-1.5 h-9 text-sm"
@@ -530,7 +634,7 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
               ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
               : <>
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  {showZh ? "授权并购买（模拟）" : "Approve & Buy (simulated)"}
+                  {tt({ zh: "授权并购买（模拟）", "zh-TW": "授權並購買（模擬）", en: "Approve & Buy (simulated)", ja: "承認 & 購入（模擬）", ko: "승인 & 구매 (시뮬레이션)", th: "อนุมัติ & ซื้อ (จำลอง)", vi: "Approve & mua (mô phỏng)" })}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </>
             }
@@ -543,15 +647,60 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
 
 // ─── Tutorial 3-step visual guide ──────────────────────────────────────────
 // Connect+Bind are one step: the community contract checks registration on connect
-const STEPS = [
-  { en: "Connect & Bind Referrer", zh: "连接钱包 · 绑定推荐关系", descEn: "Connect your wallet — the contract checks community registration. If unbound, binding is required before you can proceed.", descZh: "连接钱包时，合约自动检测是否已注册推荐关系。未绑定则需立即完成链上绑定，每个钱包仅需操作一次。" },
-  { en: "Choose Node",     zh: "选择节点",     descEn: "Pick the tier that matches your stake — L1 to L5",              descZh: "按投资规模选择节点等级（L1–L5）" },
-  { en: "Pay & Activate",  zh: "支付激活",     descEn: "Approve USDT and pay; the node activates on contract confirm",  descZh: "授权并支付 USDT，合约确认后节点即时激活" },
+interface JoinStep { title: LocaleMap; desc: LocaleMap }
+const STEPS: JoinStep[] = [
+  {
+    title: {
+      en: "Connect & Bind Referrer", zh: "连接钱包 · 绑定推荐关系", "zh-TW": "連接錢包 · 綁定推薦關係",
+      ja: "ウォレット接続 · リファラー登録", ko: "지갑 연결 · 리퍼러 바인딩",
+      th: "เชื่อมกระเป๋า · ผูกผู้แนะนำ", vi: "Kết nối ví · Liên kết người giới thiệu",
+    },
+    desc: {
+      en: "Connect your wallet — the contract checks community registration. If unbound, binding is required before you can proceed.",
+      zh: "连接钱包时，合约自动检测是否已注册推荐关系。未绑定则需立即完成链上绑定，每个钱包仅需操作一次。",
+      "zh-TW": "連接錢包時，合約自動檢測是否已註冊推薦關係。未綁定則需立即完成鏈上綁定，每個錢包僅需操作一次。",
+      ja: "ウォレット接続時に契約が登録状況を確認。未登録なら即時オンチェーン登録が必要です（各ウォレット 1 回のみ）。",
+      ko: "지갑 연결 시 컨트랙트가 등록 여부를 확인합니다. 미등록이면 즉시 온체인 바인딩이 필요하며, 지갑당 1회만 하면 됩니다.",
+      th: "เมื่อเชื่อมกระเป๋า สัญญาจะตรวจสอบการลงทะเบียน หากยังไม่ผูก ต้องผูกบนเชนทันที (แต่ละกระเป๋าทำครั้งเดียว)",
+      vi: "Khi kết nối ví, hợp đồng kiểm tra đăng ký cộng đồng. Nếu chưa liên kết, phải hoàn tất ngay (mỗi ví chỉ một lần).",
+    },
+  },
+  {
+    title: {
+      en: "Choose Node", zh: "选择节点", "zh-TW": "選擇節點",
+      ja: "ノード選択", ko: "노드 선택", th: "เลือกโหนด", vi: "Chọn node",
+    },
+    desc: {
+      en: "Pick the tier that matches your stake — L1 to L5",
+      zh: "按投资规模选择节点等级（L1–L5）",
+      "zh-TW": "依投資規模選擇節點等級（L1–L5）",
+      ja: "投資規模に合わせてノード等級を選択（L1–L5）",
+      ko: "투자 규모에 맞는 노드 등급 선택 (L1–L5)",
+      th: "เลือกระดับโหนดตามขนาดการลงทุน (L1–L5)",
+      vi: "Chọn cấp node phù hợp khoản đầu tư — L1 đến L5",
+    },
+  },
+  {
+    title: {
+      en: "Pay & Activate", zh: "支付激活", "zh-TW": "支付啟動",
+      ja: "支払いと有効化", ko: "결제 및 활성화", th: "ชำระและเปิดใช้งาน", vi: "Thanh toán & kích hoạt",
+    },
+    desc: {
+      en: "Approve USDT and pay; the node activates on contract confirm",
+      zh: "授权并支付 USDT，合约确认后节点即时激活",
+      "zh-TW": "授權並支付 USDT，合約確認後節點即時啟動",
+      ja: "USDT を承認して支払うと、契約確定後にノードが即時有効化",
+      ko: "USDT 승인 후 결제하면 컨트랙트 확정 즉시 노드 활성화",
+      th: "อนุมัติและชำระ USDT โหนดจะเปิดใช้งานทันทีเมื่อสัญญายืนยัน",
+      vi: "Approve và thanh toán USDT; node được kích hoạt ngay khi hợp đồng xác nhận",
+    },
+  },
 ];
 
 // ─── Main Tutorial Page ─────────────────────────────────────────────────────
 export default function Tutorial() {
   const showZh = useShowZh();
+  const tt = useT();
   const { enterDemo } = useDemoStore();
   const [, navigate] = useLocation();
   const account = useActiveAccount();
@@ -610,14 +759,20 @@ export default function Tutorial() {
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400 block">
-                教学模式 · Tutorial
+                {tt({ zh: "教学模式 · Tutorial", "zh-TW": "教學模式 · Tutorial", en: "Tutorial Mode", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Chế độ hướng dẫn" })}
               </span>
               <span className="text-[12px] text-muted-foreground leading-snug">
                 {isChecking
-                  ? (showZh ? "正在检测 community 合约注册状态..." : "Checking community contract registration...")
-                  : showZh
-                    ? "连接钱包时合约自动检测是否已绑定推荐关系，未注册则需立即完成绑定"
-                    : "On connect, the contract checks your community registration — if unbound, binding is required first"}
+                  ? tt({ zh: "正在检测 community 合约注册状态...", "zh-TW": "正在檢測 community 合約註冊狀態...", en: "Checking community contract registration...", ja: "community 契約の登録状況を確認中…", ko: "community 컨트랙트 등록 상태 확인 중…", th: "กำลังตรวจสอบการลงทะเบียนสัญญา community…", vi: "Đang kiểm tra đăng ký hợp đồng community…" })
+                  : tt({
+                      zh: "连接钱包时合约自动检测是否已绑定推荐关系，未注册则需立即完成绑定",
+                      "zh-TW": "連接錢包時合約自動檢測是否已綁定推薦關係，未註冊則需立即完成綁定",
+                      en: "On connect, the contract checks your community registration — if unbound, binding is required first",
+                      ja: "ウォレット接続時に契約が登録状況を確認 — 未登録なら先に登録が必要です",
+                      ko: "지갑 연결 시 컨트랙트가 등록 여부를 확인 — 미등록이면 먼저 바인딩이 필요합니다",
+                      th: "เมื่อเชื่อมกระเป๋า สัญญาจะตรวจสอบการลงทะเบียน — ยังไม่ผูกต้องผูกก่อน",
+                      vi: "Khi kết nối ví, hợp đồng kiểm tra đăng ký — chưa liên kết thì phải làm trước",
+                    })}
               </span>
             </div>
           </div>
@@ -626,7 +781,7 @@ export default function Tutorial() {
             {isChecking ? (
               <div className="flex items-center gap-1.5 text-xs text-cyan-300 px-3">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                {showZh ? "检测中..." : "Checking..."}
+                {tt({ zh: "检测中...", "zh-TW": "檢測中...", en: "Checking...", ja: "確認中…", ko: "확인 중…", th: "กำลังตรวจสอบ…", vi: "Đang kiểm tra…" })}
               </div>
             ) : account?.address ? (
               <div className="flex items-center gap-2">
@@ -640,7 +795,7 @@ export default function Tutorial() {
                   className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
                 >
                   <ArrowRight className="h-3 w-3" />
-                  {showZh ? "使用此钱包" : "Use This Wallet"}
+                  {tt({ zh: "使用此钱包", "zh-TW": "使用此錢包", en: "Use This Wallet", ja: "このウォレットを使用", ko: "이 지갑 사용", th: "ใช้กระเป๋านี้", vi: "Dùng ví này" })}
                 </Button>
               </div>
             ) : (
@@ -650,7 +805,7 @@ export default function Tutorial() {
                 className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
               >
                 <Wallet className="h-3 w-3" />
-                {showZh ? "模拟连接钱包" : "Simulate Connect"}
+                {tt({ zh: "模拟连接钱包", "zh-TW": "模擬連接錢包", en: "Simulate Connect", ja: "接続を模擬", ko: "연결 시뮬레이션", th: "จำลองเชื่อมต่อ", vi: "Mô phỏng kết nối" })}
               </Button>
             )}
             <button
@@ -698,25 +853,25 @@ export default function Tutorial() {
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground leading-tight mb-4">
-            {showZh ? "符·节点权柄重铸" : "Node Tier Reforge"}
+            {tt({ zh: "符·节点权柄重铸", "zh-TW": "符·節點權柄重鑄", en: "Node Tier Reforge", ja: "符・ノード権限再構築", ko: "符・노드 권한 재구축", th: "การหลอมระดับโหนด · 符", vi: "Đúc lại Cấp Node · 符" })}
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-2">
-            {showZh ? "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构" : "5-Tier Nodes · Dual-Token Deflation · Institutional Returns"}
+            {tt({ zh: "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构", "zh-TW": "五級節點體系 · 雙TOKEN通縮經濟 · 機構級收益結構", en: "5-Tier Nodes · Dual-Token Deflation · Institutional Returns", ja: "5 段階ノード · デュアルトークン デフレ · 機関級リターン", ko: "5단계 노드 · 듀얼토큰 디플레이션 · 기관급 수익", th: "5 ระดับโหนด · เศรษฐกิจดีเฟลชันสองเหรียญ · ผลตอบแทนระดับสถาบัน", vi: "Hệ thống 5 cấp · Kinh tế giảm phát hai token · Lợi suất cấp tổ chức" })}
           </p>
           <p className="text-sm text-muted-foreground/60 max-w-xl mx-auto">
             RUNE Protocol Node Recruitment · Five-Tier System · Dual-Token Deflationary Economy
           </p>
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/30">
             {[
-              { en: "Total Seats",   zh: "总席位",     val: "2,420" },
-              { en: "Node Tiers",    zh: "节点等级",   val: "5" },
-              { en: "Opening Price", zh: "开盘价",     val: "$0.028" },
-              { en: "USDT APY",      zh: "年化收益率", val: "170.82%", gold: true },
-            ].map(({ en, zh, val, gold }) => (
-              <div key={en} className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/50 font-medium">{en}</div>
+              { label: { en: "Total Seats",   zh: "总席位",     "zh-TW": "總席位",     ja: "総席数",     ko: "총 좌석",   th: "ที่นั่งทั้งหมด", vi: "Tổng số ghế" }, val: "2,420" },
+              { label: { en: "Node Tiers",    zh: "节点等级",   "zh-TW": "節點等級",   ja: "ノード等級", ko: "노드 등급", th: "ระดับโหนด",     vi: "Cấp node"     }, val: "5" },
+              { label: { en: "Opening Price", zh: "开盘价",     "zh-TW": "開盤價",     ja: "開始価格",   ko: "오픈 가격", th: "ราคาเปิด",      vi: "Giá mở"        }, val: "$0.028" },
+              { label: { en: "USDT APY",      zh: "年化收益率", "zh-TW": "年化收益率", ja: "年利",       ko: "연 수익률", th: "APY USDT",      vi: "APY USDT"     }, val: "170.82%", gold: true },
+            ].map(({ label, val, gold }) => (
+              <div key={label.en} className="space-y-1">
+                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/50 font-medium">{label.en}</div>
                 <div className={`text-2xl sm:text-3xl font-bold leading-none ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
-                {showZh && <div className="text-[10px] text-muted-foreground/65">{zh}</div>}
+                {showZh && <div className="text-[10px] text-muted-foreground/65">{tt(label)}</div>}
               </div>
             ))}
           </div>
@@ -728,7 +883,7 @@ export default function Tutorial() {
         <div className="flex items-center gap-2 mb-6">
           <div className="h-px flex-1 bg-border/30" />
           <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
-            {showZh ? "节点等级 · Node Tiers" : "Node Tiers"}
+            {tt({ zh: "节点等级 · Node Tiers", "zh-TW": "節點等級 · Node Tiers", en: "Node Tiers", ja: "ノード等級", ko: "노드 등급", th: "ระดับโหนด · Node Tiers", vi: "Cấp node · Node Tiers" })}
           </h2>
           <div className="h-px flex-1 bg-border/30" />
         </div>
@@ -759,7 +914,7 @@ export default function Tutorial() {
                     <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${NODE_ACCENT[level]}`}>
                       {meta.nameEn}
                     </div>
-                    <div className="text-xl font-bold text-foreground">{showZh ? meta.nameCn : meta.nameEn}</div>
+                    <div className="text-xl font-bold text-foreground">{tt({ zh: meta.nameCn, "zh-TW": meta.nameCn, ja: meta.nameCn, ko: meta.nameCn, en: meta.nameEn, th: meta.nameEn, vi: meta.nameEn })}</div>
                   </div>
                   <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[level]}`}>
                     Lv.{i + 1}
@@ -768,15 +923,15 @@ export default function Tutorial() {
 
                 <div className="space-y-2.5 flex-1">
                   {[
-                    { labelZh: "投资门槛",     labelEn: "Investment",        val: `$${investment.toLocaleString()}`,   accent: true },
-                    { labelZh: "私募价格",     labelEn: "Private",            val: `$${stat.privatePrice.toFixed(3)}` },
-                    { labelZh: "席位总量",     labelEn: "Total Seats",        val: showZh ? `${seats.toLocaleString()} 席` : `${seats.toLocaleString()}` },
-                    { labelZh: "每日USDT收益", labelEn: "Daily USDT",         val: `$${stat.dailyUsdt}`,               accent: true },
-                    { labelZh: "子TOKEN空投",  labelEn: "Airdrop",            val: `${stat.airdropPerSeat.toLocaleString()} SUB` },
-                    { labelZh: "直推返佣",     labelEn: "Direct Commission",  val: `${directRatePct}%`,                accent: true },
-                  ].map(({ labelZh, labelEn, val, accent: isAccent }) => (
-                    <div key={labelEn} className="flex items-center justify-between gap-1">
-                      <span className="text-[11px] text-muted-foreground/60">{showZh ? labelZh : labelEn}</span>
+                    { label: { en: "Investment",        zh: "投资门槛",     "zh-TW": "投資門檻",     ja: "投資額",          ko: "투자 금액",     th: "เงินลงทุน",      vi: "Mức đầu tư"     }, val: `$${investment.toLocaleString()}`,           accent: true },
+                    { label: { en: "Private",           zh: "私募价格",     "zh-TW": "私募價格",     ja: "プライベート価格", ko: "프라이빗 가격", th: "ราคาพรีเซล",     vi: "Giá private"     }, val: `$${stat.privatePrice.toFixed(3)}` },
+                    { label: { en: "Total Seats",       zh: "席位总量",     "zh-TW": "席位總量",     ja: "総席数",          ko: "총 좌석",       th: "ที่นั่งทั้งหมด",  vi: "Tổng số ghế"   }, val: showZh ? `${seats.toLocaleString()} 席` : `${seats.toLocaleString()}` },
+                    { label: { en: "Daily USDT",        zh: "每日USDT收益", "zh-TW": "每日USDT收益", ja: "日次 USDT 収益",  ko: "일 USDT 수익",  th: "USDT ต่อวัน",   vi: "USDT mỗi ngày" }, val: `$${stat.dailyUsdt}`,                       accent: true },
+                    { label: { en: "Airdrop",           zh: "子TOKEN空投",  "zh-TW": "子TOKEN空投",  ja: "サブトークン エアドロップ", ko: "서브토큰 에어드롭", th: "Airdrop ลูก", vi: "Airdrop sub"   }, val: `${stat.airdropPerSeat.toLocaleString()} SUB` },
+                    { label: { en: "Direct Commission", zh: "直推返佣",     "zh-TW": "直推返佣",     ja: "直推紹介報酬",    ko: "직추천 커미션", th: "คอมมิชชันตรง",   vi: "Hoa hồng trực tiếp" }, val: `${directRatePct}%`,             accent: true },
+                  ].map(({ label, val, accent: isAccent }) => (
+                    <div key={label.en} className="flex items-center justify-between gap-1">
+                      <span className="text-[11px] text-muted-foreground/60">{tt(label)}</span>
                       <span className={`text-sm font-semibold ${isAccent ? NODE_ACCENT[level] : "text-foreground/90"}`}>{val}</span>
                     </div>
                   ))}
@@ -784,26 +939,34 @@ export default function Tutorial() {
 
                 <div className="mt-4 space-y-1.5">
                   <div className="flex justify-between text-[10px] text-muted-foreground/50">
-                    <span>{showZh ? "席位占用 Occupancy" : "Occupancy"}</span>
+                    <span>{tt({ zh: "席位占用 Occupancy", "zh-TW": "席位佔用 Occupancy", en: "Occupancy", ja: "席数充填", ko: "좌석 점유율", th: "อัตราจอง", vi: "Tỷ lệ lấp đầy" })}</span>
                     <span className={NODE_ACCENT[level]}>{occupiedPct}%</span>
                   </div>
                   <Progress value={occupiedPct} className={`h-1.5 bg-white/5 ${NODE_PROGRESS_BAR[level]}`} />
                   <div className="text-[10px] text-muted-foreground/40 text-right">
-                    {showZh ? `剩余 ${seatsRemaining.toLocaleString()} 席` : `${seatsRemaining.toLocaleString()} left`}
+                    {tt({
+                      zh: `剩余 ${seatsRemaining.toLocaleString()} 席`,
+                      "zh-TW": `剩餘 ${seatsRemaining.toLocaleString()} 席`,
+                      en: `${seatsRemaining.toLocaleString()} left`,
+                      ja: `残り ${seatsRemaining.toLocaleString()} 席`,
+                      ko: `${seatsRemaining.toLocaleString()} 좌석 남음`,
+                      th: `เหลือ ${seatsRemaining.toLocaleString()} ที่`,
+                      vi: `Còn ${seatsRemaining.toLocaleString()} ghế`,
+                    })}
                   </div>
                 </div>
 
                 {/* CTA — state changes as tutorial progresses */}
                 {!walletConnected ? (
                   <div className="mt-4 h-9 rounded-lg border border-dashed border-amber-700/30 bg-amber-950/10 flex items-center justify-center text-[11px] text-amber-200/70">
-                    {showZh ? "连接钱包后可购买" : "Connect wallet to purchase"}
+                    {tt({ zh: "连接钱包后可购买", "zh-TW": "連接錢包後可購買", en: "Connect wallet to purchase", ja: "ウォレット接続で購入可能", ko: "지갑을 연결하면 구매 가능", th: "เชื่อมกระเป๋าเพื่อซื้อ", vi: "Kết nối ví để mua" })}
                   </div>
                 ) : step === 3 ? (
                   <Button
                     variant="outline"
                     className="mt-4 w-full h-9 text-sm font-medium border-emerald-700/40 text-emerald-200 cursor-default"
                   >
-                    {showZh ? "已购买 · 查看面板" : "Purchased · Open Dashboard"}
+                    {tt({ zh: "已购买 · 查看面板", "zh-TW": "已購買 · 查看面板", en: "Purchased · Open Dashboard", ja: "購入済 · ダッシュボードへ", ko: "구매 완료 · 대시보드 열기", th: "ซื้อแล้ว · เปิด Dashboard", vi: "Đã mua · Mở Dashboard" })}
                   </Button>
                 ) : (
                   <Button
@@ -812,8 +975,8 @@ export default function Tutorial() {
                     className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[level]}`}
                   >
                     {step === 1
-                      ? showZh ? "请先完成绑定..." : "Complete binding first…"
-                      : showZh ? "立即购买 · Buy Now" : "Buy Now"
+                      ? tt({ zh: "请先完成绑定...", "zh-TW": "請先完成綁定...", en: "Complete binding first…", ja: "先にバインドを完了してください…", ko: "먼저 바인딩을 완료하세요…", th: "ผูกผู้แนะนำให้เสร็จก่อน…", vi: "Hoàn tất liên kết trước…" })
+                      : tt({ zh: "立即购买 · Buy Now", "zh-TW": "立即購買 · Buy Now", en: "Buy Now", ja: "今すぐ購入", ko: "지금 구매", th: "ซื้อเลย", vi: "Mua ngay" })
                     }
                   </Button>
                 )}
@@ -828,14 +991,14 @@ export default function Tutorial() {
         <div className="flex items-center gap-2">
           <div className="h-px flex-1 bg-border/30" />
           <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
-            {showZh ? "操作流程 · How It Works" : "How It Works"}
+            {tt({ zh: "操作流程 · How It Works", "zh-TW": "操作流程 · How It Works", en: "How It Works", ja: "操作フロー", ko: "진행 과정", th: "วิธีทำงาน", vi: "Cách hoạt động" })}
           </h2>
           <div className="h-px flex-1 bg-border/30" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {STEPS.map(({ en, zh, descEn, descZh }, idx) => (
+          {STEPS.map(({ title, desc }, idx) => (
             <motion.div
-              key={en}
+              key={title.en}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.08 }}
@@ -860,11 +1023,11 @@ export default function Tutorial() {
                 <span className={`text-sm font-semibold ${
                   idx < step ? "text-emerald-200" : idx === Math.min(step, 2) ? "text-cyan-200" : "text-foreground"
                 }`}>
-                  {showZh ? zh : en}
+                  {tt(title)}
                 </span>
               </div>
               <p className="text-[11px] text-muted-foreground/70 leading-relaxed pl-8">
-                {showZh ? descZh : descEn}
+                {tt(desc)}
               </p>
             </motion.div>
           ))}
@@ -876,18 +1039,18 @@ export default function Tutorial() {
         <div className="flex items-center gap-2">
           <div className="h-px flex-1 bg-border/30" />
           <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/60 px-3">
-            {showZh ? "常见问题 · FAQ" : "FAQ"}
+            {tt({ zh: "常见问题 · FAQ", "zh-TW": "常見問題 · FAQ", en: "FAQ", ja: "よくある質問", ko: "자주 묻는 질문", th: "คำถามที่พบบ่อย", vi: "Câu hỏi thường gặp" })}
           </h2>
           <div className="h-px flex-1 bg-border/30" />
         </div>
-        {FAQ_ITEMS.map(({ qEn, qZh, aEn, aZh }, i) => (
+        {FAQ_ITEMS.map(({ q, a }, i) => (
           <div key={i} className="rounded-xl border border-border/30 bg-card/20 overflow-hidden">
             <button
               type="button"
               onClick={() => setOpenFaq(openFaq === i ? null : i)}
               className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-medium hover:bg-white/[0.02] transition-colors"
             >
-              <span>{showZh ? qZh : qEn}</span>
+              <span>{tt(q)}</span>
               {openFaq === i
                 ? <ChevronUp className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                 : <ChevronDown className="h-4 w-4 text-muted-foreground/50 shrink-0" />}
@@ -902,7 +1065,7 @@ export default function Tutorial() {
                   className="overflow-hidden"
                 >
                   <p className="px-4 pb-4 text-[13px] text-muted-foreground/70 leading-relaxed border-t border-border/20 pt-3">
-                    {showZh ? aZh : aEn}
+                    {tt(a)}
                   </p>
                 </motion.div>
               )}
