@@ -432,7 +432,7 @@ export default function Recruit() {
               {tt({ zh: "符·节点权柄重铸", "zh-TW": "符·節點權柄重鑄", en: "Node Tier Reforge", ja: "符・ノード権限再構築", ko: "符・노드 권한 재구축", th: "การหลอมระดับโหนด · 符", vi: "Đúc lại Cấp Node · 符" })}
             </span>
           </h1>
-          <p className="text-sm sm:text-base text-zinc-300 max-w-2xl mx-auto leading-relaxed mb-1.5">
+          <p className="text-[11px] sm:text-sm md:text-base text-zinc-300 max-w-2xl mx-auto leading-relaxed mb-1.5 tracking-tight sm:tracking-normal">
             {tt({
               zh: "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构",
               "zh-TW": "五級節點體系 · 雙TOKEN通縮經濟 · 機構級收益結構",
