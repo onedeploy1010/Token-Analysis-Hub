@@ -64,11 +64,11 @@ interface OnChainNodeConfig {
 
 // ─── Node style maps ────────────────────────────────────────────────────────
 const NODE_BG: Record<string, string> = {
-  initial:  "from-[#0c1624] to-[#08111e] border-white/[0.07]",
-  mid:      "from-[#0c1624] to-[#08111e] border-white/[0.07]",
-  advanced: "from-[#0c1624] to-[#08111e] border-white/[0.07]",
-  super:    "from-[#0c1624] to-[#08111e] border-amber-400/[0.18]",
-  founder:  "from-[#0c1624] to-[#08111e] border-white/[0.07]",
+  initial:  "from-[#0c1624] to-[#08111e] border-zinc-500/40",
+  mid:      "from-[#0c1624] to-[#08111e] border-zinc-500/40",
+  advanced: "from-[#0c1624] to-[#08111e] border-zinc-500/40",
+  super:    "from-[#0c1624] to-[#08111e] border-amber-400/50",
+  founder:  "from-[#0c1624] to-[#08111e] border-zinc-500/40",
 };
 const NODE_ACCENT: Record<string, string> = {
   initial:  "text-amber-400",
@@ -92,11 +92,11 @@ const NODE_BTN: Record<string, string> = {
   founder:  "bg-amber-500/85 hover:bg-amber-400 text-black font-bold shadow-[0_0_18px_rgba(251,191,36,0.3)]",
 };
 const NODE_GLOW: Record<string, string> = {
-  initial:  "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
-  mid:      "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
-  advanced: "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
-  super:    "shadow-[0_2px_48px_rgba(251,191,36,0.12),inset_0_1px_0_rgba(251,191,36,0.06)]",
-  founder:  "shadow-[0_2px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]",
+  initial:  "shadow-[0_2px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)]",
+  mid:      "shadow-[0_2px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)]",
+  advanced: "shadow-[0_2px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)]",
+  super:    "shadow-[0_2px_40px_rgba(251,191,36,0.18),inset_0_1px_0_rgba(251,191,36,0.12)]",
+  founder:  "shadow-[0_2px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)]",
 };
 const NODE_PROGRESS_BAR: Record<string, string> = {
   initial:  "[&>div]:bg-gradient-to-r [&>div]:from-amber-600/70 [&>div]:to-amber-400/70",
@@ -106,11 +106,11 @@ const NODE_PROGRESS_BAR: Record<string, string> = {
   founder:  "[&>div]:bg-gradient-to-r [&>div]:from-amber-600/70 [&>div]:to-amber-400/70",
 };
 const NODE_TOP_GLOW: Record<string, string> = {
-  initial:  "from-white/8 to-transparent",
-  mid:      "from-white/8 to-transparent",
-  advanced: "from-white/8 to-transparent",
-  super:    "from-amber-400/45 to-transparent",
-  founder:  "from-white/8 to-transparent",
+  initial:  "from-zinc-300/35 to-transparent",
+  mid:      "from-zinc-300/35 to-transparent",
+  advanced: "from-zinc-300/35 to-transparent",
+  super:    "from-amber-300/60 to-transparent",
+  founder:  "from-zinc-300/35 to-transparent",
 };
 
 interface FaqItem { q: LocaleMap; a: LocaleMap }
@@ -634,23 +634,23 @@ export default function Recruit() {
              L5 path before the generic value props. */}
       <section>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-fuchsia-500/40" />
-          <h2 className="text-xs font-bold uppercase tracking-[0.22em] text-fuchsia-300 px-3 drop-shadow-[0_0_8px_rgba(217,70,239,0.6)]">
-            {tt({ zh: "创世节点 · GENESIS · L5", "zh-TW": "創世節點 · GENESIS · L5", en: "Genesis · L5", ja: "創世ノード · GENESIS · L5", ko: "제네시스 · GENESIS · L5", th: "Genesis Node · L5", vi: "Genesis Node · L5" })}
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-500/30" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.22em] text-amber-400 px-3 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">
+            {tt({ zh: "创世节点 · GENESIS · L6", "zh-TW": "創世節點 · GENESIS · L6", en: "Genesis · L6", ja: "創世ノード · GENESIS · L6", ko: "제네시스 · GENESIS · L6", th: "Genesis Node · L6", vi: "Genesis Node · L6" })}
           </h2>
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-fuchsia-500/40" />
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-500/30" />
         </div>
-        <div className="relative overflow-hidden rounded-2xl border border-fuchsia-500/60 bg-gradient-to-br from-fuchsia-950/80 via-purple-950/50 to-amber-950/25 p-5 sm:p-6 md:p-8 shadow-[0_0_60px_rgba(217,70,239,0.2)]">
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.25),transparent_55%)]" />
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.15),transparent_55%)]" />
+        <div className="relative overflow-hidden rounded-2xl border border-amber-400/20 bg-gradient-to-br from-[#0f1a28] to-[#080f1a] p-5 sm:p-6 md:p-8 shadow-[0_2px_48px_rgba(251,191,36,0.08),inset_0_1px_0_rgba(251,191,36,0.06)]">
+          {/* Subtle corner glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.07),transparent_60%)]" />
           <div className="relative space-y-5">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 shrink-0 rounded-full border border-fuchsia-500/50 bg-fuchsia-950/40 flex items-center justify-center">
-                <Zap className="h-5 w-5 text-fuchsia-300" />
+              <div className="h-10 w-10 shrink-0 rounded-full border border-amber-400/30 bg-amber-950/30 flex items-center justify-center">
+                <Zap className="h-5 w-5 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]" />
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-mono uppercase tracking-[0.22em] text-fuchsia-300/80">GENESIS · L5</div>
-                <div className="text-base sm:text-xl md:text-2xl font-bold leading-snug bg-gradient-to-r from-fuchsia-200 via-purple-200 to-amber-200 bg-clip-text text-transparent break-words">
+                <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-amber-400/60 mb-0.5">GENESIS · L6</div>
+                <div className="text-base sm:text-xl md:text-2xl font-bold leading-snug num text-amber-100 break-words">
                   {tt({
                     zh: "创世节点 · 条件触发",
                     "zh-TW": "創世節點 · 條件觸發",
@@ -663,7 +663,7 @@ export default function Recruit() {
                 </div>
               </div>
             </div>
-            <p className="text-sm text-foreground/90 leading-relaxed">
+            <p className="text-sm text-zinc-400 leading-relaxed">
               {tt({
                 zh: "创世节点非购买获得。任一等级节点持有者达成以下任意一个条件，即自动升级为创世节点，除保留已购节点的权重分红外，额外从核心激励池 10% 中按创世权重比例分配收益。",
                 "zh-TW": "創世節點非購買取得。任一等級節點持有者達成以下任一條件，即自動升級為創世節點，除保留已購節點的權重分紅外，額外從核心激勵池 10% 中按創世權重比例分配收益。",
@@ -675,63 +675,37 @@ export default function Recruit() {
               })}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 p-4 shadow-[0_0_20px_rgba(217,70,239,0.1)]">
-                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 mb-1.5 drop-shadow-[0_0_6px_rgba(217,70,239,0.6)]">
-                  {tt({ zh: "条件一 · 直推联创", "zh-TW": "條件一 · 直推聯創", en: "Condition 1 · Direct Founders", ja: "条件 1 · 直推 联创", ko: "조건 1 · 직추 联创", th: "เงื่อนไข 1 · แนะนำตรง 联创", vi: "Điều kiện 1 · Trực tiếp 联创" })}
+              {[
+                {
+                  label: { zh: "条件一 · 直推联创", "zh-TW": "條件一 · 直推聯創", en: "Condition 1 · Direct Founders", ja: "条件 1 · 直推 联创", ko: "조건 1 · 직추 联创", th: "เงื่อนไข 1 · แนะนำตรง 联创", vi: "Điều kiện 1 · Trực tiếp 联创" },
+                  body:  { zh: "直推 ≥ 3 个联创节点（符主 · L5）", "zh-TW": "直推 ≥ 3 個聯創節點（符主 · L5）", en: "Refer ≥ 3 founder-tier (符主 · L5) nodes directly", ja: "直接紹介で 联创ノード（符主 · L5）≥ 3 名", ko: "직접 추천으로 联창 노드(符主 · L5) 3개 이상", th: "แนะนำตรง ≥ 3 联创 (符主 · L5)", vi: "Trực tiếp giới thiệu ≥ 3 联创 (符主 · L5)" },
+                },
+                {
+                  label: { zh: "条件二 · 团队联创", "zh-TW": "條件二 · 團隊聯創", en: "Condition 2 · Team Founders", ja: "条件 2 · チーム 联创", ko: "조건 2 · 팀 联창", th: "เงื่อนไข 2 · ทีม 联创", vi: "Điều kiện 2 · Team 联창" },
+                  body:  { zh: "团队矩阵累计 ≥ 5 个联创节点（符主 · L5）", "zh-TW": "團隊矩陣累計 ≥ 5 個聯創節點（符主 · L5）", en: "Accumulate ≥ 5 founder-tier (符主 · L5) nodes across the full team", ja: "チーム全体で 联创ノード（符主 · L5）≥ 5 名を保有", ko: "팀 전체에서 联창 노드(符主 · L5) 5개 이상 누적", th: "สะสม ≥ 5 联创 (符主 · L5) ในทีมรวม", vi: "Tích lũy ≥ 5 联창 (符主 · L5) trên toàn team" },
+                },
+                {
+                  label: { zh: "条件三 · 团队超级", "zh-TW": "條件三 · 團隊超級", en: "Condition 3 · Team Supers", ja: "条件 3 · チーム 超级", ko: "조건 3 · 팀 超级", th: "เงื่อนไข 3 · ทีม 超级", vi: "Điều kiện 3 · Team 超级" },
+                  body:  { zh: "团队矩阵累计 ≥ 30 个超级节点（符魂 · L4）", "zh-TW": "團隊矩陣累計 ≥ 30 個超級節點（符魂 · L4）", en: "Accumulate ≥ 30 super-tier (符魂 · L4) nodes across the full team", ja: "チーム全体で 超级ノード（符魂 · L4）≥ 30 名を保有", ko: "팀 전체에서 超级 노드(符魂 · L4) 30개 이상 누적", th: "สะสม ≥ 30 超级 (符魂 · L4) ในทีมรวม", vi: "Tích lũy ≥ 30 超级 (符魂 · L4) trên toàn team" },
+                },
+              ].map(({ label, body }) => (
+                <div key={label.en} className="rounded-xl border border-white/[0.07] bg-[#0a1525]/60 p-4">
+                  <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-amber-400/70 mb-2">
+                    {tt(label)}
+                  </div>
+                  <p className="text-sm text-zinc-300 leading-snug">{tt(body)}</p>
                 </div>
-                <p className="text-sm text-foreground/95 leading-snug">
-                  {tt({
-                    zh: "直推 ≥ 3 个联创节点（符主 · L5）",
-                    "zh-TW": "直推 ≥ 3 個聯創節點（符主 · L5）",
-                    en: "Refer ≥ 3 founder-tier (符主 · L5) nodes directly",
-                    ja: "直接紹介で 联创ノード（符主 · L5）≥ 3 名",
-                    ko: "직접 추천으로 联创 노드(符主 · L5) 3개 이상",
-                    th: "แนะนำตรง ≥ 3 联创 (符主 · L5)",
-                    vi: "Trực tiếp giới thiệu ≥ 3 联创 (符主 · L5)",
-                  })}
-                </p>
-              </div>
-              <div className="rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 p-4 shadow-[0_0_20px_rgba(217,70,239,0.1)]">
-                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 mb-1.5 drop-shadow-[0_0_6px_rgba(217,70,239,0.6)]">
-                  {tt({ zh: "条件二 · 团队联创", "zh-TW": "條件二 · 團隊聯創", en: "Condition 2 · Team Founders", ja: "条件 2 · チーム 联创", ko: "조건 2 · 팀 联창", th: "เงื่อนไข 2 · ทีม 联创", vi: "Điều kiện 2 · Team 联创" })}
-                </div>
-                <p className="text-sm text-foreground/95 leading-snug">
-                  {tt({
-                    zh: "团队矩阵累计 ≥ 5 个联创节点（符主 · L5）",
-                    "zh-TW": "團隊矩陣累計 ≥ 5 個聯創節點（符主 · L5）",
-                    en: "Accumulate ≥ 5 founder-tier (符主 · L5) nodes across the full team",
-                    ja: "チーム全体で 联创ノード（符主 · L5）≥ 5 名を保有",
-                    ko: "팀 전체에서 联创 노드(符主 · L5) 5개 이상 누적",
-                    th: "สะสม ≥ 5 联创 (符主 · L5) ในทีมรวม",
-                    vi: "Tích lũy ≥ 5 联创 (符主 · L5) trên toàn team",
-                  })}
-                </p>
-              </div>
-              <div className="rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 p-4 shadow-[0_0_20px_rgba(217,70,239,0.1)]">
-                <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 mb-1.5 drop-shadow-[0_0_6px_rgba(217,70,239,0.6)]">
-                  {tt({ zh: "条件三 · 团队超级", "zh-TW": "條件三 · 團隊超級", en: "Condition 3 · Team Supers", ja: "条件 3 · チーム 超级", ko: "조건 3 · 팀 超级", th: "เงื่อนไข 3 · ทีม 超级", vi: "Điều kiện 3 · Team 超级" })}
-                </div>
-                <p className="text-sm text-foreground/95 leading-snug">
-                  {tt({
-                    zh: "团队矩阵累计 ≥ 30 个超级节点（符魂 · L4）",
-                    "zh-TW": "團隊矩陣累計 ≥ 30 個超級節點（符魂 · L4）",
-                    en: "Accumulate ≥ 30 super-tier (符魂 · L4) nodes across the full team",
-                    ja: "チーム全体で 超级ノード（符魂 · L4）≥ 30 名を保有",
-                    ko: "팀 전체에서 超级 노드(符魂 · L4) 30개 이상 누적",
-                    th: "สะสม ≥ 30 超级 (符魂 · L4) ในทีมรวม",
-                    vi: "Tích lũy ≥ 30 超级 (符魂 · L4) trên toàn team",
-                  })}
-                </p>
-              </div>
+              ))}
             </div>
-            <div className="rounded-xl border border-amber-500/50 bg-amber-950/40 p-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 shadow-[0_0_24px_rgba(251,191,36,0.15)]">
-              <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300 shrink-0 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]">
+            {/* Reward strip */}
+            <div className="rounded-xl border border-amber-400/20 bg-amber-950/20 p-4 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-amber-400/70 shrink-0">
                 {tt({ zh: "创世专属奖励", "zh-TW": "創世專屬獎勵", en: "Genesis exclusive reward", ja: "創世専用リワード", ko: "제네시스 전용 보상", th: "รางวัลเฉพาะ Genesis", vi: "Phần thưởng Genesis" })}
               </span>
-              <span className="text-base font-bold tabular-nums text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]">
+              <span className="num text-xl text-amber-300 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">
                 {tt({ zh: "核心激励池 10%", "zh-TW": "核心激勵池 10%", en: "10% of core incentive pool", ja: "コア インセンティブ プール 10%", ko: "코어 인센티브 풀 10%", th: "10% ของพูลแรงจูงใจหลัก", vi: "10% pool khuyến khích chính" })}
               </span>
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-zinc-500">
                 {tt({ zh: "按创世节点权重占比加权分配", "zh-TW": "依創世節點權重佔比加權分配", en: "weighted by Genesis-peer node score", ja: "創世ノードの重み比率で按分", ko: "제네시스 노드 가중치 비율로 분배", th: "แบ่งตามน้ำหนักของโหนด Genesis", vi: "phân bổ theo trọng số node Genesis" })}
               </span>
             </div>
@@ -764,9 +738,6 @@ export default function Recruit() {
                 th: "MOTHER TOKEN (RUNE) ผูกกับ TLP pool, SUB เผาต่อเนื่อง — ดีเฟลชันสองทางขับเคลื่อนมูลค่าระยะยาว",
                 vi: "MOTHER TOKEN (RUNE) gắn TLP pool; SUB liên tục burn — giảm phát kép thúc đẩy giá trị dài hạn.",
               },
-              accent: "text-amber-300", iconGlow: "drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]",
-              border: "border-amber-500/50", bg: "from-amber-950/70 to-amber-900/20",
-              glow: "shadow-[0_0_30px_rgba(251,191,36,0.12)]",
             },
             {
               icon: Zap,
@@ -781,9 +752,6 @@ export default function Recruit() {
                 th: "จากราคาพรีเซล $0.016 ถึงราคาเปิด $0.028 และเป้าหมายระยะยาว $0.5 รวม 6 ขั้นชัดเจน",
                 vi: "Từ giá private $0.016 đến giá mở $0.028, mục tiêu dài hạn $0.5 — 6 giai đoạn giá rõ ràng.",
               },
-              accent: "text-blue-300", iconGlow: "drop-shadow-[0_0_8px_rgba(96,165,250,0.7)]",
-              border: "border-blue-500/50", bg: "from-blue-950/70 to-blue-900/20",
-              glow: "shadow-[0_0_30px_rgba(59,130,246,0.12)]",
             },
             {
               icon: Shield,
@@ -798,23 +766,20 @@ export default function Recruit() {
                 th: "ผู้ถือโหนดได้สิทธิ์โหวตธรรมาภิบาล, sub-token airdrop, whitelist โครงการใหม่ และช่อง OTC",
                 vi: "Chủ node nhận quyền governance ưu tiên, airdrop sub-token, whitelist dự án mới và kênh OTC.",
               },
-              accent: "text-green-300", iconGlow: "drop-shadow-[0_0_8px_rgba(74,222,128,0.7)]",
-              border: "border-green-500/50", bg: "from-green-950/70 to-green-900/20",
-              glow: "shadow-[0_0_30px_rgba(34,197,94,0.12)]",
             },
-          ].map(({ icon: Icon, title, titleEn, desc, accent, iconGlow, border, bg, glow }) => (
+          ].map(({ icon: Icon, title, titleEn, desc }) => (
             <motion.div
               key={titleEn}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className={`rounded-2xl border ${border} bg-gradient-to-b ${bg} p-6 space-y-3 ${glow}`}
+              className="rounded-2xl border border-white/[0.07] bg-gradient-to-b from-[#0c1624] to-[#08111e] p-6 space-y-3 shadow-[0_2px_24px_rgba(0,0,0,0.5)]"
             >
-              <div className={`flex items-center gap-2.5 ${accent}`}>
-                <Icon className={`h-5 w-5 ${iconGlow}`} />
+              <div className="flex items-center gap-2.5">
+                <Icon className="h-5 w-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
                 <span className="font-bold text-base text-white">{tt(title)}</span>
               </div>
-              {showZh && <p className={`text-xs font-mono uppercase tracking-widest ${accent} opacity-80`}>{titleEn}</p>}
+              {showZh && <p className="text-[9px] font-mono uppercase tracking-widest text-amber-400/50">{titleEn}</p>}
               <p className="text-sm text-zinc-400 leading-relaxed">{tt(desc)}</p>
             </motion.div>
           ))}
