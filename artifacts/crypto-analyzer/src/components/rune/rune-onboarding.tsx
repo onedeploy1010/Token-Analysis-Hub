@@ -12,18 +12,18 @@ import { useDemoStore } from "@/lib/demo-store";
 /**
  * Sole piece of onboarding glue. Mounted once in App.tsx.
  *
- * Flow (per user 2026-04-23):
+ * Flow (per user 2026-04-26):
  *   1. Wallet connects → read `referrerOf` and `getUserPurchaseData`.
- *   2. Not bound → pop BindReferrerModal (pre-filled from `?ref=` if any).
- *      The contract enforces bind-before-purchase, so this step must
- *      land before the purchase step even if the user arrived without
- *      an invite link.
- *   3. Bound + not purchased → pop PurchaseNodeModal. User may close it
- *      ("Later"), in which case they STAY on /recruit — dashboard is
- *      not accessible yet. The modal can be re-opened from:
+ *   2. Not bound → BindReferrerModal stays open until the bind tx
+ *      confirms. Connecting the wallet *is* registering as a member,
+ *      and member registration requires a referrer — there is no
+ *      "Later" escape hatch, no close button, no outside-click
+ *      dismissal. Pre-fills the input from `?ref=` if present.
+ *   3. Bound + not purchased → pop PurchaseNodeModal. User may close
+ *      it ("Later"), in which case they STAY on /recruit — dashboard
+ *      is not accessible yet. The modal can be re-opened from:
  *        - each tier card's "Buy Now" button, or
- *        - the header nav "Dashboard" item (which is gated on
- *          hasPurchased and falls through to this signal when blocked).
+ *        - the header nav "Dashboard" item.
  *   4. Already purchased → navigate straight to /dashboard.
  *
  * Each decision re-checks on-chain state after every tx so reloads
@@ -41,16 +41,16 @@ export function RuneOnboarding() {
 
   const [bindOpen, setBindOpen] = useState(false);
   const [buyOpen, setBuyOpen]   = useState(false);
-  // Per-session dismissal so dismissing a modal doesn't cause a re-open
-  // loop. Cleared on disconnect; re-opened explicitly via the signal.
-  const [dismissed, setDismissed] = useState<Record<"bind" | "buy", boolean>>({ bind: false, buy: false });
+  // Buy modal is dismissable per session; bind modal is not (it only
+  // closes once the on-chain tx confirms). Cleared on disconnect.
+  const [buyDismissed, setBuyDismissed] = useState(false);
 
-  useEffect(() => { setDismissed({ bind: false, buy: false }); }, [address]);
+  useEffect(() => { setBuyDismissed(false); }, [address]);
 
   // Re-open signal from outside (card clicks, nav clicks).
   useEffect(() => onOpenPurchase(() => {
     if (isDemoMode) return;
-    setDismissed((d) => ({ ...d, buy: false }));
+    setBuyDismissed(false);
     setBuyOpen(true);
   }), [isDemoMode]);
 
@@ -65,27 +65,30 @@ export function RuneOnboarding() {
       return;
     }
 
-    // Contract requires bind before purchase. Force the bind step first.
-    if (!isBound && !dismissed.bind) {
+    // Bind is mandatory: connecting a wallet equals registering a
+    // member account, which requires a referrer. The modal stays open
+    // until the bind tx confirms — no dismissal path.
+    if (!isBound) {
       setBindOpen(true);
       setBuyOpen(false);
       return;
     }
 
     // Bound but hasn't purchased — show the node picker.
-    if (isBound && !dismissed.buy) {
+    if (isBound && !buyDismissed) {
       setBindOpen(false);
       setBuyOpen(true);
       return;
     }
-  }, [address, referrer, isBound, hasPurchased, purchaseLoading, dismissed, navigate]);
+  }, [address, referrer, isBound, hasPurchased, purchaseLoading, buyDismissed, navigate]);
 
   return (
     <>
       <BindReferrerModal
         open={bindOpen}
         initialReferrer={refFromUrl}
-        onClose={() => { setBindOpen(false); setDismissed((d) => ({ ...d, bind: true })); }}
+        // No-op: the modal can only close after a successful bind tx.
+        onClose={() => { /* mandatory step */ }}
         onBound={async () => {
           setBindOpen(false);
           await refetchReferrer();
@@ -94,11 +97,11 @@ export function RuneOnboarding() {
       />
       <PurchaseNodeModal
         open={buyOpen}
-        onClose={() => { setBuyOpen(false); setDismissed((d) => ({ ...d, buy: true })); }}
+        onClose={() => { setBuyOpen(false); setBuyDismissed(true); }}
         onSkip={() => {
           // "Later" keeps the user on /recruit — dashboard requires a purchase.
           setBuyOpen(false);
-          setDismissed((d) => ({ ...d, buy: true }));
+          setBuyDismissed(true);
         }}
         onPurchased={async () => {
           setBuyOpen(false);
