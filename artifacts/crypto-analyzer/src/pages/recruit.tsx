@@ -229,7 +229,7 @@ export default function Recruit() {
             </button>
             <button
               type="button"
-              onClick={() => { exitDemo(); navigate("/demo"); }}
+              onClick={() => { exitDemo(); navigate("/recruit"); }}
               className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 px-2 py-1 text-xs font-medium hover:bg-cyan-500/20 transition-colors"
             >
               <X className="h-3 w-3" />
