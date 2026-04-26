@@ -6,8 +6,9 @@ import { getAddress } from "thirdweb/utils";
 import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
   TrendingUp, Wallet, Link as LinkIcon, Gift, ChevronRight, Sparkles,
-  Coins, DollarSign, Search, ArrowUp, ArrowDown, Zap,
+  Coins, DollarSign, Search, ArrowUp, ArrowDown, Zap, FlaskConical, X,
 } from "lucide-react";
+import { useDemoStore } from "@/lib/demo-store";
 import {
   ComposedChart, Bar, Line, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid,
@@ -230,7 +231,9 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function Dashboard() {
   const { t } = useLanguage();
   const account = useActiveAccount();
-  const address = account?.address;
+  const { isDemoMode, demoAddress, demoNodeId: demoPurchasedNodeId, exitDemo } = useDemoStore();
+  // In demo mode use the demo address; otherwise use the real connected wallet.
+  const address = isDemoMode ? (demoAddress ?? undefined) : account?.address;
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<Tab>("overview");
 
@@ -239,25 +242,29 @@ export default function Dashboard() {
   // signal so RuneOnboarding re-opens the purchase modal. Disconnect
   // does the same — the dashboard is never shown with no address.
   //
-  // Three purchase signals (any one suffices):
+  // Four purchase signals (any one suffices):
   //   1. on-chain getUserPurchaseData (the real production path)
   //   2. DB-side personalStats.hasPurchased (indexer-cached fallback)
   //   3. PREVIEW_ADDRESSES whitelist — explicit test fixtures so QA
   //      can walk the dashboard without burning a real tx.
+  //   4. Demo mode — selected tier from the /demo test page.
   // Address keys are lowercase (EVM normalisation).
   const PREVIEW_ADDRESSES: Record<string, NodeId> = {
     "0xc8d0ab0b4e4d52a2f0ce920c43067973bee8f7ec": 501,
   };
-  const previewNodeId = address ? PREVIEW_ADDRESSES[address.toLowerCase()] : undefined;
+  const previewNodeId = isDemoMode
+    ? (demoPurchasedNodeId ?? undefined)
+    : address ? PREVIEW_ADDRESSES[address.toLowerCase()] : undefined;
 
   const { hasPurchased: chainHasPurchased, isLoading: purchaseLoading, nodeId: chainNodeId, amount: ownedAmount } = useUserPurchase(address);
   const { data: gateStats, isLoading: statsLoading } = usePersonalStats(address);
   const dbHasPurchased = !!gateStats?.hasPurchased;
   const dbNodeId       = gateStats?.ownedNodeId ?? null;
-  const hasPurchased   = chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
+  const hasPurchased   = isDemoMode || chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
   const ownedNodeId    = chainNodeId ?? (dbNodeId ?? previewNodeId);
 
   useEffect(() => {
+    if (isDemoMode) return;
     if (!address) { navigate("/recruit"); return; }
     // Whitelisted preview addresses bypass the loading wait — we know
     // they're allowed in. Otherwise wait until both async signals
@@ -268,15 +275,32 @@ export default function Dashboard() {
       navigate("/recruit");
       emitOpenPurchase();
     }
-  }, [address, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
+  }, [address, isDemoMode, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
 
-  if (!address || !hasPurchased) return null;
+  if (!isDemoMode && (!address || !hasPurchased)) return null;
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
+      {/* ── Demo mode banner ── */}
+      {isDemoMode && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-300">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="h-4 w-4 shrink-0" />
+            <span className="font-medium">测试模式 Demo Mode</span>
+            <span className="text-cyan-400/60 hidden sm:inline">— 当前地址：{address ? `${address.slice(0, 8)}…${address.slice(-6)}` : "—"}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => { exitDemo(); navigate("/demo"); }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 px-3 py-1 text-xs font-medium hover:bg-cyan-500/20 transition-colors"
+          >
+            <X className="h-3 w-3" /> 退出 Exit
+          </button>
+        </div>
+      )}
       {/* ── Hero banner ── tier-themed, with slow-pulse glow + big level title.
           Stays stable at first render so reloading mid-session doesn't reshuffle
           the layout; motion is limited to the decorative orb, a horizontal

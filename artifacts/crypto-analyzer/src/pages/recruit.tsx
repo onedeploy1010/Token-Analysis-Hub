@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronDown, ChevronUp, Zap, Shield, TrendingUp,
+  ChevronDown, ChevronUp, Zap, Shield, TrendingUp, FlaskConical, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,6 +14,7 @@ import { useNodeConfigs, useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { NODE_IDS, NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
 import { useReferrerOf } from "@/hooks/rune/use-community";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
+import { useDemoStore } from "@/lib/demo-store";
 
 /** Map the REST response's tier key to the on-chain nodeId.
  *  101 is the apex (FOUNDER 50k); 501 is the entry tier (INITIAL 1k). */
@@ -179,6 +181,8 @@ function NodeCardSkeleton() {
 export default function Recruit() {
   const showZh = useShowZh();
   const account = useActiveAccount();
+  const { isDemoMode, demoAddress, demoNodeId, exitDemo } = useDemoStore();
+  const [, navigate] = useLocation();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   // REST overview still supplies the marketing-style metadata (tier English
@@ -196,13 +200,48 @@ export default function Recruit() {
     onChainArray.map((c) => [Number(c.nodeId), c]),
   );
 
-  const { isBound } = useReferrerOf(account?.address);
-  const { hasPurchased } = useUserPurchase(account?.address);
+  const { isBound: chainIsBound } = useReferrerOf(account?.address);
+  const { hasPurchased: chainHasPurchased } = useUserPurchase(account?.address);
+
+  // In demo mode, treat the selected address as already bound + purchased.
+  const isBound = isDemoMode ? true : chainIsBound;
+  const hasPurchased = isDemoMode ? true : chainHasPurchased;
 
   const nodes = overview?.nodes ?? [];
 
   return (
     <div className="container mx-auto px-4 py-10 space-y-14 max-w-6xl">
+
+      {/* ── Demo banner ── */}
+      {isDemoMode && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-300">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="h-4 w-4 shrink-0" />
+            <span className="font-medium">测试模式 Demo Mode</span>
+            {demoNodeId && (
+              <span className="text-cyan-400/60 hidden sm:inline">
+                — 模拟持有节点 #{demoNodeId}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 px-3 py-1 text-xs font-medium hover:bg-cyan-500/20 transition-colors"
+            >
+              进入 Dashboard →
+            </button>
+            <button
+              type="button"
+              onClick={() => { exitDemo(); navigate("/demo"); }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 px-3 py-1 text-xs font-medium hover:bg-cyan-500/20 transition-colors"
+            >
+              <X className="h-3 w-3" /> 退出
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <motion.div
