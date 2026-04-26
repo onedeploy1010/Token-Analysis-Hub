@@ -18,11 +18,10 @@ import { NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
 import { useShowZh } from "@/contexts/language-context";
 
 // ─── Tutorial step state ────────────────────────────────────────────────────
-// 0: recruit page, wallet not connected
-// 1: wallet "connected", bind referrer modal open
-// 2: referrer bound, purchase node modal open
-// 3: purchased, redirecting to /dashboard
-type TStep = 0 | 1 | 2 | 3;
+// 0: entry — bind referrer modal can open here (connect+bind are one action)
+// 1: connected + bound — purchase node modal open
+// 2: purchased — redirecting to /dashboard
+type TStep = 0 | 1 | 2;
 
 // ─── Mock node configs (no on-chain read needed in tutorial) ────────────────
 interface MockConfig {
@@ -113,30 +112,23 @@ const FAQ_ITEMS = [
 ];
 
 // ─── Tutorial Guide Card ────────────────────────────────────────────────────
+// Only 2 guide steps — connect+bind happen BEFORE guide card appears
 const GUIDE_STEPS = [
   {
-    en: "Connect Wallet",
-    zh: "第一步：连接钱包",
-    descEn: "First, connect a Web3 wallet. In real usage you'd use MetaMask, OKX, Trust, or any compatible wallet.",
-    descZh: "连接你的 Web3 钱包。真实操作时支持 MetaMask、OKX Wallet、TokenPocket、Trust 等钱包。",
-    icon: Wallet,
-    color: "cyan",
-  },
-  {
-    en: "Bind Referrer",
-    zh: "第二步：绑定推荐人",
-    descEn: "Each wallet must bind a referrer exactly once. This on-chain transaction links you to the network tree.",
-    descZh: "每个钱包需链上绑定推荐人一次，建立推荐关系后才能购买节点。",
-    icon: UserPlus,
-    color: "amber",
-  },
-  {
     en: "Purchase Node",
-    zh: "第三步：购买节点",
-    descEn: "Choose a node tier, approve USDT, and confirm the purchase. Your node activates instantly on-chain.",
-    descZh: "选择节点等级，授权 USDT 并确认支付，节点在链上立即激活。",
+    zh: "选择并购买节点",
+    descEn: "Referrer bound. Now choose a node tier, approve USDT, and confirm. Your node activates on-chain instantly.",
+    descZh: "推荐关系已绑定。选择节点等级，授权 USDT 并确认支付，节点在链上立即激活。",
     icon: Coins,
     color: "emerald",
+  },
+  {
+    en: "All Done — Entering Dashboard",
+    zh: "完成 · 正在进入数据面板",
+    descEn: "Node purchased successfully. Loading your dashboard with simulated on-chain data.",
+    descZh: "节点购买成功，正在加载模拟链上数据面板。",
+    icon: TrendingUp,
+    color: "cyan",
   },
 ];
 
@@ -150,7 +142,8 @@ interface GuideCardProps {
 
 function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: GuideCardProps) {
   const showZh = useShowZh();
-  const guideIdx = Math.min(step, 2);
+  // step 1 → guideIdx 0 (Purchase Node), step 2 → guideIdx 1 (Done)
+  const guideIdx = Math.min(step - 1, 1);
   const guide = GUIDE_STEPS[guideIdx];
   const Icon = guide.icon;
 
@@ -183,7 +176,7 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
             </span>
             {/* Step dots */}
             <div className="flex items-center gap-1 ml-1">
-              {[0, 1, 2].map((i) => (
+              {[0, 1].map((i) => (
                 <span
                   key={i}
                   className={`inline-block w-1.5 h-1.5 rounded-full transition-colors ${
@@ -192,7 +185,7 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
                 />
               ))}
             </div>
-            <span className={`text-[10px] ${c.text} opacity-60`}>{guideIdx + 1} / 3</span>
+            <span className={`text-[10px] ${c.text} opacity-60`}>{guideIdx + 1} / 2</span>
           </div>
 
           <p className="text-sm font-semibold text-foreground mb-0.5">
@@ -205,27 +198,8 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
 
         {/* Action / exit */}
         <div className="flex items-center gap-2 shrink-0">
-          {step === 0 && realAddress ? (
-            <Button
-              onClick={() => onConnect(realAddress)}
-              size="sm"
-              className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
-            >
-              <Wallet className="h-3 w-3" />
-              {showZh ? "使用此钱包" : "Use This Wallet"}
-            </Button>
-          ) : step === 0 ? (
-            <Button
-              onClick={() => onConnect()}
-              size="sm"
-              className="h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5"
-            >
-              <Wallet className="h-3 w-3" />
-              {showZh ? "模拟连接" : "Simulate Connect"}
-            </Button>
-          ) : null}
-          {step === 3 && (
-            <div className="flex items-center gap-1.5 text-xs text-emerald-300">
+          {step === 2 && (
+            <div className="flex items-center gap-1.5 text-xs text-cyan-300">
               <Loader2 className="h-3 w-3 animate-spin" />
               {showZh ? "跳转中..." : "Redirecting..."}
             </div>
@@ -239,19 +213,6 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
           </button>
         </div>
       </div>
-
-      {/* Real wallet detected strip (step 0) */}
-      {step === 0 && realAddress && (
-        <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[11px] text-emerald-300 font-mono">
-            {realAddress.slice(0, 6)}…{realAddress.slice(-6)}
-          </span>
-          <span className="text-[10px] text-muted-foreground/50 ml-1">
-            {showZh ? "· 检测到已连接钱包" : "· Wallet detected"}
-          </span>
-        </div>
-      )}
 
       {/* Wallet address strip after connect */}
       {step >= 1 && connectedAddr && (
@@ -580,10 +541,10 @@ function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseM
   );
 }
 
-// ─── Tutorial 4-step visual guide (same as recruit page) ───────────────────
+// ─── Tutorial 3-step visual guide ──────────────────────────────────────────
+// Connect+Bind are one step: the community contract checks registration on connect
 const STEPS = [
-  { en: "Connect Wallet",  zh: "连接钱包",     descEn: "Connect a Web3 wallet (MetaMask, TokenPocket, Trust, OKX…)",   descZh: "连接 Web3 钱包（MetaMask、TokenPocket、Trust、OKX 等）" },
-  { en: "Bind Referrer",   zh: "绑定推荐关系", descEn: "Submit the on-chain bind-referrer transaction once per wallet",  descZh: "每个钱包提交一次链上绑定推荐人交易" },
+  { en: "Connect & Bind Referrer", zh: "连接钱包 · 绑定推荐关系", descEn: "Connect your wallet — the contract checks community registration. If unbound, binding is required before you can proceed.", descZh: "连接钱包时，合约自动检测是否已注册推荐关系。未绑定则需立即完成链上绑定，每个钱包仅需操作一次。" },
   { en: "Choose Node",     zh: "选择节点",     descEn: "Pick the tier that matches your stake — L1 to L5",              descZh: "按投资规模选择节点等级（L1–L5）" },
   { en: "Pay & Activate",  zh: "支付激活",     descEn: "Approve USDT and pay; the node activates on contract confirm",  descZh: "授权并支付 USDT，合约确认后节点即时激活" },
 ];
@@ -596,26 +557,32 @@ export default function Tutorial() {
   const account = useActiveAccount();
   const [step, setStep] = useState<TStep>(0);
   const [walletAddress, setWalletAddress] = useState<string>(DEMO_ADDRESS);
+  const [isChecking, setIsChecking] = useState(false);
   const [bindOpen, setBindOpen] = useState(false);
   const [buyOpen, setBuyOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  // Simulate: connect → contract checks community registration → not found → bind required
   function handleConnect(addr?: string) {
     const resolved = addr ?? DEMO_ADDRESS;
     setWalletAddress(resolved);
-    setStep(1);
-    setBindOpen(true);
+    setIsChecking(true);
+    setTimeout(() => {
+      setIsChecking(false);
+      setBindOpen(true); // contract check finds no registration → open bind modal
+    }, 1200);
   }
 
+  // After bind confirmed → wallet is now fully connected (connected + registered)
   function handleBound() {
     setBindOpen(false);
-    setStep(2);
+    setStep(1);
     setBuyOpen(true);
   }
 
   function handlePurchased(nodeId: NodeId) {
     setBuyOpen(false);
-    setStep(3);
+    setStep(2);
     enterDemo(walletAddress, nodeId);
     setTimeout(() => navigate("/dashboard"), 1500);
   }
@@ -646,15 +613,22 @@ export default function Tutorial() {
                 教学模式 · Tutorial
               </span>
               <span className="text-[12px] text-muted-foreground leading-snug">
-                {showZh
-                  ? "连接钱包后开始模拟完整的节点购买流程"
-                  : "Connect your wallet to simulate the full node purchase flow"}
+                {isChecking
+                  ? (showZh ? "正在检测 community 合约注册状态..." : "Checking community contract registration...")
+                  : showZh
+                    ? "连接钱包时合约自动检测是否已绑定推荐关系，未注册则需立即完成绑定"
+                    : "On connect, the contract checks your community registration — if unbound, binding is required first"}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {account?.address ? (
+            {isChecking ? (
+              <div className="flex items-center gap-1.5 text-xs text-cyan-300 px-3">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {showZh ? "检测中..." : "Checking..."}
+              </div>
+            ) : account?.address ? (
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 text-[11px] text-emerald-300 font-mono border border-emerald-500/30 bg-emerald-500/10 rounded-lg px-2.5 py-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -858,7 +832,7 @@ export default function Tutorial() {
           </h2>
           <div className="h-px flex-1 bg-border/30" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {STEPS.map(({ en, zh, descEn, descZh }, idx) => (
             <motion.div
               key={en}
@@ -866,7 +840,7 @@ export default function Tutorial() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.08 }}
               className={`relative rounded-xl border p-4 space-y-2 transition-colors ${
-                idx === Math.min(step, 3)
+                idx === Math.min(step, 2)
                   ? "border-cyan-500/40 bg-cyan-500/5"
                   : idx < step
                   ? "border-emerald-700/30 bg-emerald-950/10"
@@ -877,14 +851,14 @@ export default function Tutorial() {
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
                   idx < step
                     ? "bg-emerald-500/20 text-emerald-300"
-                    : idx === Math.min(step, 3)
+                    : idx === Math.min(step, 2)
                     ? "bg-cyan-500/20 text-cyan-300"
                     : "bg-white/5 text-muted-foreground"
                 }`}>
                   {idx < step ? "✓" : idx + 1}
                 </span>
                 <span className={`text-sm font-semibold ${
-                  idx < step ? "text-emerald-200" : idx === Math.min(step, 3) ? "text-cyan-200" : "text-foreground"
+                  idx < step ? "text-emerald-200" : idx === Math.min(step, 2) ? "text-cyan-200" : "text-foreground"
                 }`}>
                   {showZh ? zh : en}
                 </span>
