@@ -183,16 +183,12 @@ function Navbar() {
     ? [...NAV_ITEMS, { href: "/dashboard", label: "DASHBOARD", key: "dashboard", icon: LayoutDashboard }]
     : NAV_ITEMS;
 
-  /** Clicking "Dashboard" when the wallet hasn't purchased a node falls
-   *  through to the purchase modal instead of navigating — dashboard
-   *  access is gated on hasPurchased. */
-  function handleNavClick(e: React.MouseEvent, key: string) {
-    if (key === "dashboard" && !hasPurchased) {
-      e.preventDefault();
-      setMenuOpen(false);
-      navigate("/recruit");
-      emitOpenPurchase();
-    }
+  /** Dashboard is accessible to any connected wallet — the page itself
+   *  decides what to gate on `hasPurchased`. Bound-but-unpurchased users
+   *  see a restricted view (referral link only + periodic purchase nag). */
+  function handleNavClick(_e: React.MouseEvent, _key: string) {
+    // No-op kept so the existing `onClick={(e) => handleNavClick(e, key)}`
+    // wiring on each nav item doesn't need to change.
   }
 
   return (

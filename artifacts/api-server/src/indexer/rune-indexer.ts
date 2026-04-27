@@ -1,4 +1,4 @@
-import { db, runeReferrersTable, runePurchasesTable } from "@rune/db";
+import { db, runeReferrersTable, runePurchasesTable, runeMembersTable } from "@rune/db";
 import { logger } from "../lib/logger";
 import { runeChainConfig, runePublicClient } from "../rune/chain";
 import { eventAddReferrer, eventNodePresell } from "../rune/abis";
@@ -54,6 +54,13 @@ async function ingestAddReferrer(toBlock: bigint, fromBlock: bigint) {
     .insert(runeReferrersTable)
     .values(rows)
     .onConflictDoNothing({ target: [runeReferrersTable.chainId, runeReferrersTable.txHash, runeReferrersTable.logIndex] });
+
+  // Mirror into rune_members so "list all registered members" stays a single
+  // table read. PK is (user, chainId) so re-indexing is idempotent.
+  await db
+    .insert(runeMembersTable)
+    .values(rows.map((r) => ({ user: r.user, chainId: r.chainId, boundAt: r.boundAt })))
+    .onConflictDoNothing({ target: [runeMembersTable.user, runeMembersTable.chainId] });
 
   logger.info({ count: rows.length, from: String(fromBlock), to: String(toBlock) }, "[rune-indexer] AddReferrer batch");
 }

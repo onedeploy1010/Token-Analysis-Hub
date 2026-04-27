@@ -261,10 +261,11 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<Tab>("overview");
 
-  // Dashboard is gated on hasPurchased. If the connected wallet hasn't
-  // bought a node yet we bounce back to /recruit and fire the purchase
-  // signal so RuneOnboarding re-opens the purchase modal. Disconnect
-  // does the same — the dashboard is never shown with no address.
+  // Dashboard requires an address but does NOT require a purchase. Users
+  // who only bound a referrer get a restricted view: referral link is
+  // unlocked (so they can recruit downline) while team / rewards / detail
+  // tabs are gated behind a purchase CTA, and the purchase modal nags on
+  // a periodic timer until they buy.
   //
   // Four purchase signals (any one suffices):
   //   1. on-chain getUserPurchaseData (the real production path)
@@ -287,21 +288,27 @@ export default function Dashboard() {
   const hasPurchased   = isDemoMode || chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
   const ownedNodeId    = chainNodeId ?? (dbNodeId ?? previewNodeId);
 
+  // No-address bounce only — bound-but-not-purchased users stay here and
+  // see the restricted view rendered below.
   useEffect(() => {
     if (isDemoMode) return;
-    if (!address) { navigate("/recruit"); return; }
-    // Whitelisted preview addresses bypass the loading wait — we know
-    // they're allowed in. Otherwise wait until both async signals
-    // settle before redirecting so a slow roundtrip doesn't kick a
-    // legitimately-purchased user mid-load.
-    if (previewNodeId !== undefined) return;
-    if (!purchaseLoading && !statsLoading && !hasPurchased) {
-      navigate("/recruit");
-      emitOpenPurchase();
-    }
-  }, [address, isDemoMode, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
+    if (!address) navigate("/recruit");
+  }, [address, isDemoMode, navigate]);
 
-  if (!isDemoMode && (!address || !hasPurchased)) return null;
+  // Periodic purchase nag for unpurchased members. Fires the global
+  // open-purchase signal every 120s; the modal in RuneOnboarding listens
+  // and pops. 5-minute cooldown after the user dismisses to keep it
+  // pushy without being adversarial.
+  useEffect(() => {
+    if (isDemoMode || !address || hasPurchased || purchaseLoading || statsLoading) return;
+    const NUDGE_MS = 120_000;
+    const id = setInterval(() => emitOpenPurchase(), NUDGE_MS);
+    // Kick once shortly after entry so users notice the gating immediately.
+    const kickoff = setTimeout(() => emitOpenPurchase(), 4_000);
+    return () => { clearInterval(id); clearTimeout(kickoff); };
+  }, [isDemoMode, address, hasPurchased, purchaseLoading, statsLoading]);
+
+  if (!isDemoMode && !address) return null;
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
@@ -597,7 +604,25 @@ export default function Dashboard() {
           transition={{ duration: 0.28, ease: EASE }}
         >
           {tab === "overview" ? (
-            <OverviewTab address={address} />
+            <OverviewTab address={address} restricted={!hasPurchased} />
+          ) : !hasPurchased ? (
+            <Card className="surface-3d border-amber-500/30 bg-gradient-to-br from-amber-950/30 to-slate-950/80">
+              <CardContent className="py-12 text-center space-y-3">
+                <div className="text-amber-300 font-semibold text-base">
+                  {t("mr.dash.locked.tabTitle") || "购买节点解锁此模块"}
+                </div>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                  {t("mr.dash.locked.tabDesc") || "团队、奖励与详细统计仅对持有节点的成员开放。绑定关系已生效，购买后立即解锁。"}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => emitOpenPurchase()}
+                  className="bg-amber-500 hover:bg-amber-400 text-black font-semibold"
+                >
+                  {t("mr.dash.locked.cta") || "立即购买节点"}
+                </Button>
+              </CardContent>
+            </Card>
           ) : tab === "team" ? (
             <TeamTab address={address} />
           ) : (
@@ -1619,7 +1644,7 @@ function BenefitCell({
   );
 }
 
-function OverviewTab({ address }: { address: string }) {
+function OverviewTab({ address, restricted = false }: { address: string; restricted?: boolean }) {
   const { t } = useLanguage();
   const { referrer, isBound, isRoot } = useReferrerOf(address);
   const { nodeId } = useUserPurchase(address);
@@ -1707,19 +1732,43 @@ function OverviewTab({ address }: { address: string }) {
           </Card>
         </motion.div>
 
+        {/* Restricted (bound but not purchased) — replace the rich
+            overview content with a single buy-to-unlock CTA. The
+            referral card above stays so unpurchased members can still
+            recruit while they decide on a tier. */}
+        {restricted && (
+          <Card className="surface-3d relative overflow-hidden border-amber-500/40 bg-gradient-to-br from-amber-950/40 to-slate-950/80">
+            <CardContent className="py-8 text-center space-y-3">
+              <div className="text-amber-300 font-semibold text-base">
+                {t("mr.dash.locked.title") || "购买节点解锁完整面板"}
+              </div>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                {t("mr.dash.locked.desc") || "你已绑定推荐关系，可分享上方邀请链接。购买任意节点后将解锁团队、奖励与个人统计。"}
+              </p>
+              <Button
+                size="sm"
+                onClick={() => emitOpenPurchase()}
+                className="bg-amber-500 hover:bg-amber-400 text-black font-semibold gap-1.5"
+              >
+                {t("mr.dash.locked.cta") || "立即购买节点"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Network-wide fundraise + 4-stage TLP unlock progress. Shown
             to everyone so any visitor understands where the protocol
             sits on the roadmap, not just holders. The `ownedNodeId`
             lets the card compute the viewer's tier-specific unlock at
             the next stage (tokens + USDT estimate). */}
-        <PoolProgressCard ownedNodeId={nodeId} />
+        {!restricted && <PoolProgressCard ownedNodeId={nodeId} />}
 
         {/* Genesis (L6) earnings panel — only rendered once the viewer
             has actually qualified (any one of: ≥3 direct 符主 L5
             referrals, ≥5 团队 符主, or ≥30 团队 符魂). Keeps non-
             qualified users from seeing a mostly-empty panel that
             implies something they don't yet have. */}
-        <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />
+        {!restricted && <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />}
 
         {/* Full benefits digest below the referral panel — the same set
             of cards that used to live in a standalone Benefits tab:
@@ -1727,7 +1776,7 @@ function OverviewTab({ address }: { address: string }) {
             commission matrix, weight matrix, six streams + weight,
             platform feature matrix. All data is sourced from the
             member-facing node-benefits spec. */}
-        <BenefitsSection ownedNodeId={nodeId} />
+        {!restricted && <BenefitsSection ownedNodeId={nodeId} />}
       </div>
     </div>
   );

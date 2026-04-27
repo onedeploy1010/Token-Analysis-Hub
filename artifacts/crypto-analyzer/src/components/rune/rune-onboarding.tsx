@@ -13,17 +13,16 @@ import type { NodeId } from "@/lib/thirdweb/contracts";
 /**
  * Sole piece of onboarding glue. Mounted once in App.tsx.
  *
- * Flow (per user 2026-04-26):
+ * Flow (per user 2026-04-27):
  *   1. Wallet connects → read `referrerOf` and `getUserPurchaseData`.
  *   2. Not bound → BindReferrerModal opens. The user can either bind
  *      (success → step 3) or close the modal (X / Escape / outside-click
  *      → wallet disconnects → UI returns to the unauthenticated state).
  *      Pre-fills the input from `?ref=` if present.
  *   3. Bound + not purchased → pop PurchaseNodeModal. User may close
- *      it ("Later"), in which case they STAY on /recruit — dashboard
- *      is not accessible yet. The modal can be re-opened from:
- *        - each tier card's "Buy Now" button, or
- *        - the header nav "Dashboard" item.
+ *      it ("Later") and STAY on /recruit. They may also click the
+ *      "Dashboard" nav to enter the dashboard manually, where they see
+ *      a restricted view (referral link only + periodic purchase nag).
  *   4. Already purchased → navigate straight to /dashboard.
  *
  * Each decision re-checks on-chain state after every tx so reloads
@@ -64,23 +63,24 @@ export function RuneOnboarding() {
     if (isDemoMode) return;
     if (!address || referrer === undefined || purchaseLoading) return;
 
-    // Already bought — skip modals, go straight to dashboard.
-    if (hasPurchased) {
-      navigate("/dashboard");
-      return;
-    }
-
-    // Bind is mandatory: connecting a wallet equals registering a
-    // member account, which requires a referrer. The modal stays open
-    // until the bind tx confirms — no dismissal path.
+    // Not bound — must bind before anything else. Modal is dismissable
+    // (close = disconnect wallet).
     if (!isBound) {
       setBindOpen(true);
       setBuyOpen(false);
       return;
     }
 
-    // Bound but hasn't purchased — show the node picker.
-    if (isBound && !buyDismissed) {
+    // Already bought — skip modals, go straight to dashboard.
+    if (hasPurchased) {
+      navigate("/dashboard");
+      return;
+    }
+
+    // Bound but not yet purchased — pop the node picker. Closing it
+    // ("Later") leaves the user on /recruit; they can still click the
+    // Dashboard nav to enter the dashboard's restricted view.
+    if (!buyDismissed) {
       setBindOpen(false);
       setBuyOpen(true);
       return;
