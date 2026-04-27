@@ -9,6 +9,7 @@ import { WalletConnectButton } from "@/components/rune/wallet-connect-button";
 import { useActiveAccount } from "thirdweb/react";
 import { useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
+import { useTutorialStore } from "@/lib/tutorial-store";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -172,6 +173,7 @@ function Navbar() {
   const { t, language } = useLanguage();
   const activeAccount = useActiveAccount();
   const { hasPurchased } = useUserPurchase(activeAccount?.address);
+  const connectSpotlight = useTutorialStore((s) => s.connectSpotlight);
 
   const isEn = language === "en";
 
@@ -293,7 +295,9 @@ function Navbar() {
             </div>
             {/* Connect wallet — desktop */}
             <div className="hidden md:flex items-center h-[72px] pl-3 ml-1">
-              <WalletConnectButton />
+              <div className={`relative rounded-xl transition-all duration-300 ${connectSpotlight ? "ring-2 ring-cyan-400/90 ring-offset-2 ring-offset-background shadow-[0_0_32px_10px_rgba(34,211,238,0.40)]" : ""}`}>
+                <WalletConnectButton />
+              </div>
             </div>
           </nav>
 
@@ -305,7 +309,7 @@ function Navbar() {
             {/* Connect wallet — mobile. 36 px tall, 11 px text, tighter
                 radius; connected-state pill truncates long addresses via
                 the max-width set in WalletConnectButton itself. */}
-            <div className="[&_button]:!h-9 [&_button]:!px-2.5 [&_button]:!text-[11px] [&_button]:!rounded-lg [&_button]:!min-w-0 [&_button_img]:!w-3.5 [&_button_img]:!h-3.5">
+            <div className={`[&_button]:!h-9 [&_button]:!px-2.5 [&_button]:!text-[11px] [&_button]:!rounded-lg [&_button]:!min-w-0 [&_button_img]:!w-3.5 [&_button_img]:!h-3.5 rounded-lg transition-all duration-300 ${connectSpotlight ? "ring-2 ring-cyan-400/90 ring-offset-1 ring-offset-background shadow-[0_0_24px_8px_rgba(34,211,238,0.40)]" : ""}`}>
               <WalletConnectButton />
             </div>
             {/* Mobile hamburger — matches the wallet button height. */}

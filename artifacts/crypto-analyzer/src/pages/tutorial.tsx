@@ -15,6 +15,7 @@ import { useActiveAccount } from "thirdweb/react";
 import { useDemoStore } from "@/lib/demo-store";
 import { DEMO_ADDRESS } from "@/lib/demo-mock-data";
 import { useReferrerOf } from "@/hooks/rune/use-community";
+import { useTutorialStore } from "@/lib/tutorial-store";
 import { NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
 import { useShowZh, useT, type Language } from "@/contexts/language-context";
 
@@ -487,17 +488,19 @@ const LEVEL_NUM: Record<string, number> = { initial: 1, mid: 2, advanced: 3, sup
 
 interface TutorialPurchaseModalProps {
   open: boolean;
+  preSelectedNodeId?: NodeId | null;
   onClose: () => void;
   onPurchased: (nodeId: NodeId) => void;
 }
 
-function TutorialPurchaseModal({ open, onClose, onPurchased }: TutorialPurchaseModalProps) {
+function TutorialPurchaseModal({ open, preSelectedNodeId, onClose, onPurchased }: TutorialPurchaseModalProps) {
   const tt = useT();
-  const [selected, setSelected] = useState<NodeId | null>(null);
+  const [selected, setSelected] = useState<NodeId | null>(preSelectedNodeId ?? null);
   const [txState, setTxState] = useState<BuyTxState>("select");
 
   useEffect(() => {
-    if (open) { setSelected(null); setTxState("select"); }
+    if (open) { setSelected(preSelectedNodeId ?? null); setTxState("select"); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   async function handleBuy() {
@@ -779,11 +782,13 @@ export default function Tutorial() {
   const [isChecking, setIsChecking] = useState(false);
   const [bindOpen, setBindOpen] = useState(false);
   const [buyOpen, setBuyOpen] = useState(false);
+  const [preSelectedBuyNode, setPreSelectedBuyNode] = useState<NodeId | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   // "connect" → spotlight on connect button (no wallet)
   // "purchase" → spotlight on purchase button (wallet connected but not yet bound)
   // null → no spotlight (modal open or step > 0)
   const [spotlight, setSpotlight] = useState<"connect" | "purchase" | null>(null);
+  const setConnectSpotlight = useTutorialStore((s) => s.setConnectSpotlight);
 
   // Auto-skip step 0 when wallet is already connected AND already registered.
   useEffect(() => {
@@ -791,6 +796,7 @@ export default function Tutorial() {
     if (account?.address && isBound) {
       setWalletAddress(account.address);
       setStep(1);
+      setPreSelectedBuyNode(null);
       setBuyOpen(true);
     }
   }, [account?.address, isBound, boundLoading, step, bindOpen, buyOpen]);
@@ -811,6 +817,22 @@ export default function Tutorial() {
     }
   }, [account?.address, isBound, boundLoading, step, bindOpen, buyOpen]);
 
+  // When the "connect" spotlight is active, highlight the REAL header button
+  // and scroll smoothly to the top so it is visible.
+  useEffect(() => {
+    if (spotlight === "connect") {
+      setConnectSpotlight(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      setConnectSpotlight(false);
+    }
+  }, [spotlight, setConnectSpotlight]);
+
+  // Always clear the header spotlight when leaving the tutorial page.
+  useEffect(() => {
+    return () => setConnectSpotlight(false);
+  }, [setConnectSpotlight]);
+
   // Simulate: connect → contract checks community registration → not found → bind required
   function handleConnect(addr?: string) {
     setSpotlight(null);
@@ -823,23 +845,30 @@ export default function Tutorial() {
     }, 1200);
   }
 
+  // Open the purchase modal, optionally pre-selecting a specific node tier.
+  function openBuyModal(nodeId: NodeId | null = null) {
+    setPreSelectedBuyNode(nodeId);
+    setBuyOpen(true);
+  }
+
   // Already-connected wallet: skip bind, go straight to purchase (assumed already bound)
   function handleBuyDirectly() {
     setSpotlight(null);
     setWalletAddress(account!.address);
     setStep(1);
-    setBuyOpen(true);
+    openBuyModal(null);
   }
 
   // After bind confirmed → wallet is now fully connected (connected + registered)
   function handleBound() {
     setBindOpen(false);
     setStep(1);
-    setBuyOpen(true);
+    openBuyModal(null);
   }
 
   function handlePurchased(nodeId: NodeId) {
     setBuyOpen(false);
+    setPreSelectedBuyNode(null);
     setStep(2);
     enterDemo(walletAddress, nodeId);
     setTimeout(() => navigate("/dashboard"), 1500);
@@ -939,34 +968,32 @@ export default function Tutorial() {
                 </div>
               </div>
             ) : (
-              /* Spotlighted connect button for no-wallet state */
-              <div className="relative flex flex-col items-center">
-                <Button
-                  onClick={() => handleConnect()}
-                  size="sm"
-                  className={`h-8 px-3 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black gap-1.5 transition-all ${
-                    spotlight === "connect"
-                      ? "ring-2 ring-cyan-400/90 ring-offset-2 ring-offset-[#060e1c] shadow-[0_0_28px_8px_rgba(34,211,238,0.45)]"
-                      : ""
-                  }`}
-                >
-                  <Wallet className="h-3 w-3" />
-                  {tt({ zh: "模拟连接钱包", "zh-TW": "模擬連接錢包", en: "Simulate Connect", ja: "接続を模擬", ko: "연결 시뮬레이션", th: "จำลองเชื่อมต่อ", vi: "Mô phỏng kết nối" })}
-                </Button>
+              /* No wallet — hint points to the REAL header connect button (spotlighted above).
+                 The "Simulate" button is a demo fallback for users without a real wallet. */
+              <div className="flex items-center gap-2">
                 <AnimatePresence>
                   {spotlight === "connect" && (
                     <motion.span
-                      key="hint-connect"
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: [0, 3, 0] }}
+                      key="hint-connect-header"
+                      initial={{ opacity: 0, x: 6 }}
+                      animate={{ opacity: 1, x: [0, -4, 0] }}
                       exit={{ opacity: 0 }}
-                      transition={{ y: { repeat: Infinity, duration: 1.4, ease: "easeInOut" }, opacity: { duration: 0.25 } }}
-                      className="absolute top-full mt-2 text-[10px] text-cyan-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
+                      transition={{ x: { repeat: Infinity, duration: 1.3, ease: "easeInOut" }, opacity: { duration: 0.25 } }}
+                      className="text-[10px] text-cyan-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
                     >
-                      ↑ {tt({ zh: "点此连接钱包", "zh-TW": "點此連接錢包", en: "Click to connect wallet", ja: "クリックして接続", ko: "클릭해서 지갑 연결", th: "คลิกเชื่อมต่อกระเป๋า", vi: "Bấm kết nối ví" })}
+                      {tt({ zh: "↗ 点击右上角Connect按钮", "zh-TW": "↗ 點擊右上角Connect按鈕", en: "↗ Click Connect in the top-right", ja: "↗ 右上のConnectをクリック", ko: "↗ 우측 상단 Connect 클릭", th: "↗ คลิก Connect มุมบนขวา", vi: "↗ Bấm Connect góc trên phải" })}
                     </motion.span>
                   )}
                 </AnimatePresence>
+                <Button
+                  onClick={() => handleConnect()}
+                  size="sm"
+                  variant="outline"
+                  className="h-8 px-3 text-xs font-medium border-cyan-700/40 text-cyan-300/70 hover:text-cyan-200 hover:border-cyan-500/50 gap-1.5"
+                >
+                  <Wallet className="h-3 w-3" />
+                  {tt({ zh: "模拟体验", "zh-TW": "模擬體驗", en: "Demo", ja: "デモ", ko: "데모", th: "ทดลอง", vi: "Demo" })}
+                </Button>
               </div>
             )}
             <button
@@ -988,7 +1015,7 @@ export default function Tutorial() {
           connectedAddr={walletAddress}
           buyOpen={buyOpen}
           onConnect={handleConnect}
-          onBuyNow={() => setBuyOpen(true)}
+          onBuyNow={() => openBuyModal(null)}
           onExit={handleExit}
         />
       )}
@@ -1120,11 +1147,7 @@ export default function Tutorial() {
                 </div>
 
                 {/* CTA — state changes as tutorial progresses */}
-                {!walletConnected ? (
-                  <div className="mt-4 h-9 rounded-lg border border-dashed border-amber-700/30 bg-amber-950/10 flex items-center justify-center text-[11px] text-amber-200/70">
-                    {tt({ zh: "连接钱包后可购买", "zh-TW": "連接錢包後可購買", en: "Connect wallet to purchase", ja: "ウォレット接続で購入可能", ko: "지갑을 연결하면 구매 가능", th: "เชื่อมกระเป๋าเพื่อซื้อ", vi: "Kết nối ví để mua" })}
-                  </div>
-                ) : step >= 2 ? (
+                {step >= 2 ? (
                   <Button
                     variant="outline"
                     className="mt-4 w-full h-9 text-sm font-medium border-emerald-700/40 text-emerald-200 cursor-default"
@@ -1132,14 +1155,25 @@ export default function Tutorial() {
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                     {tt({ zh: "已购买 · 跳转面板中...", "zh-TW": "已購買 · 跳轉面板中...", en: "Purchased · Redirecting…", ja: "購入済 · 移動中…", ko: "구매 완료 · 이동 중…", th: "ซื้อแล้ว · กำลังไป Dashboard…", vi: "Đã mua · Đang chuyển…" })}
                   </Button>
-                ) : (
+                ) : walletConnected ? (
+                  /* Step 1: connected + registered → buy button active, pre-selects this tier */
                   <Button
-                    onClick={() => setBuyOpen(true)}
+                    onClick={() => openBuyModal(nodeId)}
                     className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[level]}`}
                   >
                     <Coins className="h-3.5 w-3.5 mr-1" />
                     {tt({ zh: "立即购买 · Buy Now", "zh-TW": "立即購買 · Buy Now", en: "Buy Now", ja: "今すぐ購入", ko: "지금 구매", th: "ซื้อเลย", vi: "Mua ngay" })}
                   </Button>
+                ) : (
+                  /* Step 0: not yet connected — click to trigger the connect flow */
+                  <button
+                    type="button"
+                    onClick={() => handleConnect()}
+                    className="mt-4 w-full h-9 rounded-lg border border-dashed border-cyan-700/40 bg-cyan-950/10 hover:bg-cyan-950/20 hover:border-cyan-600/50 flex items-center justify-center gap-2 text-[11px] text-cyan-300/60 hover:text-cyan-300/90 transition-colors group"
+                  >
+                    <Wallet className="h-3 w-3 group-hover:scale-110 transition-transform" />
+                    {tt({ zh: "点击连接钱包后解锁", "zh-TW": "點擊連接錢包後解鎖", en: "Connect wallet to unlock", ja: "ウォレット接続で解放", ko: "지갑 연결 후 해제", th: "เชื่อมต่อกระเป๋าเพื่อปลดล็อค", vi: "Kết nối ví để mở khóa" })}
+                  </button>
                 )}
               </motion.div>
             );
@@ -1243,7 +1277,8 @@ export default function Tutorial() {
       />
       <TutorialPurchaseModal
         open={buyOpen}
-        onClose={() => setBuyOpen(false)}
+        preSelectedNodeId={preSelectedBuyNode}
+        onClose={() => { setBuyOpen(false); setPreSelectedBuyNode(null); }}
         onPurchased={handlePurchased}
       />
     </div>
