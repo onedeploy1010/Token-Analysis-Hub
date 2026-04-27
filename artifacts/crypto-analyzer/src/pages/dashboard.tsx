@@ -314,10 +314,10 @@ export default function Dashboard() {
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-10 max-w-6xl space-y-4 sm:space-y-8">
       {/* ── Demo mode banner ── */}
       {isDemoMode && (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-300">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-cyan-300">
           <div className="flex items-center gap-2">
             <FlaskConical className="h-4 w-4 shrink-0" />
             <span className="font-medium">教学模式 Tutorial</span>
@@ -507,7 +507,7 @@ export default function Dashboard() {
               <div className="text-right">
                 <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/85">{t("mr.dash.owned.paid")}</p>
                 <p
-                  className={`num text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
+                  className={`num text-2xl sm:text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
                   style={{ textShadow: `0 0 36px rgba(${theme.rgb}, 0.65), 0 0 16px rgba(${theme.rgb}, 0.4)` }}
                 >
                   $<CountUp
@@ -951,7 +951,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
              numbers aren't part of the current spec, so the card now
              shows just the two canonical opening prices. */}
       <BenefitGroup icon={Coins} title={t("mr.dash.benefits.groupPrices")} subtitle="OPENING PRICES" delay={0}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <BenefitCell label={t("mr.dash.benefits.motherLaunch")} value={`$${motherLaunch}`} sub={t("mr.dash.benefits.perToken")} theme={theme} highlight />
           <BenefitCell label={t("mr.dash.benefits.subLaunch")}    value={`$${subLaunch}`}    sub={t("mr.dash.benefits.perToken")} theme={theme} highlight />
         </div>
@@ -1263,7 +1263,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               </span>
             </div>
             <div className="flex items-baseline gap-2 tabular-nums mb-2">
-              <span className="text-2xl font-bold text-emerald-200 drop-shadow-[0_0_14px_rgba(52,211,153,0.5)]">
+              <span className="text-xl sm:text-2xl font-bold text-emerald-200 drop-shadow-[0_0_14px_rgba(52,211,153,0.5)]">
                 $<CountUp to={totalRaised} fmt={formatShortUsd} />
               </span>
               <span className="text-xs text-muted-foreground/70">
@@ -2315,14 +2315,14 @@ function RewardListFilters({
   const { t } = useLanguage();
   const inputCls = "h-9 px-2 rounded-md border border-border/40 bg-background/60 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-amber-500/60 focus:outline-none focus:ring-1 focus:ring-amber-500/40 transition-colors";
   return (
-    <div className="flex flex-wrap items-center gap-2 pb-2">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 pb-2">
       <div className="flex items-center gap-1.5">
         <input
           type="date"
           value={from}
           onChange={(e) => onFrom(e.target.value)}
           aria-label={t("mr.dash.reward.filterFrom")}
-          className={`${inputCls} w-[132px]`}
+          className={`${inputCls} w-[120px] sm:w-[132px]`}
         />
         <span className="text-[10px] text-muted-foreground/70">→</span>
         <input
@@ -2330,7 +2330,7 @@ function RewardListFilters({
           value={to}
           onChange={(e) => onTo(e.target.value)}
           aria-label={t("mr.dash.reward.filterTo")}
-          className={`${inputCls} w-[132px]`}
+          className={`${inputCls} w-[120px] sm:w-[132px]`}
         />
       </div>
       <div className="relative flex-1 min-w-[140px]">
@@ -2509,7 +2509,7 @@ function Kpi({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: EASE }}
       whileHover={{ y: -3 }}
-      className={`group relative border rounded-xl p-4 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
+      className={`group relative border rounded-xl p-3 sm:p-4 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
         highlight
           ? "border-amber-500/55 bg-gradient-to-br from-amber-950/40 via-slate-900/80 to-slate-950/90 hover:border-amber-400/75 hover:shadow-[0_0_36px_rgba(251,191,36,0.35),inset_0_1px_0_rgba(251,191,36,0.2)]"
           : "border-white/15 bg-gradient-to-br from-slate-800/60 to-slate-900/85 hover:border-amber-500/20 hover:shadow-[0_0_20px_rgba(251,191,36,0.08)]"
@@ -2530,7 +2530,7 @@ function Kpi({
           <Icon className={`h-3.5 w-3.5 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-muted-foreground/60 group-hover:text-amber-400/70"}`} />
         )}
       </div>
-      <div className={`relative text-xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
+      <div className={`relative text-lg sm:text-xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
       {sub && <div className="relative text-[10px] text-muted-foreground/80 mt-1 tracking-[0.14em] uppercase">{sub}</div>}
     </motion.div>
   );
