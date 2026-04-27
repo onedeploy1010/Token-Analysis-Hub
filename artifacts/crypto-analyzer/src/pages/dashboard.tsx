@@ -1288,18 +1288,16 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
           </div>
 
           {/* Projected initial TLP once the raise fills */}
-          <div className="rounded-md border border-cyan-500/35 bg-cyan-950/25 p-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 shadow-[inset_0_1px_0_rgba(34,211,238,0.15)]">
-            <div className="min-w-0">
-              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.4)] mb-0.5">
-                {fundraiseComplete ? t("mr.dash.pool.tlpInitial") : t("mr.dash.pool.tlpProjected")}
-              </div>
-              <div className="text-base font-bold tabular-nums text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]">
-                ${formatShortUsd(fundraiseComplete ? tlpInitial : projectedTlp)} USDT
-              </div>
+          <div className="rounded-md border border-cyan-500/35 bg-cyan-950/25 p-3 space-y-1.5 shadow-[inset_0_1px_0_rgba(34,211,238,0.15)]">
+            <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.4)]">
+              {fundraiseComplete ? t("mr.dash.pool.tlpInitial") : t("mr.dash.pool.tlpProjected")}
             </div>
-            <span className="text-xs text-muted-foreground/75 flex-1 min-w-0">
+            <div className="text-base font-bold tabular-nums text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]">
+              ${formatShortUsd(fundraiseComplete ? tlpInitial : projectedTlp)} USDT
+            </div>
+            <p className="text-xs text-muted-foreground/75 leading-snug">
               {t("mr.dash.pool.tlpNote")}
-            </span>
+            </p>
           </div>
 
           {/* Fund allocation donut + legend */}
@@ -1541,7 +1539,7 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
           </div>
 
           {/* Reward row — core pool share + user's weight */}
-          <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="min-w-0">
               <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300/85 mb-0.5">
                 {t("mr.dash.genesis.rewardTitle")}
@@ -1550,7 +1548,6 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
                 {t("mr.dash.genesis.rewardValue")}
               </div>
             </div>
-            <div className="h-8 w-px bg-amber-500/20 hidden md:block" />
             <div className="min-w-0">
               <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/75 mb-0.5">
                 {t("mr.dash.genesis.weightLabel")}
