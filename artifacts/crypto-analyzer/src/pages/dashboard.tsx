@@ -564,13 +564,8 @@ export default function Dashboard() {
         <div className="flex gap-0.5 min-w-max relative">
           {[
             { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
-            // Team / rewards are hidden entirely for unpurchased members —
-            // the data behind them is purchase-gated, no use teasing it
-            // with a tab the user can't meaningfully open.
-            ...(hasPurchased ? [
-              { id: "team"     as const, Icon: Users, label: t("mr.dash.tab.team") },
-              { id: "rewards"  as const, Icon: Gift,  label: t("mr.dash.tab.rewards") },
-            ] : []),
+            { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
+            { id: "rewards"  as const, Icon: Gift,            label: t("mr.dash.tab.rewards") },
           ].map(({ id, Icon, label }) => {
             const active = tab === id;
             return (
@@ -610,24 +605,6 @@ export default function Dashboard() {
         >
           {tab === "overview" ? (
             <OverviewTab address={address} restricted={!hasPurchased} />
-          ) : !hasPurchased ? (
-            <Card className="surface-3d border-amber-500/30 bg-gradient-to-br from-amber-950/30 to-slate-950/80">
-              <CardContent className="py-12 text-center space-y-3">
-                <div className="text-amber-300 font-semibold text-base">
-                  {t("mr.dash.locked.tabTitle") || "购买节点解锁此模块"}
-                </div>
-                <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                  {t("mr.dash.locked.tabDesc") || "团队、奖励与详细统计仅对持有节点的成员开放。绑定关系已生效，购买后立即解锁。"}
-                </p>
-                <Button
-                  size="sm"
-                  onClick={() => emitOpenPurchase()}
-                  className="bg-amber-500 hover:bg-amber-400 text-black font-semibold"
-                >
-                  {t("mr.dash.locked.cta") || "立即购买节点"}
-                </Button>
-              </CardContent>
-            </Card>
           ) : tab === "team" ? (
             <TeamTab address={address} />
           ) : (
