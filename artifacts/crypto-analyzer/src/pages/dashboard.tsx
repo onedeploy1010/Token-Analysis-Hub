@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, Copy, CheckCircle2, Share2, ExternalLink,
   TrendingUp, Wallet, Link as LinkIcon, Gift, ChevronRight, Sparkles,
   Coins, DollarSign, Search, ArrowUp, ArrowDown, Zap, FlaskConical, X,
-  Megaphone, Code2, Bot, BarChart3,
+  Network, Terminal, Eye, Radar, Layers,
 } from "lucide-react";
 import { useDemoStore } from "@/lib/demo-store";
 import {
@@ -868,43 +868,58 @@ const SIX_STREAMS = [
 const PLATFORM_FEATURES = [
   {
     labelKey: "mr.dash.benefits.feat.promo",
-    icon: Megaphone,
+    icon: Network,
     all: true, strategicBoost: false,
-    iconCls:   "text-cyan-400",
-    glowFrom:  "from-cyan-500/10",
-    borderCls: "border-cyan-500/20",
+    iconCls:    "text-cyan-300",
+    iconBg:     "bg-cyan-950/60",
+    iconBorder: "border-cyan-500/35",
+    glowFrom:   "from-cyan-900/25",
+    borderCls:  "border-cyan-500/30",
+    accentLine: "via-cyan-500/50",
   },
   {
     labelKey: "mr.dash.benefits.feat.api",
-    icon: Code2,
+    icon: Terminal,
     all: true, strategicBoost: true,
-    iconCls:   "text-blue-400",
-    glowFrom:  "from-blue-500/10",
-    borderCls: "border-blue-500/20",
+    iconCls:    "text-blue-300",
+    iconBg:     "bg-blue-950/60",
+    iconBorder: "border-blue-500/35",
+    glowFrom:   "from-blue-900/25",
+    borderCls:  "border-blue-500/30",
+    accentLine: "via-blue-500/50",
   },
   {
     labelKey: "mr.dash.benefits.feat.ai",
-    icon: Bot,
+    icon: Eye,
     all: true, strategicBoost: true,
-    iconCls:   "text-purple-400",
-    glowFrom:  "from-purple-500/10",
-    borderCls: "border-purple-500/20",
+    iconCls:    "text-violet-300",
+    iconBg:     "bg-violet-950/60",
+    iconBorder: "border-violet-500/35",
+    glowFrom:   "from-violet-900/25",
+    borderCls:  "border-violet-500/30",
+    accentLine: "via-violet-500/50",
   },
   {
     labelKey: "mr.dash.benefits.feat.pred",
-    icon: BarChart3,
+    icon: Radar,
     all: true, strategicBoost: true,
-    iconCls:   "text-amber-400",
-    glowFrom:  "from-amber-500/10",
-    borderCls: "border-amber-500/20",
+    iconCls:    "text-amber-300",
+    iconBg:     "bg-amber-950/60",
+    iconBorder: "border-amber-500/35",
+    glowFrom:   "from-amber-900/25",
+    borderCls:  "border-amber-500/30",
+    accentLine: "via-amber-500/50",
   },
   {
     labelKey: "mr.dash.benefits.feat.quant",
-    icon: Coins,
+    icon: Layers,
     all: true, strategicBoost: true,
-    iconCls:   "text-emerald-400",
-    glowFrom:  "from-emerald-500/10",
-    borderCls: "border-emerald-500/20",
+    iconCls:    "text-emerald-300",
+    iconBg:     "bg-emerald-950/60",
+    iconBorder: "border-emerald-500/35",
+    glowFrom:   "from-emerald-900/25",
+    borderCls:  "border-emerald-500/30",
+    accentLine: "via-emerald-500/50",
   },
 ];
 
@@ -1072,23 +1087,31 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             return (
               <div
                 key={f.labelKey}
-                className={`relative rounded-xl border bg-gradient-to-br ${f.glowFrom} to-transparent p-3 overflow-hidden transition-opacity
+                className={`relative rounded-xl border bg-gradient-to-br ${f.glowFrom} to-transparent p-3.5 overflow-hidden transition-all duration-300
                   ${f.borderCls}
-                  ${!available ? "opacity-40 grayscale" : ""}
+                  ${!available ? "opacity-38 grayscale" : "hover:brightness-110"}
                   ${idx === 4 ? "sm:col-span-1 col-span-2" : ""}`}
               >
+                {/* Top accent line — color matches the feature's accent */}
+                <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${f.accentLine} to-transparent pointer-events-none`} />
+                {/* Corner index — subtle runic ordinal */}
+                <div className={`absolute top-2.5 left-3 text-[9px] font-mono tabular-nums ${f.iconCls} opacity-35 leading-none`}>
+                  {String(idx + 1).padStart(2, "0")}
+                </div>
+                {/* ×1.5 apex boost badge */}
                 {boosted && (
                   <span className="absolute top-2 right-2 text-[8px] font-mono tracking-widest text-purple-300 bg-purple-950/70 border border-purple-500/30 rounded-full px-1.5 py-0.5 leading-none">
                     ×1.5
                   </span>
                 )}
-                <div className={`mb-2.5 ${f.iconCls}`}>
-                  <Icon className="h-6 w-6 drop-shadow-[0_0_6px_currentColor]" />
+                {/* Icon in a glowing bordered square — terminal-panel style */}
+                <div className={`mt-4 mb-3 flex items-center justify-center w-10 h-10 rounded-lg border ${f.iconBorder} ${f.iconBg} ${f.iconCls}`}>
+                  <Icon className="h-5 w-5 drop-shadow-[0_0_10px_currentColor]" />
                 </div>
-                <p className="text-xs font-medium text-foreground/90 leading-snug pr-1">
+                <p className="text-xs font-semibold text-foreground/95 leading-snug pr-1">
                   {t(f.labelKey)}
                 </p>
-                <div className={`mt-2 text-[10px] font-mono uppercase tracking-[0.18em] ${available ? "text-emerald-400/80" : "text-muted-foreground/62"}`}>
+                <div className={`mt-2 text-[10px] font-mono uppercase tracking-[0.2em] ${available ? "text-emerald-400/85" : "text-muted-foreground/62"}`}>
                   {available ? "● ACTIVE" : "○ LOCKED"}
                 </div>
               </div>
