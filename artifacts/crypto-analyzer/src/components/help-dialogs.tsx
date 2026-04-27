@@ -199,18 +199,18 @@ export function StakingHelpDialog({ open, onOpenChange, language }: HelpDialogPr
             <div className="font-mono text-sm font-bold text-center text-emerald-700 dark:text-emerald-400">
               B18 = USDC ÷ P
             </div>
-            <div className="text-[10px] text-center text-muted-foreground mt-1">
+            <div className="text-[11px] text-center text-muted-foreground mt-1">
               P = X / Y ({language === "zh" ? "LP池USDC/B18" : "LP USDC/B18"})
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2 bg-muted/50 rounded-xl text-center">
               <div className="text-xl font-bold text-emerald-600">0%</div>
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "滑点费用" : "Slippage"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "滑点费用" : "Slippage"}</div>
             </div>
             <div className="p-2 bg-muted/50 rounded-xl text-center">
               <div className="text-xl font-bold text-primary">∞</div>
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "无限量" : "Unlimited"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "无限量" : "Unlimited"}</div>
             </div>
           </div>
         </div>
@@ -263,31 +263,31 @@ export function StakingHelpDialog({ open, onOpenChange, language }: HelpDialogPr
         <div className="space-y-2">
           <div className="p-2 bg-violet-500/10 rounded-xl border border-violet-500/20">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-5 h-5 rounded bg-violet-500 flex items-center justify-center text-white text-[10px] font-bold">1</div>
+              <div className="w-5 h-5 rounded bg-violet-500 flex items-center justify-center text-white text-[11px] font-bold">1</div>
               <span className="font-semibold text-xs">{language === "zh" ? "等额本金" : "Amortizing"}</span>
             </div>
-            <div className="font-mono text-[10px] text-center bg-muted/50 rounded p-1">
+            <div className="font-mono text-[11px] text-center bg-muted/50 rounded p-1">
               {language === "zh" ? "每日 = P₀/T + P×r" : "Daily = P₀/T + P×r"}
             </div>
           </div>
           <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center text-white text-[10px] font-bold">2</div>
+              <div className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center text-white text-[11px] font-bold">2</div>
               <span className="font-semibold text-xs">{language === "zh" ? "按期付息" : "Interest Only"}</span>
             </div>
-            <div className="font-mono text-[10px] text-center bg-muted/50 rounded p-1">
+            <div className="font-mono text-[11px] text-center bg-muted/50 rounded p-1">
               {language === "zh" ? "利息 = P₀×r, 本金到期释放" : "Interest = P₀×r, Principal at maturity"}
             </div>
           </div>
           <div className="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-5 h-5 rounded bg-purple-500 flex items-center justify-center text-white text-[10px] font-bold">3</div>
+              <div className="w-5 h-5 rounded bg-purple-500 flex items-center justify-center text-white text-[11px] font-bold">3</div>
               <span className="font-semibold text-xs">{language === "zh" ? "复利滚存" : "Compound"}</span>
             </div>
-            <div className="font-mono text-[10px] text-center bg-muted/50 rounded p-1">
+            <div className="font-mono text-[11px] text-center bg-muted/50 rounded p-1">
               P = P₀×(1+r)^(T-1) + P₀×r
             </div>
-            <div className="text-[9px] text-center text-muted-foreground mt-0.5">
+            <div className="text-[11px] text-center text-muted-foreground mt-0.5">
               {language === "zh" ? "封顶: 180天593.74%, 360天3600%" : "Cap: 180d=593.74%, 360d=3600%"}
             </div>
           </div>
@@ -349,24 +349,24 @@ export function ReleaseHelpDialog({ open, onOpenChange, language }: HelpDialogPr
       content: (
         <div className="space-y-2">
           <div className="p-2 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "等额本金每日释放" : "Amortizing Daily"}</div>
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "等额本金每日释放" : "Amortizing Daily"}</div>
             <div className="font-mono text-xs font-bold text-center">
               {language === "zh" ? "释放 = (P₀/D + P×r) × (1-tax)" : "Release = (P₀/D + P×r) × (1-tax)"}
             </div>
           </div>
           <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "按期付息" : "Interest Only"}</div>
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "按期付息" : "Interest Only"}</div>
             <div className="font-mono text-xs font-bold text-center">
               {language === "zh" ? "利息 = P₀×r×(1-tax)/D" : "Interest = P₀×r×(1-tax)/D"}
             </div>
-            <div className="text-[9px] text-center text-muted-foreground">{language === "zh" ? "本金到期后分D天释放" : "Principal released in D days after maturity"}</div>
+            <div className="text-[11px] text-center text-muted-foreground">{language === "zh" ? "本金到期后分D天释放" : "Principal released in D days after maturity"}</div>
           </div>
           <div className="p-2 bg-violet-500/10 rounded-xl border border-violet-500/20">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "复利滚存" : "Compound"}</div>
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "复利滚存" : "Compound"}</div>
             <div className="font-mono text-xs font-bold text-center">
               {language === "zh" ? "每日 = P_final×(1-tax)/D" : "Daily = P_final×(1-tax)/D"}
             </div>
-            <div className="text-[9px] text-center text-muted-foreground">{language === "zh" ? "到期后才开始释放" : "Release starts after maturity"}</div>
+            <div className="text-[11px] text-center text-muted-foreground">{language === "zh" ? "到期后才开始释放" : "Release starts after maturity"}</div>
           </div>
         </div>
       ),
@@ -412,31 +412,31 @@ export function ReleaseHelpDialog({ open, onOpenChange, language }: HelpDialogPr
       content: (
         <div className="space-y-2">
           <div className="p-2 bg-teal-500/10 rounded-xl border border-teal-500/20">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "LP买入公式 (含3%滑点)" : "LP Buy Formula (3% slip)"}</div>
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "LP买入公式 (含3%滑点)" : "LP Buy Formula (3% slip)"}</div>
             <div className="font-mono text-xs font-bold text-center">
               B18 = Y - k/(X + USDC×0.97)
             </div>
-            <div className="text-[9px] text-center text-muted-foreground mt-1">k = X×Y, P = X/Y</div>
+            <div className="text-[11px] text-center text-muted-foreground mt-1">k = X×Y, P = X/Y</div>
           </div>
           {/* 流程图 */}
           <div className="flex items-center justify-center gap-2">
             <div className="px-2 py-1.5 bg-amber-500/20 rounded-lg border border-amber-500/30 text-center">
-              <div className="text-[10px] font-semibold">{language === "zh" ? "税USDC" : "Tax"}</div>
+              <div className="text-[11px] font-semibold">{language === "zh" ? "税USDC" : "Tax"}</div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="px-2 py-1.5 bg-blue-500/20 rounded-lg border border-blue-500/30 text-center">
-              <div className="text-[10px] font-semibold">LP</div>
+              <div className="text-[11px] font-semibold">LP</div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="px-2 py-1.5 bg-emerald-500/20 rounded-lg border border-emerald-500/30 text-center">
-              <div className="text-[10px] font-semibold">B18</div>
+              <div className="text-[11px] font-semibold">B18</div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="px-2 py-1.5 bg-violet-500/20 rounded-lg border border-violet-500/30 text-center">
-              <div className="text-[10px] font-semibold">SPP</div>
+              <div className="text-[11px] font-semibold">SPP</div>
             </div>
           </div>
-          <div className="text-[10px] text-center text-muted-foreground bg-muted/50 rounded-lg p-2">
+          <div className="text-[11px] text-center text-muted-foreground bg-muted/50 rounded-lg p-2">
             {language === "zh" ? "税收USDC 100% 去LP购买B18，B18全部进入SPP合约" : "100% tax USDC buys B18 from LP, all B18 goes to SPP"}
           </div>
         </div>
@@ -471,22 +471,22 @@ export function ReleaseHelpDialog({ open, onOpenChange, language }: HelpDialogPr
             <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-center">
               <Truck className="h-4 w-4 text-indigo-600 mx-auto mb-1" />
               <div className="text-lg font-bold text-indigo-600">50%</div>
-              <div className="text-[10px]">{language === "zh" ? "交付" : "Delivery"}</div>
+              <div className="text-[11px]">{language === "zh" ? "交付" : "Delivery"}</div>
             </div>
             <div className="p-2 bg-red-500/10 rounded-xl border border-red-500/20 text-center">
               <Flame className="h-4 w-4 text-red-600 mx-auto mb-1" />
               <div className="text-lg font-bold text-red-600">20%</div>
-              <div className="text-[10px]">{language === "zh" ? "销毁" : "Burn"}</div>
+              <div className="text-[11px]">{language === "zh" ? "销毁" : "Burn"}</div>
             </div>
             <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20 text-center">
               <Gift className="h-4 w-4 text-amber-600 mx-auto mb-1" />
               <div className="text-lg font-bold text-amber-600">20%</div>
-              <div className="text-[10px]">{language === "zh" ? "奖金" : "Bonus"}</div>
+              <div className="text-[11px]">{language === "zh" ? "奖金" : "Bonus"}</div>
             </div>
             <div className="p-2 bg-violet-500/10 rounded-xl border border-violet-500/20 text-center">
               <Shield className="h-4 w-4 text-violet-600 mx-auto mb-1" />
               <div className="text-lg font-bold text-violet-600">10%</div>
-              <div className="text-[10px]">SPP</div>
+              <div className="text-[11px]">SPP</div>
             </div>
           </div>
         </div>
@@ -519,25 +519,25 @@ export function SecondaryMarketHelpDialog({ open, onOpenChange, language }: Help
           <div className="p-3 bg-sky-500/10 rounded-xl border border-sky-500/20">
             <div className="text-xs text-muted-foreground mb-1 text-center">{language === "zh" ? "核心公式" : "Core Formula"}</div>
             <div className="text-xl font-bold font-mono text-sky-600 text-center">k = X × Y</div>
-            <div className="text-[10px] text-center text-muted-foreground mt-1">
+            <div className="text-[11px] text-center text-muted-foreground mt-1">
               X = USDC, Y = B18, P = X/Y
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-              <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "买入B18" : "Buy B18"}</div>
-              <div className="font-mono text-[10px] font-bold text-center">
+              <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "买入B18" : "Buy B18"}</div>
+              <div className="font-mono text-[11px] font-bold text-center">
                 ΔY = Y - k/(X+ΔX×0.97)
               </div>
             </div>
             <div className="p-2 bg-red-500/10 rounded-xl border border-red-500/20">
-              <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "卖出B18" : "Sell B18"}</div>
-              <div className="font-mono text-[10px] font-bold text-center">
+              <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "卖出B18" : "Sell B18"}</div>
+              <div className="font-mono text-[11px] font-bold text-center">
                 ΔX = X - k/(Y+ΔY×0.97)
               </div>
             </div>
           </div>
-          <div className="text-[10px] text-center text-muted-foreground bg-muted/50 rounded-lg p-2">
+          <div className="text-[11px] text-center text-muted-foreground bg-muted/50 rounded-lg p-2">
             {language === "zh" ? "滑点 3%: 实际成交 = 输入 × 0.97" : "3% slip: effective = input × 0.97"}
           </div>
         </div>
@@ -556,7 +556,7 @@ export function SecondaryMarketHelpDialog({ open, onOpenChange, language }: Help
               <TrendingUp className="h-5 w-5 text-emerald-600" />
               <span className="font-semibold text-sm text-emerald-700 dark:text-emerald-400">{language === "zh" ? "买入 = 价格上涨" : "Buy = Price Up"}</span>
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground">
               {language === "zh"
                 ? "USDC进入LP池，B18流出，X增加Y减少，P=X/Y上升"
                 : "USDC enters LP, B18 exits, X↑ Y↓, P=X/Y rises"}
@@ -567,13 +567,13 @@ export function SecondaryMarketHelpDialog({ open, onOpenChange, language }: Help
               <TrendingUp className="h-5 w-5 text-rose-600 rotate-180" />
               <span className="font-semibold text-sm text-rose-700 dark:text-rose-400">{language === "zh" ? "卖出 = 价格下跌" : "Sell = Price Down"}</span>
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground">
               {language === "zh"
                 ? "B18进入LP池，USDC流出，Y增加X减少，P=X/Y下降"
                 : "B18 enters LP, USDC exits, Y↑ X↓, P=X/Y drops"}
             </div>
           </div>
-          <div className="text-[10px] text-center text-muted-foreground bg-muted/50 rounded-lg p-2">
+          <div className="text-[11px] text-center text-muted-foreground bg-muted/50 rounded-lg p-2">
             {language === "zh" ? "3%滑点费留在LP池中，不做额外分配" : "3% slippage stays in LP pool, no extra distribution"}
           </div>
         </div>
@@ -643,11 +643,11 @@ export function DynamicRewardsHelpDialog({ open, onOpenChange, language }: HelpD
       content: (
         <div className="space-y-2">
           <div className="p-3 bg-orange-500/10 rounded-xl border border-orange-500/20">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "级别奖励公式" : "Tier Reward Formula"}</div>
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "级别奖励公式" : "Tier Reward Formula"}</div>
             <div className="font-mono text-xs font-bold text-center text-orange-700 dark:text-orange-400">
               R = {language === "zh" ? "伞下业绩" : "Perf"} × 1.2% × 40% × {language === "zh" ? "级别" : "Tier"}
             </div>
-            <div className="text-[9px] text-center text-muted-foreground mt-1">
+            <div className="text-[11px] text-center text-muted-foreground mt-1">
               {language === "zh" ? "1.2% = 假设伞下都质押360天的日利率" : "1.2% = 360-day staking daily rate"}
             </div>
           </div>
@@ -655,11 +655,11 @@ export function DynamicRewardsHelpDialog({ open, onOpenChange, language }: HelpD
             {[{v: "V1", p: "1×40%"}, {v: "V2", p: "2×40%"}, {v: "V5", p: "5×40%"}, {v: "V8", p: "8×40%"}, {v: "V10", p: "10×40%"}].map((t) => (
               <div key={t.v} className="p-1.5 bg-muted/50 rounded-lg text-center">
                 <div className="text-xs font-bold text-orange-600">{t.v}</div>
-                <div className="text-[8px] text-muted-foreground">{t.p}</div>
+                <div className="text-[11px] text-muted-foreground">{t.p}</div>
               </div>
             ))}
           </div>
-          <div className="text-[10px] text-center text-muted-foreground bg-emerald-500/10 rounded-lg p-1.5 border border-emerald-500/20">
+          <div className="text-[11px] text-center text-muted-foreground bg-emerald-500/10 rounded-lg p-1.5 border border-emerald-500/20">
             {language === "zh" ? "✓ 无需扣税，无需线性释放，立即到账" : "✓ No tax, no linear release, instant payout"}
           </div>
         </div>
@@ -674,14 +674,14 @@ export function DynamicRewardsHelpDialog({ open, onOpenChange, language }: HelpD
       content: (
         <div className="space-y-2">
           <div className="p-2 bg-pink-500/10 rounded-xl border border-pink-500/20">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "业绩奖励公式" : "Layer Reward Formula"}</div>
-            <div className="font-mono text-[10px] font-bold text-center text-pink-700 dark:text-pink-400">
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "业绩奖励公式" : "Layer Reward Formula"}</div>
+            <div className="font-mono text-[11px] font-bold text-center text-pink-700 dark:text-pink-400">
               R = ({language === "zh" ? "小区业绩" : "Layer"}/{language === "zh" ? "全网业绩" : "Total"}) × {language === "zh" ? "奖金池" : "Pool"} × {language === "zh" ? "层%" : "Rate"}
             </div>
           </div>
           <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "层级比例 (每层递减2%)" : "Layer Rate (-2% each)"}</div>
-            <div className="font-mono text-[10px] font-bold text-center">
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "层级比例 (每层递减2%)" : "Layer Rate (-2% each)"}</div>
+            <div className="font-mono text-[11px] font-bold text-center">
               Rate(n) = 100% - (n-1) × 2%
             </div>
           </div>
@@ -689,9 +689,9 @@ export function DynamicRewardsHelpDialog({ open, onOpenChange, language }: HelpD
             {[{l: "L1", r: "100%"}, {l: "L10", r: "82%"}, {l: "L25", r: "52%"}, {l: "L40", r: "22%"}, {l: "L50", r: "2%"}].map((item) => (
               <div key={item.l} className="text-center">
                 <div className="w-9 h-9 rounded-lg bg-pink-500/10 flex items-center justify-center border border-pink-500/20 mb-0.5">
-                  <span className="font-bold text-[10px] text-pink-600">{item.r}</span>
+                  <span className="font-bold text-[11px] text-pink-600">{item.r}</span>
                 </div>
-                <div className="text-[9px] text-muted-foreground">{item.l}</div>
+                <div className="text-[11px] text-muted-foreground">{item.l}</div>
               </div>
             ))}
           </div>
@@ -708,39 +708,39 @@ export function DynamicRewardsHelpDialog({ open, onOpenChange, language }: HelpD
         <div className="space-y-2">
           <div className="flex items-center justify-center gap-2">
             <div className="px-2 py-1.5 bg-blue-500/20 rounded-lg border border-blue-500/30 text-center">
-              <div className="text-[10px] font-semibold">{language === "zh" ? "兑付B18" : "Redeem"}</div>
+              <div className="text-[11px] font-semibold">{language === "zh" ? "兑付B18" : "Redeem"}</div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="px-2 py-1.5 bg-amber-500/20 rounded-lg border border-amber-500/30 text-center">
-              <div className="text-[10px] font-semibold">20%</div>
+              <div className="text-[11px] font-semibold">20%</div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="px-2 py-1.5 bg-yellow-500/20 rounded-lg border border-yellow-500/30 text-center">
-              <div className="text-[10px] font-semibold">{language === "zh" ? "奖金池" : "Pool"}</div>
+              <div className="text-[11px] font-semibold">{language === "zh" ? "奖金池" : "Pool"}</div>
             </div>
           </div>
           <div className="p-2 bg-muted/50 rounded-xl">
-            <div className="text-[10px] text-muted-foreground mb-1">{language === "zh" ? "B18分配比例" : "B18 Distribution"}</div>
+            <div className="text-[11px] text-muted-foreground mb-1">{language === "zh" ? "B18分配比例" : "B18 Distribution"}</div>
             <div className="grid grid-cols-4 gap-1 text-center">
               <div className="p-1 bg-indigo-500/10 rounded">
-                <div className="text-[10px] font-bold text-indigo-600">50%</div>
-                <div className="text-[8px] text-muted-foreground">{language === "zh" ? "交付" : "Delivery"}</div>
+                <div className="text-[11px] font-bold text-indigo-600">50%</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "交付" : "Delivery"}</div>
               </div>
               <div className="p-1 bg-red-500/10 rounded">
-                <div className="text-[10px] font-bold text-red-600">20%</div>
-                <div className="text-[8px] text-muted-foreground">{language === "zh" ? "销毁" : "Burn"}</div>
+                <div className="text-[11px] font-bold text-red-600">20%</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "销毁" : "Burn"}</div>
               </div>
               <div className="p-1 bg-amber-500/10 rounded">
-                <div className="text-[10px] font-bold text-amber-600">20%</div>
-                <div className="text-[8px] text-muted-foreground">{language === "zh" ? "奖金池" : "Bonus"}</div>
+                <div className="text-[11px] font-bold text-amber-600">20%</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "奖金池" : "Bonus"}</div>
               </div>
               <div className="p-1 bg-violet-500/10 rounded">
-                <div className="text-[10px] font-bold text-violet-600">10%</div>
-                <div className="text-[8px] text-muted-foreground">SPP</div>
+                <div className="text-[11px] font-bold text-violet-600">10%</div>
+                <div className="text-[11px] text-muted-foreground">SPP</div>
               </div>
             </div>
           </div>
-          <div className="text-[10px] text-center text-muted-foreground bg-muted/50 rounded-lg p-1.5">
+          <div className="text-[11px] text-center text-muted-foreground bg-muted/50 rounded-lg p-1.5">
             {language === "zh" ? "奖金池B18用于拨付业绩奖励" : "Bonus pool B18 pays layer rewards"}
           </div>
         </div>
@@ -831,15 +831,15 @@ export function UsageHelpDialog({ open, onOpenChange, language }: HelpDialogProp
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 bg-primary/10 rounded-lg">
               <div className="text-lg font-bold text-primary">6</div>
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "功能模块" : "Modules"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "功能模块" : "Modules"}</div>
             </div>
             <div className="p-2 bg-chart-2/10 rounded-lg">
               <div className="text-lg font-bold text-chart-2">3</div>
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "投资模式" : "Modes"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "投资模式" : "Modes"}</div>
             </div>
             <div className="p-2 bg-chart-3/10 rounded-lg">
               <div className="text-lg font-bold text-chart-3">∞</div>
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "模拟场景" : "Scenarios"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "模拟场景" : "Scenarios"}</div>
             </div>
           </div>
         </div>
@@ -859,7 +859,7 @@ export function UsageHelpDialog({ open, onOpenChange, language }: HelpDialogProp
               : "After simulating purchase & stake, view treasury, delivery contract, LP pool changes in dashboard."}
           </div>
           <div className="p-3 bg-muted/50 rounded-xl">
-            <div className="text-[10px] font-bold mb-2">{language === "zh" ? "三种投资模式：" : "3 Investment Modes:"}</div>
+            <div className="text-[11px] font-bold mb-2">{language === "zh" ? "三种投资模式：" : "3 Investment Modes:"}</div>
             <div className="space-y-1.5 text-[11px]">
               <div className="flex items-start gap-2">
                 <ArrowDown className="h-3 w-3 mt-0.5 text-chart-2" />
@@ -892,7 +892,7 @@ export function UsageHelpDialog({ open, onOpenChange, language }: HelpDialogProp
               : "Check if cash flow is sufficient on release day, view daily release details."}
           </div>
           <div className="p-3 bg-chart-3/10 rounded-xl border border-chart-3/20">
-            <div className="text-[10px] font-bold text-chart-3 mb-1.5">{language === "zh" ? "多订单功能" : "Multi-Order Feature"}</div>
+            <div className="text-[11px] font-bold text-chart-3 mb-1.5">{language === "zh" ? "多订单功能" : "Multi-Order Feature"}</div>
             <div className="text-[11px] text-muted-foreground leading-relaxed space-y-1">
               <p>{language === "zh"
                 ? "可查看多订单释放情况，只需返回第1步增加订单即可。"
@@ -925,16 +925,16 @@ export function UsageHelpDialog({ open, onOpenChange, language }: HelpDialogProp
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2.5 bg-chart-2/10 rounded-xl text-center">
               <TrendingUp className="h-5 w-5 mx-auto text-chart-2 mb-1" />
-              <div className="text-[10px] font-bold">{language === "zh" ? "买入" : "Buy"}</div>
-              <div className="text-[9px] text-muted-foreground">{language === "zh" ? "价格上涨" : "Price Up"}</div>
+              <div className="text-[11px] font-bold">{language === "zh" ? "买入" : "Buy"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "价格上涨" : "Price Up"}</div>
             </div>
             <div className="p-2.5 bg-chart-5/10 rounded-xl text-center">
               <ArrowDown className="h-5 w-5 mx-auto text-chart-5 mb-1" />
-              <div className="text-[10px] font-bold">{language === "zh" ? "卖出" : "Sell"}</div>
-              <div className="text-[9px] text-muted-foreground">{language === "zh" ? "价格下跌" : "Price Down"}</div>
+              <div className="text-[11px] font-bold">{language === "zh" ? "卖出" : "Sell"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "价格下跌" : "Price Down"}</div>
             </div>
           </div>
-          <div className="text-[10px] p-2 bg-chart-4/10 rounded-lg text-center">
+          <div className="text-[11px] p-2 bg-chart-4/10 rounded-lg text-center">
             {language === "zh" ? "SPP合约可在高价卖出护盘，低价买入托底" : "SPP sells high to protect, buys low to support"}
           </div>
         </div>
@@ -955,12 +955,12 @@ export function UsageHelpDialog({ open, onOpenChange, language }: HelpDialogProp
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2.5 bg-amber-500/10 rounded-xl">
-              <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400">{language === "zh" ? "级别奖励" : "Tier Reward"}</div>
-              <div className="text-[9px] text-muted-foreground">{language === "zh" ? "伞下业绩×1.2%×40%×级别" : "Perf×1.2%×40%×Tier"}</div>
+              <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400">{language === "zh" ? "级别奖励" : "Tier Reward"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "伞下业绩×1.2%×40%×级别" : "Perf×1.2%×40%×Tier"}</div>
             </div>
             <div className="p-2.5 bg-orange-500/10 rounded-xl">
-              <div className="text-[10px] font-bold text-orange-700 dark:text-orange-400">{language === "zh" ? "业绩奖励" : "Layer Reward"}</div>
-              <div className="text-[9px] text-muted-foreground">{language === "zh" ? "小区业绩/全网×奖金池×层%" : "Perf/Total×Pool×Layer%"}</div>
+              <div className="text-[11px] font-bold text-orange-700 dark:text-orange-400">{language === "zh" ? "业绩奖励" : "Layer Reward"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "小区业绩/全网×奖金池×层%" : "Perf/Total×Pool×Layer%"}</div>
             </div>
           </div>
         </div>
@@ -980,8 +980,8 @@ export function UsageHelpDialog({ open, onOpenChange, language }: HelpDialogProp
               : "View B18 token distribution and overall flow diagram between contracts."}
           </div>
           <div className="p-3 bg-muted/50 rounded-xl">
-            <div className="text-[10px] font-bold mb-2">{language === "zh" ? "主要合约：" : "Main Contracts:"}</div>
-            <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+            <div className="text-[11px] font-bold mb-2">{language === "zh" ? "主要合约：" : "Main Contracts:"}</div>
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
               <div className="flex items-center gap-1.5"><Landmark className="h-3 w-3 text-chart-1" /><span>{language === "zh" ? "国库" : "Treasury"}</span></div>
               <div className="flex items-center gap-1.5"><FileText className="h-3 w-3 text-chart-2" /><span>{language === "zh" ? "交付合约" : "Delivery"}</span></div>
               <div className="flex items-center gap-1.5"><Droplets className="h-3 w-3 text-chart-3" /><span>LP {language === "zh" ? "池" : "Pool"}</span></div>
@@ -1007,15 +1007,15 @@ export function UsageHelpDialog({ open, onOpenChange, language }: HelpDialogProp
               : "Overall prediction simulator with adjustable parameters. Set SPP price balance conditions, view data impact."}
           </div>
           <div className="p-3 bg-muted/50 rounded-xl">
-            <div className="text-[10px] font-bold mb-2">{language === "zh" ? "两种预测模式：" : "Two Prediction Modes:"}</div>
+            <div className="text-[11px] font-bold mb-2">{language === "zh" ? "两种预测模式：" : "Two Prediction Modes:"}</div>
             <div className="space-y-2 text-[11px]">
               <div className="p-2 bg-chart-2/10 rounded-lg">
                 <div className="font-semibold text-chart-2">{language === "zh" ? "模式一：营业额" : "Mode 1: Revenue"}</div>
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "设定营业额和日增长率" : "Set revenue and daily growth rate"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "设定营业额和日增长率" : "Set revenue and daily growth rate"}</div>
               </div>
               <div className="p-2 bg-chart-3/10 rounded-lg">
                 <div className="font-semibold text-chart-3">{language === "zh" ? "模式二：随机订单" : "Mode 2: Random Orders"}</div>
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "10张随机订单及其选择条件" : "10 random orders with conditions"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "10张随机订单及其选择条件" : "10 random orders with conditions"}</div>
               </div>
             </div>
           </div>

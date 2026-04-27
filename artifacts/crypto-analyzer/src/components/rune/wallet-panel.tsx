@@ -82,7 +82,7 @@ export function WalletPanel() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* USDT balance */}
               <div className="rounded-xl border border-border/50 bg-background/40 p-3.5">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-1">USDT Balance</p>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 mb-1">USDT Balance</p>
                 <p className="num text-xl text-foreground">
                   {fmtUsdt(usdtRaw as bigint | undefined, 2)} <span className="text-xs text-muted-foreground font-normal">USDT</span>
                 </p>
@@ -90,7 +90,7 @@ export function WalletPanel() {
 
               {/* Owned node */}
               <div className="rounded-xl border border-border/50 bg-background/40 p-3.5">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-1">Owned Node</p>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 mb-1">Owned Node</p>
                 {hasPurchased && nodeId ? (
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -99,7 +99,7 @@ export function WalletPanel() {
                         {NODE_META[nodeId as NodeId]?.nameEn ?? `#${nodeId}`}
                       </p>
                       {payTime && (
-                        <p className="text-[10px] text-muted-foreground truncate">
+                        <p className="text-[11px] text-muted-foreground truncate">
                           {new Date(Number(payTime) * 1000).toLocaleDateString()}
                         </p>
                       )}
@@ -112,7 +112,7 @@ export function WalletPanel() {
 
               {/* Referrer */}
               <div className="rounded-xl border border-border/50 bg-background/40 p-3.5">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-1">Upstream Referrer</p>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 mb-1">Upstream Referrer</p>
                 {referrerLoading ? (
                   <p className="text-sm text-muted-foreground">Loading…</p>
                 ) : !isBound ? (

@@ -54,9 +54,9 @@ export function ContractBox({
       >
         {icon}
       </motion.div>
-      <span className="text-[10px] lg:text-xs font-medium text-center leading-tight px-1">{label}</span>
+      <span className="text-[11px] lg:text-xs font-medium text-center leading-tight px-1">{label}</span>
       {sublabel && (
-        <span className="text-[8px] lg:text-[10px] text-muted-foreground">{sublabel}</span>
+        <span className="text-[11px] lg:text-[11px] text-muted-foreground">{sublabel}</span>
       )}
     </motion.div>
   );
@@ -152,7 +152,7 @@ export function FlowArrow({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: delay + 0.3 }}
-          className="absolute text-[10px] font-bold whitespace-nowrap"
+          className="absolute text-[11px] font-bold whitespace-nowrap"
           style={{ color }}
         >
           {label}
@@ -268,7 +268,7 @@ export function PercentBadge({ value, color, delay = 0, label }: PercentBadgePro
         {value}%
       </div>
       {label && (
-        <span className="text-[10px] text-muted-foreground">{label}</span>
+        <span className="text-[11px] text-muted-foreground">{label}</span>
       )}
     </motion.div>
   );

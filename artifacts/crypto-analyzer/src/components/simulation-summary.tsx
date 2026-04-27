@@ -125,7 +125,7 @@ export function SimulationSummary() {
         {/* 价格和每日释放 */}
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-muted/50 rounded-lg p-2.5">
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1">
               <Coins className="h-2.5 w-2.5" />
               {language === 'zh' ? '代币价格' : 'Token Price'}
             </div>
@@ -142,7 +142,7 @@ export function SimulationSummary() {
             </div>
           </div>
           <div className="bg-muted/50 rounded-lg p-2.5">
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1">
               <Calendar className="h-2.5 w-2.5" />
               {language === 'zh' ? '每日净释放' : 'Daily Net Release'}
             </div>
@@ -155,7 +155,7 @@ export function SimulationSummary() {
         {/* 多队列释放统计 */}
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-blue-500/10 rounded-lg p-2.5">
-            <div className="flex items-center gap-1 text-[10px] text-blue-400 mb-1">
+            <div className="flex items-center gap-1 text-[11px] text-blue-400 mb-1">
               <Layers className="h-2.5 w-2.5" />
               {language === 'zh' ? '活跃释放队列' : 'Active Queues'}
             </div>
@@ -164,7 +164,7 @@ export function SimulationSummary() {
             </div>
           </div>
           <div className="bg-orange-500/10 rounded-lg p-2.5">
-            <div className="flex items-center gap-1 text-[10px] text-orange-400 mb-1">
+            <div className="flex items-center gap-1 text-[11px] text-orange-400 mb-1">
               <ArrowDownToLine className="h-2.5 w-2.5" />
               {language === 'zh' ? '今日解锁' : "Today's Unlock"}
             </div>
@@ -185,7 +185,7 @@ export function SimulationSummary() {
             </span>
           </div>
           <Progress value={releaseProgress * 100} className="h-2" />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>{formatCurrency(investmentStats.totalReleased)} {language === 'zh' ? '已释放' : 'released'}</span>
             <span>{formatCurrency(investmentStats.totalScheduledRelease)} {language === 'zh' ? '计划' : 'total'}</span>
           </div>
@@ -196,7 +196,7 @@ export function SimulationSummary() {
         {/* 投资汇总 */}
         <div className="grid grid-cols-4 gap-2">
           <div className="text-center">
-            <div className="text-[10px] text-muted-foreground mb-0.5">
+            <div className="text-[11px] text-muted-foreground mb-0.5">
               {language === 'zh' ? '总投资' : 'Invested'}
             </div>
             <div className="font-mono font-semibold text-sm">
@@ -204,7 +204,7 @@ export function SimulationSummary() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] text-muted-foreground mb-0.5">
+            <div className="text-[11px] text-muted-foreground mb-0.5">
               {language === 'zh' ? '已解锁' : 'Unlocked'}
             </div>
             <div className="font-mono font-semibold text-sm text-orange-500">
@@ -212,7 +212,7 @@ export function SimulationSummary() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] text-muted-foreground mb-0.5">
+            <div className="text-[11px] text-muted-foreground mb-0.5">
               {language === 'zh' ? '已释放' : 'Released'}
             </div>
             <div className="font-mono font-semibold text-sm text-green-500">
@@ -220,7 +220,7 @@ export function SimulationSummary() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] text-muted-foreground mb-0.5">
+            <div className="text-[11px] text-muted-foreground mb-0.5">
               ROI
             </div>
             <div className={`font-mono font-semibold text-sm ${roi >= 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -237,7 +237,7 @@ export function SimulationSummary() {
             <span className="text-[11px] font-medium">
               {language === 'zh' ? '质押中投资' : 'Active Staking'}
             </span>
-            <Badge variant="secondary" className="text-[10px] h-5">
+            <Badge variant="secondary" className="text-[11px] h-5">
               {investmentStats.activeCount}/{investmentStats.totalCount}
             </Badge>
           </div>
@@ -250,15 +250,15 @@ export function SimulationSummary() {
               {activeInvestments.slice(0, 5).map((inv) => (
                 <div
                   key={inv.id}
-                  className="flex items-center justify-between bg-muted/30 rounded p-1.5 text-[10px]"
+                  className="flex items-center justify-between bg-muted/30 rounded p-1.5 text-[11px]"
                 >
                   <div className="flex items-center gap-1.5">
-                    <Badge variant="outline" className="text-[8px] px-1 h-4">
+                    <Badge variant="outline" className="text-[11px] px-1 h-4">
                       {inv.stakingPeriodDays}d
                     </Badge>
                     <span className="font-mono">{formatCurrency(inv.investmentUsdc)}</span>
                     {inv.useCompound && (
-                      <Badge variant="secondary" className="text-[8px] px-1 h-4 bg-purple-500/20 text-purple-400">
+                      <Badge variant="secondary" className="text-[11px] px-1 h-4 bg-purple-500/20 text-purple-400">
                         {language === 'zh' ? '复利' : 'Compound'}
                       </Badge>
                     )}
@@ -275,7 +275,7 @@ export function SimulationSummary() {
                 </div>
               ))}
               {activeInvestments.length > 5 && (
-                <div className="text-center text-[10px] text-muted-foreground">
+                <div className="text-center text-[11px] text-muted-foreground">
                   +{activeInvestments.length - 5} {language === 'zh' ? '更多' : 'more'}
                 </div>
               )}
@@ -292,7 +292,7 @@ export function SimulationSummary() {
                 <span className="text-[11px] font-medium">
                   {language === 'zh' ? '释放队列' : 'Release Queues'}
                 </span>
-                <Badge variant="secondary" className="text-[10px] h-5 bg-blue-500/20 text-blue-400">
+                <Badge variant="secondary" className="text-[11px] h-5 bg-blue-500/20 text-blue-400">
                   {activeReleaseQueues.length} {language === 'zh' ? '活跃' : 'active'}
                 </Badge>
               </div>
@@ -300,10 +300,10 @@ export function SimulationSummary() {
                 {activeReleaseQueues.slice(0, 4).map((queue) => (
                   <div
                     key={queue.id}
-                    className="flex items-center justify-between bg-blue-500/10 rounded p-1.5 text-[10px]"
+                    className="flex items-center justify-between bg-blue-500/10 rounded p-1.5 text-[11px]"
                   >
                     <div className="flex items-center gap-1.5">
-                      <Badge variant="outline" className="text-[8px] px-1 h-4">
+                      <Badge variant="outline" className="text-[11px] px-1 h-4">
                         D{queue.unlockDay}
                       </Badge>
                       <span className="font-mono">{formatCurrency(queue.unlockAmount)}</span>
@@ -320,7 +320,7 @@ export function SimulationSummary() {
                   </div>
                 ))}
                 {activeReleaseQueues.length > 4 && (
-                  <div className="text-center text-[10px] text-muted-foreground">
+                  <div className="text-center text-[11px] text-muted-foreground">
                     +{activeReleaseQueues.length - 4} {language === 'zh' ? '更多队列' : 'more queues'}
                   </div>
                 )}
@@ -334,20 +334,20 @@ export function SimulationSummary() {
         {/* 资金池状态 */}
         <div className="grid grid-cols-4 gap-1.5 text-center">
           <div className="bg-muted/30 rounded p-1.5">
-            <div className="text-[9px] text-muted-foreground">{language === 'zh' ? '国库' : 'Treasury'}</div>
-            <div className="font-mono text-[10px] font-semibold">{formatCurrency(poolStats.treasuryBalance)}</div>
+            <div className="text-[11px] text-muted-foreground">{language === 'zh' ? '国库' : 'Treasury'}</div>
+            <div className="font-mono text-[11px] font-semibold">{formatCurrency(poolStats.treasuryBalance)}</div>
           </div>
           <div className="bg-muted/30 rounded p-1.5">
-            <div className="text-[9px] text-muted-foreground">LP USDC</div>
-            <div className="font-mono text-[10px] font-semibold">{formatCurrency(poolStats.lpPoolUsdt)}</div>
+            <div className="text-[11px] text-muted-foreground">LP USDC</div>
+            <div className="font-mono text-[11px] font-semibold">{formatCurrency(poolStats.lpPoolUsdt)}</div>
           </div>
           <div className="bg-muted/30 rounded p-1.5">
-            <div className="text-[9px] text-muted-foreground">{language === 'zh' ? '奖励池' : 'Bonus'}</div>
-            <div className="font-mono text-[10px] font-semibold">{formatTokens(poolStats.bonusPoolBalance)}</div>
+            <div className="text-[11px] text-muted-foreground">{language === 'zh' ? '奖励池' : 'Bonus'}</div>
+            <div className="font-mono text-[11px] font-semibold">{formatTokens(poolStats.bonusPoolBalance)}</div>
           </div>
           <div className="bg-muted/30 rounded p-1.5">
-            <div className="text-[9px] text-muted-foreground">{language === 'zh' ? '销毁' : 'Burned'}</div>
-            <div className="font-mono text-[10px] font-semibold text-orange-500">{formatTokens(tokenStats.totalBurned)}</div>
+            <div className="text-[11px] text-muted-foreground">{language === 'zh' ? '销毁' : 'Burned'}</div>
+            <div className="font-mono text-[11px] font-semibold text-orange-500">{formatTokens(tokenStats.totalBurned)}</div>
           </div>
         </div>
 
@@ -356,10 +356,10 @@ export function SimulationSummary() {
           <>
             <Separator className="my-2" />
             <div className="bg-green-500/10 rounded-lg p-2">
-              <div className="text-[10px] text-green-400 mb-1">
+              <div className="text-[11px] text-green-400 mb-1">
                 {language === 'zh' ? `第${todayRelease.day}天释放详情` : `Day ${todayRelease.day} Release Details`}
               </div>
-              <div className="grid grid-cols-3 gap-2 text-[9px]">
+              <div className="grid grid-cols-3 gap-2 text-[11px]">
                 <div>
                   <div className="text-muted-foreground">{language === 'zh' ? '毛释放' : 'Gross'}</div>
                   <div className="font-mono text-green-400">{formatCurrency(todayRelease.grossReleaseUsdc)}</div>
@@ -374,7 +374,7 @@ export function SimulationSummary() {
                 </div>
               </div>
               {todayRelease.compoundAmount > 0 && (
-                <div className="mt-1 text-[9px] text-purple-400">
+                <div className="mt-1 text-[11px] text-purple-400">
                   {language === 'zh' ? '复利回流' : 'Compound'}: +{formatCurrency(todayRelease.compoundAmount)}
                 </div>
               )}
@@ -384,7 +384,7 @@ export function SimulationSummary() {
 
         {/* 导出按钮 */}
         <div className="flex items-center justify-between pt-2">
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground">
             {language === 'zh' ? '导出数据' : 'Export Data'}
           </span>
           <ExportButtons />

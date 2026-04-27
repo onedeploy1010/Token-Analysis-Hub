@@ -129,7 +129,7 @@ export function Step7Withdrawal({ phase, language }: StepProps) {
                     stiffness: 300,
                     damping: 15,
                   }}
-                  className="w-6 h-6 rounded-full bg-[#2775CA] flex items-center justify-center text-white text-[10px] font-bold"
+                  className="w-6 h-6 rounded-full bg-[#2775CA] flex items-center justify-center text-white text-[11px] font-bold"
                 >
                   <motion.span
                     animate={{ y: [0, -2, 0] }}

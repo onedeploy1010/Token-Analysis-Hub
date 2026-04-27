@@ -161,12 +161,12 @@ export function Step4DailyRelease({ phase, language }: StepProps) {
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "第1天" : "Day 1"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "第1天" : "Day 1"}</div>
                         <div className="font-mono font-bold">{mode.example.day1}</div>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <div className="text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "第30天" : "Day 30"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "第30天" : "Day 30"}</div>
                         <div className="font-mono font-bold" style={{ color: mode.color }}>
                           {mode.example.day30}
                         </div>
@@ -216,7 +216,7 @@ export function Step4DailyRelease({ phase, language }: StepProps) {
                     {language === "zh" ? "税" : "Tax"}: {option.tax}%
                   </div>
                   {option.tax === 3 && (
-                    <div className="text-[10px] text-chart-2 mt-1 font-medium">
+                    <div className="text-[11px] text-chart-2 mt-1 font-medium">
                       {language === "zh" ? "✨ 最低税率" : "✨ Lowest Tax"}
                     </div>
                   )}

@@ -800,7 +800,7 @@ export function StakingPage({
           </div>
           <div className="min-w-0">
             <span className="text-base font-bold gradient-text-premium">{t("staking.title")}</span>
-            <div className="text-[10px] text-muted-foreground">{language === "zh" ? "计算质押收益和释放" : "Calculate staking returns"}</div>
+            <div className="text-[11px] text-muted-foreground">{language === "zh" ? "计算质押收益和释放" : "Calculate staking returns"}</div>
           </div>
         </CardTitle>
       </CardHeader>
@@ -863,18 +863,18 @@ export function StakingPage({
             <div className="bg-muted/40 rounded-xl p-3 text-center border border-border/50">
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 <Coins className="h-4 w-4 text-chart-1" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">{language === "zh" ? "质押本金" : "Principal"}</span>
+                <span className="text-[11px] font-bold text-muted-foreground uppercase">{language === "zh" ? "质押本金" : "Principal"}</span>
               </div>
               <div className="flex items-center justify-center gap-1">
                 <span className="font-mono font-bold text-lg gradient-text-premium" data-testid="text-tokens">{formatTokens(simulation.tokensPurchased)}</span>
-                <span className="text-[10px] font-bold text-muted-foreground">B18</span>
+                <span className="text-[11px] font-bold text-muted-foreground">B18</span>
               </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">≈ {formatCurrency(investment)}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">≈ {formatCurrency(investment)}</div>
             </div>
             <div className="bg-chart-2/10 rounded-xl p-3 text-center border border-chart-2/20">
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 <TrendingUp className="h-4 w-4 text-chart-2" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">{t("staking.totalReturn")}</span>
+                <span className="text-[11px] font-bold text-muted-foreground uppercase">{t("staking.totalReturn")}</span>
               </div>
               <span className="font-mono font-bold text-xl text-chart-2" data-testid="text-total-return">
                 {formatPercent(isCompounding
@@ -882,7 +882,7 @@ export function StakingPage({
                   : (stakingPeriods.find(p => p.days === stakingDays)?.dailyRate || 0) * stakingDays
                 )}
               </span>
-              <div className="text-[10px] text-muted-foreground mt-0.5">
+              <div className="text-[11px] text-muted-foreground mt-0.5">
                 {language === "zh" ? "日利" : "Daily"}: {formatPercent(stakingPeriods.find(p => p.days === stakingDays)?.dailyRate || 0)}
               </div>
             </div>
@@ -907,7 +907,7 @@ export function StakingPage({
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-bold">{language === "zh" ? "等额本金" : "Amortizing"}</div>
-                  <div className="text-[10px] text-muted-foreground">{language === "zh" ? "每日释放本金+利息" : "Daily P+I release"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "每日释放本金+利息" : "Daily P+I release"}</div>
                 </div>
                 {releaseMode === 'amortizing' && <CheckCircle2 className="h-5 w-5 text-chart-2" />}
               </button>
@@ -924,7 +924,7 @@ export function StakingPage({
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-bold">{language === "zh" ? "按期付息" : "Interest Only"}</div>
-                  <div className="text-[10px] text-muted-foreground">{language === "zh" ? "利息先行，本金到期" : "Interest first"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "利息先行，本金到期" : "Interest first"}</div>
                 </div>
                 {releaseMode === 'interestOnly' && <CheckCircle2 className="h-5 w-5 text-chart-4" />}
               </button>
@@ -941,7 +941,7 @@ export function StakingPage({
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-bold">{language === "zh" ? "复利滚存" : "Compound"}</div>
-                  <div className="text-[10px] text-muted-foreground">{language === "zh" ? "到期本利一起释放" : "All at maturity"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "到期本利一起释放" : "All at maturity"}</div>
                 </div>
                 {releaseMode === 'compound' && <CheckCircle2 className="h-5 w-5 text-chart-1" />}
               </button>
@@ -975,87 +975,87 @@ export function StakingPage({
 
           <div className="space-y-2">
             {/* 质押本息 - 以B18为单位 */}
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium">
               <Coins className="h-2.5 w-2.5" />
               {language === "zh" ? "质押本息 (B18)" : "Staking P&I (B18)"}
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               <div className="bg-muted/50 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "本金" : "Principal"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "本金" : "Principal"}</div>
                 <div className="text-sm font-semibold" data-testid="text-principal-b18">
                   {formatTokens(simulation.tokensPurchased)}
                 </div>
-                <div className="text-[9px] text-muted-foreground">≈{formatCurrency(investment)}</div>
+                <div className="text-[11px] text-muted-foreground">≈{formatCurrency(investment)}</div>
               </div>
               <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "利息" : "Interest"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "利息" : "Interest"}</div>
                 <div className="text-sm font-semibold text-chart-2" data-testid="text-interest-b18">
                   +{formatTokens(simulation.staking.totalTokens - simulation.tokensPurchased)}
                 </div>
-                <div className="text-[9px] text-muted-foreground">≈{formatCurrency(simulation.totalIncome)}</div>
+                <div className="text-[11px] text-muted-foreground">≈{formatCurrency(simulation.totalIncome)}</div>
               </div>
               <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "本+利" : "Total"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "本+利" : "Total"}</div>
                 <div className="text-sm font-semibold text-chart-2" data-testid="text-total-b18">
                   {formatTokens(simulation.staking.totalTokens)}
                 </div>
-                <div className="text-[9px] text-muted-foreground">≈{formatCurrency(simulation.staking.totalValue)}</div>
+                <div className="text-[11px] text-muted-foreground">≈{formatCurrency(simulation.staking.totalValue)}</div>
               </div>
             </div>
 
             {/* 质押收益 - USDC换算 */}
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium pt-1">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium pt-1">
               <TrendingUp className="h-2.5 w-2.5" />
               {language === "zh" ? "收益明细 (USDC)" : "Returns (USDC)"}
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "日奖励" : "Daily"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "日奖励" : "Daily"}</div>
                 <div className="text-sm font-semibold text-chart-2" data-testid="text-daily-income">
                   +{formatCurrency(simulation.dailyIncome)}
                 </div>
               </div>
               <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "月奖励" : "Monthly"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "月奖励" : "Monthly"}</div>
                 <div className="text-sm font-semibold text-chart-2" data-testid="text-monthly-income">
                   +{formatCurrency(simulation.monthlyIncome)}
                 </div>
               </div>
               <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? `总(${stakingDays}天)` : `Total`}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? `总(${stakingDays}天)` : `Total`}</div>
                 <div className="text-sm font-semibold text-chart-2" data-testid="text-total-income">
                   +{formatCurrency(simulation.totalIncome)}
                 </div>
-                <div className="text-[9px] text-muted-foreground">{formatPercent(simulation.staking.totalInterestRate)}</div>
+                <div className="text-[11px] text-muted-foreground">{formatPercent(simulation.staking.totalInterestRate)}</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium pt-1">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium pt-1">
               <ArrowRight className="h-2.5 w-2.5" />
               {language === "zh" ? "释放到账" : "Release"}
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               <div className="bg-muted/50 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "每日" : "Daily"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "每日" : "Daily"}</div>
                 <div className="text-sm font-semibold" data-testid="text-daily-release">
                   {formatTokens(simulation.staking.totalTokens / releaseDays)} B18
                 </div>
-                <div className="text-[9px] text-muted-foreground">≈{formatCurrency(simulation.dailyRelease)}</div>
+                <div className="text-[11px] text-muted-foreground">≈{formatCurrency(simulation.dailyRelease)}</div>
               </div>
               <div className="bg-muted/50 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "月释放" : "Monthly"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "月释放" : "Monthly"}</div>
                 <div className="text-sm font-semibold" data-testid="text-monthly-release">
                   {formatTokens(simulation.staking.totalTokens / releaseDays * 30)} B18
                 </div>
-                <div className="text-[9px] text-muted-foreground">≈{formatCurrency(simulation.monthlyRelease)}</div>
+                <div className="text-[11px] text-muted-foreground">≈{formatCurrency(simulation.monthlyRelease)}</div>
               </div>
               <div className="bg-muted/50 rounded-md p-2 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? `税后(${releaseDays}天)` : `Net`}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? `税后(${releaseDays}天)` : `Net`}</div>
                 <div className="text-sm font-semibold" data-testid="text-total-release">
                   {formatTokens(simulation.staking.totalTokens * (1 - simulation.release.taxAmount / simulation.staking.totalValue))} B18
                 </div>
-                <div className="text-[9px] text-muted-foreground">≈{formatCurrency(simulation.totalRelease)}</div>
-                <div className="text-[9px] text-destructive">-{formatPercent(simulation.release.taxAmount / simulation.staking.totalValue)}{language === "zh" ? "税" : " tax"}</div>
+                <div className="text-[11px] text-muted-foreground">≈{formatCurrency(simulation.totalRelease)}</div>
+                <div className="text-[11px] text-destructive">-{formatPercent(simulation.release.taxAmount / simulation.staking.totalValue)}{language === "zh" ? "税" : " tax"}</div>
               </div>
             </div>
 
@@ -1069,9 +1069,9 @@ export function StakingPage({
                   <span className={`text-base font-bold ${simulation.netProfit >= 0 ? "text-chart-2" : "text-destructive"}`} data-testid="text-net-profit">
                     {simulation.netProfit >= 0 ? "+" : ""}{formatTokens(simulation.netProfit / tokenPrice)} B18
                   </span>
-                  <div className="text-[9px] text-muted-foreground">≈{formatCurrency(simulation.netProfit)}</div>
+                  <div className="text-[11px] text-muted-foreground">≈{formatCurrency(simulation.netProfit)}</div>
                 </div>
-                <Badge variant={simulation.roi >= 0 ? "default" : "destructive"} className="text-[10px]">
+                <Badge variant={simulation.roi >= 0 ? "default" : "destructive"} className="text-[11px]">
                   {simulation.roi.toFixed(1)}%
                 </Badge>
               </div>
@@ -1121,26 +1121,26 @@ export function StakingPage({
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <ArrowDownToLine className="h-3 w-3 text-chart-2" />
-                    <span className="text-[10px] font-bold text-chart-2">{language === "zh" ? "等额本金" : "Amortizing"}</span>
+                    <span className="text-[11px] font-bold text-chart-2">{language === "zh" ? "等额本金" : "Amortizing"}</span>
                   </div>
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "每日本金+利息" : "Daily P+I"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "每日本金+利息" : "Daily P+I"}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "总利息" : "Interest"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "总利息" : "Interest"}</div>
                   <div className="text-xs font-semibold">{formatTokens(modeCalculations.amortizing.interest)}</div>
-                  <div className="text-[9px] text-muted-foreground">≈{formatCurrency(modeCalculations.amortizing.interest * tokenPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">≈{formatCurrency(modeCalculations.amortizing.interest * tokenPrice)}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "收益率" : "Rate"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "收益率" : "Rate"}</div>
                   <div className="text-xs font-semibold">{formatPercent(modeCalculations.amortizing.interestRate)}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "本利合计" : "Total"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "本利合计" : "Total"}</div>
                   <div className="text-xs font-semibold">{formatTokens(modeCalculations.amortizing.total)}</div>
-                  <div className="text-[9px] text-muted-foreground">≈{formatCurrency(modeCalculations.amortizing.total * tokenPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">≈{formatCurrency(modeCalculations.amortizing.total * tokenPrice)}</div>
                 </div>
                 <div className="bg-chart-2/10 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "税后净收" : "Net"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "税后净收" : "Net"}</div>
                   <div className="text-xs font-bold text-chart-2">{formatCurrency(modeCalculations.amortizing.netAfterTax * tokenPrice)}</div>
                 </div>
               </div>
@@ -1150,26 +1150,26 @@ export function StakingPage({
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <Clock className="h-3 w-3 text-chart-4" />
-                    <span className="text-[10px] font-bold text-chart-4">{language === "zh" ? "按期付息" : "Interest Only"}</span>
+                    <span className="text-[11px] font-bold text-chart-4">{language === "zh" ? "按期付息" : "Interest Only"}</span>
                   </div>
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "利息先行" : "Interest first"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "利息先行" : "Interest first"}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "总利息" : "Interest"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "总利息" : "Interest"}</div>
                   <div className="text-xs font-semibold">{formatTokens(modeCalculations.interestOnly.interest)}</div>
-                  <div className="text-[9px] text-muted-foreground">≈{formatCurrency(modeCalculations.interestOnly.interest * tokenPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">≈{formatCurrency(modeCalculations.interestOnly.interest * tokenPrice)}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "收益率" : "Rate"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "收益率" : "Rate"}</div>
                   <div className="text-xs font-semibold">{formatPercent(modeCalculations.interestOnly.interestRate)}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "本利合计" : "Total"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "本利合计" : "Total"}</div>
                   <div className="text-xs font-semibold">{formatTokens(modeCalculations.interestOnly.total)}</div>
-                  <div className="text-[9px] text-muted-foreground">≈{formatCurrency(modeCalculations.interestOnly.total * tokenPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">≈{formatCurrency(modeCalculations.interestOnly.total * tokenPrice)}</div>
                 </div>
                 <div className="bg-chart-4/10 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "税后净收" : "Net"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "税后净收" : "Net"}</div>
                   <div className="text-xs font-bold text-chart-4">{formatCurrency(modeCalculations.interestOnly.netAfterTax * tokenPrice)}</div>
                 </div>
               </div>
@@ -1179,26 +1179,26 @@ export function StakingPage({
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <Repeat className="h-3 w-3 text-chart-1" />
-                    <span className="text-[10px] font-bold text-chart-1">{language === "zh" ? "复利滚存" : "Compound"}</span>
+                    <span className="text-[11px] font-bold text-chart-1">{language === "zh" ? "复利滚存" : "Compound"}</span>
                   </div>
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "到期释放" : "At maturity"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "到期释放" : "At maturity"}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "总利息" : "Interest"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "总利息" : "Interest"}</div>
                   <div className="text-xs font-semibold">{formatTokens(modeCalculations.compound.interest)}</div>
-                  <div className="text-[9px] text-muted-foreground">≈{formatCurrency(modeCalculations.compound.interest * tokenPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">≈{formatCurrency(modeCalculations.compound.interest * tokenPrice)}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "收益率" : "Rate"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "收益率" : "Rate"}</div>
                   <div className="text-xs font-semibold">{formatPercent(modeCalculations.compound.interestRate)}</div>
                 </div>
                 <div className="bg-background/80 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "本利合计" : "Total"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "本利合计" : "Total"}</div>
                   <div className="text-xs font-semibold">{formatTokens(modeCalculations.compound.total)}</div>
-                  <div className="text-[9px] text-muted-foreground">≈{formatCurrency(modeCalculations.compound.total * tokenPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">≈{formatCurrency(modeCalculations.compound.total * tokenPrice)}</div>
                 </div>
                 <div className="bg-chart-1/10 rounded p-1.5 text-center">
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "税后净收" : "Net"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "税后净收" : "Net"}</div>
                   <div className="text-xs font-bold text-chart-1">{formatCurrency(modeCalculations.compound.netAfterTax * tokenPrice)}</div>
                 </div>
               </div>
@@ -1206,7 +1206,7 @@ export function StakingPage({
 
             {/* 收益排名 */}
             <div className="bg-gradient-to-r from-chart-1/10 to-chart-2/10 rounded-lg p-3">
-              <div className="text-[10px] font-bold text-center mb-2">{language === "zh" ? "收益排名（税后净收）" : "Ranking (Net After Tax)"}</div>
+              <div className="text-[11px] font-bold text-center mb-2">{language === "zh" ? "收益排名（税后净收）" : "Ranking (Net After Tax)"}</div>
               <div className="flex items-center justify-center gap-3">
                 {[
                   { mode: 'compound', value: modeCalculations.compound.netAfterTax, color: 'chart-1', label: language === "zh" ? "复利" : "Compound" },
@@ -1217,8 +1217,8 @@ export function StakingPage({
                     <div className={`text-lg font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : 'text-amber-700'}`}>
                       {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
                     </div>
-                    <div className={`text-[10px] font-medium text-${item.color}`}>{item.label}</div>
-                    <div className="text-[9px] text-muted-foreground">{formatCurrency(item.value * tokenPrice)}</div>
+                    <div className={`text-[11px] font-medium text-${item.color}`}>{item.label}</div>
+                    <div className="text-[11px] text-muted-foreground">{formatCurrency(item.value * tokenPrice)}</div>
                   </div>
                 ))}
               </div>
@@ -1227,26 +1227,26 @@ export function StakingPage({
             {/* 复利增益 */}
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-chart-1/10 rounded-lg p-2 text-center">
-                <div className="text-[9px] text-muted-foreground">{language === "zh" ? "复利比等额本金多" : "Compound vs Amortizing"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "复利比等额本金多" : "Compound vs Amortizing"}</div>
                 <div className="text-sm font-bold text-chart-1">
                   +{formatCurrency((modeCalculations.compound.netAfterTax - modeCalculations.amortizing.netAfterTax) * tokenPrice)}
                 </div>
-                <div className="text-[9px] text-muted-foreground">
+                <div className="text-[11px] text-muted-foreground">
                   {formatPercent((modeCalculations.compound.netAfterTax - modeCalculations.amortizing.netAfterTax) / modeCalculations.amortizing.netAfterTax)}
                 </div>
               </div>
               <div className="bg-chart-1/10 rounded-lg p-2 text-center">
-                <div className="text-[9px] text-muted-foreground">{language === "zh" ? "复利比按期付息多" : "Compound vs Interest Only"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "复利比按期付息多" : "Compound vs Interest Only"}</div>
                 <div className="text-sm font-bold text-chart-1">
                   +{formatCurrency((modeCalculations.compound.netAfterTax - modeCalculations.interestOnly.netAfterTax) * tokenPrice)}
                 </div>
-                <div className="text-[9px] text-muted-foreground">
+                <div className="text-[11px] text-muted-foreground">
                   {formatPercent((modeCalculations.compound.netAfterTax - modeCalculations.interestOnly.netAfterTax) / modeCalculations.interestOnly.netAfterTax)}
                 </div>
               </div>
             </div>
 
-            <p className="text-[10px] text-muted-foreground text-center">
+            <p className="text-[11px] text-muted-foreground text-center">
               {language === "zh"
                 ? "等额本金：利息随本金递减 | 按期付息：利息固定 | 复利：利息滚入本金"
                 : "Amortizing: decreasing interest | Interest Only: fixed interest | Compound: reinvested"}

@@ -422,7 +422,7 @@ export default function Recruit() {
               className="absolute inset-0 rounded-full shadow-[0_0_20px_4px_rgba(251,191,36,0.5)] pointer-events-none"
             />
             <Zap className="h-3.5 w-3.5 text-amber-400 relative z-10" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-300 relative z-10 whitespace-nowrap">
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-amber-300 relative z-10 whitespace-nowrap">
               Node Recruitment · Open Now
             </span>
           </div>
@@ -456,9 +456,9 @@ export default function Recruit() {
               { label: { en: "USDT APY",      zh: "年化收益率", "zh-TW": "年化收益率", ja: "年利",         ko: "연 수익률", th: "APY USDT",        vi: "APY USDT"     },     val: "170.82%", gold: true },
             ].map(({ label, val, gold }) => (
               <div key={label.en} className="space-y-0.5">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-zinc-500 font-medium">{label.en}</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500 font-medium">{label.en}</div>
                 <div className={`text-xl sm:text-3xl font-bold leading-none tabular-nums ${gold ? "text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]" : "text-white"}`}>{val}</div>
-                {showZh && <div className="text-[10px] text-zinc-500">{tt(label)}</div>}
+                {showZh && <div className="text-[11px] text-zinc-500">{tt(label)}</div>}
               </div>
             ))}
           </div>
@@ -530,12 +530,12 @@ export default function Recruit() {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4 mt-1">
                       <div>
-                        <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${accent} drop-shadow-[0_0_6px_currentColor]`}>
+                        <div className={`text-[11px] font-mono uppercase tracking-[0.2em] mb-1 ${accent} drop-shadow-[0_0_6px_currentColor]`}>
                           {meta.nameEn}
                         </div>
                         <div className="text-xl font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">{tt({ zh: meta.nameCn, "zh-TW": meta.nameCn, ja: meta.nameCn, ko: meta.nameCn, en: meta.nameEn, th: meta.nameEn, vi: meta.nameEn })}</div>
                       </div>
-                      <span className={`text-[10px] font-bold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[level]}`}>
+                      <span className={`text-[11px] font-bold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[level]}`}>
                         Lv.{i + 1}
                       </span>
                     </div>
@@ -545,7 +545,7 @@ export default function Recruit() {
 
                       {/* Price — hero number */}
                       <div>
-                        <div className="text-[9px] uppercase tracking-[0.22em] text-zinc-500 font-medium mb-1.5">
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 font-medium mb-1.5">
                           {tt({ zh: "价格", "zh-TW": "價格", en: "Price", ja: "価格", ko: "가격", th: "ราคา", vi: "Giá" })}
                         </div>
                         <div
@@ -557,13 +557,13 @@ export default function Recruit() {
                         >
                           ${fmt(investment)}
                         </div>
-                        <div className="text-[9px] text-zinc-600 mt-1 font-mono tracking-[0.15em] uppercase">USDT</div>
+                        <div className="text-[11px] text-zinc-600 mt-1 font-mono tracking-[0.15em] uppercase">USDT</div>
                       </div>
 
                       {/* Seats + Commission — 2-col */}
                       <div className="grid grid-cols-2 gap-3 border-t border-white/[0.06] pt-3">
                         <div>
-                          <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">
                             {tt({ zh: "席位", "zh-TW": "席位", en: "Seats", ja: "席数", ko: "좌석", th: "ที่นั่ง", vi: "Ghế" })}
                           </div>
                           <div className="num text-lg leading-none text-zinc-100">
@@ -572,7 +572,7 @@ export default function Recruit() {
                         </div>
                         {directRatePct !== null && (
                           <div>
-                            <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">
+                            <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">
                               {tt({ zh: "直推返佣", "zh-TW": "直推返佣", en: "Commission", ja: "直推報酬", ko: "직추천", th: "คอมตรง", vi: "Hoa hồng" })}
                             </div>
                             <div
@@ -588,7 +588,7 @@ export default function Recruit() {
 
                     {/* Seat progress */}
                     <div className="mt-4 space-y-1.5">
-                      <div className="flex justify-between text-[9px] uppercase tracking-[0.18em] text-zinc-600">
+                      <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-zinc-600">
                         <span>{tt({ zh: "占用", "zh-TW": "占用", en: "Occupancy", ja: "充填", ko: "점유율", th: "การจอง", vi: "Lấp đầy" })}</span>
                         <span className={`${accent}`}>{occupiedPct}%</span>
                       </div>
@@ -649,7 +649,7 @@ export default function Recruit() {
                 <Zap className="h-5 w-5 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]" />
               </div>
               <div className="min-w-0">
-                <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-amber-400/60 mb-0.5">GENESIS · L6</div>
+                <div className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400/60 mb-0.5">GENESIS · L6</div>
                 <div className="text-base sm:text-xl md:text-2xl font-bold leading-snug num text-amber-100 break-words">
                   {tt({
                     zh: "创世节点 · 条件触发",
@@ -690,7 +690,7 @@ export default function Recruit() {
                 },
               ].map(({ label, body }) => (
                 <div key={label.en} className="rounded-xl border border-white/[0.07] bg-[#0a1525]/60 p-4">
-                  <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-amber-400/70 mb-2">
+                  <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-amber-400/70 mb-2">
                     {tt(label)}
                   </div>
                   <p className="text-sm text-zinc-300 leading-snug">{tt(body)}</p>
@@ -699,7 +699,7 @@ export default function Recruit() {
             </div>
             {/* Reward strip */}
             <div className="rounded-xl border border-amber-400/20 bg-amber-950/20 p-4 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-amber-400/70 shrink-0">
+              <span className="text-[11px] font-mono uppercase tracking-[0.22em] text-amber-400/70 shrink-0">
                 {tt({ zh: "创世专属奖励", "zh-TW": "創世專屬獎勵", en: "Genesis exclusive reward", ja: "創世専用リワード", ko: "제네시스 전용 보상", th: "รางวัลเฉพาะ Genesis", vi: "Phần thưởng Genesis" })}
               </span>
               <span className="num text-xl text-amber-300 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">
@@ -779,7 +779,7 @@ export default function Recruit() {
                 <Icon className="h-5 w-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
                 <span className="font-bold text-base text-white">{tt(title)}</span>
               </div>
-              {showZh && <p className="text-[9px] font-mono uppercase tracking-widest text-amber-400/50">{titleEn}</p>}
+              {showZh && <p className="text-[11px] font-mono uppercase tracking-widest text-amber-400/50">{titleEn}</p>}
               <p className="text-sm text-zinc-400 leading-relaxed">{tt(desc)}</p>
             </motion.div>
           ))}
@@ -820,7 +820,7 @@ export default function Recruit() {
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-white text-sm mb-0.5">{tt(step.title)}</div>
-                  {showZh && <div className="text-[10px] text-amber-400/80 uppercase tracking-wider mb-1.5">{step.title.en}</div>}
+                  {showZh && <div className="text-[11px] text-amber-400/80 uppercase tracking-wider mb-1.5">{step.title.en}</div>}
                   <p className="text-xs text-zinc-400 leading-relaxed">{tt(step.desc)}</p>
                 </div>
               </motion.div>
@@ -853,7 +853,7 @@ export default function Recruit() {
                   vi: "Lần đầu? Trải nghiệm hướng dẫn đầy đủ",
                 })}
               </p>
-              <p className="text-[12px] text-muted-foreground/70 leading-snug mt-0.5 break-words">
+              <p className="text-xs text-muted-foreground/70 leading-snug mt-0.5 break-words">
                 {tt({
                   zh: "模拟连接钱包 → 绑定推荐人 → 购买节点 → 查看 Dashboard，零成本感受完整流程",
                   "zh-TW": "模擬連接錢包 → 綁定推薦人 → 購買節點 → 查看 Dashboard，零成本體驗完整流程",

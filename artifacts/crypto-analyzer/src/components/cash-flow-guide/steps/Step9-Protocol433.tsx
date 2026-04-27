@@ -376,7 +376,7 @@ export function Step9Protocol433({ phase, language }: StepProps) {
           </div>
 
           <div className="mt-3 pt-3 border-t border-primary/20 text-center">
-            <span className="text-[10px] text-primary font-medium">
+            <span className="text-[11px] text-primary font-medium">
               {language === "zh"
                 ? "🔒 B18：正规金融风控 + 区块链透明性 = 真正安全的数字银行"
                 : "🔒 B18: Standard Finance Risk Control + Blockchain Transparency = Truly Safe Digital Bank"}

@@ -176,48 +176,48 @@ export function InvestmentSimulator({
 
         <div className="grid grid-cols-4 gap-2">
           <div className="bg-muted/50 rounded-lg p-2 text-center">
-            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[10px] mb-0.5">
+            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[11px] mb-0.5">
               <Coins className="h-3 w-3" />
               获得代币
             </div>
             <div className="font-mono font-semibold text-sm truncate" data-testid="text-tokens">
               {formatTokens(simulation.purchase.tokensPurchased)}
             </div>
-            <div className="text-[10px] text-muted-foreground">B18</div>
+            <div className="text-[11px] text-muted-foreground">B18</div>
           </div>
           <div className="bg-muted/50 rounded-lg p-2 text-center">
-            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[10px] mb-0.5">
+            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[11px] mb-0.5">
               <TrendingUp className="h-3 w-3" />
               质押收益
             </div>
             <div className="font-mono font-semibold text-sm text-chart-2 truncate" data-testid="text-staking-return">
               +{formatCurrency(simulation.staking.interestEarned)}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground">
               {formatPercent(simulation.staking.totalInterestRate)}
             </div>
           </div>
           <div className="bg-muted/50 rounded-lg p-2 text-center">
-            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[10px] mb-0.5">
+            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[11px] mb-0.5">
               <Receipt className="h-3 w-3" />
               税收扣除
             </div>
             <div className="font-mono font-semibold text-sm text-destructive truncate" data-testid="text-tax">
               -{formatCurrency(simulation.release.taxAmount)}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground">
               {formatPercent(simulation.release.taxRate)}
             </div>
           </div>
           <div className="bg-muted/50 rounded-lg p-2 text-center">
-            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[10px] mb-0.5">
+            <div className="flex items-center justify-center gap-1 text-muted-foreground text-[11px] mb-0.5">
               <Calendar className="h-3 w-3" />
               总周期
             </div>
             <div className="font-mono font-semibold text-sm" data-testid="text-total-days">
               {simulation.totalDays}
             </div>
-            <div className="text-[10px] text-muted-foreground">天</div>
+            <div className="text-[11px] text-muted-foreground">天</div>
           </div>
         </div>
 

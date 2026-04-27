@@ -130,7 +130,7 @@ export function StepIndicator({
             >
               <span
                 className={cn(
-                  "text-[10px] sm:text-xs font-medium transition-colors",
+                  "text-[11px] sm:text-xs font-medium transition-colors",
                   isActive && "text-primary",
                   isCompleted && "text-chart-2",
                   !isActive && !isCompleted && "text-muted-foreground"

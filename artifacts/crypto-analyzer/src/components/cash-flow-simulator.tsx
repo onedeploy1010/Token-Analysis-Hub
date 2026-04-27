@@ -768,7 +768,7 @@ export function CashFlowSimulator({
             min={30} max={360} step={30} 
             data-testid="slider-sim-days" 
           />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>30{language === "zh" ? "天" : "d"}</span>
             <span>180{language === "zh" ? "天" : "d"}</span>
             <span>360{language === "zh" ? "天" : "d"}</span>
@@ -786,7 +786,7 @@ export function CashFlowSimulator({
             min={10000} max={500000} step={10000} 
             data-testid="slider-revenue" 
           />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>$10K</span>
             <span>$250K</span>
             <span>$500K</span>
@@ -804,7 +804,7 @@ export function CashFlowSimulator({
             min={0} max={100} step={5} 
             data-testid="slider-growth" 
           />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>0%</span>
             <span>5%</span>
             <span>10%</span>
@@ -1471,15 +1471,15 @@ export function CashFlowSimulator({
                       <Coins className="h-4 w-4 text-chart-1" />
                       <Label className="text-sm font-semibold">{language === "zh" ? "市场参数" : "Market"}</Label>
                     </div>
-                    <Badge variant="outline" className="text-[10px]">{language === "zh" ? "自动同步" : "Auto-sync"}</Badge>
+                    <Badge variant="outline" className="text-[11px]">{language === "zh" ? "自动同步" : "Auto-sync"}</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-background/60 rounded-lg p-2 text-center">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "代币价格" : "Token Price"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "代币价格" : "Token Price"}</div>
                       <div className="text-base font-bold text-chart-1">${marketParams.tokenPrice.toFixed(4)}</div>
                     </div>
                     <div className="bg-background/60 rounded-lg p-2 text-center">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "国库余额" : "Treasury"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "国库余额" : "Treasury"}</div>
                       <div className="text-base font-bold text-chart-2">{formatCurrency(marketParams.treasury)}</div>
                     </div>
                   </div>
@@ -1541,23 +1541,23 @@ export function CashFlowSimulator({
                   {/* 质押/释放分布预览 */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-muted/40 rounded-lg p-2">
-                      <div className="text-[10px] text-muted-foreground text-center mb-1">{language === "zh" ? "质押分布" : "Staking"}</div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="text-[11px] text-muted-foreground text-center mb-1">{language === "zh" ? "质押分布" : "Staking"}</div>
+                      <div className="flex justify-between text-[11px]">
                         <span>360d:{params.stakingRatio360}%</span>
                         <span>180d:{params.stakingRatio180}%</span>
                       </div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="flex justify-between text-[11px]">
                         <span>90d:{params.stakingRatio90}%</span>
                         <span>30d:{params.stakingRatio30}%</span>
                       </div>
                     </div>
                     <div className="bg-muted/40 rounded-lg p-2">
-                      <div className="text-[10px] text-muted-foreground text-center mb-1">{language === "zh" ? "释放分布" : "Release"}</div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="text-[11px] text-muted-foreground text-center mb-1">{language === "zh" ? "释放分布" : "Release"}</div>
+                      <div className="flex justify-between text-[11px]">
                         <span>30d:{params.releaseRatio30}%</span>
                         <span>15d:{params.releaseRatio15}%</span>
                       </div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="flex justify-between text-[11px]">
                         <span>7d:{params.releaseRatio7}%</span>
                         <span>1d:{params.releaseRatio1}%</span>
                       </div>
@@ -1573,8 +1573,8 @@ export function CashFlowSimulator({
                       <span className="text-xs font-medium">{language === "zh" ? "SPP价格调控" : "SPP Control"}</span>
                     </div>
                     <div className="flex gap-1">
-                      <Badge variant="outline" className="text-[10px] h-5 text-chart-2">{language === "zh" ? "买" : "Buy"} {sppParams.buyPriceThreshold}%</Badge>
-                      <Badge variant="outline" className="text-[10px] h-5 text-chart-4">{language === "zh" ? "卖" : "Sell"} +{sppParams.sellPriceThreshold}%</Badge>
+                      <Badge variant="outline" className="text-[11px] h-5 text-chart-2">{language === "zh" ? "买" : "Buy"} {sppParams.buyPriceThreshold}%</Badge>
+                      <Badge variant="outline" className="text-[11px] h-5 text-chart-4">{language === "zh" ? "卖" : "Sell"} +{sppParams.sellPriceThreshold}%</Badge>
                     </div>
                   </div>
                 </div>
@@ -1590,15 +1590,15 @@ export function CashFlowSimulator({
                         <Coins className="h-4 w-4 text-chart-1" />
                         <Label className="text-sm font-semibold">{language === "zh" ? "市场参数" : "Market"}</Label>
                       </div>
-                      <Badge variant="outline" className="text-[10px]">{language === "zh" ? "自动同步" : "Auto-sync"}</Badge>
+                      <Badge variant="outline" className="text-[11px]">{language === "zh" ? "自动同步" : "Auto-sync"}</Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-background/60 rounded-lg p-2 text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "代币价格" : "Price"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "代币价格" : "Price"}</div>
                         <div className="text-base font-bold text-chart-1">${marketParams.tokenPrice.toFixed(4)}</div>
                       </div>
                       <div className="bg-background/60 rounded-lg p-2 text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "国库" : "Treasury"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "国库" : "Treasury"}</div>
                         <div className="text-base font-bold text-chart-2">{formatCurrency(marketParams.treasury)}</div>
                       </div>
                     </div>
@@ -1616,15 +1616,15 @@ export function CashFlowSimulator({
                   {/* 订单汇总 */}
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="bg-chart-2/10 rounded-lg p-2">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "总投资" : "Invest"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "总投资" : "Invest"}</div>
                       <div className="text-sm font-bold text-chart-2">{formatCurrency(ordersSummary.totalInvestment)}</div>
                     </div>
                     <div className="bg-muted/40 rounded-lg p-2">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "净代币" : "Net B18"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "净代币" : "Net B18"}</div>
                       <div className="text-sm font-bold">{formatTokens(ordersSummary.totalNetTokens)}</div>
                     </div>
                     <div className={`rounded-lg p-2 ${ordersSummary.roi >= 0 ? "bg-chart-2/10" : "bg-destructive/10"}`}>
-                      <div className="text-[10px] text-muted-foreground">ROI</div>
+                      <div className="text-[11px] text-muted-foreground">ROI</div>
                       <div className={`text-sm font-bold ${ordersSummary.roi >= 0 ? "text-chart-2" : "text-destructive"}`}>
                         {ordersSummary.roi >= 0 ? "+" : ""}{ordersSummary.roi.toFixed(1)}%
                       </div>
@@ -1671,7 +1671,7 @@ export function CashFlowSimulator({
                                   const days = parseInt(e.target.value);
                                   updateOrder(index, { stakingDays: days, dailyRate: getDailyRateByStakingDays(days) });
                                 }}
-                                className="h-6 text-[10px] px-1 rounded-lg border bg-background/80 text-center font-medium"
+                                className="h-6 text-[11px] px-1 rounded-lg border bg-background/80 text-center font-medium"
                               >
                                 <option value={360}>360d</option>
                                 <option value={180}>180d</option>
@@ -1684,7 +1684,7 @@ export function CashFlowSimulator({
                                   const days = parseInt(e.target.value);
                                   updateOrder(index, { releaseDays: days, taxRate: getTaxRateByReleaseDays(days) });
                                 }}
-                                className="h-6 text-[10px] px-1 rounded-lg border bg-background/80 text-center font-medium"
+                                className="h-6 text-[11px] px-1 rounded-lg border bg-background/80 text-center font-medium"
                               >
                                 <option value={30}>30d</option>
                                 <option value={15}>15d</option>
@@ -1693,13 +1693,13 @@ export function CashFlowSimulator({
                               </select>
                             </div>
                             {/* 税率显示 */}
-                            <div className="text-[10px] text-center text-muted-foreground">
+                            <div className="text-[11px] text-center text-muted-foreground">
                               {language === "zh" ? "税" : "Tax"}: <span className="font-bold text-chart-4">{(order.taxRate * 100).toFixed(0)}%</span>
                             </div>
                           </div>
                         ) : (
                           <div className="h-[72px] flex items-center justify-center">
-                            <span className="text-[10px] text-muted-foreground">{language === "zh" ? "点击启用" : "Click to enable"}</span>
+                            <span className="text-[11px] text-muted-foreground">{language === "zh" ? "点击启用" : "Click to enable"}</span>
                           </div>
                         )}
                       </div>
@@ -1722,23 +1722,23 @@ export function CashFlowSimulator({
                     {/* 质押/释放分布预览 */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-muted/40 rounded-lg p-2">
-                        <div className="text-[10px] text-muted-foreground text-center mb-1">{language === "zh" ? "质押分布" : "Staking"}</div>
-                        <div className="flex justify-between text-[10px]">
+                        <div className="text-[11px] text-muted-foreground text-center mb-1">{language === "zh" ? "质押分布" : "Staking"}</div>
+                        <div className="flex justify-between text-[11px]">
                           <span>360d:{params.stakingRatio360}%</span>
                           <span>180d:{params.stakingRatio180}%</span>
                         </div>
-                        <div className="flex justify-between text-[10px]">
+                        <div className="flex justify-between text-[11px]">
                           <span>90d:{params.stakingRatio90}%</span>
                           <span>30d:{params.stakingRatio30}%</span>
                         </div>
                       </div>
                       <div className="bg-muted/40 rounded-lg p-2">
-                        <div className="text-[10px] text-muted-foreground text-center mb-1">{language === "zh" ? "释放分布" : "Release"}</div>
-                        <div className="flex justify-between text-[10px]">
+                        <div className="text-[11px] text-muted-foreground text-center mb-1">{language === "zh" ? "释放分布" : "Release"}</div>
+                        <div className="flex justify-between text-[11px]">
                           <span>30d:{params.releaseRatio30}%</span>
                           <span>15d:{params.releaseRatio15}%</span>
                         </div>
-                        <div className="flex justify-between text-[10px]">
+                        <div className="flex justify-between text-[11px]">
                           <span>7d:{params.releaseRatio7}%</span>
                           <span>1d:{params.releaseRatio1}%</span>
                         </div>
@@ -1754,8 +1754,8 @@ export function CashFlowSimulator({
                         <span className="text-xs font-medium">{language === "zh" ? "SPP价格调控" : "SPP Control"}</span>
                       </div>
                       <div className="flex gap-1">
-                        <Badge variant="outline" className="text-[10px] h-5 text-chart-2">{language === "zh" ? "买" : "Buy"} {sppParams.buyPriceThreshold}%</Badge>
-                        <Badge variant="outline" className="text-[10px] h-5 text-chart-4">{language === "zh" ? "卖" : "Sell"} +{sppParams.sellPriceThreshold}%</Badge>
+                        <Badge variant="outline" className="text-[11px] h-5 text-chart-2">{language === "zh" ? "买" : "Buy"} {sppParams.buyPriceThreshold}%</Badge>
+                        <Badge variant="outline" className="text-[11px] h-5 text-chart-4">{language === "zh" ? "卖" : "Sell"} +{sppParams.sellPriceThreshold}%</Badge>
                       </div>
                     </div>
                   </div>
@@ -1956,11 +1956,11 @@ export function CashFlowSimulator({
                   <div className="text-xs font-medium text-chart-2 mb-2">{language === "zh" ? "SPP托底买入（价格下跌时）" : "SPP Support Buy"}</div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-background/50 rounded p-2 text-center">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "使用USDC" : "USDC Used"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "使用USDC" : "USDC Used"}</div>
                       <div className="text-sm font-bold text-chart-2">{formatCurrency(summary.taxUsdcUsed)}</div>
                     </div>
                     <div className="bg-background/50 rounded p-2 text-center">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "购入B18" : "B18 Bought"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "购入B18" : "B18 Bought"}</div>
                       <div className="text-sm font-bold text-chart-2">{formatTokens(summary.taxB18Bought)}</div>
                     </div>
                   </div>
@@ -1969,11 +1969,11 @@ export function CashFlowSimulator({
                   <div className="text-xs font-medium text-chart-4 mb-2">{language === "zh" ? "SPP平抑卖出（价格上涨时）" : "SPP Suppress Sell"}</div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-background/50 rounded p-2 text-center">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "卖出B18" : "B18 Sold"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "卖出B18" : "B18 Sold"}</div>
                       <div className="text-sm font-bold text-chart-4">{formatTokens(summary.sppSellB18)}</div>
                     </div>
                     <div className="bg-background/50 rounded p-2 text-center">
-                      <div className="text-[10px] text-muted-foreground">{language === "zh" ? "获得USDC" : "USDC Got"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "获得USDC" : "USDC Got"}</div>
                       <div className="text-sm font-bold text-chart-4">{formatCurrency(summary.sppSellUsdc)}</div>
                     </div>
                   </div>
@@ -2318,19 +2318,19 @@ export function CashFlowSimulator({
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-1.5">
                 <div className="mobile-stat text-center">
-                  <div className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5">
+                  <div className="text-[11px] text-muted-foreground flex items-center justify-center gap-0.5">
                     <TrendingUp className="h-2.5 w-2.5" />
                     {language === "zh" ? "最终价格" : "Price"}
                   </div>
                   <div className="text-sm font-bold font-mono" data-testid="text-final-price">
                     <AnimatedPrice value={summary.finalPrice} showFlash />
                   </div>
-                  <div className={`text-[10px] ${summary.priceChange >= 0 ? "text-chart-2" : "text-destructive"}`}>
+                  <div className={`text-[11px] ${summary.priceChange >= 0 ? "text-chart-2" : "text-destructive"}`}>
                     {summary.priceChange >= 0 ? "+" : ""}<AnimatedPercent value={summary.priceChange / 100} showFlash />
                   </div>
                 </div>
                 <div className="mobile-stat text-center">
-                  <div className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5">
+                  <div className="text-[11px] text-muted-foreground flex items-center justify-center gap-0.5">
                     <Wallet className="h-2.5 w-2.5" />
                     {language === "zh" ? "国库" : "Treasury"}
                   </div>
@@ -2339,7 +2339,7 @@ export function CashFlowSimulator({
                   </div>
                 </div>
                 <div className="mobile-stat text-center">
-                  <div className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5">
+                  <div className="text-[11px] text-muted-foreground flex items-center justify-center gap-0.5">
                     <AlertTriangle className="h-2.5 w-2.5" />
                     {language === "zh" ? "压力" : "Pressure"}
                   </div>
@@ -2351,18 +2351,18 @@ export function CashFlowSimulator({
 
               <div className="grid grid-cols-3 gap-1.5">
                 <div className="mobile-stat text-center">
-                  <div className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5">
+                  <div className="text-[11px] text-muted-foreground flex items-center justify-center gap-0.5">
                     <Shield className="h-2.5 w-2.5" />
                     {language === "zh" ? "433触发" : "433"}
                   </div>
                   <div className={`text-sm font-bold font-mono ${summary.triggeredDays > 0 ? "text-destructive" : "text-chart-2"}`}>{summary.triggeredDays}d</div>
                 </div>
                 <div className="mobile-stat text-center">
-                  <div className="text-[10px] text-muted-foreground">{language === "zh" ? "累计税收" : "Tax"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "累计税收" : "Tax"}</div>
                   <div className="text-sm font-bold font-mono" data-testid="text-total-tax">{formatCurrency(summary.totalTax)}</div>
                 </div>
                 <div className="mobile-stat text-center">
-                  <div className="text-[10px] text-muted-foreground">{language === "zh" ? "SPP B18" : "SPP B18"}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "SPP B18" : "SPP B18"}</div>
                   <div className="text-sm font-bold font-mono" data-testid="text-spp-b18">{formatTokens(summary.finalSppB18Pool)}</div>
                 </div>
               </div>
@@ -2376,33 +2376,33 @@ export function CashFlowSimulator({
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-2 space-y-2">
                   <div className="bg-chart-2/10 rounded-lg p-2">
-                    <div className="text-[10px] font-medium text-chart-2 mb-1">{language === "zh" ? "税收自动购买（推高价格）" : "Tax Auto-Buy (Price Up)"}</div>
+                    <div className="text-[11px] font-medium text-chart-2 mb-1">{language === "zh" ? "税收自动购买（推高价格）" : "Tax Auto-Buy (Price Up)"}</div>
                     <div className="grid grid-cols-2 gap-1.5">
                       <div className="mobile-stat text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "使用USDC" : "USDC Used"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "使用USDC" : "USDC Used"}</div>
                         <div className="text-xs font-bold font-mono text-chart-2">{formatCurrency(summary.taxUsdcUsed)}</div>
                       </div>
                       <div className="mobile-stat text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "购入B18" : "B18 Bought"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "购入B18" : "B18 Bought"}</div>
                         <div className="text-xs font-bold font-mono text-chart-2">{formatTokens(summary.taxB18Bought)}</div>
                       </div>
                     </div>
                   </div>
                   <div className="bg-chart-4/10 rounded-lg p-2">
-                    <div className="text-[10px] font-medium text-chart-4 mb-1">{language === "zh" ? "阈值卖出（USDC进国库）" : "Threshold Sell (USDC→Treasury)"}</div>
+                    <div className="text-[11px] font-medium text-chart-4 mb-1">{language === "zh" ? "阈值卖出（USDC进国库）" : "Threshold Sell (USDC→Treasury)"}</div>
                     <div className="grid grid-cols-2 gap-1.5">
                       <div className="mobile-stat text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "卖出B18" : "B18 Sold"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "卖出B18" : "B18 Sold"}</div>
                         <div className="text-xs font-bold font-mono text-chart-4">{formatTokens(summary.sppSellB18)}</div>
                       </div>
                       <div className="mobile-stat text-center">
-                        <div className="text-[10px] text-muted-foreground">{language === "zh" ? "获得USDC" : "USDC Got"}</div>
+                        <div className="text-[11px] text-muted-foreground">{language === "zh" ? "获得USDC" : "USDC Got"}</div>
                         <div className="text-xs font-bold font-mono text-chart-4">{formatCurrency(summary.sppSellUsdc)}</div>
                       </div>
                     </div>
                   </div>
                   <div className="mobile-stat text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "SPP最终B18余额" : "Final SPP B18"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "SPP最终B18余额" : "Final SPP B18"}</div>
                     <div className="text-sm font-bold font-mono">{formatTokens(summary.finalSppB18Pool)}</div>
                   </div>
                 </CollapsibleContent>
@@ -2421,7 +2421,7 @@ export function CashFlowSimulator({
                         key={key}
                         size="sm"
                         variant={activeChartTab === key ? "default" : "outline"}
-                        className="h-7 px-2 text-[10px]"
+                        className="h-7 px-2 text-[11px]"
                         onClick={() => setActiveChartTab(key)}
                         data-testid={`button-chart-${key}`}
                       >

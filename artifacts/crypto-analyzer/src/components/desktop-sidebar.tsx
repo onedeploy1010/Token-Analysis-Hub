@@ -84,7 +84,7 @@ export function DesktopSidebar({
         {!collapsed && (
           <div>
             <h2 className="text-base font-bold text-foreground">B18 Simulator</h2>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               {language === "zh" ? "代币经济模拟器" : "Tokenomics Simulator"}
             </p>
           </div>

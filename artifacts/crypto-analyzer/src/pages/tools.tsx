@@ -133,7 +133,7 @@ export default function Tools() {
             {CATEGORIES.map(cat => (
               <div key={cat.id}>
                 <div className="px-2 py-1.5">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
                     {cat.name}{showZh && ` · ${cat.nameZh}`}
                   </p>
                 </div>
@@ -158,7 +158,7 @@ export default function Tools() {
         <aside className="hidden lg:flex flex-col w-52 xl:w-60 shrink-0 gap-1 sticky top-20 h-[calc(100vh-160px)] overflow-y-auto pr-4 border-r border-border/50">
           {CATEGORIES.map((cat, ci) => (
             <div key={cat.id} className={ci > 0 ? "mt-5" : ""}>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-2 px-2">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-2 px-2">
                 {cat.name}{showZh && <span className="ml-1 opacity-70">· {cat.nameZh}</span>}
               </p>
               {cat.tools.map(tool => (
@@ -176,7 +176,7 @@ export default function Tools() {
                     <p className={`text-sm font-medium leading-tight truncate ${active === tool.id ? tool.color : "text-foreground"}`}>
                       {tool.name}
                     </p>
-                    {showZh && <p className="text-[10px] text-muted-foreground truncate">{tool.nameZh}</p>}
+                    {showZh && <p className="text-[11px] text-muted-foreground truncate">{tool.nameZh}</p>}
                   </div>
                   {active === tool.id && <ChevronRight className={`h-3 w-3 ml-auto shrink-0 ${tool.color}`} />}
                 </button>
@@ -257,7 +257,7 @@ function KpiGrid({ items }: { items: { label: string; labelZh: string; value: st
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {items.map(({ label, labelZh, value, color }) => (
         <div key={label} className="bg-card/60 border border-border rounded-xl p-3 sm:p-4">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 leading-tight">
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1 leading-tight">
             {label}
             {showZh && <><br /><span className="opacity-60">{labelZh}</span></>}
           </p>
@@ -627,7 +627,7 @@ function StakingProjector() {
             className={`text-left p-3 rounded-xl border transition-all ${mode === m.id ? "bg-chart-3/10 border-chart-3/40" : "bg-card/40 border-border hover:bg-muted/30"}`}>
             <p className={`text-sm font-semibold leading-tight ${mode === m.id ? "text-chart-3" : "text-foreground"}`}>{m.name}</p>
             <p className={`text-xs mt-0.5 ${mode === m.id ? "text-chart-3/70" : "text-muted-foreground"}`}>{m.nameZh}</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1.5 leading-tight hidden sm:block">{m.desc}</p>
+            <p className="text-[11px] text-muted-foreground/60 mt-1.5 leading-tight hidden sm:block">{m.desc}</p>
           </button>
         ))}
       </div>
@@ -674,7 +674,7 @@ function StakingProjector() {
           )}
 
           {/* Mode-specific formula note */}
-          <div className="pt-1 p-3 bg-background/30 rounded-lg border border-border/50 text-[10px] text-muted-foreground space-y-1 leading-relaxed">
+          <div className="pt-1 p-3 bg-background/30 rounded-lg border border-border/50 text-[11px] text-muted-foreground space-y-1 leading-relaxed">
             {showZh && mode === "gold" && <><p><strong>金本位:</strong> 总释放USDC = 本金 × 倍率</p><p>每日代币 = 总USDC ÷ 天数 ÷ 代币价</p></>}
             {showZh && mode === "coin" && <><p><strong>币本位:</strong> 购入代币 = 本金 ÷ 代币价</p><p>总释放 = 购入量 × 倍率，按天平均</p></>}
             {showZh && mode === "exit" && <><p><strong>倍数出局:</strong> 每日收益 = 本金 × 日收益率</p><p>累计到达 本金 × 出局倍数 时停止</p></>}
@@ -849,7 +849,7 @@ function PledgeMining() {
             className={`flex-1 text-left p-3 rounded-xl border transition-all ${subMode === m.id ? "bg-chart-5/10 border-chart-5/40" : "bg-card/40 border-border hover:bg-muted/30"}`}>
             <p className={`text-sm font-semibold ${subMode === m.id ? "text-chart-5" : "text-foreground"}`}>{m.name}</p>
             <p className="text-xs text-muted-foreground">{m.nameZh}</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1 hidden sm:block">{m.desc}</p>
+            <p className="text-[11px] text-muted-foreground/60 mt-1 hidden sm:block">{m.desc}</p>
           </button>
         ))}
       </div>
@@ -984,7 +984,7 @@ function PledgeMining() {
                     { label: "Break-even Price", labelZh: "盈亏平衡", val: `$${mineCalc.breakEvenPrice.toFixed(4)}` },
                   ].map(({ label, labelZh, val }) => (
                     <div key={label} className="p-3 bg-background/30 rounded-lg border border-border/50">
-                      <p className="text-[10px] text-muted-foreground">{label} · {labelZh}</p>
+                      <p className="text-[11px] text-muted-foreground">{label} · {labelZh}</p>
                       <p className="text-sm font-bold font-mono mt-1">{val}</p>
                     </div>
                   ))}
@@ -1160,12 +1160,12 @@ function CLMMAnalyzer() {
           ]} />
           <div className="grid grid-cols-2 gap-4">
             <Card className="bg-card/60 border-border p-4">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">IL at Lower <span className="opacity-60 zh-only">下界</span></p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">IL at Lower <span className="opacity-60 zh-only">下界</span></p>
               <p className="text-xl font-bold font-mono text-destructive">-{analysis.ilAtLower.toFixed(2)}%</p>
               <p className="text-xs text-muted-foreground mt-1">${priceLower.toFixed(4)}</p>
             </Card>
             <Card className="bg-card/60 border-border p-4">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">IL at Upper <span className="opacity-60 zh-only">上界</span></p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">IL at Upper <span className="opacity-60 zh-only">上界</span></p>
               <p className="text-xl font-bold font-mono text-destructive">-{analysis.ilAtUpper.toFixed(2)}%</p>
               <p className="text-xs text-muted-foreground mt-1">${priceUpper.toFixed(4)}</p>
             </Card>
@@ -1174,7 +1174,7 @@ function CLMMAnalyzer() {
             <CardHeader className="pb-3 border-b border-border/50">
               <CardTitle className="text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
                 <span>Price + Cumulative Fees <span className="text-xs font-normal text-muted-foreground zh-only">价格 & 累计手续费</span></span>
-                <Badge variant="outline" className="text-[10px] border-chart-5/40 text-chart-5">${priceLower.toFixed(3)} – ${priceUpper.toFixed(3)}</Badge>
+                <Badge variant="outline" className="text-[11px] border-chart-5/40 text-chart-5">${priceLower.toFixed(3)} – ${priceUpper.toFixed(3)}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
@@ -1251,7 +1251,7 @@ function TradingProfitCalculator() {
           <SliderRow label="Trading Fee %" labelZh="手续费率%" value={feeRate} set={setFeeRate} min={0} max={50} step={1} display={`${feeRate}%`} />
           <SliderRow label="User Profit Share %" labelZh="用户分润%" value={profitShare} set={setProfitShare} min={50} max={90} step={5} display={`${profitShare}%`} />
           <Separator />
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Fund Flow<span className="zh-only ml-1">资金流向</span></p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Fund Flow<span className="zh-only ml-1">资金流向</span></p>
           <SliderRow label="LP Pool %" labelZh="注入流动池" value={lpRatio} set={setLpRatio} min={0} max={80} step={5} display={`${lpRatio}%`} />
           <SliderRow label="Buyback %" labelZh="回购比例" value={buybackRatio} set={setBuybackRatio} min={0} max={80} step={5} display={`${buybackRatio}%`} />
           <SliderRow label="Reserve %" labelZh="储备金" value={reserveRatio} set={setReserveRatio} min={0} max={80} step={5} display={`${reserveRatio}%`} />
@@ -1311,7 +1311,7 @@ function TradingProfitCalculator() {
                   { label: "Broker", labelZh: "推荐商", val: formatCurrency(daily.brokerProfit * 30) },
                 ].map(({ label, labelZh, val, hi }) => (
                   <div key={label} className={`p-3 rounded-lg border ${hi ? "bg-chart-2/10 border-chart-2/30" : "bg-background/30 border-border"}`}>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label} <span className="opacity-60">{labelZh}</span></p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label} <span className="opacity-60">{labelZh}</span></p>
                     <p className={`text-sm font-bold font-mono mt-1 ${hi ? "text-chart-2" : ""}`}>{val}</p>
                   </div>
                 ))}
@@ -1367,7 +1367,7 @@ function BrokerEarningsCalculator() {
           >
             <p className={`text-sm font-semibold ${systemId === s.id ? "text-chart-2" : "text-foreground"}`}>{s.name}</p>
             <p className="text-xs text-muted-foreground">{s.nameZh}</p>
-            <p className="text-[10px] text-muted-foreground/70 mt-1 leading-tight">{s.levels.length} levels · {Math.max(...Object.values(s.maxLayersPerLevel))} layers max</p>
+            <p className="text-[11px] text-muted-foreground/70 mt-1 leading-tight">{s.levels.length} levels · {Math.max(...Object.values(s.maxLayersPerLevel))} layers max</p>
           </button>
         ))}
       </div>
@@ -1395,7 +1395,7 @@ function BrokerEarningsCalculator() {
           </div>
           <SliderRow label={`${tokenName}/Layer/Day`} labelZh="每层每日释放量" value={msPerLayer} set={setMsPerLayer} min={10} max={5000} step={50} display={`${fmt(msPerLayer)}`} />
           <Separator />
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Dividend Pool<span className="zh-only ml-1">分红池</span></p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Dividend Pool<span className="zh-only ml-1">分红池</span></p>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Subordinate Level <span className="opacity-60 zh-only">下级推荐商</span></Label>
             <Select value={subLevel} onValueChange={setSubLevel}>
@@ -1423,10 +1423,10 @@ function BrokerEarningsCalculator() {
 
           {/* Layer rate info */}
           <Card className="bg-card/60 border-border p-4">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">Layer Rate Schedule <span className="opacity-70 zh-only">层级费率表</span></p>
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">Layer Rate Schedule <span className="opacity-70 zh-only">层级费率表</span></p>
             <div className="flex flex-wrap gap-2">
               {system.layerRates.filter((r, i) => r > 0 || i < maxLayer).map((rate, i) => (
-                <div key={i} className={`px-2 py-1 rounded text-[10px] font-mono border ${i < maxLayer ? "bg-chart-2/15 border-chart-2/30 text-chart-2" : "bg-muted/20 border-border text-muted-foreground/50"}`}>
+                <div key={i} className={`px-2 py-1 rounded text-[11px] font-mono border ${i < maxLayer ? "bg-chart-2/15 border-chart-2/30 text-chart-2" : "bg-muted/20 border-border text-muted-foreground/50"}`}>
                   L{i + 1}: {rate}%
                 </div>
               ))}
@@ -1439,8 +1439,8 @@ function BrokerEarningsCalculator() {
               <CardTitle className="text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
                 <span>20-Layer Breakdown <span className="text-xs font-normal text-muted-foreground ml-1 zh-only">层级收益明细</span></span>
                 <div className="flex gap-2">
-                  <Badge className="text-[10px] bg-chart-2/20 text-chart-2 border-chart-2/30 border">Accessible<span className="zh-only ml-1">已开放</span></Badge>
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground/50">Locked<span className="zh-only ml-1">未开放</span></Badge>
+                  <Badge className="text-[11px] bg-chart-2/20 text-chart-2 border-chart-2/30 border">Accessible<span className="zh-only ml-1">已开放</span></Badge>
+                  <Badge variant="outline" className="text-[11px] text-muted-foreground/50">Locked<span className="zh-only ml-1">未开放</span></Badge>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1473,7 +1473,7 @@ function BrokerEarningsCalculator() {
                   { label: "Differential", labelZh: "级差比率", val: `${dividend.differentialRate}%`, hi2: true },
                 ].map(({ label, labelZh, val, hi, hi2 }) => (
                   <div key={label} className={`p-3 rounded-lg border ${hi ? "bg-primary/10 border-primary/30" : hi2 ? "bg-chart-2/10 border-chart-2/30" : "bg-background/30 border-border"}`}>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label} <span className="opacity-60">{labelZh}</span></p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label} <span className="opacity-60">{labelZh}</span></p>
                     <p className={`text-sm font-bold font-mono mt-1 ${hi ? "text-primary" : hi2 ? "text-chart-2" : ""}`}>{val}</p>
                   </div>
                 ))}

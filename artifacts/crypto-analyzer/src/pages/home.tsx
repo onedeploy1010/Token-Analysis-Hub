@@ -101,14 +101,14 @@ function TrendingRow({ project, rank, delay }: { project: Project; rank: number;
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="font-semibold text-sm text-foreground truncate">{project.name}</span>
-              <span className="text-[10px] sm:text-[11px] font-mono text-muted-foreground border border-border/50 rounded px-1 sm:px-1.5 py-px shrink-0 tracking-wider">{project.symbol}</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 hidden sm:inline shrink-0">{project.category}</span>
+              <span className="text-[11px] sm:text-[11px] font-mono text-muted-foreground border border-border/50 rounded px-1 sm:px-1.5 py-px shrink-0 tracking-wider">{project.symbol}</span>
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground/60 hidden sm:inline shrink-0">{project.category}</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
               <RiskDot level={project.riskLevel} />
-              <span className="text-[10px] sm:text-[11px] text-muted-foreground capitalize">{project.riskLevel} risk</span>
-              <span className="text-muted-foreground/40 text-[10px]">·</span>
-              <span className="text-[10px] sm:text-[11px] text-muted-foreground num-sm truncate">TVL {project.tvl}</span>
+              <span className="text-[11px] sm:text-[11px] text-muted-foreground capitalize">{project.riskLevel} risk</span>
+              <span className="text-muted-foreground/40 text-[11px]">·</span>
+              <span className="text-[11px] sm:text-[11px] text-muted-foreground num-sm truncate">TVL {project.tvl}</span>
             </div>
           </div>
 
@@ -316,7 +316,7 @@ export default function Home() {
       <section className="space-y-6">
         <div className="flex items-end gap-4 border-l-[3px] border-primary pl-4">
           <div>
-            {!isEn && <span className="text-[10px] uppercase tracking-[0.2em] text-primary/60 font-semibold">MARKET OVERVIEW</span>}
+            {!isEn && <span className="text-[11px] uppercase tracking-[0.2em] text-primary/60 font-semibold">MARKET OVERVIEW</span>}
             <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">{t("mr.section.market")}</h2>
             <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">
               {isEn ? "Global DeFi metrics" : `Global DeFi metrics · ${t("mr.section.market")}`}
@@ -337,9 +337,9 @@ export default function Home() {
               <motion.div variants={cardItem}>
                 <Card className="corner-brackets bg-card/80 backdrop-blur-sm border-border/60 shadow-sm border-t-[2px] border-t-primary hover:bg-card hover:border-t-primary hover:shadow-[0_0_24px_rgba(245,158,11,0.1)] transition-all duration-300 h-full">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Total Value Locked</span>
-                      <span className="text-[9px] opacity-60 tracking-widest zh-only">总锁仓量</span>
+                      <span className="text-[11px] opacity-60 tracking-widest zh-only">总锁仓量</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -353,9 +353,9 @@ export default function Home() {
               <motion.div variants={cardItem}>
                 <Card className="corner-brackets bg-card/80 backdrop-blur-sm border-border/60 shadow-sm border-t-[2px] border-t-emerald-500 hover:bg-card hover:shadow-[0_0_24px_rgba(52,211,153,0.08)] transition-all duration-300 h-full">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Average Market APY</span>
-                      <span className="text-[9px] opacity-60 tracking-widest zh-only">市场平均年化</span>
+                      <span className="text-[11px] opacity-60 tracking-widest zh-only">市场平均年化</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -369,9 +369,9 @@ export default function Home() {
               <motion.div variants={cardItem}>
                 <Card className="corner-brackets bg-card/80 backdrop-blur-sm border-border/60 shadow-sm border-t-[2px] border-t-chart-3 hover:bg-card hover:shadow-[0_0_24px_rgba(96,165,250,0.08)] transition-all duration-300 h-full">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Tracked Projects</span>
-                      <span className="text-[9px] opacity-60 tracking-widest zh-only">追踪项目数</span>
+                      <span className="text-[11px] opacity-60 tracking-widest zh-only">追踪项目数</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -385,9 +385,9 @@ export default function Home() {
               <motion.div variants={cardItem}>
                 <Card className="corner-brackets bg-card/80 backdrop-blur-sm border-border/60 shadow-sm border-t-[2px] border-t-chart-4 hover:bg-card hover:shadow-[0_0_24px_rgba(248,113,113,0.08)] transition-all duration-300 h-full">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       <span className="block">Top Category</span>
-                      <span className="text-[9px] opacity-60 tracking-widest zh-only">热门赛道</span>
+                      <span className="text-[11px] opacity-60 tracking-widest zh-only">热门赛道</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -407,7 +407,7 @@ export default function Home() {
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-chart-2 pl-4">
             <div className="flex items-center gap-2 mb-0.5">
-              {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60">TRENDING OPPORTUNITIES</span>}
+              {!isEn && <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/60">TRENDING OPPORTUNITIES</span>}
               <TrendingUp className="h-3 w-3 text-primary/40" />
             </div>
             <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
@@ -439,8 +439,8 @@ export default function Home() {
               {/* Top APY snapshot */}
               <div className="corner-brackets rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">Top APY Snapshot</span>
-                  <span className="text-[9px] text-muted-foreground/50 tracking-wider zh-only">最高年化速览</span>
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">Top APY Snapshot</span>
+                  <span className="text-[11px] text-muted-foreground/50 tracking-wider zh-only">最高年化速览</span>
                 </div>
                 {topByApy.map((p, i) => {
                   const change = getSeededChange(p);
@@ -451,7 +451,7 @@ export default function Home() {
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold truncate">{p.name}</div>
-                        <div className="text-[10px] text-muted-foreground num-sm tracking-widest">{p.symbol}</div>
+                        <div className="text-[11px] text-muted-foreground num-sm tracking-widest">{p.symbol}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-base font-bold num-gold leading-snug">{p.apy.toFixed(2)}%</div>
@@ -465,8 +465,8 @@ export default function Home() {
               {/* 24h Activity */}
               <div className="rounded-xl border border-chart-2/25 bg-chart-2/5 p-5 space-y-3">
                 <div>
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-chart-2/70 font-semibold block">24h Yield Activity</span>
-                  <span className="text-[9px] text-muted-foreground/50 tracking-wider zh-only">24小时收益变动概览</span>
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-chart-2/70 font-semibold block">24h Yield Activity</span>
+                  <span className="text-[11px] text-muted-foreground/50 tracking-wider zh-only">24小时收益变动概览</span>
                 </div>
                 {allProjects && (() => {
                   const changes = allProjects.map(p => getSeededChange(p));
@@ -518,7 +518,7 @@ export default function Home() {
       <section className="space-y-6">
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-primary pl-4">
-            {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">FEATURED ANALYSIS</span>}
+            {!isEn && <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">FEATURED ANALYSIS</span>}
             <h2 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
               {t("mr.projects.featured")}
             </h2>

@@ -96,23 +96,23 @@ export function Step12Summary({ phase, language }: StepProps) {
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
             <div className="bg-background/60 rounded-lg p-2 text-center">
               <Calculator className="h-4 w-4 text-[#10B981] mx-auto mb-1" />
-              <div className="text-[10px] font-bold">{language === "zh" ? "计息系统" : "Exposure"}</div>
+              <div className="text-[11px] font-bold">{language === "zh" ? "计息系统" : "Exposure"}</div>
             </div>
             <div className="bg-background/60 rounded-lg p-2 text-center">
               <Clock className="h-4 w-4 text-[#3B82F6] mx-auto mb-1" />
-              <div className="text-[10px] font-bold">{language === "zh" ? "周期结构" : "Cycle"}</div>
+              <div className="text-[11px] font-bold">{language === "zh" ? "周期结构" : "Cycle"}</div>
             </div>
             <div className="bg-background/60 rounded-lg p-2 text-center">
               <RefreshCw className="h-4 w-4 text-[#F59E0B] mx-auto mb-1" />
-              <div className="text-[10px] font-bold">{language === "zh" ? "自动兑付" : "Settlement"}</div>
+              <div className="text-[11px] font-bold">{language === "zh" ? "自动兑付" : "Settlement"}</div>
             </div>
             <div className="bg-background/60 rounded-lg p-2 text-center">
               <Shield className="h-4 w-4 text-[#8B5CF6] mx-auto mb-1" />
-              <div className="text-[10px] font-bold">{language === "zh" ? "储备体系" : "Treasury+SPP"}</div>
+              <div className="text-[11px] font-bold">{language === "zh" ? "储备体系" : "Treasury+SPP"}</div>
             </div>
             <div className="bg-background/60 rounded-lg p-2 text-center">
               <CreditCard className="h-4 w-4 text-[#EC4899] mx-auto mb-1" />
-              <div className="text-[10px] font-bold">{language === "zh" ? "支付系统" : "UCard"}</div>
+              <div className="text-[11px] font-bold">{language === "zh" ? "支付系统" : "UCard"}</div>
             </div>
           </div>
         </motion.div>
@@ -175,7 +175,7 @@ export function Step12Summary({ phase, language }: StepProps) {
                     : "Limited issuance for price regulation, providing reserve for B18 ecosystem"}
                 </p>
                 <div className="mt-2">
-                  <span className="text-[10px] bg-[#2775CA]/20 rounded px-2 py-0.5">{language === "zh" ? "限量发售" : "Limited Issue"}</span>
+                  <span className="text-[11px] bg-[#2775CA]/20 rounded px-2 py-0.5">{language === "zh" ? "限量发售" : "Limited Issue"}</span>
                 </div>
               </div>
 
@@ -190,10 +190,10 @@ export function Step12Summary({ phase, language }: StepProps) {
                     : "Protocol Owned Liquidity, core of price stability"}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  <span className="text-[10px] bg-[#F59E0B]/20 rounded px-2 py-0.5">30d: 0.5%</span>
-                  <span className="text-[10px] bg-[#F59E0B]/20 rounded px-2 py-0.5">90d: 0.7%</span>
-                  <span className="text-[10px] bg-[#F59E0B]/20 rounded px-2 py-0.5">180d: 1.0%</span>
-                  <span className="text-[10px] bg-[#F59E0B]/20 rounded px-2 py-0.5">360d: 1.2%</span>
+                  <span className="text-[11px] bg-[#F59E0B]/20 rounded px-2 py-0.5">30d: 0.5%</span>
+                  <span className="text-[11px] bg-[#F59E0B]/20 rounded px-2 py-0.5">90d: 0.7%</span>
+                  <span className="text-[11px] bg-[#F59E0B]/20 rounded px-2 py-0.5">180d: 1.0%</span>
+                  <span className="text-[11px] bg-[#F59E0B]/20 rounded px-2 py-0.5">360d: 1.2%</span>
                 </div>
               </div>
 
@@ -208,10 +208,10 @@ export function Step12Summary({ phase, language }: StepProps) {
                     : "Buy B18 from secondary market to stake, earn compound interest"}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  <span className="text-[10px] bg-[#10B981]/20 rounded px-2 py-0.5">30d: 0.5%</span>
-                  <span className="text-[10px] bg-[#10B981]/20 rounded px-2 py-0.5">90d: 0.7%</span>
-                  <span className="text-[10px] bg-[#10B981]/20 rounded px-2 py-0.5">180d: 1.0%</span>
-                  <span className="text-[10px] bg-[#10B981]/20 rounded px-2 py-0.5">360d: 1.2%</span>
+                  <span className="text-[11px] bg-[#10B981]/20 rounded px-2 py-0.5">30d: 0.5%</span>
+                  <span className="text-[11px] bg-[#10B981]/20 rounded px-2 py-0.5">90d: 0.7%</span>
+                  <span className="text-[11px] bg-[#10B981]/20 rounded px-2 py-0.5">180d: 1.0%</span>
+                  <span className="text-[11px] bg-[#10B981]/20 rounded px-2 py-0.5">360d: 1.2%</span>
                 </div>
               </div>
             </div>
@@ -292,7 +292,7 @@ export function Step12Summary({ phase, language }: StepProps) {
                 <Users className="h-5 w-5 text-[#EC4899]" />
                 <span className="font-bold text-[#EC4899]">{language === "zh" ? "等级收益 V1-V10" : "Tier Rewards V1-V10"}</span>
               </div>
-              <div className="grid grid-cols-5 gap-1 text-center text-[10px]">
+              <div className="grid grid-cols-5 gap-1 text-center text-[11px]">
                 {[
                   { v: "V1", u: "2万", p: "10%" },
                   { v: "V2", u: "5万", p: "20%" },
@@ -307,7 +307,7 @@ export function Step12Summary({ phase, language }: StepProps) {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-5 gap-1 text-center text-[10px] mt-1">
+              <div className="grid grid-cols-5 gap-1 text-center text-[11px] mt-1">
                 {[
                   { v: "V6", u: "250万", p: "60%" },
                   { v: "V7", u: "500万", p: "70%" },
@@ -350,7 +350,7 @@ export function Step12Summary({ phase, language }: StepProps) {
                   ? "你的小区业绩 / 该层全网小区业绩 × 奖金池 × 层级%"
                   : "Your Branch / Global Branch × Bonus Pool × Layer%"}
               </div>
-              <div className="mt-2 flex flex-wrap justify-center gap-1 text-[8px]">
+              <div className="mt-2 flex flex-wrap justify-center gap-1 text-[11px]">
                 <span className="bg-[#F59E0B]/20 rounded px-1.5 py-0.5">{language === "zh" ? "第1层100%" : "L1:100%"}</span>
                 <span className="bg-[#F59E0B]/20 rounded px-1.5 py-0.5">{language === "zh" ? "第2层98%" : "L2:98%"}</span>
                 <span className="bg-[#F59E0B]/20 rounded px-1.5 py-0.5">{language === "zh" ? "第3层96%" : "L3:96%"}</span>

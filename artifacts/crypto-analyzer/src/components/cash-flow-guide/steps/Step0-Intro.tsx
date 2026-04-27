@@ -99,7 +99,7 @@ export function Step0Intro({ phase, language }: StepProps) {
                 className="text-center"
               >
                 <div className="text-2xl lg:text-3xl font-bold text-[#10B981]">B</div>
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "银行" : "Bank"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "银行" : "Bank"}</div>
               </motion.div>
               {[4, 6, 2, 6].map((num, i) => (
                 <motion.div
@@ -254,7 +254,7 @@ export function Step0Intro({ phase, language }: StepProps) {
                   <div className="font-bold text-sm" style={{ color: pillar.color }}>
                     {pillar.title}
                   </div>
-                  <div className="text-[10px] text-muted-foreground mt-1">{pillar.desc}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1">{pillar.desc}</div>
                 </motion.div>
               ))}
             </div>

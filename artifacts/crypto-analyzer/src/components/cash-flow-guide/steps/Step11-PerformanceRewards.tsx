@@ -223,7 +223,7 @@ export function Step11PerformanceRewards({ phase, language }: StepProps) {
             {/* 流程说明 */}
             <div className="flex items-start gap-2 text-sm">
               <div className="w-5 h-5 rounded-full bg-chart-2/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-[10px] font-bold text-chart-2">1</span>
+                <span className="text-[11px] font-bold text-chart-2">1</span>
               </div>
               <span className="text-muted-foreground">
                 {language === "zh"
@@ -233,7 +233,7 @@ export function Step11PerformanceRewards({ phase, language }: StepProps) {
             </div>
             <div className="flex items-start gap-2 text-sm">
               <div className="w-5 h-5 rounded-full bg-chart-2/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-[10px] font-bold text-chart-2">2</span>
+                <span className="text-[11px] font-bold text-chart-2">2</span>
               </div>
               <span className="text-muted-foreground">
                 {language === "zh"
@@ -243,7 +243,7 @@ export function Step11PerformanceRewards({ phase, language }: StepProps) {
             </div>
             <div className="flex items-start gap-2 text-sm">
               <div className="w-5 h-5 rounded-full bg-chart-2/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-[10px] font-bold text-chart-2">3</span>
+                <span className="text-[11px] font-bold text-chart-2">3</span>
               </div>
               <span className="text-muted-foreground">
                 {language === "zh"
@@ -266,7 +266,7 @@ export function Step11PerformanceRewards({ phase, language }: StepProps) {
                   <div className="font-bold text-xs" style={{ color: option.color }}>
                     {option.days}d
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-[11px] text-muted-foreground">
                     {option.tax}%
                   </div>
                 </motion.div>
@@ -275,7 +275,7 @@ export function Step11PerformanceRewards({ phase, language }: StepProps) {
 
             {/* 计算示例 */}
             <div className="bg-muted/30 rounded-lg p-2 text-center mt-2">
-              <div className="text-[10px] text-muted-foreground mb-1">
+              <div className="text-[11px] text-muted-foreground mb-1">
                 {language === "zh" ? "例: 10 B18 选择180天释放 (0%税)" : "Ex: 10 B18 with 180d release (0% tax)"}
               </div>
               <div className="font-mono text-xs">

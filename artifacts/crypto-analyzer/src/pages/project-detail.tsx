@@ -101,7 +101,7 @@ export default function ProjectDetail() {
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <RiskBadge level={project.riskLevel} />
-                <Badge variant="outline" className="uppercase tracking-wider text-[10px] bg-background/50 backdrop-blur">
+                <Badge variant="outline" className="uppercase tracking-wider text-[11px] bg-background/50 backdrop-blur">
                   {project.category}
                 </Badge>
                 {project.website && (
@@ -115,7 +115,7 @@ export default function ProjectDetail() {
             <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 min-w-[200px] text-center md:text-right shadow-[0_4px_15px_rgba(0,0,0,0.2)] border-t-[3px] border-t-chart-2">
               <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium mb-1 flex flex-col md:items-end gap-0.5">
                 <span>{isEn ? "Current APY" : "Current APY"}</span>
-                {!isEn && <span className="text-[9px] opacity-70">{t("mr.detail.currentApy")}</span>}
+                {!isEn && <span className="text-[11px] opacity-70">{t("mr.detail.currentApy")}</span>}
               </p>
               <p className="text-4xl font-bold num text-chart-2">
                 {formatPercent(project.apy)}
@@ -130,7 +130,7 @@ export default function ProjectDetail() {
                 {!isEn && <span className="text-sm font-normal text-muted-foreground">{t("mr.detail.report")}</span>}
               </span>
             </h2>
-            <div className="prose prose-invert max-w-none text-muted-foreground leading-relaxed text-[15px] bg-card/30 p-6 rounded-xl border border-border/50">
+            <div className="prose prose-invert max-w-none text-muted-foreground leading-relaxed text-base bg-card/30 p-6 rounded-xl border border-border/50">
               <p>{project.description}</p>
             </div>
 

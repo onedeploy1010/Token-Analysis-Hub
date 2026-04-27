@@ -95,8 +95,8 @@ export function Step10DynamicRewards({ phase, language }: StepProps) {
                 <div className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <span className="text-[10px] text-muted-foreground mt-1">{language === "zh" ? "大区" : "Max"}</span>
-                <div className="px-1 py-0.5 bg-muted rounded text-[8px]">{language === "zh" ? "排除" : "Excluded"}</div>
+                <span className="text-[11px] text-muted-foreground mt-1">{language === "zh" ? "大区" : "Max"}</span>
+                <div className="px-1 py-0.5 bg-muted rounded text-[11px]">{language === "zh" ? "排除" : "Excluded"}</div>
               </div>
 
               {/* 小区们 (计入) */}
@@ -112,8 +112,8 @@ export function Step10DynamicRewards({ phase, language }: StepProps) {
                   <div className="w-10 h-10 rounded-full bg-chart-2/20 flex items-center justify-center border-2 border-chart-2/50">
                     <Users className="h-4 w-4 text-chart-2" />
                   </div>
-                  <span className="text-[10px] text-muted-foreground mt-1">{language === "zh" ? `小区${i}` : `B${i}`}</span>
-                  <span className="text-[10px] text-chart-2">${(30 - i * 5)}K</span>
+                  <span className="text-[11px] text-muted-foreground mt-1">{language === "zh" ? `小区${i}` : `B${i}`}</span>
+                  <span className="text-[11px] text-chart-2">${(30 - i * 5)}K</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -140,15 +140,15 @@ export function Step10DynamicRewards({ phase, language }: StepProps) {
                   className="w-7 lg:w-9 rounded-t-lg flex flex-col items-center justify-end pb-0.5 shrink-0"
                   style={{ background: `linear-gradient(180deg, ${lvl.color}, ${lvl.color}80)` }}
                 >
-                  <span className="text-white font-bold text-[8px]">{lvl.level}</span>
-                  <span className="text-white/80 text-[6px]">{lvl.percent}%</span>
+                  <span className="text-white font-bold text-[11px]">{lvl.level}</span>
+                  <span className="text-white/80 text-[11px]">{lvl.percent}%</span>
                 </motion.div>
               ))}
             </div>
             <div className="flex justify-center gap-0.5 lg:gap-1 mt-1 overflow-x-auto">
               {levels.map((lvl) => (
                 <div key={lvl.level} className="w-7 lg:w-9 text-center shrink-0">
-                  <span className="text-[6px] text-muted-foreground">{language === "zh" ? lvl.threshold : lvl.thresholdEn}</span>
+                  <span className="text-[11px] text-muted-foreground">{language === "zh" ? lvl.threshold : lvl.thresholdEn}</span>
                 </div>
               ))}
             </div>
@@ -191,7 +191,7 @@ export function Step10DynamicRewards({ phase, language }: StepProps) {
                   <span className="text-muted-foreground text-xs">{language === "zh" ? "你的等级 (V3)" : "Your Level (V3)"}</span>
                   <span className="font-mono text-xs">× 30%</span>
                 </div>
-                <div className="flex justify-between items-center text-[10px] text-chart-4">
+                <div className="flex justify-between items-center text-[11px] text-chart-4">
                   <span>{language === "zh" ? "下级V2已领取" : "V2 Below Claimed"}</span>
                   <div className="flex items-center gap-1">
                     <Minus className="h-3 w-3" />
@@ -240,7 +240,7 @@ export function Step10DynamicRewards({ phase, language }: StepProps) {
 
               {/* 发放示例 */}
               <div className="bg-chart-2/20 rounded-lg p-3 text-center">
-                <div className="text-[10px] text-muted-foreground mb-1">
+                <div className="text-[11px] text-muted-foreground mb-1">
                   {language === "zh" ? "等级收益 = 直接发放，无释放周期，无税收" : "Tier Rewards = Direct, No Release Period, No Tax"}
                 </div>
                 <div className="font-mono text-sm">

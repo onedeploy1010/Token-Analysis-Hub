@@ -85,9 +85,9 @@ export function RiskBadge({ level }: { level: ProjectRiskLevel }) {
   return (
     <div className={`flex items-center gap-1.5 ${color}`}>
       <Icon className="h-3 w-3" />
-      <span className="text-[10px] font-semibold uppercase tracking-widest">{t(key)}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-widest">{t(key)}</span>
       {!isEn && (
-        <span className="text-[9px] opacity-50">{RISK_ENGLISH[level]}</span>
+        <span className="text-[11px] opacity-50">{RISK_ENGLISH[level]}</span>
       )}
     </div>
   );
@@ -148,17 +148,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
           )}
 
           <div className="min-w-0 flex-1">
-            <h3 className={`font-bold text-[15px] leading-tight tracking-tight text-white/90 group-hover:${meta.color} transition-colors truncate`}>
+            <h3 className={`font-bold text-base leading-tight tracking-tight text-white/90 group-hover:${meta.color} transition-colors truncate`}>
               {project.name}
             </h3>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] font-mono text-white/35 tracking-widest">{project.symbol}</span>
-              <span className="text-white/20 text-[10px]">·</span>
-              <span className={`text-[9px] font-bold uppercase tracking-[0.14em] ${meta.dimColor}`}>
+              <span className="text-[11px] font-mono text-white/35 tracking-widest">{project.symbol}</span>
+              <span className="text-white/20 text-[11px]">·</span>
+              <span className={`text-[11px] font-bold uppercase tracking-[0.14em] ${meta.dimColor}`}>
                 {project.category}
               </span>
               {hasDeepAnalysis && (
-                <span className="inline-flex items-center gap-0.5 text-[8px] px-1.5 py-px rounded-full bg-primary/10 border border-primary/20 text-primary/80 font-semibold tracking-wider ml-0.5">
+                <span className="inline-flex items-center gap-0.5 text-[11px] px-1.5 py-px rounded-full bg-primary/10 border border-primary/20 text-primary/80 font-semibold tracking-wider ml-0.5">
                   <FlaskConical className="h-2 w-2" /> DEEP
                 </span>
               )}
@@ -177,7 +177,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {/* ── APY hero block w/ embedded sparkline ── */}
         <div className={`mx-5 relative rounded-xl px-4 pt-5 pb-2 ${meta.bg} border border-white/[0.05] overflow-hidden`}>
           <div className="relative z-10 flex flex-col items-center justify-center text-center">
-            <p className="text-[9px] uppercase tracking-[0.25em] text-white/35 font-semibold mb-1.5">
+            <p className="text-[11px] uppercase tracking-[0.25em] text-white/35 font-semibold mb-1.5">
               {t("mr.metric.apy.label")}
             </p>
             <p
@@ -251,7 +251,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="px-5 pt-4 pb-5 flex-1 flex flex-col justify-between gap-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-semibold mb-0.5">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-white/30 font-semibold mb-0.5">
                 {t("mr.metric.tvl.label")}
               </p>
               <p className="text-xl font-bold text-white/75 tracking-tight"
@@ -268,7 +268,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
           <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
             <RiskBadge level={project.riskLevel} />
-            <span className={`text-[10px] font-semibold tracking-wider ${meta.dimColor}`}>
+            <span className={`text-[11px] font-semibold tracking-wider ${meta.dimColor}`}>
               {hasDeepAnalysis ? t("mr.action.deepAnalysis") : t("mr.action.viewAnalysis")}
             </span>
           </div>

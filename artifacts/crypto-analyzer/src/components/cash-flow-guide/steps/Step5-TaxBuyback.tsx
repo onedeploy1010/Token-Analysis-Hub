@@ -75,7 +75,7 @@ export function Step5TaxBuyback({ phase, language }: StepProps) {
             >
               $100
             </motion.span>
-            <span className="text-[10px] text-muted-foreground">{language === "zh" ? "税收" : "Tax"}</span>
+            <span className="text-[11px] text-muted-foreground">{language === "zh" ? "税收" : "Tax"}</span>
           </motion.div>
         </motion.div>
 

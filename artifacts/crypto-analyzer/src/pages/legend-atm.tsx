@@ -99,7 +99,7 @@ function StatCard({
   return (
     <div className="relative border border-border/40 bg-card/40 rounded p-3 md:p-4 overflow-hidden group">
       <div className="corner-brackets" />
-      <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium mb-1">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium mb-1">
         {labelEn} · {label}
       </div>
       <div className={`text-xl font-bold num ${highlight ? "num-gold" : "text-foreground"}`}>
@@ -156,7 +156,7 @@ export default function LegendATM() {
           <div className="corner-brackets" />
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.22em] text-primary/60 font-medium mb-1">
+              <div className="text-[11px] uppercase tracking-[0.22em] text-primary/60 font-medium mb-1">
                 {showZh ? "VAULT · 全民做市商系统" : "VAULT · Market-Maker System"}
               </div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -169,9 +169,9 @@ export default function LegendATM() {
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {TIERS.map((t, i) => (
                 <div key={i} className="text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{showZh ? t.label : t.labelEn}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase tracking-wide">{showZh ? t.label : t.labelEn}</div>
                   <div className="text-lg font-bold num-gold">{(t.monthlyRate * 100).toFixed(2)}%</div>
-                  {showZh && <div className="text-[10px] text-muted-foreground">月化</div>}
+                  {showZh && <div className="text-[11px] text-muted-foreground">月化</div>}
                 </div>
               ))}
             </div>
@@ -212,10 +212,10 @@ export default function LegendATM() {
           <div className="mt-4 pt-4 border-t border-border/20 grid grid-cols-1 sm:grid-cols-3 gap-2">
             {CONTRACTS.map(({ labelZh, labelEn, addr }) => (
               <div key={addr} className="flex items-center gap-2 rounded-lg border border-border/25 bg-black/20 px-3 py-2">
-                <span className="text-[10px] uppercase tracking-[0.15em] text-primary/60 font-semibold shrink-0 w-16">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-primary/60 font-semibold shrink-0 w-16">
                   {showZh ? labelZh : labelEn}
                 </span>
-                <span className="font-mono text-[10px] text-muted-foreground/70 truncate flex-1">
+                <span className="font-mono text-[11px] text-muted-foreground/70 truncate flex-1">
                   {addr.slice(0, 6)}…{addr.slice(-6)}
                 </span>
                 <CopyAddress addr={addr} />
@@ -248,7 +248,7 @@ export default function LegendATM() {
                   }`}
                 >
                   {tierIdx === i && <div className="corner-brackets" />}
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">
                     {t.labelEn}
                   </div>
                   <div className="text-2xl font-bold num-gold">{(t.dailyRate * 100).toFixed(2)}%</div>
@@ -262,7 +262,7 @@ export default function LegendATM() {
 
             {/* principal input */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">
                 {showZh ? "投资本金 Principal (USDT)" : "Principal (USDT)"}
               </div>
               <div className="flex items-center gap-3">
@@ -281,7 +281,7 @@ export default function LegendATM() {
                 onValueChange={([v]) => setPrincipal(v)}
                 className="mt-2"
               />
-              <div className="flex justify-between text-[10px] text-muted-foreground">
+              <div className="flex justify-between text-[11px] text-muted-foreground">
                 <span>$100</span><span>$10K</span><span>$50K</span><span>$100K</span>
               </div>
             </div>
@@ -296,7 +296,7 @@ export default function LegendATM() {
 
             {/* breakdown bar */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
                 {showZh ? "收益拆解 Yield Breakdown · 1000U 示例对比" : "Yield Breakdown · 1000U Reference"}
               </div>
               <ResponsiveContainer width="100%" height={200}>
@@ -326,7 +326,7 @@ export default function LegendATM() {
 
             {/* APY reference */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
                 {showZh ? "年化参考" : "Annual Reference"} · {showZh ? `${TIERS[tierIdx].label}档` : `${TIERS[tierIdx].labelEn}`}
               </div>
               <div className="grid grid-cols-3 gap-4 text-center">
@@ -351,7 +351,7 @@ export default function LegendATM() {
             {/* controls */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">{showZh ? "初始本金" : "Principal"}</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">{showZh ? "初始本金" : "Principal"}</div>
                 <div className="flex items-center gap-2">
                   <Input type="number" value={reinvestPrincipal} min={100} step={100}
                     onChange={e => setReinvestPrincipal(Math.max(0, Number(e.target.value)))}
@@ -364,10 +364,10 @@ export default function LegendATM() {
               </div>
 
               <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">{showZh ? `投资周期数 · ${periods} 期` : `Periods · ${periods}`}</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">{showZh ? `投资周期数 · ${periods} 期` : `Periods · ${periods}`}</div>
                 <Slider min={1} max={24} step={1} value={[periods]}
                   onValueChange={([v]) => setPeriods(v)} />
-                <div className="flex justify-between text-[10px] text-muted-foreground">
+                <div className="flex justify-between text-[11px] text-muted-foreground">
                   {showZh ? <><span>1期</span><span>12期</span><span>24期</span></> : <><span>1</span><span>12</span><span>24</span></>}
                 </div>
               </div>
@@ -382,7 +382,7 @@ export default function LegendATM() {
                     }`}
                   >
                     <div className="font-bold num-gold">{(TIERS[i].monthlyRate * 100).toFixed(1)}%</div>
-                    <div className="text-[10px] text-muted-foreground">{showZh ? t.label : t.labelEn}</div>
+                    <div className="text-[11px] text-muted-foreground">{showZh ? t.label : t.labelEn}</div>
                   </button>
                 ))}
               </div>
@@ -397,7 +397,7 @@ export default function LegendATM() {
 
             {/* growth chart */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
                 {showZh ? `资产增长曲线 · ${autoReinvest ? "复利" : "单利"}模式` : `Balance Growth · ${autoReinvest ? "Compound" : "Simple"}`}
               </div>
               <ResponsiveContainer width="100%" height={220}>
@@ -425,7 +425,7 @@ export default function LegendATM() {
                   <thead>
                     <tr className="border-b border-border/30 bg-black/20">
                       {["期数","投入本金","毛利润","净收益","累计盈亏","期末余额"].map(h => (
-                        <th key={h} className="px-3 py-2 text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{h}</th>
+                        <th key={h} className="px-3 py-2 text-left text-[11px] uppercase tracking-wide text-muted-foreground font-medium">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -462,7 +462,7 @@ export default function LegendATM() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">投入总量 (USDT)</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">投入总量 (USDT)</div>
                 <Input type="number" value={dualPrincipal} min={200} step={100}
                   onChange={e => setDualPrincipal(Math.max(0, Number(e.target.value)))}
                   className="font-bold num" />
@@ -470,7 +470,7 @@ export default function LegendATM() {
                   onValueChange={([v]) => setDualPrincipal(v)} />
               </div>
               <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">ATM 入场价 (U)</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">ATM 入场价 (U)</div>
                 <Input type="number" value={atmPrice} min={0.01} step={0.01}
                   onChange={e => setAtmPrice(Math.max(0.01, Number(e.target.value)))}
                   className="font-bold num" />
@@ -478,7 +478,7 @@ export default function LegendATM() {
                   onValueChange={([v]) => setAtmPrice(v)} />
               </div>
               <div className="border border-border/30 bg-card/30 rounded-lg p-4 space-y-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">ATM 到期价 (U)</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">ATM 到期价 (U)</div>
                 <Input type="number" value={atmPriceEnd} min={0.01} step={0.01}
                   onChange={e => setAtmPriceEnd(Math.max(0.01, Number(e.target.value)))}
                   className="font-bold num" />
@@ -507,7 +507,7 @@ export default function LegendATM() {
 
             {/* LP split vis */}
             <div className="border border-border/30 bg-card/30 rounded-lg p-4">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-4">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-4">
                 LP 构成 · 资产配比
               </div>
               <div className="flex items-center gap-3 mb-3">
@@ -531,17 +531,17 @@ export default function LegendATM() {
               </div>
               <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                 <div className="border border-border/20 rounded p-2">
-                  <div className="text-[10px] text-muted-foreground">ATM 涨跌幅</div>
+                  <div className="text-[11px] text-muted-foreground">ATM 涨跌幅</div>
                   <div className={`text-lg font-bold num ${atmGain >= 0 ? "num-gold" : "text-red-400"}`}>
                     {atmGain >= 0 ? "+" : ""}{(((atmPriceEnd / atmPrice) - 1) * 100).toFixed(1)}%
                   </div>
                 </div>
                 <div className="border border-border/20 rounded p-2">
-                  {showZh && <div className="text-[10px] text-muted-foreground">做市月化</div>}
+                  {showZh && <div className="text-[11px] text-muted-foreground">做市月化</div>}
                   <div className="text-lg font-bold num-gold">47.30%</div>
                 </div>
                 <div className="border border-border/20 rounded p-2">
-                  {showZh && <div className="text-[10px] text-muted-foreground">综合总回报</div>}
+                  {showZh && <div className="text-[11px] text-muted-foreground">综合总回报</div>}
                   <div className={`text-lg font-bold num ${totalReturn >= 0 ? "num-gold" : "text-red-400"}`}>
                     {totalReturn >= 0 ? "+" : ""}{((totalReturn / dualPrincipal) * 100).toFixed(2)}%
                   </div>
@@ -551,7 +551,7 @@ export default function LegendATM() {
 
             {/* ATM price scenario table */}
             <div className="border border-border/30 bg-card/30 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-border/30 text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">
+              <div className="px-4 py-3 border-b border-border/30 text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">
                 ATM 价格情景分析 · 基于 ${fmt(dualPrincipal)} 投入
               </div>
               <div className="overflow-x-auto">
@@ -559,7 +559,7 @@ export default function LegendATM() {
                   <thead>
                     <tr className="border-b border-border/20 bg-black/20">
                       {["ATM 到期价", "ATM腿价值", "做市净收益", "综合总回报", "总回报率"].map(h => (
-                        <th key={h} className="px-3 py-2 text-left text-[10px] uppercase tracking-wide text-muted-foreground">{h}</th>
+                        <th key={h} className="px-3 py-2 text-left text-[11px] uppercase tracking-wide text-muted-foreground">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -596,7 +596,7 @@ export default function LegendATM() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* system params */}
               <div className="border border-border/30 bg-card/30 rounded-lg p-4">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
+                <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
                   核心系统参数
                 </div>
                 <div className="space-y-2">
@@ -616,7 +616,7 @@ export default function LegendATM() {
               </div>
               {/* yield distribution */}
               <div className="border border-border/30 bg-card/30 rounded-lg p-4">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
+                <div className="text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium mb-3">
                   收益分配结构
                 </div>
                 <div className="space-y-2">
@@ -639,14 +639,14 @@ export default function LegendATM() {
 
             {/* tier table */}
             <div className="border border-border/30 bg-card/30 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-border/30 text-[10px] uppercase tracking-[0.18em] text-primary/60 font-medium">
+              <div className="px-4 py-3 border-b border-border/30 text-[11px] uppercase tracking-[0.18em] text-primary/60 font-medium">
                 三档收益方案速查 · 1000 USDT 示例（每秒复利，非整天结算）
               </div>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/20 bg-black/20">
                     {["投资周期", "日化收益率", "月化复利率", "净利润（1000U）", "期末总资产"].map(h => (
-                      <th key={h} className="px-4 py-2 text-left text-[10px] uppercase tracking-wide text-muted-foreground">{h}</th>
+                      <th key={h} className="px-4 py-2 text-left text-[11px] uppercase tracking-wide text-muted-foreground">{h}</th>
                     ))}
                   </tr>
                 </thead>

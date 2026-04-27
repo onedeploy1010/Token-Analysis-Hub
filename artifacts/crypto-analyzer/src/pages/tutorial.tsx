@@ -237,7 +237,7 @@ function GuideCard({ step, realAddress, connectedAddr, buyOpen, onConnect, onBuy
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
-            <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] ${c.text}`}>
+            <span className={`text-[11px] sm:text-[11px] font-bold uppercase tracking-[0.2em] ${c.text}`}>
               {tt({ zh: "教学模式 · Tutorial", "zh-TW": "教學模式 · Tutorial", en: "Tutorial Mode", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Hướng dẫn" })}
             </span>
             {/* Step dots */}
@@ -251,13 +251,13 @@ function GuideCard({ step, realAddress, connectedAddr, buyOpen, onConnect, onBuy
                 />
               ))}
             </div>
-            <span className={`text-[10px] ${c.text} opacity-60`}>{guideIdx + 1} / 2</span>
+            <span className={`text-[11px] ${c.text} opacity-60`}>{guideIdx + 1} / 2</span>
           </div>
 
           <p className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">
             {tt(guide.title)}
           </p>
-          <p className="text-[11px] sm:text-[12px] text-muted-foreground leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
             {tt(guide.desc)}
           </p>
         </div>
@@ -287,7 +287,7 @@ function GuideCard({ step, realAddress, connectedAddr, buyOpen, onConnect, onBuy
           <span className="text-[11px] text-emerald-300 font-mono">
             {connectedAddr.slice(0, 6)}…{connectedAddr.slice(-6)}
           </span>
-          <span className="text-[10px] text-muted-foreground/50 ml-1">
+          <span className="text-[11px] text-muted-foreground/50 ml-1">
             {tt({ zh: "· 钱包已连接", "zh-TW": "· 錢包已連接", en: "· Wallet connected", ja: "· ウォレット接続済", ko: "· 지갑 연결됨", th: "· เชื่อมกระเป๋าแล้ว", vi: "· Ví đã kết nối" })}
           </span>
         </div>
@@ -355,7 +355,7 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
               <UserPlus className="h-4 w-4 text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
               {tt({ zh: "步骤 2 / 3 · 绑定推荐关系", "zh-TW": "步驟 2 / 3 · 綁定推薦關係", en: "Step 2 / 3 · Bind Referrer", ja: "ステップ 2 / 3 · リファラー登録", ko: "2 / 3 단계 · 리퍼러 바인딩", th: "ขั้นที่ 2 / 3 · ผูกผู้แนะนำ", vi: "Bước 2 / 3 · Liên kết giới thiệu" })}
             </span>
           </div>
@@ -464,7 +464,7 @@ function TutorialBindModal({ open, onClose, onBound }: TutorialBindModalProps) {
             </Button>
           </div>
 
-          <p className="text-[10px] text-muted-foreground/50 text-center">
+          <p className="text-[11px] text-muted-foreground/50 text-center">
             {tt({
               zh: "真实操作会消耗少量 BNB 作为 Gas 费",
               "zh-TW": "真實操作會消耗少量 BNB 作為 Gas 費",
@@ -529,16 +529,16 @@ function TutorialPurchaseModal({ open, preSelectedNodeId, onClose, onPurchased }
               <div className="absolute inset-0 rounded-xl shadow-[0_0_14px_rgba(245,158,11,0.35)]" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-amber-400/70">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-400/70">
                 {tt({ zh: "步骤 3 / 3", "zh-TW": "步驟 3 / 3", en: "Step 3 / 3", ja: "ステップ 3 / 3", ko: "3 / 3 단계", th: "ขั้นที่ 3 / 3", vi: "Bước 3 / 3" })}
               </span>
-              <DialogTitle className="text-[15px] font-bold leading-tight text-white">
+              <DialogTitle className="text-base font-bold leading-tight text-white">
                 {tt({ zh: "选择节点等级", "zh-TW": "選擇節點等級", en: "Select Node Tier", ja: "ノード等級を選択", ko: "노드 등급 선택", th: "เลือกระดับโหนด", vi: "Chọn cấp node" })}
               </DialogTitle>
             </div>
             <div className="ml-auto flex items-center gap-1.5 rounded-full border border-cyan-500/25 bg-cyan-500/8 px-2.5 py-1">
               <BookOpen className="h-2.5 w-2.5 text-cyan-400 shrink-0" />
-              <span className="text-[9px] font-medium text-cyan-300 whitespace-nowrap">
+              <span className="text-[11px] font-medium text-cyan-300 whitespace-nowrap">
                 {tt({ zh: "教学模式", "zh-TW": "教學模式", en: "Tutorial", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Hướng dẫn" })}
               </span>
             </div>
@@ -589,7 +589,7 @@ function TutorialPurchaseModal({ open, preSelectedNodeId, onClose, onPurchased }
 
                 {/* Tier icon */}
                 <span
-                  className="ml-0.5 h-11 w-11 rounded-xl shrink-0 flex items-center justify-center text-[18px] font-bold transition-shadow"
+                  className="ml-0.5 h-11 w-11 rounded-xl shrink-0 flex items-center justify-center text-lg font-bold transition-shadow"
                   style={{
                     background: `rgba(${meta.rgb}, 0.14)`,
                     color: `rgb(${meta.rgb})`,
@@ -604,15 +604,15 @@ function TutorialPurchaseModal({ open, preSelectedNodeId, onClose, onPurchased }
                 <div className="flex-1 min-w-0">
                   {/* Name row */}
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[13px] font-bold text-white leading-none">{meta.nameCn}</span>
-                    <span className={`text-[9px] font-mono uppercase tracking-[0.18em] leading-none ${meta.color}`}>{meta.nameEn}</span>
-                    <span className="ml-auto text-[8px] font-mono tracking-wider text-white/25 border border-white/10 rounded px-1 py-0.5 leading-none">
+                    <span className="text-sm font-bold text-white leading-none">{meta.nameCn}</span>
+                    <span className={`text-[11px] font-mono uppercase tracking-[0.18em] leading-none ${meta.color}`}>{meta.nameEn}</span>
+                    <span className="ml-auto text-[11px] font-mono tracking-wider text-white/25 border border-white/10 rounded px-1 py-0.5 leading-none">
                       LV.{lv}
                     </span>
                   </div>
 
                   {/* Stats row */}
-                  <div className="flex items-center gap-2 text-[10px] mb-1.5">
+                  <div className="flex items-center gap-2 text-[11px] mb-1.5">
                     <span className="text-white/40">
                       {tt({ zh: "剩余", "zh-TW": "剩餘", en: "Left", ja: "残り", ko: "남음", th: "เหลือ", vi: "Còn" })}{" "}
                       <span className="text-white/80 font-semibold tabular-nums">{remaining}</span>
@@ -635,18 +635,18 @@ function TutorialPurchaseModal({ open, preSelectedNodeId, onClose, onPurchased }
                       }}
                     />
                   </div>
-                  <div className="text-[8px] text-white/20 mt-0.5 tabular-nums">{occupiedPct}% {tt({ zh: "已售", "zh-TW": "已售", en: "sold", ja: "販売済", ko: "판매됨", th: "ขายแล้ว", vi: "đã bán" })}</div>
+                  <div className="text-[11px] text-white/20 mt-0.5 tabular-nums">{occupiedPct}% {tt({ zh: "已售", "zh-TW": "已售", en: "sold", ja: "販売済", ko: "판매됨", th: "ขายแล้ว", vi: "đã bán" })}</div>
                 </div>
 
                 {/* Price column */}
                 <div className="shrink-0 text-right leading-none pl-1">
                   <div
-                    className="text-[17px] font-bold tabular-nums leading-none"
+                    className="text-lg font-bold tabular-nums leading-none"
                     style={{ color: isActive ? `rgb(${meta.rgb})` : "rgba(255,255,255,0.85)" }}
                   >
                     {fmt18(cfg.payAmount)}
                   </div>
-                  <div className="text-[8px] text-white/25 mt-1 font-mono uppercase tracking-[0.2em]">USDT</div>
+                  <div className="text-[11px] text-white/25 mt-1 font-mono uppercase tracking-[0.2em]">USDT</div>
                 </div>
               </button>
             );
@@ -679,7 +679,7 @@ function TutorialPurchaseModal({ open, preSelectedNodeId, onClose, onPurchased }
             )}
             {txState === "select" && !selected && (
               <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5 text-[10px] text-white/25 px-1">
+                className="flex items-center gap-1.5 text-[11px] text-white/25 px-1">
                 <AlertCircle className="h-3 w-3 shrink-0" />
                 {tt({ zh: "请先选择一个节点等级", "zh-TW": "請先選擇一個節點等級", en: "Please select a tier first", ja: "等級を選択してください", ko: "등급을 먼저 선택하세요", th: "โปรดเลือกระดับโหนดก่อน", vi: "Vui lòng chọn cấp node trước" })}
               </motion.div>
@@ -930,10 +930,10 @@ export default function Tutorial() {
               <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400 block">
+              <span className="text-[11px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-400 block">
                 {tt({ zh: "教学模式 · Tutorial", "zh-TW": "教學模式 · Tutorial", en: "Tutorial Mode", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Chế độ hướng dẫn" })}
               </span>
-              <span className="text-[11px] sm:text-[12px] text-muted-foreground leading-snug line-clamp-2 sm:line-clamp-none">
+              <span className="text-[11px] sm:text-xs text-muted-foreground leading-snug line-clamp-2 sm:line-clamp-none">
                 {isChecking
                   ? tt({ zh: "正在检测...", "zh-TW": "正在檢測...", en: "Checking registration…", ja: "確認中…", ko: "확인 중…", th: "กำลังตรวจสอบ…", vi: "Đang kiểm tra…" })
                   : account?.address
@@ -977,7 +977,7 @@ export default function Tutorial() {
                         animate={{ opacity: 1, y: [0, 3, 0] }}
                         exit={{ opacity: 0 }}
                         transition={{ y: { repeat: Infinity, duration: 1.4, ease: "easeInOut" }, opacity: { duration: 0.25 } }}
-                        className="absolute top-full mt-2 text-[10px] text-amber-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
+                        className="absolute top-full mt-2 text-[11px] text-amber-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
                       >
                         ↑ {tt({ zh: "点此进入模拟购买", "zh-TW": "點此進入模擬購買", en: "Click to simulate purchase", ja: "クリックして購入を模擬", ko: "클릭해서 구매 시뮬레이션", th: "คลิกเพื่อจำลองการซื้อ", vi: "Bấm để mô phỏng mua" })}
                       </motion.span>
@@ -997,7 +997,7 @@ export default function Tutorial() {
                       animate={{ opacity: 1, x: [0, -4, 0] }}
                       exit={{ opacity: 0 }}
                       transition={{ x: { repeat: Infinity, duration: 1.3, ease: "easeInOut" }, opacity: { duration: 0.25 } }}
-                      className="text-[10px] text-cyan-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
+                      className="text-[11px] text-cyan-300/90 font-medium whitespace-nowrap pointer-events-none select-none"
                     >
                       {tt({ zh: "↗ 点击右上角Connect按钮", "zh-TW": "↗ 點擊右上角Connect按鈕", en: "↗ Click Connect in the top-right", ja: "↗ 右上のConnectをクリック", ko: "↗ 우측 상단 Connect 클릭", th: "↗ คลิก Connect มุมบนขวา", vi: "↗ Bấm Connect góc trên phải" })}
                     </motion.span>
@@ -1056,17 +1056,17 @@ export default function Tutorial() {
         <div className="relative z-10">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-amber-500/30 bg-amber-900/20 px-3 sm:px-4 py-1 sm:py-1.5 mb-4 sm:mb-6">
             <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-400" />
-            <span className="text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-amber-300 whitespace-nowrap">
+            <span className="text-[11px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-amber-300 whitespace-nowrap">
               Node Recruitment · Open Now
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight mb-3 sm:mb-4">
             {tt({ zh: "符·节点权柄重铸", "zh-TW": "符·節點權柄重鑄", en: "Node Tier Reforge", ja: "符・ノード権限再構築", ko: "符・노드 권한 재구축", th: "การหลอมระดับโหนด · 符", vi: "Đúc lại Cấp Node · 符" })}
           </h1>
-          <p className="text-[12px] sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-1.5 sm:mb-2">
+          <p className="text-xs sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-1.5 sm:mb-2">
             {tt({ zh: "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构", "zh-TW": "五級節點體系 · 雙TOKEN通縮經濟 · 機構級收益結構", en: "5-Tier Nodes · Dual-Token Deflation · Institutional Returns", ja: "5 段階ノード · デュアルトークン デフレ · 機関級リターン", ko: "5단계 노드 · 듀얼토큰 디플레이션 · 기관급 수익", th: "5 ระดับโหนด · เศรษฐกิจดีเฟลชันสองเหรียญ · ผลตอบแทนระดับสถาบัน", vi: "Hệ thống 5 cấp · Kinh tế giảm phát hai token · Lợi suất cấp tổ chức" })}
           </p>
-          <p className="text-[10px] sm:text-sm text-muted-foreground/60 max-w-xl mx-auto hidden sm:block">
+          <p className="text-[11px] sm:text-sm text-muted-foreground/60 max-w-xl mx-auto hidden sm:block">
             RUNE Protocol Node Recruitment · Five-Tier System · Dual-Token Deflationary Economy
           </p>
           <div className="mt-6 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-5 sm:pt-8 border-t border-border/30">
@@ -1077,9 +1077,9 @@ export default function Tutorial() {
               { label: { en: "USDT APY",      zh: "年化收益率", "zh-TW": "年化收益率", ja: "年利",       ko: "연 수익률", th: "APY USDT",      vi: "APY USDT"     }, val: "170.82%", gold: true },
             ].map(({ label, val, gold }) => (
               <div key={label.en} className="space-y-0.5 sm:space-y-1">
-                <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] sm:tracking-[0.18em] text-muted-foreground/50 font-medium">{label.en}</div>
+                <div className="text-[11px] sm:text-[11px] uppercase tracking-[0.15em] sm:tracking-[0.18em] text-muted-foreground/50 font-medium">{label.en}</div>
                 <div className={`text-xl sm:text-2xl md:text-3xl font-bold leading-none ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
-                {showZh && <div className="text-[9px] sm:text-[10px] text-muted-foreground/65">{tt(label)}</div>}
+                {showZh && <div className="text-[11px] sm:text-[11px] text-muted-foreground/65">{tt(label)}</div>}
               </div>
             ))}
           </div>
@@ -1119,12 +1119,12 @@ export default function Tutorial() {
               >
                 <div className="flex items-start justify-between mb-3 sm:mb-4">
                   <div>
-                    <div className={`text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] mb-0.5 sm:mb-1 ${NODE_ACCENT[level]}`}>
+                    <div className={`text-[11px] sm:text-[11px] font-mono uppercase tracking-[0.2em] mb-0.5 sm:mb-1 ${NODE_ACCENT[level]}`}>
                       {meta.nameEn}
                     </div>
                     <div className="text-base sm:text-xl font-bold text-foreground">{tt({ zh: meta.nameCn, "zh-TW": meta.nameCn, ja: meta.nameCn, ko: meta.nameCn, en: meta.nameEn, th: meta.nameEn, vi: meta.nameEn })}</div>
                   </div>
-                  <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider border rounded px-1.5 sm:px-2 py-0.5 ${NODE_BADGE[level]}`}>
+                  <span className={`text-[11px] sm:text-[11px] font-semibold uppercase tracking-wider border rounded px-1.5 sm:px-2 py-0.5 ${NODE_BADGE[level]}`}>
                     Lv.{i + 1}
                   </span>
                 </div>
@@ -1139,19 +1139,19 @@ export default function Tutorial() {
                     { label: { en: "Direct Commission", zh: "直推返佣",     "zh-TW": "直推返佣",     ja: "直推紹介報酬",    ko: "직추천 커미션", th: "คอมมิชชันตรง",   vi: "Hoa hồng trực tiếp" }, val: `${directRatePct}%`,             accent: true },
                   ].map(({ label, val, accent: isAccent }) => (
                     <div key={label.en} className="flex items-center justify-between gap-1">
-                      <span className="text-[10px] sm:text-[11px] text-muted-foreground/60">{tt(label)}</span>
+                      <span className="text-[11px] sm:text-[11px] text-muted-foreground/60">{tt(label)}</span>
                       <span className={`text-xs sm:text-sm font-semibold ${isAccent ? NODE_ACCENT[level] : "text-foreground/90"}`}>{val}</span>
                     </div>
                   ))}
                 </div>
 
                 <div className="mt-3 sm:mt-4 space-y-1 sm:space-y-1.5">
-                  <div className="flex justify-between text-[9px] sm:text-[10px] text-muted-foreground/50">
+                  <div className="flex justify-between text-[11px] sm:text-[11px] text-muted-foreground/50">
                     <span>{tt({ zh: "席位占用 Occupancy", "zh-TW": "席位佔用 Occupancy", en: "Occupancy", ja: "席数充填", ko: "좌석 점유율", th: "อัตราจอง", vi: "Tỷ lệ lấp đầy" })}</span>
                     <span className={NODE_ACCENT[level]}>{occupiedPct}%</span>
                   </div>
                   <Progress value={occupiedPct} className={`h-1 sm:h-1.5 bg-white/5 ${NODE_PROGRESS_BAR[level]}`} />
-                  <div className="text-[9px] sm:text-[10px] text-muted-foreground/40 text-right">
+                  <div className="text-[11px] sm:text-[11px] text-muted-foreground/40 text-right">
                     {tt({
                       zh: `剩余 ${seatsRemaining.toLocaleString()} 席`,
                       "zh-TW": `剩餘 ${seatsRemaining.toLocaleString()} 席`,
@@ -1224,7 +1224,7 @@ export default function Tutorial() {
               }`}
             >
               <div className="flex items-center gap-2">
-                <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-bold shrink-0 ${
+                <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[11px] sm:text-[11px] font-bold shrink-0 ${
                   idx < step
                     ? "bg-emerald-500/20 text-emerald-300"
                     : idx === Math.min(step, 2)
@@ -1239,7 +1239,7 @@ export default function Tutorial() {
                   {tt(title)}
                 </span>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 leading-relaxed pl-7 sm:pl-8">
+              <p className="text-[11px] sm:text-[11px] text-muted-foreground/70 leading-relaxed pl-7 sm:pl-8">
                 {tt(desc)}
               </p>
             </motion.div>
@@ -1277,7 +1277,7 @@ export default function Tutorial() {
                   transition={{ duration: 0.22 }}
                   className="overflow-hidden"
                 >
-                  <p className="px-4 pb-4 text-[13px] text-muted-foreground/70 leading-relaxed border-t border-border/20 pt-3">
+                  <p className="px-4 pb-4 text-sm text-muted-foreground/70 leading-relaxed border-t border-border/20 pt-3">
                     {tt(a)}
                   </p>
                 </motion.div>

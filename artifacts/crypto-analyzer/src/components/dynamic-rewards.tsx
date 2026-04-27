@@ -441,21 +441,21 @@ export function DynamicRewards({
       <CardContent className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-muted/50 rounded-md p-2 text-center">
-            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[10px] mb-0.5">
+            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[11px] mb-0.5">
               <TrendingUp className="h-2.5 w-2.5" />
               {language === "zh" ? "价格" : "Price"}
             </div>
             <div className="font-mono font-semibold text-sm">{formatCurrency(tokenPrice)}</div>
           </div>
           <div className="bg-muted/50 rounded-md p-2 text-center">
-            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[10px] mb-0.5">
+            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[11px] mb-0.5">
               <Coins className="h-2.5 w-2.5" />
               {language === "zh" ? "奖金池" : "Pool"}
             </div>
             <div className="font-mono font-semibold text-sm">{formatTokens(bonusPoolB18)}</div>
           </div>
           <div className="bg-muted/50 rounded-md p-2 text-center">
-            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[10px] mb-0.5">
+            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[11px] mb-0.5">
               <DollarSign className="h-2.5 w-2.5" />
               {language === "zh" ? "价值" : "Value"}
             </div>
@@ -494,7 +494,7 @@ export function DynamicRewards({
                       return (
                         <SelectItem key={tier.tier} value={tier.tier}>
                           <span>{tier.tier}</span>
-                          <span className="text-muted-foreground text-[10px] ml-1">{rangeText}</span>
+                          <span className="text-muted-foreground text-[11px] ml-1">{rangeText}</span>
                         </SelectItem>
                       );
                     })}
@@ -524,7 +524,7 @@ export function DynamicRewards({
                 <span className="font-semibold">{customPerformance?.toFixed(1) ?? tierRange.min} {language === "zh" ? "万U" : "0K"}</span>
               </div>
               <Slider value={[customPerformance ?? tierRange.min]} onValueChange={([val]) => setCustomPerformance(val)} min={tierRange.min} max={tierRange.max ?? tierRange.min * 2} step={0.1} className="w-full" data-testid="slider-performance" />
-              <div className="flex justify-between text-[10px] text-muted-foreground">
+              <div className="flex justify-between text-[11px] text-muted-foreground">
                 <span>{tierRange.min}{language === "zh" ? "万" : `0k`}</span>
                 <span>{tierRange.max ? `${tierRange.max}${language === "zh" ? "万" : "0k"}` : `${tierRange.min * 2}${language === "zh" ? "万+" : "0k+"}`}</span>
               </div>
@@ -554,7 +554,7 @@ export function DynamicRewards({
                 <span className="font-medium">{language === "zh" ? "业绩奖励" : "Layer Reward"}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Badge variant="outline" className="text-[10px] px-1 h-5">{layers.length}/50</Badge>
+                <Badge variant="outline" className="text-[11px] px-1 h-5">{layers.length}/50</Badge>
                 <Button size="icon" variant="outline" onClick={addLayer} disabled={layers.length >= 50} data-testid="button-add-layer" className="h-6 w-6">
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -578,9 +578,9 @@ export function DynamicRewards({
                   const result = layerResults[index];
                   return (
                     <div key={layer.id} className="flex items-center gap-1.5 bg-muted/30 rounded p-1.5">
-                      <Badge variant="outline" className="shrink-0 w-7 justify-center text-[10px] px-0.5 h-5">L{result.layerNumber}</Badge>
+                      <Badge variant="outline" className="shrink-0 w-7 justify-center text-[11px] px-0.5 h-5">L{result.layerNumber}</Badge>
                       <Input type="number" min={0} step={0.1} value={layer.performance} onChange={(e) => updateLayerPerformance(layer.id, Number(e.target.value))} className="font-mono flex-1 text-xs h-7" data-testid={`input-layer-${result.layerNumber}`} />
-                      <div className="font-mono text-[10px] shrink-0 w-12 text-right text-chart-2">+{formatTokens(result.layerRewardB18)}</div>
+                      <div className="font-mono text-[11px] shrink-0 w-12 text-right text-chart-2">+{formatTokens(result.layerRewardB18)}</div>
                       <Button size="icon" variant="ghost" onClick={() => removeLayer(layer.id)} disabled={layers.length <= 1} className="h-6 w-6 shrink-0" data-testid={`button-remove-layer-${result.layerNumber}`}>
                         <Trash2 className="h-3 w-3 text-muted-foreground" />
                       </Button>
@@ -593,7 +593,7 @@ export function DynamicRewards({
             {totalPerformance > networkPerformance && (
               <div className="bg-amber-500/10 border border-amber-500/30 rounded p-1.5 flex items-center gap-1.5">
                 <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
-                <p className="text-[10px] text-amber-600 dark:text-amber-400">{language === "zh" ? "层级业绩超过全网" : "Exceeds network"}</p>
+                <p className="text-[11px] text-amber-600 dark:text-amber-400">{language === "zh" ? "层级业绩超过全网" : "Exceeds network"}</p>
               </div>
             )}
 
@@ -627,37 +627,37 @@ export function DynamicRewards({
 
           <div className="space-y-2">
             <div className="bg-chart-2/10 rounded-md p-2 text-center">
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "国库日支付" : "Daily"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "国库日支付" : "Daily"}</div>
               <div className="font-bold text-xl text-chart-2" data-testid="text-reward1">{formatTokens(reward1Result.netRewardB18 || 0)} B18</div>
               <div className="text-xs text-muted-foreground">≈ {formatCurrency(reward1Result.netPayout)}</div>
-              <div className="text-[10px] text-muted-foreground mt-1">{selectedTier} · {customPerformance?.toFixed(1) ?? tierRange.min}{language === "zh" ? "万U" : "0K"}</div>
+              <div className="text-[11px] text-muted-foreground mt-1">{selectedTier} · {customPerformance?.toFixed(1) ?? tierRange.min}{language === "zh" ? "万U" : "0K"}</div>
             </div>
 
             <div className="grid grid-cols-3 gap-1.5">
               <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "日" : "Day"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "日" : "Day"}</div>
                 <div className="text-sm font-semibold text-chart-2">{formatTokens(reward1Result.netRewardB18 || 0)}</div>
-                <div className="text-[9px] text-muted-foreground">{formatCurrency(reward1Result.netPayout)}</div>
+                <div className="text-[11px] text-muted-foreground">{formatCurrency(reward1Result.netPayout)}</div>
               </div>
               <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "月" : "Mon"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "月" : "Mon"}</div>
                 <div className="text-sm font-semibold text-chart-2">{formatTokens((reward1Result.netRewardB18 || 0) * 30)}</div>
-                <div className="text-[9px] text-muted-foreground">{formatCurrency(reward1Result.netPayout * 30)}</div>
+                <div className="text-[11px] text-muted-foreground">{formatCurrency(reward1Result.netPayout * 30)}</div>
               </div>
               <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "年" : "Year"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "年" : "Year"}</div>
                 <div className="text-sm font-semibold text-chart-2">{formatTokens((reward1Result.netRewardB18 || 0) * 360)}</div>
-                <div className="text-[9px] text-muted-foreground">{formatCurrency(reward1Result.netPayout * 360)}</div>
+                <div className="text-[11px] text-muted-foreground">{formatCurrency(reward1Result.netPayout * 360)}</div>
               </div>
             </div>
 
-            <div className="bg-muted/30 rounded-md p-2 space-y-1 text-[10px]">
+            <div className="bg-muted/30 rounded-md p-2 space-y-1 text-[11px]">
               <div className="flex justify-between"><span className="text-muted-foreground">{language === "zh" ? "业绩B18" : "Perf"}</span><span className="font-semibold">{formatTokens(reward1Result.communityB18 || 0)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">{language === "zh" ? "奖励比例" : "Rate"}</span><span className="font-semibold">1.2%</span></div>
               <div className="flex justify-between font-medium pt-0.5 border-t border-border/50"><span>{language === "zh" ? "日奖励" : "Daily"}</span><span className="font-semibold">{formatTokens(reward1Result.netRewardB18 || 0)} B18</span></div>
             </div>
 
-            <div className="bg-chart-2/5 rounded-md p-2 text-center text-[10px] text-muted-foreground">
+            <div className="bg-chart-2/5 rounded-md p-2 text-center text-[11px] text-muted-foreground">
               {language === "zh" ? "等级奖励由国库直接支付，无税收" : "Tier rewards paid directly from treasury, no tax"}
             </div>
 
@@ -677,23 +677,23 @@ export function DynamicRewards({
           
           <div className="space-y-2">
             <div className="bg-chart-2/10 rounded-md p-2 text-center">
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "总奖励" : "Total"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "总奖励" : "Total"}</div>
               <div className="font-bold text-xl text-chart-2" data-testid="text-layer-total">{formatTokens(performanceRewardB18)} B18</div>
               <div className="text-xs text-muted-foreground">{formatCurrency(performanceReward)}</div>
-              {performanceRewardB18Raw > bonusPoolB18 && <p className="text-[10px] text-amber-500">{language === "zh" ? "已限制于奖金池" : "Capped"}</p>}
+              {performanceRewardB18Raw > bonusPoolB18 && <p className="text-[11px] text-amber-500">{language === "zh" ? "已限制于奖金池" : "Capped"}</p>}
             </div>
 
             <div className="grid grid-cols-3 gap-1.5">
               <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "层数" : "Layers"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "层数" : "Layers"}</div>
                 <div className="text-sm font-semibold">{layers.length}</div>
               </div>
               <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "总业绩" : "Total"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "总业绩" : "Total"}</div>
                 <div className="text-sm font-semibold">{totalPerformance.toFixed(1)}</div>
               </div>
               <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                <div className="text-[10px] text-muted-foreground">{language === "zh" ? "占比" : "Ratio"}</div>
+                <div className="text-[11px] text-muted-foreground">{language === "zh" ? "占比" : "Ratio"}</div>
                 <div className="text-sm font-semibold">{formatPercent(performanceRatio)}</div>
               </div>
             </div>
@@ -701,8 +701,8 @@ export function DynamicRewards({
             <ScrollArea className="h-[100px]">
               <div className="space-y-0.5 pr-2">
                 {layerResults.map((result) => (
-                  <div key={result.layerNumber} className="flex items-center justify-between text-[10px] bg-muted/30 rounded px-1.5 py-0.5">
-                    <Badge variant="outline" className="text-[8px] px-0.5 h-4">L{result.layerNumber}</Badge>
+                  <div key={result.layerNumber} className="flex items-center justify-between text-[11px] bg-muted/30 rounded px-1.5 py-0.5">
+                    <Badge variant="outline" className="text-[11px] px-0.5 h-4">L{result.layerNumber}</Badge>
                     <span className="text-muted-foreground">{result.performance}</span>
                     <span className="text-muted-foreground">x{formatPercent(result.layerPercent)}</span>
                     <span className="text-chart-2 font-medium">+{formatTokens(result.layerRewardB18)}</span>
@@ -711,7 +711,7 @@ export function DynamicRewards({
               </div>
             </ScrollArea>
 
-            <p className="text-[9px] text-muted-foreground text-center">{language === "zh" ? "(层业绩÷全网) × 层比例 × 奖金池" : "(layer÷net) × layer% × pool"}</p>
+            <p className="text-[11px] text-muted-foreground text-center">{language === "zh" ? "(层业绩÷全网) × 层比例 × 奖金池" : "(layer÷net) × layer% × pool"}</p>
 
             <Button size="sm" className="w-full" onClick={() => setShowLayerDialog(false)} data-testid="button-confirm-layer">{language === "zh" ? "确认" : "Confirm"}</Button>
           </div>

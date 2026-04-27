@@ -107,7 +107,7 @@ export function PurchaseNodeModal({ open, initialNodeId, onClose, onPurchased, o
       </div>
     );
     if (!nodeId) return (
-      <div className="flex items-center gap-1.5 text-[10px] text-white/25 px-1">
+      <div className="flex items-center gap-1.5 text-[11px] text-white/25 px-1">
         <AlertCircle className="h-3 w-3 shrink-0" />
         <span>{t("mr.buy.selectHint")}</span>
       </div>
@@ -199,10 +199,10 @@ function DirectNodeView({
               <DialogTitle className="text-lg font-bold text-white leading-none">
                 {meta.nameCn}
               </DialogTitle>
-              <span className={`text-[9px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>
+              <span className={`text-[11px] font-mono uppercase tracking-[0.2em] ${meta.color}`}>
                 {meta.nameEn}
               </span>
-              <span className="ml-auto text-[8px] font-mono text-white/30 border border-white/10 rounded px-1.5 py-0.5">
+              <span className="ml-auto text-[11px] font-mono text-white/30 border border-white/10 rounded px-1.5 py-0.5">
                 LV.{lv}
               </span>
             </div>
@@ -217,27 +217,27 @@ function DirectNodeView({
       <div className="grid grid-cols-3 gap-px bg-white/[0.05] mx-4 mt-4 rounded-xl overflow-hidden border border-white/[0.07]">
         {/* Price */}
         <div className="bg-[#07101f] px-3 py-3 flex flex-col gap-1">
-          <span className="text-[9px] text-white/30 uppercase tracking-[0.18em] font-mono">
+          <span className="text-[11px] text-white/30 uppercase tracking-[0.18em] font-mono">
             {language.startsWith("zh") ? "价格" : "Price"}
           </span>
-          <span className="text-[17px] font-bold tabular-nums leading-none" style={{ color: `rgb(${meta.rgb})` }}>
+          <span className="text-lg font-bold tabular-nums leading-none" style={{ color: `rgb(${meta.rgb})` }}>
             {price}
           </span>
-          <span className="text-[8px] text-white/20 font-mono uppercase tracking-[0.15em]">USDT</span>
+          <span className="text-[11px] text-white/20 font-mono uppercase tracking-[0.15em]">USDT</span>
         </div>
 
         {/* Remaining */}
         <div className="bg-[#07101f] px-3 py-3 flex flex-col gap-1">
           <div className="flex items-center gap-1">
             <Users className="h-2.5 w-2.5 text-white/25" />
-            <span className="text-[9px] text-white/30 uppercase tracking-[0.18em] font-mono">
+            <span className="text-[11px] text-white/30 uppercase tracking-[0.18em] font-mono">
               {language.startsWith("zh") ? "剩余" : "Left"}
             </span>
           </div>
-          <span className="text-[17px] font-bold tabular-nums leading-none text-white/85">
+          <span className="text-lg font-bold tabular-nums leading-none text-white/85">
             {remaining !== null ? remaining.toLocaleString() : "—"}
           </span>
-          <span className="text-[8px] text-white/20 font-mono uppercase tracking-[0.15em]">
+          <span className="text-[11px] text-white/20 font-mono uppercase tracking-[0.15em]">
             {language.startsWith("zh") ? "席位" : "seats"}
           </span>
         </div>
@@ -246,14 +246,14 @@ function DirectNodeView({
         <div className="bg-[#07101f] px-3 py-3 flex flex-col gap-1">
           <div className="flex items-center gap-1">
             <Percent className="h-2.5 w-2.5 text-white/25" />
-            <span className="text-[9px] text-white/30 uppercase tracking-[0.18em] font-mono">
+            <span className="text-[11px] text-white/30 uppercase tracking-[0.18em] font-mono">
               {language.startsWith("zh") ? "返佣" : "Comm."}
             </span>
           </div>
-          <span className="text-[17px] font-bold tabular-nums leading-none" style={{ color: `rgb(${meta.rgb})` }}>
+          <span className="text-lg font-bold tabular-nums leading-none" style={{ color: `rgb(${meta.rgb})` }}>
             {directPct !== null ? `${directPct}%` : "—"}
           </span>
-          <span className="text-[8px] text-white/20 font-mono uppercase tracking-[0.15em]">
+          <span className="text-[11px] text-white/20 font-mono uppercase tracking-[0.15em]">
             {language.startsWith("zh") ? "直推" : "direct"}
           </span>
         </div>
@@ -262,7 +262,7 @@ function DirectNodeView({
       {/* Occupancy bar */}
       {cfg && (
         <div className="px-4 mt-3">
-          <div className="flex justify-between text-[9px] text-white/25 mb-1">
+          <div className="flex justify-between text-[11px] text-white/25 mb-1">
             <span>{language.startsWith("zh") ? "席位占用" : "Occupancy"}</span>
             <span className="tabular-nums">{occupiedPct}%</span>
           </div>
@@ -337,7 +337,7 @@ function PickerView({
             <LayoutGrid className="h-3.5 w-3.5 text-amber-400" />
           </div>
           <div>
-            <DialogTitle className="text-[14px] font-bold text-white leading-tight">
+            <DialogTitle className="text-sm font-bold text-white leading-tight">
               {t("mr.buy.title")}
             </DialogTitle>
           </div>
@@ -386,11 +386,11 @@ function PickerView({
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[13px] font-bold text-white">{meta.nameCn}</span>
-                  <span className={`text-[9px] font-mono uppercase tracking-[0.16em] ${meta.color}`}>{meta.nameEn}</span>
-                  <span className="ml-auto text-[8px] font-mono text-white/25 border border-white/10 rounded px-1 py-0.5">LV.{lv}</span>
+                  <span className="text-sm font-bold text-white">{meta.nameCn}</span>
+                  <span className={`text-[11px] font-mono uppercase tracking-[0.16em] ${meta.color}`}>{meta.nameEn}</span>
+                  <span className="ml-auto text-[11px] font-mono text-white/25 border border-white/10 rounded px-1 py-0.5">LV.{lv}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-white/35">
+                <div className="flex items-center gap-1.5 text-[11px] text-white/35">
                   {soldOut ? <span className="text-red-400/80">{t("mr.buy.soldOut")}</span> : cfg ? (
                     <>
                       <span><span className="text-white/70 font-semibold">{remaining}</span> {t("mr.buy.seatsLeft")}</span>
@@ -400,10 +400,10 @@ function PickerView({
                 </div>
               </div>
               <div className="shrink-0 text-right">
-                <div className="text-[15px] font-bold tabular-nums" style={{ color: isActive ? `rgb(${meta.rgb})` : "rgba(255,255,255,0.8)" }}>
+                <div className="text-base font-bold tabular-nums" style={{ color: isActive ? `rgb(${meta.rgb})` : "rgba(255,255,255,0.8)" }}>
                   {cfg ? fmt18(cfg.payAmount) : "—"}
                 </div>
-                <div className="text-[8px] text-white/20 font-mono uppercase tracking-[0.18em]">USDT</div>
+                <div className="text-[11px] text-white/20 font-mono uppercase tracking-[0.18em]">USDT</div>
               </div>
             </button>
           );

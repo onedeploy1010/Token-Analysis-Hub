@@ -115,14 +115,14 @@ export default function Projects() {
               </div>
 
               {/* Description */}
-              <p className="text-muted-foreground text-sm sm:text-[15px] leading-relaxed max-w-lg">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-lg">
                 {t("mr.projects.rune.desc")}
               </p>
 
               {/* Tags — keep symbol-like tags as-is across locales */}
               <div className="flex flex-wrap gap-1.5">
                 {["Dual-Token", "Node Staking", "AMM", "Layer1", "Cross-chain"].map(tag => (
-                  <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary/80 font-medium">{tag}</span>
+                  <span key={tag} className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary/80 font-medium">{tag}</span>
                 ))}
               </div>
 
@@ -130,11 +130,11 @@ export default function Projects() {
               <div className="md:hidden pt-2 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg border border-primary/15 bg-primary/[0.04] px-3 py-2">
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">APY</p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-widest">APY</p>
                     <p className="text-lg font-bold font-mono text-primary leading-tight mt-0.5">170.82%</p>
                   </div>
                   <div className="rounded-lg border border-border/40 bg-white/[0.02] px-3 py-2">
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">TVL</p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-widest">TVL</p>
                     <p className="text-lg font-bold font-mono text-foreground/85 leading-tight mt-0.5">$312M</p>
                   </div>
                 </div>
@@ -149,10 +149,10 @@ export default function Projects() {
               {/* Animated sparkline — 6 stage price trajectory */}
               <div className="space-y-2">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium">
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium">
                     Price Trajectory
                   </span>
-                  <span className="text-[10px] font-mono text-primary font-semibold">+12,000%</span>
+                  <span className="text-[11px] font-mono text-primary font-semibold">+12,000%</span>
                 </div>
                 <div className="relative h-16 w-full">
                   <svg viewBox="0 0 240 64" className="w-full h-full overflow-visible" preserveAspectRatio="none">
@@ -222,7 +222,7 @@ export default function Projects() {
                     />
                   </svg>
                 </div>
-                <div className="flex justify-between text-[9px] font-mono text-muted-foreground/50 -mt-1">
+                <div className="flex justify-between text-[11px] font-mono text-muted-foreground/50 -mt-1">
                   <span>$0.028</span>
                   <span className="text-primary/60">$4.56</span>
                 </div>
@@ -234,11 +234,11 @@ export default function Projects() {
               {/* Stats grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.apy.label")}</p>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.apy.label")}</p>
                   <p className="text-2xl font-bold font-mono text-primary leading-none">170.82%</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.tvl.label")}</p>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-widest">{t("mr.metric.tvl.label")}</p>
                   <p className="text-2xl font-bold font-mono text-foreground/85 leading-none">$312M</p>
                 </div>
               </div>

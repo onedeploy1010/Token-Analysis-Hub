@@ -364,7 +364,7 @@ export function MobileStepWizard({
                           <span className="text-muted-foreground">{language === "zh" ? "已创建订单" : "Orders Created"}</span>
                           <span className="font-bold text-chart-2">{simulatedOrders.length}/10</span>
                         </div>
-                        <div className="text-[10px] text-muted-foreground mt-1">
+                        <div className="text-[11px] text-muted-foreground mt-1">
                           {language === "zh" ? "确认后添加新订单，在第2步查看所有订单" : "Confirm to add order, view all in Step 2"}
                         </div>
                       </div>

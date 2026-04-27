@@ -87,7 +87,7 @@ export function MobileHeader({
           />
           <div className="flex flex-col">
             <span className="text-sm font-bold text-foreground">B18</span>
-            <span className="text-[10px] text-muted-foreground leading-none">Simulator</span>
+            <span className="text-[11px] text-muted-foreground leading-none">Simulator</span>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ export function MobileHeader({
           whileTap={{ scale: 0.95 }}
         >
           <span className="text-xs font-mono font-bold">${tokenPrice.toFixed(4)}</span>
-          <span className={`text-[10px] font-bold ${priceUp ? "text-chart-2" : "text-destructive"}`}>
+          <span className={`text-[11px] font-bold ${priceUp ? "text-chart-2" : "text-destructive"}`}>
             {priceUp ? "+" : ""}{(priceChange * 100).toFixed(1)}%
           </span>
           <motion.div
@@ -151,24 +151,24 @@ export function MobileHeader({
                   <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
                     <Coins className="h-3.5 w-3.5 text-primary" />
                   </div>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                  <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
                     {language === "zh" ? "代币与LP" : "Token & LP"}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2 text-center border border-primary/10">
-                    <div className="text-[9px] text-muted-foreground">{language === "zh" ? "价格" : "Price"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "价格" : "Price"}</div>
                     <div className="text-sm font-bold text-primary">${tokenPrice.toFixed(4)}</div>
-                    <div className={`text-[9px] font-bold ${priceUp ? "text-chart-2" : "text-destructive"}`}>
+                    <div className={`text-[11px] font-bold ${priceUp ? "text-chart-2" : "text-destructive"}`}>
                       {priceUp ? "+" : ""}{(priceChange * 100).toFixed(1)}%
                     </div>
                   </div>
                   <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2 text-center border border-primary/10">
-                    <div className="text-[9px] text-muted-foreground">LP USDC</div>
+                    <div className="text-[11px] text-muted-foreground">LP USDC</div>
                     <div className="text-sm font-bold">{formatCurrency(lpPoolUsdt)}</div>
                   </div>
                   <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2 text-center border border-primary/10">
-                    <div className="text-[9px] text-muted-foreground">LP B18</div>
+                    <div className="text-[11px] text-muted-foreground">LP B18</div>
                     <div className="text-sm font-bold">{formatTokens(lpPoolTokens)}</div>
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export function MobileHeader({
                   <div className="w-6 h-6 rounded-lg bg-chart-3/20 flex items-center justify-center">
                     <Landmark className="h-3.5 w-3.5 text-chart-3" />
                   </div>
-                  <span className="text-[10px] font-bold text-chart-3 uppercase tracking-wider">
+                  <span className="text-[11px] font-bold text-chart-3 uppercase tracking-wider">
                     {language === "zh" ? "资金池" : "Reserves"}
                   </span>
                 </div>
@@ -188,28 +188,28 @@ export function MobileHeader({
                   <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2 border border-chart-3/10">
                     <div className="flex items-center gap-1 mb-0.5">
                       <Wallet className="h-3 w-3 text-chart-3" />
-                      <span className="text-[9px] text-muted-foreground">{language === "zh" ? "国库" : "Treasury"}</span>
+                      <span className="text-[11px] text-muted-foreground">{language === "zh" ? "国库" : "Treasury"}</span>
                     </div>
                     <div className="text-sm font-bold text-chart-3">{formatCurrency(treasuryBalance)}</div>
                   </div>
                   <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2 border border-chart-3/10">
                     <div className="flex items-center gap-1 mb-0.5">
                       <Shield className="h-3 w-3 text-primary" />
-                      <span className="text-[9px] text-muted-foreground">SPP B18</span>
+                      <span className="text-[11px] text-muted-foreground">SPP B18</span>
                     </div>
                     <div className="text-sm font-bold text-primary">{formatTokens(sppBalance)}</div>
                   </div>
                   <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2 border border-chart-3/10">
                     <div className="flex items-center gap-1 mb-0.5">
                       <Package className="h-3 w-3 text-chart-4" />
-                      <span className="text-[9px] text-muted-foreground">{language === "zh" ? "交付合约" : "Vesting"}</span>
+                      <span className="text-[11px] text-muted-foreground">{language === "zh" ? "交付合约" : "Vesting"}</span>
                     </div>
                     <div className="text-sm font-bold text-chart-4">{formatTokens(vestingBalance)}</div>
                   </div>
                   <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2 border border-chart-3/10">
                     <div className="flex items-center gap-1 mb-0.5">
                       <Gift className="h-3 w-3 text-chart-4" />
-                      <span className="text-[9px] text-muted-foreground">{language === "zh" ? "奖金池" : "Bonus"}</span>
+                      <span className="text-[11px] text-muted-foreground">{language === "zh" ? "奖金池" : "Bonus"}</span>
                     </div>
                     <div className="text-sm font-bold text-chart-4">{formatTokens(bonusPoolBalance)}</div>
                   </div>
@@ -218,7 +218,7 @@ export function MobileHeader({
                 <div className="bg-destructive/10 rounded-lg p-2 mt-1.5 flex items-center justify-between border border-destructive/20">
                   <div className="flex items-center gap-1">
                     <Flame className="h-3 w-3 text-destructive" />
-                    <span className="text-[9px] text-muted-foreground">{language === "zh" ? "已销毁" : "Burned"}</span>
+                    <span className="text-[11px] text-muted-foreground">{language === "zh" ? "已销毁" : "Burned"}</span>
                   </div>
                   <div className="text-sm font-bold text-destructive">{formatTokens(totalBurned)}</div>
                 </div>
@@ -231,28 +231,28 @@ export function MobileHeader({
                     <div className="w-6 h-6 rounded-lg bg-chart-2/20 flex items-center justify-center">
                       <PieChart className="h-3.5 w-3.5 text-chart-2" />
                     </div>
-                    <span className="text-[10px] font-bold text-chart-2 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-chart-2 uppercase tracking-wider">
                       {language === "zh" ? "我的投资" : "My Investment"}
                     </span>
                   </div>
                   {ordersCount > 0 && (
-                    <Badge variant="secondary" className="text-[9px] bg-chart-2/20 text-chart-2 border-chart-2/30">
+                    <Badge variant="secondary" className="text-[11px] bg-chart-2/20 text-chart-2 border-chart-2/30">
                       {ordersCount} {language === "zh" ? "笔订单" : "orders"}
                     </Badge>
                   )}
                 </div>
                 <div className="bg-background/60 dark:bg-background/40 rounded-lg p-2.5 border border-chart-2/10">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] text-muted-foreground">{language === "zh" ? "累计投资" : "Total Invested"}</span>
+                    <span className="text-[11px] text-muted-foreground">{language === "zh" ? "累计投资" : "Total Invested"}</span>
                     <span className="text-sm font-bold text-chart-2">{formatCurrency(totalInvestment)}</span>
                   </div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] text-muted-foreground">{language === "zh" ? "已提现" : "Withdrawn"}</span>
+                    <span className="text-[11px] text-muted-foreground">{language === "zh" ? "已提现" : "Withdrawn"}</span>
                     <span className="text-sm font-bold">{formatCurrency(totalReleased)}</span>
                   </div>
                   {effectiveScheduledRelease > 0 && (
                     <div className="pt-1.5 border-t border-chart-2/10">
-                      <div className="flex justify-between text-[9px] mb-1">
+                      <div className="flex justify-between text-[11px] mb-1">
                         <span className="text-muted-foreground">{language === "zh" ? "释放进度" : "Progress"}</span>
                         <span className="font-bold text-chart-2">{formatPercent(releaseProgress)}</span>
                       </div>

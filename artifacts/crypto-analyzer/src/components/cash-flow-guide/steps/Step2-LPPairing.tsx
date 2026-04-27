@@ -78,7 +78,7 @@ export function Step2LPPairing({ phase, language }: StepProps) {
                 {language === "zh" ? "拨出B18" : "Release B18"}
               </div>
               <div className="font-mono font-bold text-[#10B981]">5 B18</div>
-              <div className="text-[10px] text-muted-foreground mt-1">
+              <div className="text-[11px] text-muted-foreground mt-1">
                 {language === "zh" ? "价值 $500" : "Worth $500"}
               </div>
             </div>
@@ -133,7 +133,7 @@ export function Step2LPPairing({ phase, language }: StepProps) {
                   {language === "zh" ? "配对USDC" : "Pair USDC"}
                 </div>
                 <div className="font-mono font-bold text-[#2775CA]">$500</div>
-                <div className="text-[10px] text-muted-foreground mt-1">
+                <div className="text-[11px] text-muted-foreground mt-1">
                   {language === "zh" ? "等值B18" : "Equal B18 Value"}
                 </div>
               </div>

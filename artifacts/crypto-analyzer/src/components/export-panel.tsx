@@ -95,7 +95,7 @@ export function ExportPanel() {
             <FileSpreadsheet className="h-4 w-4 text-green-600" />
             <div className="flex flex-col">
               <span>CSV</span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 {language === 'zh' ? 'Excel 兼容' : 'Excel compatible'}
               </span>
             </div>
@@ -108,7 +108,7 @@ export function ExportPanel() {
             <FileText className="h-4 w-4 text-red-600" />
             <div className="flex flex-col">
               <span>PDF</span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 {language === 'zh' ? '打印报告' : 'Print report'}
               </span>
             </div>
@@ -121,7 +121,7 @@ export function ExportPanel() {
             <FileJson className="h-4 w-4 text-blue-600" />
             <div className="flex flex-col">
               <span>JSON</span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 {language === 'zh' ? '完整数据' : 'Full data'}
               </span>
             </div>
@@ -183,7 +183,7 @@ export function ExportButtons({ onExport }: { onExport?: (type: 'csv' | 'pdf' | 
       <Button
         variant="outline"
         size="sm"
-        className="h-7 px-2 text-[10px] gap-1"
+        className="h-7 px-2 text-[11px] gap-1"
         onClick={() => handleExport('csv')}
         disabled={isExporting}
       >
@@ -193,7 +193,7 @@ export function ExportButtons({ onExport }: { onExport?: (type: 'csv' | 'pdf' | 
       <Button
         variant="outline"
         size="sm"
-        className="h-7 px-2 text-[10px] gap-1"
+        className="h-7 px-2 text-[11px] gap-1"
         onClick={() => handleExport('pdf')}
         disabled={isExporting}
       >
@@ -203,7 +203,7 @@ export function ExportButtons({ onExport }: { onExport?: (type: 'csv' | 'pdf' | 
       <Button
         variant="outline"
         size="sm"
-        className="h-7 px-2 text-[10px] gap-1"
+        className="h-7 px-2 text-[11px] gap-1"
         onClick={() => handleExport('json')}
         disabled={isExporting}
       >

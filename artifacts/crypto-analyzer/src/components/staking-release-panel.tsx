@@ -132,7 +132,7 @@ export function StakingReleasePanel() {
               <Coins className="h-3 w-3" />
               {language === 'zh' ? '投资金额 (USDC)' : 'Investment (USDC)'}
             </Label>
-            <Badge variant="outline" className="text-[10px] h-5">
+            <Badge variant="outline" className="text-[11px] h-5">
               {language === 'zh' ? '当前价格' : 'Price'}: ${system.tokenPrice.toFixed(2)}
             </Badge>
           </div>
@@ -158,7 +158,7 @@ export function StakingReleasePanel() {
               ))}
             </div>
           </div>
-          <div className="text-[10px] text-muted-foreground">
+          <div className="text-[11px] text-muted-foreground">
             = {formatTokens(stakingResult.tokensPurchased)} B18
           </div>
         </div>
@@ -179,7 +179,7 @@ export function StakingReleasePanel() {
                 onClick={() => setStakingPeriodDays(period.days)}
               >
                 <span className="text-sm font-semibold">{period.days}</span>
-                <span className="text-[9px] opacity-80">
+                <span className="text-[11px] opacity-80">
                   {(period.dailyRate * 100).toFixed(1)}%/{language === 'zh' ? '日' : 'd'}
                 </span>
               </Button>
@@ -203,7 +203,7 @@ export function StakingReleasePanel() {
                 onClick={() => setReleasePeriodDays(tax.releaseDays)}
               >
                 <span className="text-sm font-semibold">{tax.releaseDays}</span>
-                <span className="text-[9px] opacity-80">
+                <span className="text-[11px] opacity-80">
                   {(tax.taxRate * 100).toFixed(0)}% {language === 'zh' ? '税' : 'tax'}
                 </span>
               </Button>
@@ -217,7 +217,7 @@ export function StakingReleasePanel() {
             <Label className="text-[11px] font-medium">
               {language === 'zh' ? '复利滚存' : 'Compound Mode'}
             </Label>
-            <p className="text-[9px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               {language === 'zh' ? '释放金额累加到本金' : 'Released amount added to principal'}
             </p>
           </div>
@@ -237,24 +237,24 @@ export function StakingReleasePanel() {
             {/* 质押收益 */}
             <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   {language === 'zh' ? '质押总收益' : 'Total Staking Return'} ({stakingPeriodDays}{language === 'zh' ? '天' : 'd'})
                 </span>
-                <Badge variant="secondary" className="text-[9px] h-4">
+                <Badge variant="secondary" className="text-[11px] h-4">
                   {useCompound ? (language === 'zh' ? '复利' : 'Compound') : (language === 'zh' ? '单利' : 'Simple')}
                 </Badge>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <div className="text-[9px] text-muted-foreground">{language === 'zh' ? '本金' : 'Principal'}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === 'zh' ? '本金' : 'Principal'}</div>
                   <div className="font-mono text-xs">{formatCurrency(releasePreview.investment)}</div>
                 </div>
                 <div>
-                  <div className="text-[9px] text-muted-foreground">{language === 'zh' ? '利息' : 'Interest'}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === 'zh' ? '利息' : 'Interest'}</div>
                   <div className="font-mono text-xs text-green-500">+{formatCurrency(releasePreview.totalInterest)}</div>
                 </div>
                 <div>
-                  <div className="text-[9px] text-muted-foreground">{language === 'zh' ? '合计' : 'Total'}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === 'zh' ? '合计' : 'Total'}</div>
                   <div className="font-mono text-xs font-semibold">{formatCurrency(releasePreview.totalValue)}</div>
                 </div>
               </div>
@@ -263,11 +263,11 @@ export function StakingReleasePanel() {
             {/* 多队列释放说明 */}
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2.5">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                   <Layers className="h-3 w-3" />
                   {language === 'zh' ? '释放队列机制' : 'Release Queue System'}
                 </span>
-                <Badge variant="outline" className="text-[9px] h-4">
+                <Badge variant="outline" className="text-[11px] h-4">
                   {releaseConfig.taxRate * 100}% {language === 'zh' ? '税' : 'tax'}
                 </Badge>
               </div>
@@ -277,32 +277,32 @@ export function StakingReleasePanel() {
                 <div className="flex items-center justify-between bg-orange-500/10 rounded p-1.5">
                   <div className="flex items-center gap-1">
                     <CalendarDays className="h-3 w-3 text-orange-500" />
-                    <span className="text-[10px]">{language === 'zh' ? '每日解锁' : 'Daily Unlock'}</span>
+                    <span className="text-[11px]">{language === 'zh' ? '每日解锁' : 'Daily Unlock'}</span>
                   </div>
                   <span className="font-mono text-xs text-orange-500">{formatCurrency(releasePreview.dailyUnlock)}</span>
                 </div>
 
                 {/* 解锁进入队列 */}
-                <div className="flex items-center justify-center text-[10px] text-muted-foreground">
+                <div className="flex items-center justify-center text-[11px] text-muted-foreground">
                   <ArrowRight className="h-3 w-3 mx-1" />
                   {language === 'zh' ? '进入' : 'enters'} {releasePeriodDays} {language === 'zh' ? '天释放队列' : 'day release queue'}
                 </div>
 
                 {/* 每队列每日释放 */}
                 <div className="flex items-center justify-between bg-green-500/10 rounded p-1.5">
-                  <span className="text-[10px]">{language === 'zh' ? '每队列每日释放' : 'Per-queue Daily'}</span>
+                  <span className="text-[11px]">{language === 'zh' ? '每队列每日释放' : 'Per-queue Daily'}</span>
                   <span className="font-mono text-xs">{formatCurrency(releasePreview.dailyReleasePerQueue)}</span>
                 </div>
 
                 {/* 最大并发队列 */}
                 <div className="flex items-center justify-between bg-blue-500/10 rounded p-1.5">
-                  <span className="text-[10px]">{language === 'zh' ? '最大并发队列' : 'Max Concurrent'}</span>
+                  <span className="text-[11px]">{language === 'zh' ? '最大并发队列' : 'Max Concurrent'}</span>
                   <span className="font-mono text-xs">{releasePreview.maxConcurrentQueues} {language === 'zh' ? '个' : ''}</span>
                 </div>
 
                 {/* 峰值日释放 */}
                 <div className="flex items-center justify-between bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded p-1.5">
-                  <span className="text-[10px] font-medium">{language === 'zh' ? '峰值日净释放' : 'Peak Daily Net'}</span>
+                  <span className="text-[11px] font-medium">{language === 'zh' ? '峰值日净释放' : 'Peak Daily Net'}</span>
                   <span className="font-mono text-xs font-bold text-green-500">{formatCurrency(releasePreview.peakDailyReleaseNet)}/d</span>
                 </div>
               </div>
@@ -310,7 +310,7 @@ export function StakingReleasePanel() {
 
             {/* 释放示例 */}
             <div className="bg-muted/30 rounded-lg p-2.5">
-              <div className="text-[10px] text-muted-foreground mb-1.5">
+              <div className="text-[11px] text-muted-foreground mb-1.5">
                 {language === 'zh' ? '释放示例 (前5天)' : 'Release Example (First 5 Days)'}
               </div>
               <div className="space-y-1">
@@ -319,7 +319,7 @@ export function StakingReleasePanel() {
                   const grossRelease = activeQueues * releasePreview.dailyReleasePerQueue;
                   const netRelease = grossRelease * (1 - releaseConfig.taxRate);
                   return (
-                    <div key={day} className="flex items-center justify-between text-[9px]">
+                    <div key={day} className="flex items-center justify-between text-[11px]">
                       <span className="text-muted-foreground">
                         Day {day}: {activeQueues} {language === 'zh' ? '队列' : 'queues'}
                       </span>
@@ -332,14 +332,14 @@ export function StakingReleasePanel() {
 
             {/* B18 分配 */}
             <div className="bg-muted/50 rounded-lg p-2.5">
-              <div className="text-[10px] text-muted-foreground mb-1.5">
+              <div className="text-[11px] text-muted-foreground mb-1.5">
                 {language === 'zh' ? 'B18 代币分配 (每日)' : 'B18 Distribution (Daily)'}
               </div>
-              <div className="grid grid-cols-4 gap-1 text-[9px] text-center">
+              <div className="grid grid-cols-4 gap-1 text-[11px] text-center">
                 <div>
                   <div className="text-muted-foreground">{language === 'zh' ? '交付' : 'Delivery'}</div>
                   <div className="font-mono">{formatTokens(releasePreview.dailyUnlock / system.tokenPrice * B18_DISTRIBUTION.deliveryContract)}</div>
-                  <Badge variant="outline" className="text-[8px] h-3 mt-0.5">50%</Badge>
+                  <Badge variant="outline" className="text-[11px] h-3 mt-0.5">50%</Badge>
                 </div>
                 <div>
                   <div className="text-muted-foreground flex items-center justify-center gap-0.5">
@@ -347,7 +347,7 @@ export function StakingReleasePanel() {
                     {language === 'zh' ? '销毁' : 'Burn'}
                   </div>
                   <div className="font-mono text-orange-500">{formatTokens(releasePreview.dailyUnlock / system.tokenPrice * B18_DISTRIBUTION.burn)}</div>
-                  <Badge variant="outline" className="text-[8px] h-3 mt-0.5">20%</Badge>
+                  <Badge variant="outline" className="text-[11px] h-3 mt-0.5">20%</Badge>
                 </div>
                 <div>
                   <div className="text-muted-foreground flex items-center justify-center gap-0.5">
@@ -355,7 +355,7 @@ export function StakingReleasePanel() {
                     {language === 'zh' ? '奖励' : 'Bonus'}
                   </div>
                   <div className="font-mono">{formatTokens(releasePreview.dailyUnlock / system.tokenPrice * B18_DISTRIBUTION.bonusPool)}</div>
-                  <Badge variant="outline" className="text-[8px] h-3 mt-0.5">20%</Badge>
+                  <Badge variant="outline" className="text-[11px] h-3 mt-0.5">20%</Badge>
                 </div>
                 <div>
                   <div className="text-muted-foreground flex items-center justify-center gap-0.5">
@@ -363,7 +363,7 @@ export function StakingReleasePanel() {
                     SPP
                   </div>
                   <div className="font-mono">{formatTokens(releasePreview.dailyUnlock / system.tokenPrice * B18_DISTRIBUTION.spp)}</div>
-                  <Badge variant="outline" className="text-[8px] h-3 mt-0.5">10%</Badge>
+                  <Badge variant="outline" className="text-[11px] h-3 mt-0.5">10%</Badge>
                 </div>
               </div>
             </div>
@@ -372,7 +372,7 @@ export function StakingReleasePanel() {
             <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-lg p-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="text-center">
-                  <div className="text-[9px] text-muted-foreground mb-0.5">
+                  <div className="text-[11px] text-muted-foreground mb-0.5">
                     {language === 'zh' ? '总释放周期' : 'Total Period'}
                   </div>
                   <div className="font-mono text-lg font-bold">
@@ -380,7 +380,7 @@ export function StakingReleasePanel() {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-[9px] text-muted-foreground mb-0.5">
+                  <div className="text-[11px] text-muted-foreground mb-0.5">
                     {language === 'zh' ? '预计总净收益' : 'Est. Total Net'}
                   </div>
                   <div className="font-mono text-lg font-bold text-green-500">
@@ -388,7 +388,7 @@ export function StakingReleasePanel() {
                   </div>
                 </div>
               </div>
-              <div className="text-center mt-2 text-[9px] text-muted-foreground">
+              <div className="text-center mt-2 text-[11px] text-muted-foreground">
                 {language === 'zh' ? '总税费' : 'Total Tax'}: {formatCurrency(releasePreview.totalTax)} ({releasePreview.taxRate.toFixed(0)}%)
               </div>
             </div>

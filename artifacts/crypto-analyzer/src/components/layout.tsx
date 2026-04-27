@@ -459,12 +459,12 @@ function Navbar() {
                   header cluster stays uncluttered for logo + wordmark + wallet. */}
               <div className="px-6 py-5 border-t border-border/20 shrink-0 space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-medium">
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/60 font-medium">
                     Language · 语言
                   </span>
                   <LanguageToggle />
                 </div>
-                <p className="text-[10px] text-muted-foreground/30 uppercase tracking-widest">
+                <p className="text-[11px] text-muted-foreground/30 uppercase tracking-widest">
                   {t("mr.footer.tagline")}
                 </p>
               </div>

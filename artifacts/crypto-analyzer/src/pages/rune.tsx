@@ -220,7 +220,7 @@ function TechChartCard({
               {title}
             </h3>
             {subtitle && (
-              <p className="text-[10px] text-muted-foreground/70 mt-0.5 leading-tight tracking-wide font-mono tabular-nums">
+              <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-tight tracking-wide font-mono tabular-nums">
                 {subtitle}
               </p>
             )}
@@ -238,7 +238,7 @@ function TechChartCard({
             />
             <span className="relative inline-flex h-full w-full rounded-full" style={{ background: accentColor }} />
           </span>
-          <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50 font-medium hidden sm:inline">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground/50 font-medium hidden sm:inline">
             LIVE
           </span>
         </div>
@@ -375,11 +375,11 @@ export default function Rune() {
             <div>
               <div className="mb-1 leading-tight">
                 {!isEn && (
-                  <span className="block text-[10px] font-semibold tracking-[0.22em] text-primary/70">
+                  <span className="block text-[11px] font-semibold tracking-[0.22em] text-primary/70">
                     {t("mr.rune.deepAnalysis")}
                   </span>
                 )}
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/50 mt-0.5">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/50 mt-0.5">
                   Deep Node Analysis
                 </span>
               </div>
@@ -412,11 +412,11 @@ export default function Rune() {
                 transition={{ duration: 0.5, delay: 0.25 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
                 className="space-y-1"
               >
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">{labelEn}</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">{labelEn}</div>
                 <div className={`text-2xl leading-none ${shimmer ? "num-shimmer" : highlight ? "num-gold" : "num text-foreground"}`}>
                   <CountUp end={end} decimals={decimals} duration={1.4} prefix={prefix} suffix={suffix} separator="," preserveValue />
                 </div>
-                {!isEn && <div className="text-[10px] text-muted-foreground/70">{t(i18nKey)}</div>}
+                {!isEn && <div className="text-[11px] text-muted-foreground/70">{t(i18nKey)}</div>}
               </motion.div>
             ))}
           </div>
@@ -529,7 +529,7 @@ export default function Rune() {
                 style={{ boxShadow: "0 0 12px hsl(var(--primary)/0.6)" }}
               />
               <div>
-                {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.analysis.eyebrow")}</span>}
+                {!isEn && <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.analysis.eyebrow")}</span>}
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   {isEn ? "Market Analysis" : isZh ? `${t("mr.rune.section.analysis.title")} · Market Analysis` : t("mr.rune.section.analysis.title")}
                 </h2>
@@ -548,7 +548,7 @@ export default function Rune() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-primary/80 font-semibold">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-primary/80 font-semibold">
                 Real-time Data Stream
               </span>
             </motion.div>
@@ -579,7 +579,7 @@ export default function Rune() {
                 />
 
                 {/* Log/Linear toggle */}
-                <div className="absolute top-0 right-2 z-10 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-background/50 p-1 text-[10px] uppercase tracking-[0.18em] backdrop-blur">
+                <div className="absolute top-0 right-2 z-10 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-background/50 p-1 text-[11px] uppercase tracking-[0.18em] backdrop-blur">
                   {(["log", "linear"] as const).map(s => (
                     <button
                       key={s}
@@ -663,7 +663,7 @@ export default function Rune() {
                       transition={{ duration: 0.45, delay: 0.9 + i * 0.07 }}
                       className="text-center"
                     >
-                      <span className={`num text-[10px] tabular-nums ${d.mult >= 80 ? "text-primary font-semibold" : d.mult > 1 ? "text-primary/60" : "text-muted-foreground/50"}`}>
+                      <span className={`num text-[11px] tabular-nums ${d.mult >= 80 ? "text-primary font-semibold" : d.mult > 1 ? "text-primary/60" : "text-muted-foreground/50"}`}>
                         {d.mult > 1 ? `${d.mult}×` : "—"}
                       </span>
                     </motion.div>
@@ -691,14 +691,14 @@ export default function Rune() {
                   {/* Total raised + counter */}
                   <div className="flex items-end justify-between mb-3">
                     <div>
-                      <p className="text-[9px] uppercase tracking-[0.28em] text-muted-foreground/60 mb-1">
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground/60 mb-1">
                         {isEn ? "Total Raised" : (isZh ? "总融资规模" : "Total Raised")}
                       </p>
                       <div className="num-shimmer text-3xl leading-none">
                         <CountUp end={total / 1e6} prefix="$" suffix="M" decimals={1} duration={1.4} preserveValue />
                       </div>
                     </div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50">
+                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground/50">
                       {fundAllocData.length} {isEn ? "Allocations" : (isZh ? "项分配" : "Allocations")}
                     </span>
                   </div>
@@ -731,7 +731,7 @@ export default function Rune() {
                           style={{ width: `${pct}%` }}
                           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                           transition={{ delay: 0.7 + i * 0.14 }}>
-                          <span className="num text-[9px] tabular-nums" style={{ color: PIE_COLORS[i] }}>
+                          <span className="num text-[11px] tabular-nums" style={{ color: PIE_COLORS[i] }}>
                             {pct.toFixed(0)}%
                           </span>
                         </motion.div>
@@ -895,7 +895,7 @@ export default function Rune() {
 
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-primary pl-4">
-            {!isEn && <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.simulator.eyebrow")}</span>}
+            {!isEn && <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/60 block mb-0.5">{t("mr.rune.section.simulator.eyebrow")}</span>}
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               {isEn ? "Node Yield Simulator" : isZh ? `${t("mr.rune.section.simulator.title")} · Node Yield Simulator` : t("mr.rune.section.simulator.title")}
             </h2>
@@ -934,8 +934,8 @@ export default function Rune() {
                         {isOn && <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-80" style={{ color }} />}
 
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color }}>{nodeName(node)}</span>
-                          {isOn ? <BadgeCheck className="h-3.5 w-3.5" style={{ color }} /> : <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-medium">{node.nameEn}</span>}
+                          <span className="text-[11px] uppercase tracking-widest font-bold" style={{ color }}>{nodeName(node)}</span>
+                          {isOn ? <BadgeCheck className="h-3.5 w-3.5" style={{ color }} /> : <span className="text-[11px] uppercase tracking-widest text-muted-foreground/40 font-medium">{node.nameEn}</span>}
                         </div>
                         <p className="num text-xl mt-0.5">${node.investment.toLocaleString()}</p>
 
@@ -945,9 +945,9 @@ export default function Rune() {
                         </div>
 
                         <div className="mt-2 pt-2 border-t border-white/10 grid grid-cols-2 gap-x-2 gap-y-0.5">
-                          <p className="text-[10px] text-muted-foreground">{isEn ? "Daily USDT" : t("mr.rune.table.dailyUsdt")} <span className="num num-sm" style={{ color }}>${node.dailyUsdt}</span></p>
-                          <p className="text-[10px] text-muted-foreground">{isEn ? "Seats" : t("mr.rune.table.seats")} <span className="num num-sm text-foreground">{node.seats}</span></p>
-                          <p className="text-[10px] text-muted-foreground col-span-2">{isEn ? "Private" : t("mr.rune.table.privatePrice")} <span className="num num-sm text-foreground">${node.privatePrice}</span></p>
+                          <p className="text-[11px] text-muted-foreground">{isEn ? "Daily USDT" : t("mr.rune.table.dailyUsdt")} <span className="num num-sm" style={{ color }}>${node.dailyUsdt}</span></p>
+                          <p className="text-[11px] text-muted-foreground">{isEn ? "Seats" : t("mr.rune.table.seats")} <span className="num num-sm text-foreground">{node.seats}</span></p>
+                          <p className="text-[11px] text-muted-foreground col-span-2">{isEn ? "Private" : t("mr.rune.table.privatePrice")} <span className="num num-sm text-foreground">${node.privatePrice}</span></p>
                         </div>
                       </button>
                     );
@@ -1058,19 +1058,19 @@ export default function Rune() {
                       </p>
                     </div>
                     <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
-                      <p className="text-[10px] text-primary uppercase tracking-wider mb-1">{isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue")}</p>
+                      <p className="text-[11px] text-primary uppercase tracking-wider mb-1">{isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue")}</p>
                       <p className="num text-lg">${fmt(calcMutation.data.motherTokenValue)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-orange-800/30 bg-orange-950/20">
-                      <p className="text-[10px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
+                      <p className="text-[11px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
                       <p className="num text-lg text-orange-300">${fmt(calcMutation.data.airdropTokenValue)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-green-800/30 bg-green-950/20">
-                      <p className="text-[10px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "USDT Income" : t("mr.rune.kpi.usdtIncome")}</p>
+                      <p className="text-[11px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "USDT Income" : t("mr.rune.kpi.usdtIncome")}</p>
                       <p className="num text-lg text-green-300">${fmt(calcMutation.data.totalUsdtIncome)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
                         <span className="num">${fmt(calcMutation.data.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{calcMutation.data.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}
                       </p>
                     </div>
@@ -1111,7 +1111,7 @@ export default function Rune() {
                         {/* Center total */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="text-center">
-                            <div className="text-[8px] uppercase tracking-widest text-muted-foreground/60">Total</div>
+                            <div className="text-[11px] uppercase tracking-widest text-muted-foreground/60">Total</div>
                             <div className="num text-sm text-foreground/90">
                               ${fmt(resultPieData.reduce((s, d) => s + (d.value ?? 0), 0), 0)}
                             </div>
@@ -1135,7 +1135,7 @@ export default function Rune() {
                                 <span className="text-muted-foreground truncate">{d.name}</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <span className="text-[10px] text-muted-foreground/60 num tabular-nums">{pct.toFixed(0)}%</span>
+                                <span className="text-[11px] text-muted-foreground/60 num tabular-nums">{pct.toFixed(0)}%</span>
                                 <span className="num font-semibold text-foreground/90 tabular-nums">${fmt(d.value, 0)}</span>
                               </div>
                             </motion.div>
@@ -1198,7 +1198,7 @@ export default function Rune() {
                         </ResponsiveContainer>
                       ) : null}
                       {/* Stage legend strip */}
-                      <div className="flex items-center justify-center gap-4 mt-1 text-[10px] text-muted-foreground/70">
+                      <div className="flex items-center justify-center gap-4 mt-1 text-[11px] text-muted-foreground/70">
                         <div className="flex items-center gap-1.5">
                           <span className="h-2 w-2 rounded-sm shadow-[0_0_8px_hsl(38,92%,55%)]" style={{ background: "hsl(38,92%,55%)" }} />
                           <span>{isEn ? "Selected stage" : t("mr.rune.kpi.stage") + (isEn ? "" : " · 当前")}</span>
@@ -1227,7 +1227,7 @@ export default function Rune() {
                             <tr key={i} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors">
                               <td className="py-2.5 px-5 text-muted-foreground">
                                 {item.label}
-                                {isZh && item.labelCn && <span className="ml-2 text-[10px] opacity-50">{item.labelCn}</span>}
+                                {isZh && item.labelCn && <span className="ml-2 text-[11px] opacity-50">{item.labelCn}</span>}
                               </td>
                               <td className="py-2.5 px-5 text-right font-mono font-medium">{item.value}</td>
                             </tr>
@@ -1291,7 +1291,7 @@ export default function Rune() {
                           { key: "mr.rune.table.dailyUsdt",    en: "Daily USDT",   align: "right" as const },
                           { key: "mr.rune.table.seats",        en: "Seats",        align: "right" as const },
                         ].map(h => (
-                          <th key={h.key} className={`py-2.5 px-4 text-muted-foreground font-medium tracking-wider text-[10px] uppercase ${h.align === "left" ? "text-left" : "text-right"}`}>
+                          <th key={h.key} className={`py-2.5 px-4 text-muted-foreground font-medium tracking-wider text-[11px] uppercase ${h.align === "left" ? "text-left" : "text-right"}`}>
                             {isEn ? h.en : t(h.key)}
                           </th>
                         ))}
@@ -1308,7 +1308,7 @@ export default function Rune() {
                               <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: color }} />
                                 <span className="font-medium" style={{ color }}>{nodeName(node)}</span>
-                                <span className="text-muted-foreground text-[10px]">{node.nameEn}</span>
+                                <span className="text-muted-foreground text-[11px]">{node.nameEn}</span>
                               </div>
                             </td>
                             <td className="py-3 px-4 text-right font-mono font-semibold">${node.investment.toLocaleString()}</td>
@@ -1340,10 +1340,10 @@ export default function Rune() {
                           <div className="flex items-center gap-2">
                             <div className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
                             <span className="font-semibold text-sm" style={{ color }}>{nodeName(node)}</span>
-                            <span className="text-muted-foreground text-[10px] uppercase tracking-wider">{node.nameEn}</span>
+                            <span className="text-muted-foreground text-[11px] uppercase tracking-wider">{node.nameEn}</span>
                           </div>
                           {isSelected && (
-                            <span className="text-[9px] uppercase tracking-widest text-primary border border-primary/30 rounded px-1.5 py-0.5">
+                            <span className="text-[11px] uppercase tracking-widest text-primary border border-primary/30 rounded px-1.5 py-0.5">
                               {isEn ? "Selected" : t("mr.rune.table.selected")}
                             </span>
                           )}
@@ -1352,15 +1352,15 @@ export default function Rune() {
                         {/* Primary metrics row */}
                         <div className="grid grid-cols-3 gap-2 mb-2">
                           <div className="bg-muted/20 rounded-lg px-3 py-2">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Investment" : t("mr.rune.table.invest")}</div>
+                            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Investment" : t("mr.rune.table.invest")}</div>
                             <div className="num text-sm text-foreground">${node.investment.toLocaleString()}</div>
                           </div>
                           <div className="bg-muted/20 rounded-lg px-3 py-2">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Daily USDT" : t("mr.rune.table.dailyUsdt")}</div>
+                            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Daily USDT" : t("mr.rune.table.dailyUsdt")}</div>
                             <div className="num text-sm" style={{ color }}>${node.dailyUsdt}</div>
                           </div>
                           <div className="bg-muted/20 rounded-lg px-3 py-2">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Seats" : t("mr.rune.table.seats")}</div>
+                            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">{isEn ? "Seats" : t("mr.rune.table.seats")}</div>
                             <div className="num text-sm text-foreground">{node.seats}</div>
                           </div>
                         </div>
@@ -1368,15 +1368,15 @@ export default function Rune() {
                         {/* Secondary metrics row */}
                         <div className="grid grid-cols-3 gap-2">
                           <div className="px-3 py-1.5 border border-border/30 rounded-lg">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Private" : t("mr.rune.table.privatePrice")}</div>
+                            <div className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Private" : t("mr.rune.table.privatePrice")}</div>
                             <div className="num text-xs text-muted-foreground">${node.privatePrice}</div>
                           </div>
                           <div className="px-3 py-1.5 border border-border/30 rounded-lg">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Mother Token" : t("mr.rune.token.mother")}</div>
+                            <div className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Mother Token" : t("mr.rune.token.mother")}</div>
                             <div className="num text-xs text-muted-foreground">{node.motherTokensPerSeat.toLocaleString()}</div>
                           </div>
                           <div className="px-3 py-1.5 border border-border/30 rounded-lg">
-                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Airdrop" : t("mr.rune.table.airdrop")}</div>
+                            <div className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">{isEn ? "Airdrop" : t("mr.rune.table.airdrop")}</div>
                             <div className="num text-xs text-muted-foreground">{node.airdropPerSeat.toLocaleString()}</div>
                           </div>
                         </div>

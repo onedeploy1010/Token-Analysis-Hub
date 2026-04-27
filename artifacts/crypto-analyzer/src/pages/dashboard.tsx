@@ -154,19 +154,19 @@ function TreeNodeBadges({
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       {meta ? (
-        <span className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] ${pillBase}`} title={`${meta.nameEn} · $${meta.priceUsdt.toLocaleString("en-US")} USDT`}>
+        <span className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] ${pillBase}`} title={`${meta.nameEn} · $${meta.priceUsdt.toLocaleString("en-US")} USDT`}>
           <span className={meta.color}>{meta.nameCn}</span>
           <span className="opacity-85">${(meta.priceUsdt / 1000).toFixed(meta.priceUsdt % 1000 ? 1 : 0)}K</span>
         </span>
       ) : (
-        <span className={`rounded-md border px-1.5 py-0.5 text-[10px] opacity-50 ${pillBase}`} title={t("mr.dash.team.noNode")}>
+        <span className={`rounded-md border px-1.5 py-0.5 text-[11px] opacity-50 ${pillBase}`} title={t("mr.dash.team.noNode")}>
           {t("mr.dash.team.noNode")}
         </span>
       )}
-      <span className={`rounded-md border px-1.5 py-0.5 text-[10px] ${pillBase}`} title={t("mr.dash.team.teamCountTip")}>
+      <span className={`rounded-md border px-1.5 py-0.5 text-[11px] ${pillBase}`} title={t("mr.dash.team.teamCountTip")}>
         👥 {stats.totalDownstreamCount}
       </span>
-      <span className={`rounded-md border px-1.5 py-0.5 text-[10px] ${pillBase}`} title={t("mr.dash.team.teamVolumeTip")}>
+      <span className={`rounded-md border px-1.5 py-0.5 text-[11px] ${pillBase}`} title={t("mr.dash.team.teamVolumeTip")}>
         💰 ${fmtUsdt(stats.totalDownstreamInvested, 0)}
       </span>
     </div>
@@ -462,7 +462,7 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.08, ease: EASE }}
-              className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-amber-300/80"
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-300/80"
             >
               <Sparkles className="h-3 w-3 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.65)]" /> {t("mr.dash.hub")}
             </motion.span>
@@ -512,7 +512,7 @@ export default function Dashboard() {
               className="flex items-center gap-4 shrink-0"
             >
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/85">{t("mr.dash.owned.paid")}</p>
+                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground/85">{t("mr.dash.owned.paid")}</p>
                 <p
                   className={`num text-2xl sm:text-3xl md:text-4xl font-bold tabular-nums ${theme.accentBright} leading-none mt-1`}
                   style={{ textShadow: `0 0 36px rgba(${theme.rgb}, 0.65), 0 0 16px rgba(${theme.rgb}, 0.4)` }}
@@ -522,7 +522,7 @@ export default function Dashboard() {
                     fmt={(n) => Math.round(n).toLocaleString("en-US")}
                   />
                 </p>
-                <p className="text-[10px] text-muted-foreground/80 mt-1.5 tracking-[0.18em] uppercase">USDT</p>
+                <p className="text-[11px] text-muted-foreground/80 mt-1.5 tracking-[0.18em] uppercase">USDT</p>
               </div>
             </motion.div>
           )}
@@ -544,7 +544,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
-          className="shrink-0 text-[10px] tracking-[0.45em] font-medium select-none"
+          className="shrink-0 text-[11px] tracking-[0.45em] font-medium select-none"
           style={{
             background: "linear-gradient(90deg, #92400e, #d97706, #fbbf24, #fef08a, #fbbf24, #d97706, #92400e)",
             backgroundSize: "200% 100%",
@@ -670,7 +670,7 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
           <Sparkles className={`h-4 w-4 ${theme.accent}`} />
           <span>{t("mr.dash.owned.benefitsTitle")}</span>
           {meta && (
-            <span className={`ml-auto text-[10px] font-mono uppercase tracking-[0.22em] rounded-md border px-2 py-0.5 ${theme.chip}`}>
+            <span className={`ml-auto text-[11px] font-mono uppercase tracking-[0.22em] rounded-md border px-2 py-0.5 ${theme.chip}`}>
               {meta.nameCn} · {meta.nameEn}
             </span>
           )}
@@ -706,7 +706,7 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             className="mt-4 pt-4 border-t border-border/30"
           >
             <div className="flex items-baseline justify-between mb-2">
-              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/87">180-Day Cumulative USDT</span>
+              <span className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/87">180-Day Cumulative USDT</span>
               <span className={`text-xs font-mono font-semibold ${theme.accent}`}>${(def.dailyUsdt * 180).toLocaleString("en-US")}</span>
             </div>
             <ResponsiveContainer width="100%" height={64}>
@@ -784,7 +784,7 @@ function BenefitRow({
           }}
         />
       )}
-      <div className="relative flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80 mb-1.5">
+      <div className="relative flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80 mb-1.5">
         <Icon className={`h-3 w-3 ${highlight ? theme.accent : "text-muted-foreground/80"}`} style={highlight ? { filter: `drop-shadow(0 0 6px rgba(${theme.rgb}, 0.5))` } : undefined} />
         <span>{label}</span>
       </div>
@@ -794,7 +794,7 @@ function BenefitRow({
       >
         {value}
       </div>
-      {sub && <div className="relative text-[10px] text-muted-foreground/80 mt-1 tracking-[0.12em] uppercase">{sub}</div>}
+      {sub && <div className="relative text-[11px] text-muted-foreground/80 mt-1 tracking-[0.12em] uppercase">{sub}</div>}
     </motion.div>
   );
 }
@@ -991,7 +991,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
         <div className="space-y-4">
           {/* Mother-token airdrop · 4 stages */}
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/90 mb-2">
+            <div className="text-[11px] uppercase tracking-widest text-muted-foreground/90 mb-2">
               {t("mr.dash.benefits.airdropSection")}
             </div>
             <div className="space-y-1.5">
@@ -1096,7 +1096,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                 <div className={`absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b ${f.stripe} pointer-events-none`} />
 
                 {/* Ordinal index */}
-                <span className={`text-[10px] font-mono tabular-nums leading-none ${f.iconCls} opacity-40 w-4 shrink-0 pl-1`}>
+                <span className={`text-[11px] font-mono tabular-nums leading-none ${f.iconCls} opacity-40 w-4 shrink-0 pl-1`}>
                   {String(idx + 1).padStart(2, "0")}
                 </span>
 
@@ -1113,11 +1113,11 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                 {/* Boost badge + status — always right-aligned */}
                 <div className="flex items-center gap-2.5 shrink-0">
                   {boosted && (
-                    <span className="hidden sm:inline text-[8px] font-mono tracking-widest text-purple-300 bg-purple-950/70 border border-purple-500/35 rounded-full px-2 py-0.5 leading-none">
+                    <span className="hidden sm:inline text-[11px] font-mono tracking-widest text-purple-300 bg-purple-950/70 border border-purple-500/35 rounded-full px-2 py-0.5 leading-none">
                       ×1.5 APEX
                     </span>
                   )}
-                  <span className={`text-[10px] font-mono uppercase tracking-[0.18em] shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/62"}`}>
+                  <span className={`text-[11px] font-mono uppercase tracking-[0.18em] shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/62"}`}>
                     {available ? "● ACTIVE" : "○ LOCKED"}
                   </span>
                 </div>
@@ -1127,7 +1127,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
         </div>
       </BenefitGroup>
 
-      <p className="text-[10px] text-muted-foreground/82 text-center pt-1">
+      <p className="text-[11px] text-muted-foreground/82 text-center pt-1">
         {t("mr.dash.benefits.footer")}
       </p>
     </div>
@@ -1166,11 +1166,11 @@ function BenefitGroup({
             <Icon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)] shrink-0" />
             <span className="text-sm font-semibold text-foreground truncate">{title}</span>
             {subtitle && (
-              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/87 hidden sm:inline truncate">{subtitle}</span>
+              <span className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/87 hidden sm:inline truncate">{subtitle}</span>
             )}
           </div>
           {rightTag && (
-            <span className="text-[10px] font-mono tabular-nums text-amber-200/85 shrink-0">{rightTag}</span>
+            <span className="text-[11px] font-mono tabular-nums text-amber-200/85 shrink-0">{rightTag}</span>
           )}
         </CardHeader>
         <CardContent className="pt-5 pb-5 relative z-10">{children}</CardContent>
@@ -1280,7 +1280,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               {t("mr.dash.pool.title")}
             </span>
           </CardTitle>
-          <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.22em] text-emerald-300/80">
+          <span className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.22em] text-emerald-300/80">
             <span className="relative flex h-2 w-2 shrink-0">
               <span className="animate-live-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
@@ -1295,7 +1295,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">
                 {t("mr.dash.pool.raised")}
               </span>
-              <span className="text-[10px] font-mono tabular-nums text-muted-foreground/82">
+              <span className="text-[11px] font-mono tabular-nums text-muted-foreground/82">
                 {raisedPct.toFixed(1)}%
               </span>
             </div>
@@ -1317,7 +1317,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                 <div className="animate-bar-sweep absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
               </motion.div>
             </div>
-            <div className="text-[10px] text-muted-foreground/82 mt-2">
+            <div className="text-[11px] text-muted-foreground/82 mt-2">
               {fundraiseComplete
                 ? t("mr.dash.pool.fundraiseDone")
                 : t("mr.dash.pool.fundraiseHint")}
@@ -1326,7 +1326,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
 
           {/* Projected initial TLP once the raise fills */}
           <div className="rounded-md border border-cyan-500/35 bg-cyan-950/25 p-3 space-y-1.5 shadow-[inset_0_1px_0_rgba(34,211,238,0.15)]">
-            <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.4)]">
+            <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.4)]">
               {fundraiseComplete ? t("mr.dash.pool.tlpInitial") : t("mr.dash.pool.tlpProjected")}
             </div>
             <div className="text-xl font-bold tabular-nums text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]">
@@ -1367,9 +1367,9 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                   </PieChart>
                 </div>
                 <div className="flex flex-col gap-1.5 flex-1 w-full">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/87 mb-0.5">Fund Allocation</div>
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/87 mb-0.5">Fund Allocation</div>
                   {ALLOC.map((e) => (
-                    <div key={e.name} className="flex items-center gap-2 text-[10px]">
+                    <div key={e.name} className="flex items-center gap-2 text-[11px]">
                       <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: e.color }} />
                       <span className="text-muted-foreground/80 flex-1">{e.name}</span>
                       <span className="font-mono font-semibold tabular-nums" style={{ color: e.color }}>{e.pct}%</span>
@@ -1402,11 +1402,11 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/87">
+                      <span className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/87">
                         {t(`mr.dash.pool.stage${i + 1}Num`)}
                       </span>
                       <span
-                        className={`text-[10px] font-mono uppercase tracking-[0.18em] ${
+                        className={`text-[11px] font-mono uppercase tracking-[0.18em] ${
                           unlocked
                             ? "text-emerald-300"
                             : isNext
@@ -1432,7 +1432,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                     <div className={`text-[11px] tabular-nums mt-1 ${unlocked ? "text-emerald-400/80" : isNext ? "text-amber-400/80" : "text-muted-foreground/90"}`}>
                       TLP ≥ ${stage.tlpM}M
                     </div>
-                    <div className="text-[10px] text-muted-foreground/72 mt-1">
+                    <div className="text-[11px] text-muted-foreground/72 mt-1">
                       {stage.driver === "fundraise"
                         ? t("mr.dash.pool.driverFundraise")
                         : t("mr.dash.pool.driverMarket")}
@@ -1453,7 +1453,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                 <span className="text-xs font-mono uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">
                   {t("mr.dash.pool.nextStageTitle")}
                 </span>
-                <span className="text-[10px] font-mono uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-950/40 text-amber-300 shrink-0">
+                <span className="text-[11px] font-mono uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-950/40 text-amber-300 shrink-0">
                   {t(`mr.dash.pool.stage${nextStageIdx + 1}Num`)} · {nextStage.pct}%
                 </span>
               </div>
@@ -1466,7 +1466,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                   <div className="text-2xl sm:text-3xl font-bold tabular-nums text-amber-200">
                     {nextUnlockTokens.toLocaleString("en-US")}
                   </div>
-                  <div className="text-[10px] text-muted-foreground/82 mt-0.5">
+                  <div className="text-[11px] text-muted-foreground/82 mt-0.5">
                     {t("mr.dash.pool.motherTokens")}
                   </div>
                 </div>
@@ -1477,7 +1477,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                   <div className="text-2xl sm:text-3xl font-bold tabular-nums text-foreground/95">
                     ${nextBatch.priceAt}
                   </div>
-                  <div className="text-[10px] text-muted-foreground/82 mt-0.5">
+                  <div className="text-[11px] text-muted-foreground/82 mt-0.5">
                     {t("mr.dash.pool.perToken")}
                   </div>
                 </div>
@@ -1546,7 +1546,7 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
             <span className="bg-gradient-to-r from-fuchsia-200 via-purple-200 to-amber-200 bg-clip-text text-transparent">
               {t("mr.dash.genesis.title")}
             </span>
-            <span className="ml-auto text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-0.5 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 shrink-0">
+            <span className="ml-auto text-[11px] font-mono uppercase tracking-[0.22em] px-2 py-0.5 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 shrink-0">
               {t("mr.dash.genesis.achievedBadge")}
             </span>
           </CardTitle>
@@ -1578,7 +1578,7 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
           {/* Reward row — core pool share + user's weight */}
           <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="min-w-0">
-              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300/85 mb-0.5">
+              <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-amber-300/85 mb-0.5">
                 {t("mr.dash.genesis.rewardTitle")}
               </div>
               <div className="text-base font-bold tabular-nums text-amber-200">
@@ -1586,7 +1586,7 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
               </div>
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/90 mb-0.5">
+              <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/90 mb-0.5">
                 {t("mr.dash.genesis.weightLabel")}
               </div>
               <div className="text-sm font-semibold text-foreground/95 tabular-nums">
@@ -1616,9 +1616,9 @@ function GenesisTriggerCell({
   return (
     <div className={`rounded-lg border p-3 ${triggered ? "border-fuchsia-500/65 bg-fuchsia-950/45" : "border-border/45 bg-card/40"}`}>
       <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/80 truncate">{label}</span>
+        <span className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/80 truncate">{label}</span>
         {triggered && (
-          <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 shrink-0">✓ TRIGGER</span>
+          <span className="text-[11px] font-mono uppercase tracking-[0.22em] text-fuchsia-300 shrink-0">✓ TRIGGER</span>
         )}
       </div>
       <div className="flex items-baseline gap-1.5 tabular-nums">
@@ -1718,7 +1718,7 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
               </div>
               <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
                 <div className="text-xs text-muted-foreground">
-                  <span className="opacity-60 uppercase text-[10px] tracking-widest block mb-0.5">{t("mr.dash.ref.upstream")}</span>
+                  <span className="opacity-60 uppercase text-[11px] tracking-widest block mb-0.5">{t("mr.dash.ref.upstream")}</span>
                   {isRoot ? (
                     <span className="text-amber-300 font-semibold drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">ROOT</span>
                   ) : isBound && referrer ? (
@@ -1895,7 +1895,7 @@ function TeamTab({ address }: { address: string }) {
         </CardContent>
       </Card>
 
-      <p className="text-[10px] text-muted-foreground/87 text-center">
+      <p className="text-[11px] text-muted-foreground/87 text-center">
         {t("mr.dash.team.treeNote")}
       </p>
     </div>
@@ -1975,7 +1975,7 @@ function FocusHeader({
         />
       )}
       <div className="relative flex items-center gap-2 flex-wrap">
-        <span className={`text-[10px] uppercase tracking-[0.2em] font-semibold px-1.5 py-0.5 rounded border ${
+        <span className={`text-[11px] uppercase tracking-[0.2em] font-semibold px-1.5 py-0.5 rounded border ${
           isSelf
             ? "text-amber-200 border-amber-500/50 bg-amber-500/10 drop-shadow-[0_0_6px_rgba(251,191,36,0.3)]"
             : "text-muted-foreground border-white/15 bg-white/[0.03]"
@@ -1990,7 +1990,7 @@ function FocusHeader({
       </div>
       <div className="relative flex items-center gap-2 flex-wrap sm:contents">
         <TreeNodeBadges stats={stats} accent={isSelf ? "amber" : undefined} />
-        <span className="relative text-[10px] text-muted-foreground sm:ml-auto tabular-nums">
+        <span className="relative text-[11px] text-muted-foreground sm:ml-auto tabular-nums">
           {stats ? `${stats.directCount} ${t("mr.dash.team.directShort")}` : ""}
         </span>
       </div>
@@ -2014,7 +2014,7 @@ function TeamRow({ row, onDrill }: { row: ReferrerRow; onDrill: () => void }) {
     >
       <CopyableAddress address={row.user} short />
       <TreeNodeBadges stats={stats} />
-      <span className="text-[10px] text-muted-foreground ml-auto flex items-center gap-1.5">
+      <span className="text-[11px] text-muted-foreground ml-auto flex items-center gap-1.5">
         <span className="tabular-nums">{new Date(row.boundAt).toLocaleDateString()}</span>
         <ChevronRight className="h-3.5 w-3.5 opacity-50 transition-all duration-300 group-hover:opacity-100 group-hover:text-amber-400 group-hover:translate-x-0.5" />
       </span>
@@ -2138,7 +2138,7 @@ function RewardsTab({ address }: { address: string }) {
         </Card>
       </motion.div>
 
-      <p className="text-[10px] text-muted-foreground/87 text-center">
+      <p className="text-[11px] text-muted-foreground/87 text-center">
         {t("mr.dash.reward.note")}
       </p>
     </div>
@@ -2169,7 +2169,7 @@ function RewardRowItem({ row }: { row: RewardRow }) {
         style={theme ? { backgroundColor: `rgb(${theme.rgb})`, boxShadow: `0 0 8px rgba(${theme.rgb}, 0.6)` } : undefined}
       />
       <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-        <span className={`text-[10px] font-mono uppercase tracking-[0.2em] w-14 sm:w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
+        <span className={`text-[11px] font-mono uppercase tracking-[0.2em] w-14 sm:w-16 shrink-0 ${meta?.color ?? "text-muted-foreground"}`}>
           {meta?.nameEn ?? `#${row.nodeId}`}
         </span>
         <CopyableAddress address={row.downline} short />
@@ -2358,7 +2358,7 @@ function RewardListFilters({
           aria-label={t("mr.dash.reward.filterFrom")}
           className={`${inputCls} w-[120px] sm:w-[132px]`}
         />
-        <span className="text-[10px] text-muted-foreground/87">→</span>
+        <span className="text-[11px] text-muted-foreground/87">→</span>
         <input
           type="date"
           value={to}
@@ -2433,7 +2433,7 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Coins className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)]" />
             {t("mr.dash.team.compTitle")}
-            <span className="text-[10px] font-mono text-muted-foreground/80 tabular-nums ml-1">
+            <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums ml-1">
               {total} {t("mr.dash.team.compTotal")}
             </span>
           </CardTitle>
@@ -2445,7 +2445,7 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
                 rune page's Six-Stage Dual Line toggle so the interaction
                 feels familiar. Primary-tinted fill + inset ring on the
                 active pill; muted-foreground + hover-primary on inactive. */}
-            <div className="absolute top-0 right-2 z-10 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-background/50 p-1 text-[10px] uppercase tracking-[0.18em] backdrop-blur">
+            <div className="absolute top-0 right-2 z-10 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-background/50 p-1 text-[11px] uppercase tracking-[0.18em] backdrop-blur">
               {(["direct", "team"] as const).map((m) => (
                 <button
                   key={m}

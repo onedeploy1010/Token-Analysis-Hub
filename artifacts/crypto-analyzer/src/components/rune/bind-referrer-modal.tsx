@@ -138,7 +138,7 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
               <UserPlus className="h-4 w-4 text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">{t("mr.bind.step")}</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">{t("mr.bind.step")}</span>
           </div>
           <DialogTitle className="text-xl font-bold">{t("mr.bind.title")}</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
@@ -198,7 +198,7 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
             </Button>
           </div>
 
-          <p className="text-[10px] text-muted-foreground/60 text-center">
+          <p className="text-[11px] text-muted-foreground/60 text-center">
             {t("mr.bind.gasNote")}
           </p>
         </div>

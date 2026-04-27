@@ -476,21 +476,21 @@ export function SecondaryMarket({
       <CardContent className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-muted/50 rounded-lg p-2.5 text-center overflow-hidden">
-            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[10px] mb-1 truncate">
+            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[11px] mb-1 truncate">
               <TrendingUp className="h-3 w-3" />
               {t("secondary.currentPrice")}
             </div>
             <div className="font-mono font-semibold text-sm truncate">{formatCurrency(tokenPrice)}</div>
           </div>
           <div className="bg-muted/50 rounded-lg p-2.5 text-center overflow-hidden">
-            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[10px] mb-1 truncate">
+            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[11px] mb-1 truncate">
               <Coins className="h-3 w-3" />
               {t("metrics.lpB18")}
             </div>
             <div className="font-mono font-semibold text-sm truncate">{formatTokens(lpPoolTokens)}</div>
           </div>
           <div className="bg-muted/50 rounded-lg p-2.5 text-center overflow-hidden">
-            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[10px] mb-1 truncate">
+            <div className="flex items-center justify-center gap-0.5 text-muted-foreground text-[11px] mb-1 truncate">
               <DollarSign className="h-3 w-3" />
               {t("metrics.lpUsdt")}
             </div>
@@ -526,11 +526,11 @@ export function SecondaryMarket({
             </div>
             <div className="grid grid-cols-2 gap-1.5 overflow-hidden">
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "预计获得" : "Est."}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "预计获得" : "Est."}</div>
                 <div className="text-sm font-semibold text-chart-2 truncate">{formatTokens(buySimulation.tokensReceived)} B18</div>
               </div>
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "3%滑点" : "3% Fee"}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "3%滑点" : "3% Fee"}</div>
                 <div className="text-sm font-semibold text-destructive truncate">-{formatCurrency(buySimulation.slippageFee)}</div>
               </div>
             </div>
@@ -543,11 +543,11 @@ export function SecondaryMarket({
             </div>
             <div className="grid grid-cols-2 gap-1.5 overflow-hidden">
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "预计获得" : "Est."}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "预计获得" : "Est."}</div>
                 <div className="text-sm font-semibold text-chart-2 truncate">{formatCurrency(sellSimulation.usdtReceived)}</div>
               </div>
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "3%滑点" : "3% Fee"}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "3%滑点" : "3% Fee"}</div>
                 <div className="text-sm font-semibold text-destructive truncate">-{formatCurrency(sellSimulation.slippageFee)}</div>
               </div>
             </div>
@@ -562,17 +562,17 @@ export function SecondaryMarket({
               <Label className="text-sm">{language === "zh" ? "买入金额" : "Amount"}</Label>
               <Input type="number" min={0} max={sppBalance} step={1000} value={sppBuyAmount} onChange={(e) => setSppBuyAmount(Math.min(Number(e.target.value), sppBalance))} className="h-9 text-sm font-mono" data-testid="input-spp-buy-amount" />
               {sppBuySimulation.isInsufficient && (
-                <p className="text-[10px] text-destructive flex items-center gap-1"><AlertTriangle className="h-2.5 w-2.5" />{language === "zh" ? "超出余额" : "Exceeds"}</p>
+                <p className="text-[11px] text-destructive flex items-center gap-1"><AlertTriangle className="h-2.5 w-2.5" />{language === "zh" ? "超出余额" : "Exceeds"}</p>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-1.5 overflow-hidden">
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "买入B18" : "Buy B18"}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "买入B18" : "Buy B18"}</div>
                 <div className="text-sm font-semibold text-chart-2 truncate">{formatTokens(sppBuySimulation.tokensReceived)}</div>
               </div>
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "价格提升" : "Price Up"}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "价格提升" : "Price Up"}</div>
                 <div className="text-sm font-semibold text-chart-2 truncate">+{formatPercent(sppBuySimulation.priceImpact)}</div>
               </div>
             </div>
@@ -587,16 +587,16 @@ export function SecondaryMarket({
               <Label className="text-sm">{language === "zh" ? "卖出数量" : "Amount"}</Label>
               <Input type="number" min={0} max={sppHeldB18} step={100} value={sppSellAmount} onChange={(e) => setSppSellAmount(Math.min(Number(e.target.value), sppHeldB18))} className="h-8 text-sm font-mono" data-testid="input-spp-sell-amount" />
               {sppSellSimulation.isInsufficient && (
-                <p className="text-[10px] text-destructive flex items-center gap-1"><AlertTriangle className="h-2.5 w-2.5" />{language === "zh" ? "超出持有量" : "Exceeds"}</p>
+                <p className="text-[11px] text-destructive flex items-center gap-1"><AlertTriangle className="h-2.5 w-2.5" />{language === "zh" ? "超出持有量" : "Exceeds"}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-1.5 overflow-hidden">
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "获得USDC" : "USDC"}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "获得USDC" : "USDC"}</div>
                 <div className="text-sm font-semibold text-chart-2 truncate">{formatCurrency(sppSellSimulation.usdtReceived)}</div>
               </div>
               <div className="mobile-stat text-center overflow-hidden">
-                <div className="text-[10px] text-muted-foreground truncate">{language === "zh" ? "价格降低" : "Down"}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{language === "zh" ? "价格降低" : "Down"}</div>
                 <div className="text-sm font-semibold text-destructive truncate">{formatPercent(sppSellSimulation.priceImpact)}</div>
               </div>
             </div>
@@ -637,26 +637,26 @@ export function SecondaryMarket({
               <>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-chart-2">{language === "zh" ? "买入B18" : "B18"}</div>
+                    <div className="text-[11px] text-chart-2">{language === "zh" ? "买入B18" : "B18"}</div>
                     <div className="text-sm font-semibold text-chart-2">{formatTokens(sppBuySimulation.tokensReceived)}</div>
                   </div>
                   <div className="bg-muted/50 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
                     <div className="text-sm font-semibold">{formatCurrency(sppBuySimulation.effectivePrice)}</div>
                   </div>
                 </div>
                 <div className="bg-chart-2/10 rounded-md p-1.5 text-center">
-                  <div className="text-[10px] text-chart-2">{language === "zh" ? "价格提升" : "Price Up"}</div>
+                  <div className="text-[11px] text-chart-2">{language === "zh" ? "价格提升" : "Price Up"}</div>
                   <div className="text-sm font-semibold text-chart-2">{formatPercent(sppBuySimulation.priceImpact)}</div>
-                  <div className="text-[9px] text-muted-foreground">{formatCurrency(tokenPrice)} → {formatCurrency(sppBuySimulation.newPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">{formatCurrency(tokenPrice)} → {formatCurrency(sppBuySimulation.newPrice)}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "消耗" : "Used"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "消耗" : "Used"}</div>
                     <div className="text-sm font-semibold">{formatCurrency(sppBuySimulation.buyAmountUsdt)}</div>
                   </div>
                   <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "剩余" : "Left"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "剩余" : "Left"}</div>
                     <div className="text-sm font-semibold">{formatCurrency(sppBuySimulation.remainingSppBalance)}</div>
                   </div>
                 </div>
@@ -665,26 +665,26 @@ export function SecondaryMarket({
               <>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-chart-2">{language === "zh" ? "获得USDC" : "USDC"}</div>
+                    <div className="text-[11px] text-chart-2">{language === "zh" ? "获得USDC" : "USDC"}</div>
                     <div className="text-sm font-semibold text-chart-2">{formatCurrency(sppSellSimulation.usdtReceived)}</div>
                   </div>
                   <div className="bg-muted/50 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
                     <div className="text-sm font-semibold">{formatCurrency(sppSellSimulation.effectivePrice)}</div>
                   </div>
                 </div>
                 <div className="bg-destructive/10 rounded-md p-1.5 text-center">
-                  <div className="text-[10px] text-destructive">{language === "zh" ? "价格降低" : "Price Down"}</div>
+                  <div className="text-[11px] text-destructive">{language === "zh" ? "价格降低" : "Price Down"}</div>
                   <div className="text-sm font-semibold text-destructive">{formatPercent(sppSellSimulation.priceImpact)}</div>
-                  <div className="text-[9px] text-muted-foreground">{formatCurrency(tokenPrice)} → {formatCurrency(sppSellSimulation.newPrice)}</div>
+                  <div className="text-[11px] text-muted-foreground">{formatCurrency(tokenPrice)} → {formatCurrency(sppSellSimulation.newPrice)}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "卖出" : "Sold"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "卖出" : "Sold"}</div>
                     <div className="text-sm font-semibold">{formatTokens(sppSellSimulation.sellTokens)}</div>
                   </div>
                   <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "剩余" : "Left"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "剩余" : "Left"}</div>
                     <div className="text-sm font-semibold">{formatTokens(sppSellSimulation.remainingSppB18)}</div>
                   </div>
                 </div>
@@ -693,44 +693,44 @@ export function SecondaryMarket({
               <>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-chart-2">{t("secondary.tokensReceived")}</div>
+                    <div className="text-[11px] text-chart-2">{t("secondary.tokensReceived")}</div>
                     <div className="text-sm font-semibold text-chart-2" data-testid="text-tokens-received">{formatTokens(buySimulation.tokensReceived)}</div>
                   </div>
                   <div className="bg-muted/50 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
                     <div className="text-sm font-semibold">{formatCurrency(buySimulation.effectivePrice)}</div>
                   </div>
                 </div>
                 <div className="bg-destructive/10 rounded-md p-1.5 text-center">
-                  <div className="text-[10px] text-destructive">{t("secondary.slippage")} 3%</div>
+                  <div className="text-[11px] text-destructive">{t("secondary.slippage")} 3%</div>
                   <div className="text-sm font-semibold text-destructive">-{formatCurrency(buySimulation.slippageFee)}</div>
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "进入LP" : "To LP"}: {formatCurrency(buySimulation.effectiveAmount)}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "进入LP" : "To LP"}: {formatCurrency(buySimulation.effectiveAmount)}</div>
                 </div>
-                <div className="bg-chart-2/10 rounded-md p-1.5 flex justify-between items-center text-[10px]">
+                <div className="bg-chart-2/10 rounded-md p-1.5 flex justify-between items-center text-[11px]">
                   <span className="flex items-center gap-1"><TrendingUp className="h-2.5 w-2.5" />{language === "zh" ? "价格影响" : "Price"}</span>
-                  <span className="font-semibold">{formatCurrency(tokenPrice)} → {formatCurrency(buySimulation.newPrice)} <Badge variant="default" className="text-[8px] px-0.5 bg-chart-2">+{formatPercent(buySimulation.priceImpact)}</Badge></span>
+                  <span className="font-semibold">{formatCurrency(tokenPrice)} → {formatCurrency(buySimulation.newPrice)} <Badge variant="default" className="text-[11px] px-0.5 bg-chart-2">+{formatPercent(buySimulation.priceImpact)}</Badge></span>
                 </div>
               </>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div className="bg-chart-2/10 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-chart-2">{t("secondary.usdtReceived")}</div>
+                    <div className="text-[11px] text-chart-2">{t("secondary.usdtReceived")}</div>
                     <div className="text-sm font-semibold text-chart-2" data-testid="text-usdt-received">{formatCurrency(sellSimulation.usdtReceived)}</div>
                   </div>
                   <div className="bg-muted/50 rounded-md p-2 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "均价" : "Avg"}</div>
                     <div className="text-sm font-semibold">{formatCurrency(sellSimulation.effectivePrice)}</div>
                   </div>
                 </div>
                 <div className="bg-destructive/10 rounded-md p-1.5 text-center">
-                  <div className="text-[10px] text-destructive">{t("secondary.slippage")} 3%</div>
+                  <div className="text-[11px] text-destructive">{t("secondary.slippage")} 3%</div>
                   <div className="text-sm font-semibold text-destructive">-{formatCurrency(sellSimulation.slippageFee)}</div>
-                  <div className="text-[9px] text-muted-foreground">{language === "zh" ? "AMM总" : "Gross"}: {formatCurrency(sellSimulation.grossUsdtReceived)}</div>
+                  <div className="text-[11px] text-muted-foreground">{language === "zh" ? "AMM总" : "Gross"}: {formatCurrency(sellSimulation.grossUsdtReceived)}</div>
                 </div>
-                <div className="bg-destructive/10 rounded-md p-1.5 flex justify-between items-center text-[10px]">
+                <div className="bg-destructive/10 rounded-md p-1.5 flex justify-between items-center text-[11px]">
                   <span className="flex items-center gap-1"><TrendingDown className="h-2.5 w-2.5" />{language === "zh" ? "价格影响" : "Price"}</span>
-                  <span className="font-semibold">{formatCurrency(tokenPrice)} → {formatCurrency(sellSimulation.newPrice)} <Badge variant="destructive" className="text-[8px] px-0.5">{formatPercent(sellSimulation.priceImpact)}</Badge></span>
+                  <span className="font-semibold">{formatCurrency(tokenPrice)} → {formatCurrency(sellSimulation.newPrice)} <Badge variant="destructive" className="text-[11px] px-0.5">{formatPercent(sellSimulation.priceImpact)}</Badge></span>
                 </div>
               </>
             )}

@@ -180,9 +180,9 @@ export function TokenDistribution({
                   className="bg-background/60 rounded-xl p-2 xl:p-3 text-center min-w-0"
                 >
                   <div className="w-3 h-3 xl:w-4 xl:h-4 rounded-full mx-auto mb-1.5 xl:mb-2" style={{ backgroundColor: item.color }} />
-                  <div className="text-[10px] xl:text-xs text-muted-foreground truncate mb-0.5 xl:mb-1">{item.name}</div>
+                  <div className="text-[11px] xl:text-xs text-muted-foreground truncate mb-0.5 xl:mb-1">{item.name}</div>
                   <div className="font-bold text-sm xl:text-base font-mono truncate">{formatTokens(item.value)}</div>
-                  <div className="text-[10px] xl:text-xs text-muted-foreground">{formatPercent(item.value / totalSupply)}</div>
+                  <div className="text-[11px] xl:text-xs text-muted-foreground">{formatPercent(item.value / totalSupply)}</div>
                 </div>
               ))}
             </div>
@@ -268,7 +268,7 @@ export function TokenDistribution({
             </div>
             <div className="min-w-0">
               <span className="text-base sm:text-lg font-bold gradient-text-premium">{language === "zh" ? "代币分配" : "Token Distribution"}</span>
-              <div className="text-[10px] sm:text-xs text-muted-foreground">{language === "zh" ? "系统代币流向追踪" : "Token flow tracking"}</div>
+              <div className="text-[11px] sm:text-xs text-muted-foreground">{language === "zh" ? "系统代币流向追踪" : "Token flow tracking"}</div>
             </div>
           </div>
           <Button
@@ -328,10 +328,10 @@ export function TokenDistribution({
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-[10px] sm:text-xs text-muted-foreground font-medium truncate">{item.name}</span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground font-medium truncate">{item.name}</span>
               </div>
               <div className="font-bold text-sm sm:text-base font-mono">{formatTokens(item.value)}</div>
-              <div className="text-[10px] text-muted-foreground">{formatPercent(item.value / totalSupply)}</div>
+              <div className="text-[11px] text-muted-foreground">{formatPercent(item.value / totalSupply)}</div>
             </div>
           ))}
         </div>
@@ -346,7 +346,7 @@ export function TokenDistribution({
             </div>
             <div>
               <div className="text-xs sm:text-sm font-bold">{language === "zh" ? "提现代币分配" : "Withdrawal Distribution"}</div>
-              <div className="text-[10px] text-muted-foreground">{language === "zh" ? "国库支付USDC，代币按比例分配" : "Treasury pays USDC, tokens distributed"}</div>
+              <div className="text-[11px] text-muted-foreground">{language === "zh" ? "国库支付USDC，代币按比例分配" : "Treasury pays USDC, tokens distributed"}</div>
             </div>
           </div>
 
@@ -361,10 +361,10 @@ export function TokenDistribution({
                 }`}>
                   <item.icon className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${item.color}`} />
                 </div>
-                <div className="text-[9px] sm:text-[10px] text-muted-foreground mb-0.5 truncate">{item.label}</div>
+                <div className="text-[11px] sm:text-[11px] text-muted-foreground mb-0.5 truncate">{item.label}</div>
                 <div className="text-xs sm:text-sm font-bold">{formatPercent(item.percent)}</div>
                 {lastWithdrawalTokens > 0 && (
-                  <div className="text-[9px] text-muted-foreground mt-0.5">{formatTokens(item.value)}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">{formatTokens(item.value)}</div>
                 )}
               </div>
             ))}

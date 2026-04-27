@@ -46,7 +46,7 @@ const CAT_KEYS: Record<string, string> = {
 
 function FileTypeBadge({ type }: { type: string }) {
   return (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-white/5 text-muted-foreground border border-border/30">
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-white/5 text-muted-foreground border border-border/30">
       {type}
     </span>
   );
@@ -78,7 +78,7 @@ function ResourceCard({ resource, downloadLabel }: { resource: Resource; downloa
         <div className="flex items-center gap-1.5">
           <FileTypeBadge type={resource.fileType} />
           {resource.fileSize && (
-            <span className="text-[10px] text-muted-foreground/50">{resource.fileSize}</span>
+            <span className="text-[11px] text-muted-foreground/50">{resource.fileSize}</span>
           )}
         </div>
         <a
@@ -124,7 +124,7 @@ export default function Resources() {
 
         {/* ── Hero ── */}
         <div className="mb-8">
-          <div className="text-[10px] uppercase tracking-[0.22em] text-primary/60 font-medium mb-2">
+          <div className="text-[11px] uppercase tracking-[0.22em] text-primary/60 font-medium mb-2">
             {isEn ? "RESOURCE LIBRARY · 资料库" : "资料库 · RESOURCE LIBRARY"}
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-1">{t("mr.library.title")}</h1>
@@ -147,7 +147,7 @@ export default function Resources() {
               <Globe className="h-3.5 w-3.5 shrink-0" />
               <span>{opt.label}</span>
               <span className={cn(
-                "text-[9px] font-bold tracking-wider px-1 py-0.5 rounded",
+                "text-[11px] font-bold tracking-wider px-1 py-0.5 rounded",
                 selectedLang === opt.code ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground/50"
               )}>{opt.native}</span>
             </button>
@@ -182,7 +182,7 @@ export default function Resources() {
                       {catLabel}
                     </h2>
                     <div className="flex-1 h-px bg-border/30 ml-2" />
-                    <span className="text-[10px] text-muted-foreground/40 font-mono">{items.length}</span>
+                    <span className="text-[11px] text-muted-foreground/40 font-mono">{items.length}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {items.map(r => (

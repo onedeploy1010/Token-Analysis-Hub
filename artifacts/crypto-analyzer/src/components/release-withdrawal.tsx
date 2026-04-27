@@ -1050,7 +1050,7 @@ export function ReleaseWithdrawal({
           <div className="min-w-0">
             <span className="text-base sm:text-lg font-bold gradient-text-premium">{t("release.simulator")}</span>
             {hasOrders && (
-              <div className="text-[10px] sm:text-xs text-muted-foreground">
+              <div className="text-[11px] sm:text-xs text-muted-foreground">
                 {language === "zh" ? `订单 ${currentOrderIndex + 1}/${simulatedOrders.length}` : `Order ${currentOrderIndex + 1}/${simulatedOrders.length}`}
               </div>
             )}
@@ -1138,7 +1138,7 @@ export function ReleaseWithdrawal({
                   ? (language === "zh" ? "按期付息" : "Interest Only")
                   : (language === "zh" ? "等额本金" : "Amortizing")}
               </Label>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 {activeReleaseMode === 'compound'
                   ? (language === "zh" ? "利息复投，到期后本利一起释放" : "Interest compounds, all released at maturity")
                   : activeReleaseMode === 'interestOnly'
@@ -1255,7 +1255,7 @@ export function ReleaseWithdrawal({
                   <span className="text-sm font-bold text-chart-2">{language === "zh" ? "当日可提现" : "Daily Withdrawable"}</span>
                   <div className="text-right">
                     <span className="font-mono font-bold text-lg text-chart-2" data-testid="text-daily-withdrawable">{formatTokens(dayData.dailyWithdrawableB18 || 0, 4)}</span>
-                    <span className="text-[9px] text-muted-foreground block leading-none">B18</span>
+                    <span className="text-[11px] text-muted-foreground block leading-none">B18</span>
                   </div>
                 </div>
               </div>
@@ -1263,21 +1263,21 @@ export function ReleaseWithdrawal({
               {/* 累计收益 */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-muted/30 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计提现B18" : "Withdrawn B18"}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计提现B18" : "Withdrawn B18"}</div>
                   <div className="font-mono font-bold text-base">{formatTokens(cumulativeData.cumulativeWithdrawnB18, 4)}</div>
                 </div>
                 <div className="bg-muted/30 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计提现USDC" : "Withdrawn USDC"}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计提现USDC" : "Withdrawn USDC"}</div>
                   <div className="font-mono font-bold text-base text-chart-2">{formatCurrency(cumulativeData.cumulativeWithdrawnB18 * tokenPrice)}</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-muted/30 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计利息B18" : "Total Interest"}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计利息B18" : "Total Interest"}</div>
                   <div className="font-mono font-bold text-base text-chart-4">{formatTokens(cumulativeData.cumulativeInterest, 4)}</div>
                 </div>
                 <div className="bg-muted/30 rounded-lg p-2.5 text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计释放B18" : "Total Released"}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase mb-1">{language === "zh" ? "累计释放B18" : "Total Released"}</div>
                   <div className="font-mono font-bold text-base">{formatTokens(cumulativeTokens, 4)}</div>
                 </div>
               </div>
@@ -1351,11 +1351,11 @@ export function ReleaseWithdrawal({
                             {language === "zh" ? `第 ${dayData.day} 天` : `Day ${dayData.day}`}
                           </Badge>
                           {isCompoundingPhase ? (
-                            <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-[9px]">
+                            <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-[11px]">
                               {language === "zh" ? "滚存中" : "Compounding"}
                             </Badge>
                           ) : activeUseCompound ? (
-                            <Badge variant="secondary" className="bg-chart-2/10 text-chart-2 border-chart-2/20 text-[9px]">
+                            <Badge variant="secondary" className="bg-chart-2/10 text-chart-2 border-chart-2/20 text-[11px]">
                               {language === "zh" ? "释放期" : "Release"}
                             </Badge>
                           ) : null}
@@ -1393,33 +1393,33 @@ export function ReleaseWithdrawal({
                           {isCompoundingPhase ? (
                             <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
-                                <div className="text-[10px] text-muted-foreground uppercase">{language === "zh" ? "当日利息" : "Interest"}</div>
+                                <div className="text-[11px] text-muted-foreground uppercase">{language === "zh" ? "当日利息" : "Interest"}</div>
                                 <div className="text-xs font-bold text-amber-600 dark:text-amber-400">{formatTokens(dayData.dailyInterest, 4)} B18</div>
                               </div>
                               <div className="space-y-1">
-                                <div className="text-[10px] text-muted-foreground uppercase">{language === "zh" ? "累计利息" : "Cum. Interest"}</div>
+                                <div className="text-[11px] text-muted-foreground uppercase">{language === "zh" ? "累计利息" : "Cum. Interest"}</div>
                                 <div className="text-xs font-bold text-chart-4">{formatTokens(dayData.cumulativeInterest, 4)} B18</div>
                               </div>
-                              <div className="col-span-2 text-center text-[10px] text-amber-600 dark:text-amber-400 py-1">
+                              <div className="col-span-2 text-center text-[11px] text-amber-600 dark:text-amber-400 py-1">
                                 {language === "zh" ? "🔄 滚存阶段：利息自动复投，不可提现" : "🔄 Compounding: Interest auto-reinvested"}
                               </div>
                             </div>
                           ) : (
                             <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
-                                <div className="text-[10px] text-muted-foreground uppercase">{language === "zh" ? "当日利息" : "Interest"}</div>
+                                <div className="text-[11px] text-muted-foreground uppercase">{language === "zh" ? "当日利息" : "Interest"}</div>
                                 <div className="text-xs font-bold text-chart-4">{formatTokens(dayData.dailyInterest, 4)} B18</div>
                               </div>
                               <div className="space-y-1 overflow-hidden">
-                                <div className="text-[10px] text-muted-foreground uppercase truncate">{language === "zh" ? "单日提现" : "Daily Withdraw"}</div>
+                                <div className="text-[11px] text-muted-foreground uppercase truncate">{language === "zh" ? "单日提现" : "Daily Withdraw"}</div>
                                 <div className="text-xs font-bold text-chart-2 truncate">{formatTokens(dayData.dailyWithdrawableB18, 4)} B18</div>
                               </div>
                               <div className="space-y-1 overflow-hidden">
-                                <div className="text-[10px] text-muted-foreground uppercase truncate">{language === "zh" ? "累计提现B18" : "Cum. B18"}</div>
+                                <div className="text-[11px] text-muted-foreground uppercase truncate">{language === "zh" ? "累计提现B18" : "Cum. B18"}</div>
                                 <div className="text-xs font-bold truncate">{formatTokens(dayData.cumulativeWithdrawnB18, 4)}</div>
                               </div>
                               <div className="space-y-1">
-                                <div className="text-[10px] text-muted-foreground uppercase">{language === "zh" ? "累计提现USDC" : "Cum. USDC"}</div>
+                                <div className="text-[11px] text-muted-foreground uppercase">{language === "zh" ? "累计提现USDC" : "Cum. USDC"}</div>
                                 <div className="text-xs font-bold text-chart-1">{formatCurrency(dayData.cumulativeWithdrawnB18 * tokenPrice)}</div>
                               </div>
                             </div>
@@ -1453,7 +1453,7 @@ export function ReleaseWithdrawal({
               <div className="space-y-2">
                 {/* 已释放提示和本次新增 */}
                 {activeReleasedUsdc > 0 && (
-                  <div className="bg-muted/50 rounded-md p-1.5 text-[10px]">
+                  <div className="bg-muted/50 rounded-md p-1.5 text-[11px]">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{language === "zh" ? `已释放(1-${activeReleasedDays}天)` : `Released (D1-${activeReleasedDays})`}</span>
                       <span className="font-semibold text-chart-2">{formatCurrency(activeReleasedUsdc)}</span>
@@ -1466,18 +1466,18 @@ export function ReleaseWithdrawal({
                 )}
                 {/* 累计到第N天的USDC兑付 */}
                 <div className="bg-chart-2/10 rounded-md p-2">
-                  <div className="text-[10px] text-muted-foreground text-center mb-1">{language === "zh" ? `累计到第${simulationDay}天 USDC兑付` : `Cumulative Day 1-${simulationDay} USDC`}</div>
+                  <div className="text-[11px] text-muted-foreground text-center mb-1">{language === "zh" ? `累计到第${simulationDay}天 USDC兑付` : `Cumulative Day 1-${simulationDay} USDC`}</div>
                   <div className="grid grid-cols-3 gap-1 text-center">
                     <div>
-                      <div className="text-[9px] text-muted-foreground">{language === "zh" ? "累计毛额" : "Gross"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "累计毛额" : "Gross"}</div>
                       <div className="text-sm font-semibold">{formatCurrency(cumulativeSimulation.grossUsdcPayout)}</div>
                     </div>
                     <div>
-                      <div className="text-[9px] text-muted-foreground">{language === "zh" ? "累计税收" : "Tax"} ({formatPercent(cumulativeSimulation.taxRate)})</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "累计税收" : "Tax"} ({formatPercent(cumulativeSimulation.taxRate)})</div>
                       <div className="text-sm font-semibold text-destructive">-{formatCurrency(cumulativeSimulation.taxUsdc)}</div>
                     </div>
                     <div className="bg-chart-2/20 rounded p-0.5">
-                      <div className="text-[9px] text-muted-foreground">{language === "zh" ? "累计净收" : "Total Net"}</div>
+                      <div className="text-[11px] text-muted-foreground">{language === "zh" ? "累计净收" : "Total Net"}</div>
                       <div className="text-sm font-bold text-chart-2">{formatCurrency(cumulativeSimulation.usdtReceived)}</div>
                     </div>
                   </div>
@@ -1485,22 +1485,22 @@ export function ReleaseWithdrawal({
 
                 <div className="grid grid-cols-3 gap-1.5">
                   <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "累计释放B18" : "Cumulative B18"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "累计释放B18" : "Cumulative B18"}</div>
                     <div className="text-sm font-semibold">{formatTokens(cumulativeTokens)}</div>
                   </div>
                   <div className="bg-muted/50 rounded-md p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "总周期净收" : "Period Total"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "总周期净收" : "Period Total"}</div>
                     <div className="text-sm font-semibold">{formatCurrency(totalRelease)}</div>
                   </div>
                   <div className="bg-chart-1/10 rounded-md p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground">{language === "zh" ? "每日净收" : "Daily Net"}</div>
+                    <div className="text-[11px] text-muted-foreground">{language === "zh" ? "每日净收" : "Daily Net"}</div>
                     <div className="text-sm font-semibold text-chart-1">{formatCurrency(dailyRelease)}</div>
                   </div>
                 </div>
 
                 {/* 累计B18释放分配 */}
-                <div className="text-[10px] text-muted-foreground text-center">{language === "zh" ? `累计B18分配: ${formatTokens(cumulativeTokens)} B18` : `Cumulative B18: ${formatTokens(cumulativeTokens)} B18`}</div>
-                <div className="grid grid-cols-4 gap-1 text-[9px]">
+                <div className="text-[11px] text-muted-foreground text-center">{language === "zh" ? `累计B18分配: ${formatTokens(cumulativeTokens)} B18` : `Cumulative B18: ${formatTokens(cumulativeTokens)} B18`}</div>
+                <div className="grid grid-cols-4 gap-1 text-[11px]">
                   <div className="bg-chart-3/10 rounded p-1 text-center">
                     <FileText className="h-2.5 w-2.5 mx-auto text-chart-3" />
                     <div className="font-semibold">{formatTokens(cumulativeSimulation.taxToDeliveryContract)}</div>
@@ -1524,18 +1524,18 @@ export function ReleaseWithdrawal({
                 </div>
                 
                 {/* 税收买入SPP */}
-                <div className="bg-chart-1/10 rounded-md p-1.5 text-center text-[10px]">
+                <div className="bg-chart-1/10 rounded-md p-1.5 text-center text-[11px]">
                   <div className="text-muted-foreground">{language === "zh" ? "累计税收USDC从LP买B18 → SPP" : "Cumulative Tax USDC → LP → SPP"}</div>
                   <div className="font-semibold">{formatCurrency(cumulativeSimulation.taxUsdc)} → {formatTokens(cumulativeSimulation.b18BoughtFromLP)} B18</div>
                   <div className="text-muted-foreground">{language === "zh" ? "SPP累计收" : "SPP Total"}: {formatTokens(cumulativeSimulation.sppB18Received)} B18</div>
                 </div>
 
-                <div className="bg-muted/30 rounded-md p-1.5 flex justify-between items-center text-[10px]">
+                <div className="bg-muted/30 rounded-md p-1.5 flex justify-between items-center text-[11px]">
                   <span className="text-muted-foreground flex items-center gap-1">
                     <TrendingUp className="h-2.5 w-2.5" />
                     {language === "zh" ? "累计价格影响" : "Cumulative Price Impact"}
                   </span>
-                  <span className="font-semibold">{formatCurrency(tokenPrice)} → {formatCurrency(cumulativeSimulation.newPrice)} <Badge variant="outline" className="text-[8px] px-0.5 ml-0.5">+{formatPercent(cumulativeSimulation.priceImpact)}</Badge></span>
+                  <span className="font-semibold">{formatCurrency(tokenPrice)} → {formatCurrency(cumulativeSimulation.newPrice)} <Badge variant="outline" className="text-[11px] px-0.5 ml-0.5">+{formatPercent(cumulativeSimulation.priceImpact)}</Badge></span>
                 </div>
 
                 <div className={`rounded-md p-1.5 overflow-hidden ${isCashFlowSufficient ? 'bg-chart-2/10' : needsQueue ? 'bg-amber-500/10' : 'bg-destructive/10'}`} data-testid="status-cash-flow">
@@ -1548,7 +1548,7 @@ export function ReleaseWithdrawal({
                       ) : (
                         <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
                       )}
-                      <span className="text-[10px] font-medium truncate" data-testid="text-cash-flow-status">
+                      <span className="text-[11px] font-medium truncate" data-testid="text-cash-flow-status">
                         {isCashFlowSufficient
                           ? (language === "zh" ? '现金流充足' : 'OK')
                           : needsQueue
@@ -1556,15 +1556,15 @@ export function ReleaseWithdrawal({
                           : (language === "zh" ? '现金流不足' : 'Low')}
                       </span>
                     </div>
-                    <Badge variant="outline" className={`text-[8px] px-0.5 shrink-0 ${needsQueue ? 'border-amber-500 text-amber-600' : ''}`} data-testid="badge-334">
+                    <Badge variant="outline" className={`text-[11px] px-0.5 shrink-0 ${needsQueue ? 'border-amber-500 text-amber-600' : ''}`} data-testid="badge-334">
                       433: {needsQueue ? (language === "zh" ? '启动' : 'On') : (language === "zh" ? '关' : 'Off')}
                     </Badge>
                   </div>
-                  <div className="text-[9px] text-muted-foreground mt-0.5 truncate" data-testid="text-cash-flow-details">
+                  <div className="text-[11px] text-muted-foreground mt-0.5 truncate" data-testid="text-cash-flow-details">
                     {language === "zh" ? "库" : "T"}: {formatCurrency(treasuryBalance)} | {language === "zh" ? "本次需" : "N"}: {formatCurrency(incrementalUsdcNeeded)}
                   </div>
                   {needsQueue && (
-                    <div className="text-[9px] mt-1 pt-1 border-t border-amber-500/20">
+                    <div className="text-[11px] mt-1 pt-1 border-t border-amber-500/20">
                       <div className="flex justify-between text-amber-600">
                         <span>{language === "zh" ? "立即" : "Now"}: {formatCurrency(immediateWithdrawal)}</span>
                         <span>{language === "zh" ? "排队" : "Queue"}: {formatCurrency(queuedAmount)}</span>
@@ -1647,7 +1647,7 @@ export function ReleaseWithdrawal({
                     {queuedWithdrawals.map((withdrawal, idx) => (
                       <div key={withdrawal.id} className="rounded-lg p-2.5 border border-amber-500/20 bg-amber-500/5">
                         <div className="flex justify-between items-center text-xs mb-1.5">
-                          <Badge variant="outline" className="border-amber-500 text-amber-600 text-[10px]">
+                          <Badge variant="outline" className="border-amber-500 text-amber-600 text-[11px]">
                             #{idx + 1}
                           </Badge>
                           <span className="text-muted-foreground">
@@ -1662,7 +1662,7 @@ export function ReleaseWithdrawal({
                         <span>{language === "zh" ? "总额" : "Total"}</span>
                         <span className="font-bold text-amber-600">{formatCurrency(totalQueuedAmount)}</span>
                       </div>
-                      <div className="text-[10px] text-muted-foreground mt-1">
+                      <div className="text-[11px] text-muted-foreground mt-1">
                         {language === "zh" ? "新订单资金充足时自动赎回" : "Auto-redeem on new order funds"}
                       </div>
                     </div>

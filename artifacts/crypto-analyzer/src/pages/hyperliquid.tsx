@@ -188,7 +188,7 @@ export default function HyperLiquid() {
               <span className="text-2xl font-black text-green-400 tracking-tighter">HL</span>
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-green-400/70 block mb-1">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-green-400/70 block mb-1">
                 <span className="zh-only">金库实时数据 · </span>Live Vault Intelligence
               </span>
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
@@ -208,7 +208,7 @@ export default function HyperLiquid() {
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </div>
-                <Badge variant="outline" className="text-[10px] border-green-500/40 text-green-400 bg-green-500/10">
+                <Badge variant="outline" className="text-[11px] border-green-500/40 text-green-400 bg-green-500/10">
                   {vault?.isClosed ? (showZh ? "已关闭" : "Closed") : (showZh ? "运行中" : "Active")}
                 </Badge>
               </div>
@@ -223,28 +223,28 @@ export default function HyperLiquid() {
           ) : vault ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-border/30">
               <div className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">TVL<span className="zh-only"> / 总锁仓</span></div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">TVL<span className="zh-only"> / 总锁仓</span></div>
                 <div className="text-2xl font-bold num text-foreground">{fmtM(vault.latestEquity)}</div>
-                {showZh && <div className="text-[10px] text-muted-foreground/70">金库总价值</div>}
+                {showZh && <div className="text-[11px] text-muted-foreground/70">金库总价值</div>}
               </div>
               <div className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">APR<span className="zh-only"> / 年化</span></div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">APR<span className="zh-only"> / 年化</span></div>
                 <div className={`text-2xl font-bold ${aprPct >= 0 ? "text-green-400" : "text-red-400"}`}>
                   {aprPct >= 0 ? "+" : ""}{fmt(aprPct, 2)}%
                 </div>
-                {showZh && <div className="text-[10px] text-muted-foreground/70">实时年化收益率</div>}
+                {showZh && <div className="text-[11px] text-muted-foreground/70">实时年化收益率</div>}
               </div>
               <div className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">All-Time PnL</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">All-Time PnL</div>
                 <div className={`text-2xl font-bold num ${vault.allTimePnl >= 0 ? "num-gold" : "text-red-400"}`}>
                   {vault.allTimePnl >= 0 ? "+" : ""}{fmtM(vault.allTimePnl)}
                 </div>
-                {showZh && <div className="text-[10px] text-muted-foreground/70">历史累计盈亏</div>}
+                {showZh && <div className="text-[11px] text-muted-foreground/70">历史累计盈亏</div>}
               </div>
               <div className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">Followers</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/55 font-medium">Followers</div>
                 <div className="text-2xl font-bold text-foreground">{vault.followers.toLocaleString()}</div>
-                {showZh && <div className="text-[10px] text-muted-foreground/70">跟单用户数</div>}
+                {showZh && <div className="text-[11px] text-muted-foreground/70">跟单用户数</div>}
               </div>
             </div>
           ) : null}
@@ -264,13 +264,13 @@ export default function HyperLiquid() {
             const up = value >= 0;
             return (
               <div key={labelEn} className={`p-4 rounded-xl border ${up ? "border-green-800/40 bg-green-950/20" : "border-red-900/40 bg-red-950/20"}`}>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{labelEn}{showZh && ` · ${label}`}</p>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">{labelEn}{showZh && ` · ${label}`}</p>
                 <p className={`font-mono text-lg font-bold ${up ? "text-green-400" : "text-red-400"}`}>
                   {up ? "+" : ""}{fmtM(value)}
                 </p>
                 <div className={`flex items-center gap-1 mt-1 ${up ? "text-green-500" : "text-red-500"}`}>
                   {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  <span className="text-[10px] zh-only">{up ? "盈利" : "亏损"}</span>
+                  <span className="text-[11px] zh-only">{up ? "盈利" : "亏损"}</span>
                 </div>
               </div>
             );
@@ -284,7 +284,7 @@ export default function HyperLiquid() {
 
         <div className="border-b border-border/40 pb-4">
           <div className="border-l-[3px] border-green-500 pl-4">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5 zh-only">市场数据</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5 zh-only">市场数据</span>
             <h2 className="text-xl font-bold tracking-tight text-foreground">Market Intelligence</h2>
             {showZh && <p className="text-xs text-muted-foreground mt-0.5">HYPE价格K线 · 金库规模 · 累计盈亏走势</p>}
           </div>
@@ -449,7 +449,7 @@ export default function HyperLiquid() {
 
           <div className="border-b border-border/40 pb-4">
             <div className="border-l-[3px] border-green-500 pl-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5 zh-only">基本信息</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-green-500/60 block mb-0.5 zh-only">基本信息</span>
               <h2 className="text-xl font-bold tracking-tight text-foreground">Vault Details</h2>
               {showZh && <p className="text-xs text-muted-foreground mt-0.5">合约地址 · 管理员 · 参数配置</p>}
             </div>
@@ -474,7 +474,7 @@ export default function HyperLiquid() {
                       <td className="py-3 px-3 sm:px-5 text-muted-foreground w-28 sm:w-40 shrink-0">
                         <span className="hidden sm:inline">{labelEn}</span>
                         <span className="sm:hidden text-[11px]">{showZh ? label : labelEn}</span>
-                        {showZh && <span className="ml-1.5 text-[10px] opacity-50 hidden sm:inline">{label}</span>}
+                        {showZh && <span className="ml-1.5 text-[11px] opacity-50 hidden sm:inline">{label}</span>}
                       </td>
                       <td className="py-3 px-3 sm:px-5 text-right">
                         {link ? (
@@ -506,7 +506,7 @@ export default function HyperLiquid() {
           {/* Description */}
           {vault.description && (
             <div className="p-5 rounded-xl border border-border/40 bg-muted/10 space-y-2">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium flex items-center gap-1.5">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 font-medium flex items-center gap-1.5">
                 <Clock className="h-3 w-3" /><span className="zh-only">项目简介 · </span>Description
               </p>
               <p className="text-sm text-muted-foreground leading-relaxed">{vault.description}</p>

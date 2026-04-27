@@ -130,7 +130,7 @@ export function Step8TokenDistribution({ phase, language }: StepProps) {
                   <div className="font-mono font-bold text-sm" style={{ color: dist.color }}>
                     {(960 * dist.percent / 100).toFixed(0)} B18
                   </div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
+                  <div className="text-[11px] text-muted-foreground mt-1">
                     {index === 0 && (language === "zh" ? "回归储备供应新单" : "Return to reserves")}
                     {index === 1 && (language === "zh" ? "永久移除减少供应" : "Permanently removed")}
                     {index === 2 && (language === "zh" ? "分配给业绩达标用户" : "Distributed to qualified")}
@@ -161,7 +161,7 @@ export function Step8TokenDistribution({ phase, language }: StepProps) {
                 <div className="text-muted-foreground">{language === "zh" ? "50/20/20/10链上可查，20%销毁回馈持有者" : "50/20/20/10 on-chain verifiable, 20% burned for holders"}</div>
               </div>
             </div>
-            <div className="text-center text-[10px] text-muted-foreground">
+            <div className="text-center text-[11px] text-muted-foreground">
               {language === "zh"
                 ? "每一笔分配都在链上可查，20%直接销毁减少供应，长期推动币价上涨"
                 : "Every distribution is on-chain verifiable, 20% burned to reduce supply, supporting long-term price growth"}

@@ -87,14 +87,14 @@ export function MetricsBar({
                     <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-chart-2/15 flex items-center justify-center">
                       <Coins className="h-3 w-3 lg:h-4 lg:w-4 text-chart-2" />
                     </div>
-                    <span className="text-[10px] lg:text-xs font-bold text-muted-foreground uppercase">{language === "zh" ? "币价" : "PRICE"}</span>
+                    <span className="text-[11px] lg:text-xs font-bold text-muted-foreground uppercase">{language === "zh" ? "币价" : "PRICE"}</span>
                   </div>
                   <span className="text-sm lg:text-xl font-black font-mono mt-0.5">${tokenPrice.toFixed(4)}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-64 mobile-premium-card p-0 overflow-hidden border border-border shadow-2xl">
                 <div className="nav-gradient p-3 text-white">
-                  <DropdownMenuLabel className="text-[10px] font-bold uppercase text-white/90 p-0 m-0">{language === "zh" ? "代币与LP数据" : "Token & LP"}</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[11px] font-bold uppercase text-white/90 p-0 m-0">{language === "zh" ? "代币与LP数据" : "Token & LP"}</DropdownMenuLabel>
                 </div>
                 <div className="p-3 space-y-2 bg-background">
                   <div className="flex justify-between items-center p-2 rounded-xl bg-muted/30 border border-border/50">
@@ -121,31 +121,31 @@ export function MetricsBar({
                     <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-chart-4/15 flex items-center justify-center">
                       <PieChart className="h-3 w-3 lg:h-4 lg:w-4 text-chart-4" />
                     </div>
-                    <span className="text-[10px] lg:text-xs font-bold text-muted-foreground uppercase">{language === "zh" ? "我的" : "MY"}</span>
+                    <span className="text-[11px] lg:text-xs font-bold text-muted-foreground uppercase">{language === "zh" ? "我的" : "MY"}</span>
                   </div>
                   <span className="text-sm lg:text-xl font-black mt-0.5">{language === "zh" ? "投资" : "INVEST"}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" className="w-72 mobile-premium-card p-0 overflow-hidden border border-border shadow-2xl">
                 <div className="bg-chart-4 p-3 text-white">
-                  <DropdownMenuLabel className="text-[10px] font-bold uppercase text-white/90 p-0 m-0">{language === "zh" ? "个人投资与配置" : "Investment & Config"}</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[11px] font-bold uppercase text-white/90 p-0 m-0">{language === "zh" ? "个人投资与配置" : "Investment & Config"}</DropdownMenuLabel>
                 </div>
                 <div className="p-3 space-y-3 bg-background">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-2 rounded-xl bg-muted/30 border border-border/50 text-center">
-                      <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">{language === "zh" ? "累计投资" : "Invested"}</div>
+                      <div className="text-[11px] font-bold text-muted-foreground uppercase mb-1">{language === "zh" ? "累计投资" : "Invested"}</div>
                       <div className="text-xs font-mono font-bold text-chart-4">{formatCurrency(totalInvestment)}</div>
                     </div>
                     <div className="p-2 rounded-xl bg-muted/30 border border-border/50 text-center">
-                      <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">{language === "zh" ? "累计提现" : "Withdrawn"}</div>
+                      <div className="text-[11px] font-bold text-muted-foreground uppercase mb-1">{language === "zh" ? "累计提现" : "Withdrawn"}</div>
                       <div className="text-xs font-mono font-bold text-chart-2">{formatCurrency(totalReleased)}</div>
                     </div>
                   </div>
 
                   <div className="p-2 rounded-xl bg-chart-4/5 border border-chart-4/20">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-chart-4 uppercase tracking-wider">{language === "zh" ? "质押配置" : "Staking Config"}</span>
-                      <Badge variant="outline" className="text-[9px] font-bold border-chart-4/30 text-chart-4 h-4 px-1">{userConfig?.stakingDays || 0} {language === "zh" ? "天" : "Days"}</Badge>
+                      <span className="text-[11px] font-bold text-chart-4 uppercase tracking-wider">{language === "zh" ? "质押配置" : "Staking Config"}</span>
+                      <Badge variant="outline" className="text-[11px] font-bold border-chart-4/30 text-chart-4 h-4 px-1">{userConfig?.stakingDays || 0} {language === "zh" ? "天" : "Days"}</Badge>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-medium text-muted-foreground">{language === "zh" ? "预期日利率" : "Daily Rate"}</span>
@@ -155,8 +155,8 @@ export function MetricsBar({
 
                   <div className="p-2 rounded-xl bg-chart-2/5 border border-chart-2/20">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-chart-2 uppercase tracking-wider">{language === "zh" ? "释放配置" : "Release Config"}</span>
-                      <Badge variant="outline" className="text-[9px] font-bold border-chart-2/30 text-chart-2 h-4 px-1">{userConfig?.releaseDays || 0} {language === "zh" ? "天" : "Days"}</Badge>
+                      <span className="text-[11px] font-bold text-chart-2 uppercase tracking-wider">{language === "zh" ? "释放配置" : "Release Config"}</span>
+                      <Badge variant="outline" className="text-[11px] font-bold border-chart-2/30 text-chart-2 h-4 px-1">{userConfig?.releaseDays || 0} {language === "zh" ? "天" : "Days"}</Badge>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-medium text-muted-foreground">{language === "zh" ? "释放税率" : "Tax Rate"}</span>
@@ -166,7 +166,7 @@ export function MetricsBar({
 
                   <div className="space-y-1.5 px-1">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{language === "zh" ? "释放进度" : "Release Progress"}</span>
+                      <span className="text-[11px] font-bold text-muted-foreground uppercase">{language === "zh" ? "释放进度" : "Release Progress"}</span>
                       <span className="text-xs font-mono font-bold">{formatPercent(releaseProgress)}</span>
                     </div>
                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -185,14 +185,14 @@ export function MetricsBar({
                     <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-chart-1/15 flex items-center justify-center">
                       <Activity className="h-3 w-3 lg:h-4 lg:w-4 text-chart-1" />
                     </div>
-                    <span className="text-[10px] lg:text-xs font-bold text-muted-foreground uppercase">{language === "zh" ? "系统" : "SYS"}</span>
+                    <span className="text-[11px] lg:text-xs font-bold text-muted-foreground uppercase">{language === "zh" ? "系统" : "SYS"}</span>
                   </div>
                   <span className="text-sm lg:text-xl font-black mt-0.5">{language === "zh" ? "详情" : "DETAILS"}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72 mobile-premium-card p-0 overflow-hidden border border-border shadow-2xl">
                 <div className="bg-chart-1 p-3 text-white">
-                  <DropdownMenuLabel className="text-[10px] font-bold uppercase text-white/90 p-0 m-0">{language === "zh" ? "全局资金状态" : "Global Reserves"}</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[11px] font-bold uppercase text-white/90 p-0 m-0">{language === "zh" ? "全局资金状态" : "Global Reserves"}</DropdownMenuLabel>
                 </div>
                 <div className="p-3 space-y-2 bg-background">
                   <div className="flex justify-between items-center p-2 rounded-xl bg-muted/30 border border-border/50">

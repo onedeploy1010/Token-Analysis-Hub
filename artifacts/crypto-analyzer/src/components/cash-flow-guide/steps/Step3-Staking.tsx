@@ -188,7 +188,7 @@ export function Step3Staking({ phase, language }: StepProps) {
                       {option.rate}%
                     </motion.span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground">
                     {language === "zh" ? "日利率" : "Daily Rate"}
                   </span>
                 </div>
@@ -276,7 +276,7 @@ export function Step3Staking({ phase, language }: StepProps) {
                 <span className="font-mono text-primary">113.5 B18</span>
               </div>
             </div>
-            <div className="text-[10px] text-muted-foreground mt-1">
+            <div className="text-[11px] text-muted-foreground mt-1">
               {language === "zh"
                 ? "* 税收用于回购B18推动币价，持有越久税率越低"
                 : "* Tax used for buyback, longer holding = lower tax rate"}
