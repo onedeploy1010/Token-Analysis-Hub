@@ -867,59 +867,59 @@ const SIX_STREAMS = [
  *  since the Genesis (L5) path is now the sole route to pool share. */
 const PLATFORM_FEATURES = [
   {
-    labelKey: "mr.dash.benefits.feat.promo",
-    icon: Network,
-    all: true, strategicBoost: false,
-    iconCls:    "text-cyan-300",
-    iconBg:     "bg-cyan-950/60",
-    iconBorder: "border-cyan-500/35",
-    glowFrom:   "from-cyan-900/25",
-    borderCls:  "border-cyan-500/30",
-    accentLine: "via-cyan-500/50",
+    labelKey:    "mr.dash.benefits.feat.promo",
+    subKey:      "mr.dash.benefits.feat.promoSub",
+    icon:        Network,
+    all: true,   strategicBoost: false,
+    iconCls:     "text-cyan-300",
+    iconBg:      "bg-cyan-950/55",
+    iconBorder:  "border-cyan-500/40",
+    glowFrom:    "from-cyan-900/18",
+    stripe:      "from-cyan-400/75 via-cyan-500/35 to-transparent",
   },
   {
-    labelKey: "mr.dash.benefits.feat.api",
-    icon: Terminal,
-    all: true, strategicBoost: true,
-    iconCls:    "text-blue-300",
-    iconBg:     "bg-blue-950/60",
-    iconBorder: "border-blue-500/35",
-    glowFrom:   "from-blue-900/25",
-    borderCls:  "border-blue-500/30",
-    accentLine: "via-blue-500/50",
+    labelKey:    "mr.dash.benefits.feat.api",
+    subKey:      "mr.dash.benefits.feat.apiSub",
+    icon:        Terminal,
+    all: true,   strategicBoost: true,
+    iconCls:     "text-blue-300",
+    iconBg:      "bg-blue-950/55",
+    iconBorder:  "border-blue-500/40",
+    glowFrom:    "from-blue-900/18",
+    stripe:      "from-blue-400/75 via-blue-500/35 to-transparent",
   },
   {
-    labelKey: "mr.dash.benefits.feat.ai",
-    icon: Eye,
-    all: true, strategicBoost: true,
-    iconCls:    "text-violet-300",
-    iconBg:     "bg-violet-950/60",
-    iconBorder: "border-violet-500/35",
-    glowFrom:   "from-violet-900/25",
-    borderCls:  "border-violet-500/30",
-    accentLine: "via-violet-500/50",
+    labelKey:    "mr.dash.benefits.feat.ai",
+    subKey:      "mr.dash.benefits.feat.aiSub",
+    icon:        Eye,
+    all: true,   strategicBoost: true,
+    iconCls:     "text-violet-300",
+    iconBg:      "bg-violet-950/55",
+    iconBorder:  "border-violet-500/40",
+    glowFrom:    "from-violet-900/18",
+    stripe:      "from-violet-400/75 via-violet-500/35 to-transparent",
   },
   {
-    labelKey: "mr.dash.benefits.feat.pred",
-    icon: Radar,
-    all: true, strategicBoost: true,
-    iconCls:    "text-amber-300",
-    iconBg:     "bg-amber-950/60",
-    iconBorder: "border-amber-500/35",
-    glowFrom:   "from-amber-900/25",
-    borderCls:  "border-amber-500/30",
-    accentLine: "via-amber-500/50",
+    labelKey:    "mr.dash.benefits.feat.pred",
+    subKey:      "mr.dash.benefits.feat.predSub",
+    icon:        Radar,
+    all: true,   strategicBoost: true,
+    iconCls:     "text-amber-300",
+    iconBg:      "bg-amber-950/55",
+    iconBorder:  "border-amber-500/40",
+    glowFrom:    "from-amber-900/18",
+    stripe:      "from-amber-400/75 via-amber-500/35 to-transparent",
   },
   {
-    labelKey: "mr.dash.benefits.feat.quant",
-    icon: Layers,
-    all: true, strategicBoost: true,
-    iconCls:    "text-emerald-300",
-    iconBg:     "bg-emerald-950/60",
-    iconBorder: "border-emerald-500/35",
-    glowFrom:   "from-emerald-900/25",
-    borderCls:  "border-emerald-500/30",
-    accentLine: "via-emerald-500/50",
+    labelKey:    "mr.dash.benefits.feat.quant",
+    subKey:      "mr.dash.benefits.feat.quantSub",
+    icon:        Layers,
+    all: true,   strategicBoost: true,
+    iconCls:     "text-emerald-300",
+    iconBg:      "bg-emerald-950/55",
+    iconBorder:  "border-emerald-500/40",
+    glowFrom:    "from-emerald-900/18",
+    stripe:      "from-emerald-400/75 via-emerald-500/35 to-transparent",
   },
 ];
 
@@ -1079,7 +1079,10 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
       {/* ── 4. 平台功能 ── API / AI / predict / quant. STRATEGIC tier
              gets a 1.5× quota boost on the marked rows. */}
       <BenefitGroup icon={Sparkles} title={t("mr.dash.benefits.groupFeatures")} subtitle="PLATFORM FEATURES" delay={0.12}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        {/* Command-matrix layout — each feature is a full-width row,
+            like a classified entitlements panel or a Bloomberg terminal
+            capabilities list. Far more imposing than a card grid.        */}
+        <div className="rounded-xl border border-amber-500/20 overflow-hidden divide-y divide-white/[0.06]">
           {PLATFORM_FEATURES.map((f, idx) => {
             const available = f.all || (isStrategic && (f as any).strategicOnly);
             const boosted = f.strategicBoost && isStrategic;
@@ -1087,32 +1090,36 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             return (
               <div
                 key={f.labelKey}
-                className={`relative rounded-xl border bg-gradient-to-br ${f.glowFrom} to-transparent p-3.5 overflow-hidden transition-all duration-300
-                  ${f.borderCls}
-                  ${!available ? "opacity-38 grayscale" : "hover:brightness-110"}
-                  ${idx === 4 ? "sm:col-span-1 col-span-2" : ""}`}
+                className={`relative flex items-center gap-3 sm:gap-4 px-4 py-3.5 bg-gradient-to-r ${f.glowFrom} to-transparent transition-all duration-300 ${!available ? "opacity-38 grayscale" : "hover:brightness-[1.08]"}`}
               >
-                {/* Top accent line — color matches the feature's accent */}
-                <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${f.accentLine} to-transparent pointer-events-none`} />
-                {/* Corner index — subtle runic ordinal */}
-                <div className={`absolute top-2.5 left-3 text-[9px] font-mono tabular-nums ${f.iconCls} opacity-35 leading-none`}>
+                {/* Left color stripe */}
+                <div className={`absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b ${f.stripe} pointer-events-none`} />
+
+                {/* Ordinal index */}
+                <span className={`text-[10px] font-mono tabular-nums leading-none ${f.iconCls} opacity-40 w-4 shrink-0 pl-1`}>
                   {String(idx + 1).padStart(2, "0")}
+                </span>
+
+                {/* Icon in bordered container */}
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg border shrink-0 ${f.iconBorder} ${f.iconBg} ${f.iconCls}`}>
+                  <Icon className="h-4 w-4 drop-shadow-[0_0_8px_currentColor]" />
                 </div>
-                {/* ×1.5 apex boost badge */}
-                {boosted && (
-                  <span className="absolute top-2 right-2 text-[8px] font-mono tracking-widest text-purple-300 bg-purple-950/70 border border-purple-500/30 rounded-full px-1.5 py-0.5 leading-none">
-                    ×1.5
-                  </span>
-                )}
-                {/* Icon in a glowing bordered square — terminal-panel style */}
-                <div className={`mt-4 mb-3 flex items-center justify-center w-10 h-10 rounded-lg border ${f.iconBorder} ${f.iconBg} ${f.iconCls}`}>
-                  <Icon className="h-5 w-5 drop-shadow-[0_0_10px_currentColor]" />
-                </div>
-                <p className="text-xs font-semibold text-foreground/95 leading-snug pr-1">
+
+                {/* Label — takes all remaining space */}
+                <p className="flex-1 text-sm font-semibold text-foreground/95 min-w-0 leading-tight">
                   {t(f.labelKey)}
                 </p>
-                <div className={`mt-2 text-[10px] font-mono uppercase tracking-[0.2em] ${available ? "text-emerald-400/85" : "text-muted-foreground/62"}`}>
-                  {available ? "● ACTIVE" : "○ LOCKED"}
+
+                {/* Boost badge + status — always right-aligned */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {boosted && (
+                    <span className="hidden sm:inline text-[8px] font-mono tracking-widest text-purple-300 bg-purple-950/70 border border-purple-500/35 rounded-full px-2 py-0.5 leading-none">
+                      ×1.5 APEX
+                    </span>
+                  )}
+                  <span className={`text-[10px] font-mono uppercase tracking-[0.18em] shrink-0 ${available ? "text-emerald-400" : "text-muted-foreground/62"}`}>
+                    {available ? "● ACTIVE" : "○ LOCKED"}
+                  </span>
                 </div>
               </div>
             );
