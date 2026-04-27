@@ -218,7 +218,7 @@ const en: Dict = {
   "mr.nav.projects": "Projects",
   "mr.nav.simulators": "Simulators",
   "mr.nav.recruit": "Recruit",
-  "mr.nav.library": "Library",
+  "mr.nav.library": "AI Predictions",
   "mr.library.title": "Resource Library",
   "mr.library.sub": "Select a language to download project documents.",
   "mr.library.empty": "No documents available for this language yet.",

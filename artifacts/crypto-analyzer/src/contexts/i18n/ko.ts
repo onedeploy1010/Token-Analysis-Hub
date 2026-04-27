@@ -218,7 +218,7 @@ const ko: Dict = {
   "mr.nav.projects": "프로젝트",
   "mr.nav.simulators": "시뮬레이터",
   "mr.nav.recruit": "노드 모집",
-  "mr.nav.library": "자료실",
+  "mr.nav.library": "AI 예측",
   "mr.library.title": "자료 다운로드",
   "mr.library.sub": "언어를 선택하여 프로젝트 자료를 다운로드하세요.",
   "mr.library.empty": "이 언어의 자료가 아직 없습니다.",

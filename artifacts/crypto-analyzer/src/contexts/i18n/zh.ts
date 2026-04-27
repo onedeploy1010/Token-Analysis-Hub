@@ -218,7 +218,7 @@ const zh: Dict = {
   "mr.nav.projects": "项目库",
   "mr.nav.simulators": "模拟工具",
   "mr.nav.recruit": "节点招募",
-  "mr.nav.library": "资料库",
+  "mr.nav.library": "智能预测",
   "mr.library.title": "资料下载中心",
   "mr.library.sub": "选择语言，下载对应版本的项目资料。",
   "mr.library.empty": "该语言暂无可用资料，请稍后再试。",

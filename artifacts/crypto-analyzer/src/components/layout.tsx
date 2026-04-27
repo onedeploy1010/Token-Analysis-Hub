@@ -30,7 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/projects",                     label: "PROJECTS",   key: "projects",   icon: Grid },
   { href: "/tools",                        label: "SIMULATORS", key: "simulators", icon: Activity },
   { href: "/recruit",                      label: "RECRUIT",    key: "recruit",    icon: Users },
-  { href: "https://www.rune-protocol.com", label: "LIBRARY",    key: "library",    icon: BookOpen, external: true },
+  { href: "https://www.rune-protocol.com", label: "PREDICTIONS", key: "library",    icon: BookOpen, external: true },
 ];
 
 /* ─── Animated Logo ──────────────────────────────────────────────── */

@@ -218,7 +218,7 @@ const ja: Dict = {
   "mr.nav.projects": "プロジェクト",
   "mr.nav.simulators": "シミュレーター",
   "mr.nav.recruit": "ノード採用",
-  "mr.nav.library": "資料室",
+  "mr.nav.library": "AI予測",
   "mr.library.title": "資料ダウンロード",
   "mr.library.sub": "言語を選択してプロジェクト資料をダウンロード。",
   "mr.library.empty": "この言語の資料はまだありません。",

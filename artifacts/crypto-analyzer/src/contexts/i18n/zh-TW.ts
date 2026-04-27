@@ -218,7 +218,7 @@ const zhTW: Dict = {
   "mr.nav.projects": "項目庫",
   "mr.nav.simulators": "模擬工具",
   "mr.nav.recruit": "節點招募",
-  "mr.nav.library": "資料庫",
+  "mr.nav.library": "智能預測",
   "mr.library.title": "資料下載中心",
   "mr.library.sub": "選擇語言，下載對應版本的項目資料。",
   "mr.library.empty": "該語言暫無可用資料，請稍後再試。",

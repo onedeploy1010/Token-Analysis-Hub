@@ -218,7 +218,7 @@ const vi: Dict = {
   "mr.nav.projects": "Dự án",
   "mr.nav.simulators": "Mô phỏng",
   "mr.nav.recruit": "Tuyển dụng",
-  "mr.nav.library": "Thư viện",
+  "mr.nav.library": "Dự đoán AI",
   "mr.library.title": "Tải tài liệu",
   "mr.library.sub": "Chọn ngôn ngữ để tải tài liệu dự án.",
   "mr.library.empty": "Chưa có tài liệu cho ngôn ngữ này.",

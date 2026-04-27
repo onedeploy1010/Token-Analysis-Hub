@@ -218,7 +218,7 @@ const th: Dict = {
   "mr.nav.projects": "โครงการ",
   "mr.nav.simulators": "เครื่องจำลอง",
   "mr.nav.recruit": "สมัครโหนด",
-  "mr.nav.library": "คลังเอกสาร",
+  "mr.nav.library": "การพยากรณ์ AI",
   "mr.library.title": "ดาวน์โหลดเอกสาร",
   "mr.library.sub": "เลือกภาษาเพื่อดาวน์โหลดเอกสารโครงการ",
   "mr.library.empty": "ยังไม่มีเอกสารสำหรับภาษานี้",
