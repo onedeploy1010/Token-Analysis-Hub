@@ -315,6 +315,13 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-10 max-w-6xl space-y-4 sm:space-y-8">
+      {/* ── Page ambient warm glow — two fixed radial orbs that push
+          light into the canvas so cards don't sit on pure black.    */}
+      <div aria-hidden className="fixed inset-0 pointer-events-none -z-10">
+        <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] rounded-full bg-amber-500/[0.035] blur-[120px]" />
+        <div className="absolute top-[55%] right-[8%] w-[400px] h-[400px] rounded-full bg-cyan-500/[0.025] blur-[100px]" />
+        <div className="absolute top-[40%] left-[50%] w-[600px] h-[600px] -translate-x-1/2 rounded-full bg-slate-400/[0.018] blur-[140px]" />
+      </div>
       {/* ── Demo mode banner ── */}
       {isDemoMode && (
         <div className="flex items-center justify-between gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-cyan-300">
@@ -560,7 +567,7 @@ export default function Dashboard() {
           underline look with a more premium "control surface" feel and
           gives the new 4th tab (benefits) room to breathe. Scroll-x on
           mobile so 4 tabs + icons never clip on 360 px viewports. */}
-      <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
+      <div className="surface-3d rounded-xl border border-border/55 bg-card/60 p-1 overflow-x-auto scrollbar-hide">
         <div className="flex gap-0.5 min-w-max relative">
           {[
             { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
@@ -974,7 +981,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             </div>
             <div className="space-y-1.5">
               {AIRDROP_BATCHES.map((b, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-md border border-amber-500/28 bg-gradient-to-r from-amber-950/30 to-card/15 px-3 py-2.5 relative overflow-hidden">
+                <div key={i} className="flex items-center gap-3 rounded-md border border-amber-500/40 bg-gradient-to-r from-amber-950/45 to-card/30 px-3 py-2.5 relative overflow-hidden">
                   <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-amber-400/70 via-amber-500/50 to-amber-600/30 rounded-l pointer-events-none" />
                   <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)] w-12 shrink-0">{t(b.titleKey)}</span>
                   <span className="text-xl font-bold tabular-nums text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.55)] w-12 shrink-0">{b.pct}%</span>
@@ -1002,7 +1009,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
           {/* Your weight + network share prominent — this is the "you"
               side of the `userReward = (yourWeight / totalWeight) × pool`
               equation from the spec. */}
-          <div className="rounded-lg border border-amber-500/45 bg-gradient-to-br from-amber-950/40 to-transparent p-4 shadow-[inset_0_1px_0_rgba(251,191,36,0.18),0_0_20px_rgba(251,191,36,0.08)]">
+          <div className="rounded-lg border border-amber-500/60 bg-gradient-to-br from-amber-900/45 to-amber-950/20 p-4 shadow-[inset_0_1px_0_rgba(251,191,36,0.22),0_0_24px_rgba(251,191,36,0.12)]">
             <div className="text-xs uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)] mb-3">
               {t("mr.dash.benefits.poolShareTitle")}
             </div>
@@ -1038,7 +1045,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
               {SIX_STREAMS.map((s, i) => (
                 <div
                   key={s.key}
-                  className="flex items-center gap-2.5 rounded-md border border-amber-500/22 bg-gradient-to-r from-amber-950/20 to-card/20 px-3 py-2 hover:border-amber-500/40 hover:from-amber-950/35 transition-colors duration-300"
+                  className="flex items-center gap-2.5 rounded-md border border-amber-500/35 bg-gradient-to-r from-amber-950/35 to-card/35 px-3 py-2 hover:border-amber-500/55 hover:from-amber-950/50 transition-colors duration-300"
                 >
                   <span className="shrink-0 h-6 w-6 rounded-full bg-amber-500/22 border border-amber-500/50 flex items-center justify-center text-[11px] font-mono text-amber-300 tabular-nums drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]">
                     {i + 1}
@@ -1121,7 +1128,7 @@ function BenefitGroup({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/80 to-slate-950/95 border-amber-500/45">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-700/85 to-slate-900/90 border-amber-500/55">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_55%)] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent pointer-events-none" />
         <CardHeader className="pb-3 border-b border-amber-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
@@ -1233,7 +1240,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.03, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden border-emerald-500/40 bg-gradient-to-br from-slate-800/60 via-emerald-950/40 to-slate-900/85">
+      <Card className="surface-3d relative overflow-hidden border-emerald-500/55 bg-gradient-to-br from-slate-700/70 via-emerald-950/55 to-slate-900/88">
         <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500/35 via-cyan-500/20 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.12),transparent_55%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-emerald-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
@@ -1361,7 +1368,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                         ? "border-emerald-500/60 bg-emerald-950/35 shadow-[inset_0_1px_0_rgba(52,211,153,0.2)]"
                         : isNext
                         ? "border-amber-500/60 bg-amber-950/30 ring-1 ring-amber-500/30 shadow-[0_0_16px_rgba(251,191,36,0.15)]"
-                        : "border-border/35 bg-card/30"
+                        : "border-border/50 bg-card/45"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -1577,7 +1584,7 @@ function GenesisTriggerCell({
 }: { label: string; value: number; target: number; triggered: boolean }) {
   const pct = Math.min(100, Math.round((value / target) * 100));
   return (
-    <div className={`rounded-lg border p-3 ${triggered ? "border-fuchsia-500/50 bg-fuchsia-950/30" : "border-border/30 bg-card/25"}`}>
+    <div className={`rounded-lg border p-3 ${triggered ? "border-fuchsia-500/65 bg-fuchsia-950/45" : "border-border/45 bg-card/40"}`}>
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/80 truncate">{label}</span>
         {triggered && (
@@ -1611,7 +1618,7 @@ function BenefitCell({
     <div className={`rounded-md border p-2.5 ${
       highlight
         ? "border-amber-500/40 bg-gradient-to-br from-amber-950/30 to-card/20 shadow-[inset_0_1px_0_rgba(251,191,36,0.15)]"
-        : "border-border/35 bg-card/30"
+        : "border-border/50 bg-card/45"
     }`}>
       <div className="text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-1.5">{label}</div>
       <div
@@ -1651,7 +1658,7 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.02, ease: EASE }}>
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/70 to-slate-900/95 border-amber-500/50">
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-700/80 to-slate-900/88 border-amber-500/60">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/40 via-amber-600/20 to-transparent blur-3xl pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_55%)] pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/55 to-transparent pointer-events-none" />
@@ -1716,7 +1723,7 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
             referral card above stays so unpurchased members can still
             recruit while they decide on a tier. */}
         {restricted && (
-          <Card className="surface-3d relative overflow-hidden border-amber-500/40 bg-gradient-to-br from-amber-950/40 to-slate-950/80">
+          <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/50 to-slate-900/85">
             <CardContent className="py-8 text-center space-y-3">
               <div className="text-amber-300 font-semibold text-base">
                 {t("mr.dash.locked.title") || "购买节点解锁完整面板"}
@@ -1814,7 +1821,7 @@ function TeamTab({ address }: { address: string }) {
         <TierCompositionChart stats={rootStats} />
       )}
 
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
         <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-amber-500/20 via-transparent to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -1929,7 +1936,7 @@ function FocusHeader({
     <div className={`relative overflow-hidden rounded-xl border p-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:flex-wrap transition-all duration-300 ${
       isSelf
         ? "border-amber-500/55 bg-gradient-to-br from-amber-950/35 via-amber-950/15 to-slate-950/40 shadow-[inset_0_1px_0_rgba(251,191,36,0.12),0_8px_24px_-12px_rgba(251,191,36,0.3)]"
-        : "border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-950/80 hover:border-white/20"
+        : "border-white/18 bg-gradient-to-br from-slate-800/75 to-slate-900/85 hover:border-white/28"
     }`}>
       {isSelf && (
         <div
@@ -1973,7 +1980,7 @@ function TeamRow({ row, onDrill }: { row: ReferrerRow; onDrill: () => void }) {
       onClick={onDrill}
       whileHover={{ x: 2 }}
       transition={{ duration: 0.2, ease: EASE }}
-      className="w-full flex items-center gap-2 py-2.5 px-3 rounded-lg border border-white/10 bg-white/[0.02] hover:border-amber-500/50 hover:bg-amber-500/[0.06] hover:shadow-[0_4px_20px_-8px_rgba(251,191,36,0.3)] transition-all duration-300 flex-wrap text-left group"
+      className="w-full flex items-center gap-2 py-2.5 px-3 rounded-lg border border-white/20 bg-white/[0.045] hover:border-amber-500/55 hover:bg-amber-500/[0.08] hover:shadow-[0_4px_20px_-8px_rgba(251,191,36,0.3)] transition-all duration-300 flex-wrap text-left group"
     >
       <CopyableAddress address={row.user} short />
       <TreeNodeBadges stats={stats} />
@@ -2041,7 +2048,7 @@ function RewardsTab({ address }: { address: string }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.18, ease: EASE }}
         >
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
             <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/20 via-transparent to-transparent blur-3xl pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -2065,7 +2072,7 @@ function RewardsTab({ address }: { address: string }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.24, ease: EASE }}
       >
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
           <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/15 via-transparent to-transparent blur-3xl pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.10),transparent_55%)] pointer-events-none" />
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -2387,7 +2394,7 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.22, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-950/95 border-amber-500/35">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
         <div className="absolute -top-20 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/22 via-transparent to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -2508,8 +2515,8 @@ function Kpi({
       whileHover={{ y: -3 }}
       className={`group relative border rounded-xl p-4 sm:p-5 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
         highlight
-          ? "border-amber-500/55 bg-gradient-to-br from-amber-950/40 via-slate-900/80 to-slate-950/90 hover:border-amber-400/75 hover:shadow-[0_0_36px_rgba(251,191,36,0.35),inset_0_1px_0_rgba(251,191,36,0.2)]"
-          : "border-white/15 bg-gradient-to-br from-slate-800/60 to-slate-900/85 hover:border-amber-500/20 hover:shadow-[0_0_20px_rgba(251,191,36,0.08)]"
+          ? "border-amber-500/60 bg-gradient-to-br from-amber-900/45 via-slate-800/75 to-slate-900/85 hover:border-amber-400/80 hover:shadow-[0_0_36px_rgba(251,191,36,0.40),inset_0_1px_0_rgba(251,191,36,0.25)]"
+          : "border-white/20 bg-gradient-to-br from-slate-700/65 to-slate-800/80 hover:border-amber-500/30 hover:shadow-[0_0_20px_rgba(251,191,36,0.12)]"
       }`}
     >
       {/* Hover glow aurora — appears behind content on hover */}
