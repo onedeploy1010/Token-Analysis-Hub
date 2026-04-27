@@ -226,18 +226,18 @@ function GuideCard({ step, realAddress, connectedAddr, buyOpen, onConnect, onBuy
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={`rounded-2xl border ${c.border} ${c.bg} p-4 md:p-5`}
+      className={`rounded-2xl border ${c.border} ${c.bg} p-3 sm:p-4 md:p-5`}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3 sm:gap-4">
         {/* Icon */}
-        <div className={`mt-0.5 w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${c.icon}`}>
-          <Icon className="h-4.5 w-4.5" />
+        <div className={`mt-0.5 w-8 h-8 sm:w-9 sm:h-9 rounded-xl border flex items-center justify-center shrink-0 ${c.icon}`}>
+          <Icon className="h-4 w-4" />
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${c.text}`}>
+          <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+            <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] ${c.text}`}>
               {tt({ zh: "教学模式 · Tutorial", "zh-TW": "教學模式 · Tutorial", en: "Tutorial Mode", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Hướng dẫn" })}
             </span>
             {/* Step dots */}
@@ -254,10 +254,10 @@ function GuideCard({ step, realAddress, connectedAddr, buyOpen, onConnect, onBuy
             <span className={`text-[10px] ${c.text} opacity-60`}>{guideIdx + 1} / 2</span>
           </div>
 
-          <p className="text-sm font-semibold text-foreground mb-0.5">
+          <p className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">
             {tt(guide.title)}
           </p>
-          <p className="text-[12px] text-muted-foreground leading-relaxed">
+          <p className="text-[11px] sm:text-[12px] text-muted-foreground leading-relaxed">
             {tt(guide.desc)}
           </p>
         </div>
@@ -882,7 +882,7 @@ export default function Tutorial() {
   const showSpotlight = spotlight !== null && !bindOpen && !buyOpen;
 
   return (
-    <div className="container mx-auto px-4 py-10 space-y-14 max-w-6xl">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-10 space-y-8 sm:space-y-14 max-w-6xl">
 
       {/* ── Full-page spotlight overlay ── */}
       <AnimatePresence>
@@ -905,27 +905,27 @@ export default function Tutorial() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           style={{ zIndex: showSpotlight ? 50 : undefined, position: showSpotlight ? "relative" : undefined }}
-          className="rounded-2xl border border-cyan-500/30 bg-[#060e1c]/95 backdrop-blur-md px-4 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3 shadow-[0_0_0_1px_rgba(34,211,238,0.15)]"
+          className="rounded-2xl border border-cyan-500/30 bg-[#060e1c]/95 backdrop-blur-md px-3 sm:px-4 py-3 sm:py-3.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 shadow-[0_0_0_1px_rgba(34,211,238,0.15)]"
         >
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-xl border border-cyan-500/30 bg-cyan-500/15 flex items-center justify-center shrink-0">
-              <BookOpen className="h-4 w-4 text-cyan-400" />
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl border border-cyan-500/30 bg-cyan-500/15 flex items-center justify-center shrink-0">
+              <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400" />
             </div>
-            <div className="min-w-0">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400 block">
                 {tt({ zh: "教学模式 · Tutorial", "zh-TW": "教學模式 · Tutorial", en: "Tutorial Mode", ja: "チュートリアル", ko: "튜토리얼", th: "ทูตอเรียล", vi: "Chế độ hướng dẫn" })}
               </span>
-              <span className="text-[12px] text-muted-foreground leading-snug">
+              <span className="text-[11px] sm:text-[12px] text-muted-foreground leading-snug line-clamp-2 sm:line-clamp-none">
                 {isChecking
-                  ? tt({ zh: "正在检测推荐关系注册状态...", "zh-TW": "正在檢測推薦關係註冊狀態...", en: "Checking community contract registration...", ja: "登録状況を確認中…", ko: "등록 상태 확인 중…", th: "กำลังตรวจสอบ…", vi: "Đang kiểm tra đăng ký…" })
+                  ? tt({ zh: "正在检测...", "zh-TW": "正在檢測...", en: "Checking registration…", ja: "確認中…", ko: "확인 중…", th: "กำลังตรวจสอบ…", vi: "Đang kiểm tra…" })
                   : account?.address
-                  ? tt({ zh: "钱包已连接 · 点击按钮直接进入模拟购买节点", "zh-TW": "錢包已連接 · 點擊按鈕直接進入模擬購買節點", en: "Wallet connected — click to simulate purchasing a node", ja: "ウォレット接続済 — ノード購入を模擬", ko: "지갑 연결됨 — 버튼을 눌러 노드 구매 시뮬레이션", th: "เชื่อมกระเป๋าแล้ว — กดเพื่อจำลองการซื้อโหนด", vi: "Ví đã kết nối — bấm để mô phỏng mua node" })
-                  : tt({ zh: "点击连接钱包，系统将自动检测推荐关系并引导绑定", "zh-TW": "點擊連接錢包，系統將自動檢測推薦關係並引導綁定", en: "Click to connect — the contract checks registration and guides you through binding", ja: "クリックして接続 — 登録状況を確認してバインドを案内", ko: "클릭하여 연결 — 등록 여부 확인 후 바인딩 안내", th: "คลิกเชื่อมต่อ — ตรวจสอบและแนะนำการผูก", vi: "Bấm kết nối — hệ thống kiểm tra và hướng dẫn liên kết" })}
+                  ? tt({ zh: "钱包已连接 · 点击进入购买", "zh-TW": "錢包已連接 · 點擊進入購買", en: "Wallet connected — simulate purchase", ja: "接続済 — ノード購入を模擬", ko: "연결됨 — 구매 시뮬레이션", th: "เชื่อมแล้ว — จำลองซื้อโหนด", vi: "Ví kết nối — mô phỏng mua" })
+                  : tt({ zh: "连接钱包 · 系统自动检测并引导绑定推荐人", "zh-TW": "連接錢包 · 系統自動檢測並引導綁定", en: "Connect wallet — auto-checks registration & guides binding", ja: "接続 — 登録状況を確認してバインドを案内", ko: "연결 — 등록 확인 후 바인딩 안내", th: "เชื่อมต่อ — ตรวจสอบและแนะนำการผูก", vi: "Kết nối — kiểm tra và hướng dẫn liên kết" })}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {isChecking ? (
               <div className="flex items-center gap-1.5 text-xs text-cyan-300 px-3">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1025,43 +1025,43 @@ export default function Tutorial() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55 }}
-        className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md px-6 py-10 md:px-12 md:py-14 shadow-[0_8px_48px_rgba(0,0,0,0.5)] text-center"
+        className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md px-4 py-7 sm:px-6 sm:py-10 md:px-12 md:py-14 shadow-[0_8px_48px_rgba(0,0,0,0.5)] text-center"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none" />
         <div className="absolute -top-32 -right-32 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-blue-500/8 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-primary/40 rounded-tl pointer-events-none" />
-        <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-primary/40 rounded-tr pointer-events-none" />
-        <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-primary/40 rounded-bl pointer-events-none" />
-        <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-primary/40 rounded-br pointer-events-none" />
+        <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-primary/40 rounded-tl pointer-events-none" />
+        <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-primary/40 rounded-tr pointer-events-none" />
+        <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-primary/40 rounded-bl pointer-events-none" />
+        <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-primary/40 rounded-br pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-900/20 px-4 py-1.5 mb-6">
-            <Zap className="h-3.5 w-3.5 text-amber-400" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-amber-500/30 bg-amber-900/20 px-3 sm:px-4 py-1 sm:py-1.5 mb-4 sm:mb-6">
+            <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-400" />
+            <span className="text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-amber-300 whitespace-nowrap">
               Node Recruitment · Open Now
             </span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground leading-tight mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight mb-3 sm:mb-4">
             {tt({ zh: "符·节点权柄重铸", "zh-TW": "符·節點權柄重鑄", en: "Node Tier Reforge", ja: "符・ノード権限再構築", ko: "符・노드 권한 재구축", th: "การหลอมระดับโหนด · 符", vi: "Đúc lại Cấp Node · 符" })}
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-2">
+          <p className="text-[12px] sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-1.5 sm:mb-2">
             {tt({ zh: "五级节点体系 · 双TOKEN通缩经济 · 机构级收益结构", "zh-TW": "五級節點體系 · 雙TOKEN通縮經濟 · 機構級收益結構", en: "5-Tier Nodes · Dual-Token Deflation · Institutional Returns", ja: "5 段階ノード · デュアルトークン デフレ · 機関級リターン", ko: "5단계 노드 · 듀얼토큰 디플레이션 · 기관급 수익", th: "5 ระดับโหนด · เศรษฐกิจดีเฟลชันสองเหรียญ · ผลตอบแทนระดับสถาบัน", vi: "Hệ thống 5 cấp · Kinh tế giảm phát hai token · Lợi suất cấp tổ chức" })}
           </p>
-          <p className="text-sm text-muted-foreground/60 max-w-xl mx-auto">
+          <p className="text-[10px] sm:text-sm text-muted-foreground/60 max-w-xl mx-auto hidden sm:block">
             RUNE Protocol Node Recruitment · Five-Tier System · Dual-Token Deflationary Economy
           </p>
-          <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/30">
+          <div className="mt-6 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-5 sm:pt-8 border-t border-border/30">
             {[
               { label: { en: "Total Seats",   zh: "总席位",     "zh-TW": "總席位",     ja: "総席数",     ko: "총 좌석",   th: "ที่นั่งทั้งหมด", vi: "Tổng số ghế" }, val: "2,420" },
               { label: { en: "Node Tiers",    zh: "节点等级",   "zh-TW": "節點等級",   ja: "ノード等級", ko: "노드 등급", th: "ระดับโหนด",     vi: "Cấp node"     }, val: "5" },
               { label: { en: "Opening Price", zh: "开盘价",     "zh-TW": "開盤價",     ja: "開始価格",   ko: "오픈 가격", th: "ราคาเปิด",      vi: "Giá mở"        }, val: "$0.028" },
               { label: { en: "USDT APY",      zh: "年化收益率", "zh-TW": "年化收益率", ja: "年利",       ko: "연 수익률", th: "APY USDT",      vi: "APY USDT"     }, val: "170.82%", gold: true },
             ].map(({ label, val, gold }) => (
-              <div key={label.en} className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/50 font-medium">{label.en}</div>
-                <div className={`text-2xl sm:text-3xl font-bold leading-none ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
-                {showZh && <div className="text-[10px] text-muted-foreground/65">{tt(label)}</div>}
+              <div key={label.en} className="space-y-0.5 sm:space-y-1">
+                <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] sm:tracking-[0.18em] text-muted-foreground/50 font-medium">{label.en}</div>
+                <div className={`text-xl sm:text-2xl md:text-3xl font-bold leading-none ${gold ? "text-amber-400" : "text-foreground"}`}>{val}</div>
+                {showZh && <div className="text-[9px] sm:text-[10px] text-muted-foreground/65">{tt(label)}</div>}
               </div>
             ))}
           </div>
@@ -1097,21 +1097,21 @@ export default function Tutorial() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: i * 0.1 }}
-                className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-5 ${NODE_BG[level]} ${NODE_GLOW[level]}`}
+                className={`relative flex flex-col rounded-2xl border bg-gradient-to-b p-4 sm:p-5 ${NODE_BG[level]} ${NODE_GLOW[level]}`}
               >
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
                   <div>
-                    <div className={`text-[10px] font-mono uppercase tracking-[0.2em] mb-1 ${NODE_ACCENT[level]}`}>
+                    <div className={`text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] mb-0.5 sm:mb-1 ${NODE_ACCENT[level]}`}>
                       {meta.nameEn}
                     </div>
-                    <div className="text-xl font-bold text-foreground">{tt({ zh: meta.nameCn, "zh-TW": meta.nameCn, ja: meta.nameCn, ko: meta.nameCn, en: meta.nameEn, th: meta.nameEn, vi: meta.nameEn })}</div>
+                    <div className="text-base sm:text-xl font-bold text-foreground">{tt({ zh: meta.nameCn, "zh-TW": meta.nameCn, ja: meta.nameCn, ko: meta.nameCn, en: meta.nameEn, th: meta.nameEn, vi: meta.nameEn })}</div>
                   </div>
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider border rounded px-2 py-0.5 ${NODE_BADGE[level]}`}>
+                  <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider border rounded px-1.5 sm:px-2 py-0.5 ${NODE_BADGE[level]}`}>
                     Lv.{i + 1}
                   </span>
                 </div>
 
-                <div className="space-y-2.5 flex-1">
+                <div className="space-y-2 sm:space-y-2.5 flex-1">
                   {[
                     { label: { en: "Investment",        zh: "投资门槛",     "zh-TW": "投資門檻",     ja: "投資額",          ko: "투자 금액",     th: "เงินลงทุน",      vi: "Mức đầu tư"     }, val: `$${investment.toLocaleString()}`,           accent: true },
                     { label: { en: "Private",           zh: "私募价格",     "zh-TW": "私募價格",     ja: "プライベート価格", ko: "프라이빗 가격", th: "ราคาพรีเซล",     vi: "Giá private"     }, val: `$${stat.privatePrice.toFixed(3)}` },
@@ -1121,19 +1121,19 @@ export default function Tutorial() {
                     { label: { en: "Direct Commission", zh: "直推返佣",     "zh-TW": "直推返佣",     ja: "直推紹介報酬",    ko: "직추천 커미션", th: "คอมมิชชันตรง",   vi: "Hoa hồng trực tiếp" }, val: `${directRatePct}%`,             accent: true },
                   ].map(({ label, val, accent: isAccent }) => (
                     <div key={label.en} className="flex items-center justify-between gap-1">
-                      <span className="text-[11px] text-muted-foreground/60">{tt(label)}</span>
-                      <span className={`text-sm font-semibold ${isAccent ? NODE_ACCENT[level] : "text-foreground/90"}`}>{val}</span>
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground/60">{tt(label)}</span>
+                      <span className={`text-xs sm:text-sm font-semibold ${isAccent ? NODE_ACCENT[level] : "text-foreground/90"}`}>{val}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-4 space-y-1.5">
-                  <div className="flex justify-between text-[10px] text-muted-foreground/50">
+                <div className="mt-3 sm:mt-4 space-y-1 sm:space-y-1.5">
+                  <div className="flex justify-between text-[9px] sm:text-[10px] text-muted-foreground/50">
                     <span>{tt({ zh: "席位占用 Occupancy", "zh-TW": "席位佔用 Occupancy", en: "Occupancy", ja: "席数充填", ko: "좌석 점유율", th: "อัตราจอง", vi: "Tỷ lệ lấp đầy" })}</span>
                     <span className={NODE_ACCENT[level]}>{occupiedPct}%</span>
                   </div>
-                  <Progress value={occupiedPct} className={`h-1.5 bg-white/5 ${NODE_PROGRESS_BAR[level]}`} />
-                  <div className="text-[10px] text-muted-foreground/40 text-right">
+                  <Progress value={occupiedPct} className={`h-1 sm:h-1.5 bg-white/5 ${NODE_PROGRESS_BAR[level]}`} />
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground/40 text-right">
                     {tt({
                       zh: `剩余 ${seatsRemaining.toLocaleString()} 席`,
                       "zh-TW": `剩餘 ${seatsRemaining.toLocaleString()} 席`,
@@ -1197,7 +1197,7 @@ export default function Tutorial() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.08 }}
-              className={`relative rounded-xl border p-4 space-y-2 transition-colors ${
+              className={`relative rounded-xl border p-3.5 sm:p-4 space-y-1.5 sm:space-y-2 transition-colors ${
                 idx === Math.min(step, 2)
                   ? "border-cyan-500/40 bg-cyan-500/5"
                   : idx < step
@@ -1206,7 +1206,7 @@ export default function Tutorial() {
               }`}
             >
               <div className="flex items-center gap-2">
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-bold shrink-0 ${
                   idx < step
                     ? "bg-emerald-500/20 text-emerald-300"
                     : idx === Math.min(step, 2)
@@ -1215,13 +1215,13 @@ export default function Tutorial() {
                 }`}>
                   {idx < step ? "✓" : idx + 1}
                 </span>
-                <span className={`text-sm font-semibold ${
+                <span className={`text-xs sm:text-sm font-semibold ${
                   idx < step ? "text-emerald-200" : idx === Math.min(step, 2) ? "text-cyan-200" : "text-foreground"
                 }`}>
                   {tt(title)}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground/70 leading-relaxed pl-8">
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 leading-relaxed pl-7 sm:pl-8">
                 {tt(desc)}
               </p>
             </motion.div>
