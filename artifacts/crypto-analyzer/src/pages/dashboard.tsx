@@ -1158,7 +1158,7 @@ function BenefitGroup({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-700/85 to-slate-900/90 border-amber-500/55">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-700/85 to-slate-800/90 border-amber-500/55">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_55%)] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent pointer-events-none" />
         <CardHeader className="pb-3 border-b border-amber-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
@@ -1270,7 +1270,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.03, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden border-emerald-500/55 bg-gradient-to-br from-slate-700/70 via-emerald-950/55 to-slate-900/88">
+      <Card className="surface-3d relative overflow-hidden border-emerald-500/55 bg-gradient-to-br from-slate-700/70 via-emerald-950/55 to-slate-800/88">
         <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500/35 via-cyan-500/20 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.12),transparent_55%)] pointer-events-none" />
         <CardHeader className="pb-3 border-b border-emerald-500/20 relative z-10 flex-row items-center justify-between gap-3 space-y-0">
@@ -1688,7 +1688,7 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.02, ease: EASE }}>
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-700/80 to-slate-900/88 border-amber-500/60">
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-700/80 to-slate-800/88 border-amber-500/60">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/40 via-amber-600/20 to-transparent blur-3xl pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_55%)] pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/55 to-transparent pointer-events-none" />
@@ -1753,7 +1753,7 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
             referral card above stays so unpurchased members can still
             recruit while they decide on a tier. */}
         {restricted && (
-          <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/50 to-slate-900/85">
+          <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/50 to-slate-800/85">
             <CardContent className="py-8 text-center space-y-3">
               <div className="text-amber-300 font-semibold text-base">
                 {t("mr.dash.locked.title") || "购买节点解锁完整面板"}
@@ -1851,7 +1851,7 @@ function TeamTab({ address }: { address: string }) {
         <TierCompositionChart stats={rootStats} />
       )}
 
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-800/90 border-amber-500/50">
         <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-amber-500/20 via-transparent to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -1966,7 +1966,7 @@ function FocusHeader({
     <div className={`relative overflow-hidden rounded-xl border p-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:flex-wrap transition-all duration-300 ${
       isSelf
         ? "border-amber-500/55 bg-gradient-to-br from-amber-950/35 via-amber-950/15 to-slate-950/40 shadow-[inset_0_1px_0_rgba(251,191,36,0.12),0_8px_24px_-12px_rgba(251,191,36,0.3)]"
-        : "border-white/18 bg-gradient-to-br from-slate-800/75 to-slate-900/85 hover:border-white/28"
+        : "border-white/18 bg-gradient-to-br from-slate-800/75 to-slate-800/85 hover:border-white/28"
     }`}>
       {isSelf && (
         <div
@@ -2078,7 +2078,7 @@ function RewardsTab({ address }: { address: string }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.18, ease: EASE }}
         >
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
+          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-800/90 border-amber-500/50">
             <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/20 via-transparent to-transparent blur-3xl pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -2102,7 +2102,7 @@ function RewardsTab({ address }: { address: string }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.24, ease: EASE }}
       >
-        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
+        <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-800/90 border-amber-500/50">
           <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/15 via-transparent to-transparent blur-3xl pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.10),transparent_55%)] pointer-events-none" />
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -2424,7 +2424,7 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.22, ease: EASE }}
     >
-      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-900/90 border-amber-500/50">
+      <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-800/85 to-slate-800/90 border-amber-500/50">
         <div className="absolute -top-20 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-amber-500/22 via-transparent to-transparent blur-3xl pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
@@ -2545,7 +2545,7 @@ function Kpi({
       whileHover={{ y: -3 }}
       className={`group relative border rounded-xl p-4 sm:p-5 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
         highlight
-          ? "border-amber-500/60 bg-gradient-to-br from-amber-900/45 via-slate-800/75 to-slate-900/85 hover:border-amber-400/80 hover:shadow-[0_0_36px_rgba(251,191,36,0.40),inset_0_1px_0_rgba(251,191,36,0.25)]"
+          ? "border-amber-500/60 bg-gradient-to-br from-amber-900/45 via-slate-800/75 to-slate-800/85 hover:border-amber-400/80 hover:shadow-[0_0_36px_rgba(251,191,36,0.40),inset_0_1px_0_rgba(251,191,36,0.25)]"
           : "border-white/20 bg-gradient-to-br from-slate-700/65 to-slate-800/80 hover:border-amber-500/30 hover:shadow-[0_0_20px_rgba(251,191,36,0.12)]"
       }`}
     >
