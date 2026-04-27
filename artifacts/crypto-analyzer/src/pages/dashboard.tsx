@@ -974,11 +974,11 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             </div>
             <div className="space-y-1.5">
               {AIRDROP_BATCHES.map((b, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-md border border-amber-500/28 bg-gradient-to-r from-amber-950/30 to-card/15 px-3 py-2 relative overflow-hidden">
+                <div key={i} className="flex items-center gap-3 rounded-md border border-amber-500/28 bg-gradient-to-r from-amber-950/30 to-card/15 px-3 py-2.5 relative overflow-hidden">
                   <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-amber-400/70 via-amber-500/50 to-amber-600/30 rounded-l pointer-events-none" />
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)] w-12 shrink-0">{t(b.titleKey)}</span>
-                  <span className="text-base font-bold tabular-nums text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.55)] w-10 shrink-0">{b.pct}%</span>
-                  <p className="text-[11px] text-muted-foreground/90 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
+                  <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)] w-12 shrink-0">{t(b.titleKey)}</span>
+                  <span className="text-xl font-bold tabular-nums text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.55)] w-12 shrink-0">{b.pct}%</span>
+                  <p className="text-xs text-muted-foreground/90 leading-snug flex-1 min-w-0">{t(b.trig)}</p>
                 </div>
               ))}
             </div>
@@ -1002,50 +1002,50 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
           {/* Your weight + network share prominent — this is the "you"
               side of the `userReward = (yourWeight / totalWeight) × pool`
               equation from the spec. */}
-          <div className="rounded-lg border border-amber-500/45 bg-gradient-to-br from-amber-950/40 to-transparent p-3 shadow-[inset_0_1px_0_rgba(251,191,36,0.18),0_0_20px_rgba(251,191,36,0.08)]">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)] mb-2">
+          <div className="rounded-lg border border-amber-500/45 bg-gradient-to-br from-amber-950/40 to-transparent p-4 shadow-[inset_0_1px_0_rgba(251,191,36,0.18),0_0_20px_rgba(251,191,36,0.08)]">
+            <div className="text-xs uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)] mb-3">
               {t("mr.dash.benefits.poolShareTitle")}
             </div>
-            <div className="space-y-2 tabular-nums">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3 tabular-nums">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">{t("mr.dash.benefits.weightCoeff")}</div>
-                  <div className={`text-2xl font-bold ${theme.accentBright}`} style={{ textShadow: `0 0 20px rgba(${theme.rgb}, 0.5)` }}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
+                  <div className="text-xs text-muted-foreground/75 mb-1">{t("mr.dash.benefits.weightCoeff")}</div>
+                  <div className={`text-3xl sm:text-4xl font-bold ${theme.accentBright}`} style={{ textShadow: `0 0 20px rgba(${theme.rgb}, 0.5)` }}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">{t("mr.dash.benefits.yourShare")}</div>
-                  <div className="text-2xl font-bold text-white">{weight?.share ?? "—"}</div>
+                  <div className="text-xs text-muted-foreground/75 mb-1">{t("mr.dash.benefits.yourShare")}</div>
+                  <div className="text-3xl sm:text-4xl font-bold text-white">{weight?.share ?? "—"}</div>
                 </div>
               </div>
               {meta && (
                 <div>
-                  <div className="text-[10px] text-muted-foreground/70 mb-0.5">{t("mr.dash.owned.tier")}</div>
-                  <div className={`text-sm font-semibold ${meta.color}`}>{meta.nameEn} · {meta.nameCn}</div>
+                  <div className="text-xs text-muted-foreground/70 mb-0.5">{t("mr.dash.owned.tier")}</div>
+                  <div className={`text-base font-semibold ${meta.color}`}>{meta.nameEn} · {meta.nameCn}</div>
                 </div>
               )}
             </div>
-            <p className="text-[10px] font-mono text-muted-foreground/65 mt-2 tabular-nums border-t border-amber-500/10 pt-2">
+            <p className="text-[11px] font-mono text-muted-foreground/65 mt-3 tabular-nums border-t border-amber-500/10 pt-2.5">
               {t("mr.dash.benefits.poolFormula")}
             </p>
           </div>
 
           {/* Six-stream sources — where dividend pool money comes from. */}
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/75 mb-2.5">
               {t("mr.dash.benefits.poolSourcesTitle")}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {SIX_STREAMS.map((s, i) => (
                 <div
                   key={s.key}
-                  className="flex items-center gap-2 rounded-md border border-amber-500/22 bg-gradient-to-r from-amber-950/20 to-card/20 px-2 py-1.5 hover:border-amber-500/40 hover:from-amber-950/35 transition-colors duration-300"
+                  className="flex items-center gap-2.5 rounded-md border border-amber-500/22 bg-gradient-to-r from-amber-950/20 to-card/20 px-3 py-2 hover:border-amber-500/40 hover:from-amber-950/35 transition-colors duration-300"
                 >
-                  <span className="shrink-0 h-5 w-5 rounded-full bg-amber-500/22 border border-amber-500/50 flex items-center justify-center text-[10px] font-mono text-amber-300 tabular-nums drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]">
+                  <span className="shrink-0 h-6 w-6 rounded-full bg-amber-500/22 border border-amber-500/50 flex items-center justify-center text-[11px] font-mono text-amber-300 tabular-nums drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]">
                     {i + 1}
                   </span>
                   <div className="min-w-0 leading-tight">
-                    <div className="text-[11px] font-semibold text-foreground">{t(s.shortKey)}</div>
-                    <div className="text-[10px] text-muted-foreground/80">{t(s.tagKey)}</div>
+                    <div className="text-xs font-semibold text-foreground">{t(s.shortKey)}</div>
+                    <div className="text-[11px] text-muted-foreground/80">{t(s.tagKey)}</div>
                   </div>
                 </div>
               ))}
@@ -1075,13 +1075,13 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                     ×1.5
                   </span>
                 )}
-                <div className={`mb-2 ${f.iconCls}`}>
-                  <Icon className="h-5 w-5 drop-shadow-[0_0_6px_currentColor]" />
+                <div className={`mb-2.5 ${f.iconCls}`}>
+                  <Icon className="h-6 w-6 drop-shadow-[0_0_6px_currentColor]" />
                 </div>
-                <p className="text-[11px] font-medium text-foreground/90 leading-snug pr-1">
+                <p className="text-xs font-medium text-foreground/90 leading-snug pr-1">
                   {t(f.labelKey)}
                 </p>
-                <div className={`mt-2 text-[9px] font-mono uppercase tracking-[0.18em] ${available ? "text-emerald-400/80" : "text-muted-foreground/40"}`}>
+                <div className={`mt-2 text-[10px] font-mono uppercase tracking-[0.18em] ${available ? "text-emerald-400/80" : "text-muted-foreground/40"}`}>
                   {available ? "● ACTIVE" : "○ LOCKED"}
                 </div>
               </div>
@@ -1136,7 +1136,7 @@ function BenefitGroup({
             <span className="text-[10px] font-mono tabular-nums text-amber-200/85 shrink-0">{rightTag}</span>
           )}
         </CardHeader>
-        <CardContent className="pt-4 relative z-10">{children}</CardContent>
+        <CardContent className="pt-5 pb-5 relative z-10">{children}</CardContent>
       </Card>
     </motion.div>
   );
@@ -1263,7 +1263,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               </span>
             </div>
             <div className="flex items-baseline gap-2 tabular-nums mb-2">
-              <span className="text-xl sm:text-2xl font-bold text-emerald-200 drop-shadow-[0_0_14px_rgba(52,211,153,0.5)]">
+              <span className="text-2xl sm:text-3xl font-bold text-emerald-200 drop-shadow-[0_0_14px_rgba(52,211,153,0.5)]">
                 $<CountUp to={totalRaised} fmt={formatShortUsd} />
               </span>
               <span className="text-xs text-muted-foreground/70">
@@ -1292,7 +1292,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.4)]">
               {fundraiseComplete ? t("mr.dash.pool.tlpInitial") : t("mr.dash.pool.tlpProjected")}
             </div>
-            <div className="text-base font-bold tabular-nums text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]">
+            <div className="text-xl font-bold tabular-nums text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]">
               ${formatShortUsd(fundraiseComplete ? tlpInitial : projectedTlp)} USDT
             </div>
             <p className="text-xs text-muted-foreground/75 leading-snug">
@@ -1345,7 +1345,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
 
           {/* Four stage milestones */}
           <div className="pt-1">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/75 mb-3">
               {t("mr.dash.pool.stagesTitle")}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
@@ -1356,7 +1356,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                 return (
                   <div
                     key={i}
-                    className={`rounded-md border p-2.5 transition-colors relative overflow-hidden ${
+                    className={`rounded-md border p-3 transition-colors relative overflow-hidden ${
                       unlocked
                         ? "border-emerald-500/60 bg-emerald-950/35 shadow-[inset_0_1px_0_rgba(52,211,153,0.2)]"
                         : isNext
@@ -1364,12 +1364,12 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                         : "border-border/35 bg-card/30"
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70">
                         {t(`mr.dash.pool.stage${i + 1}Num`)}
                       </span>
                       <span
-                        className={`text-[9px] font-mono uppercase tracking-[0.18em] ${
+                        className={`text-[10px] font-mono uppercase tracking-[0.18em] ${
                           unlocked
                             ? "text-emerald-300"
                             : isNext
@@ -1385,17 +1385,17 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                       </span>
                     </div>
                     <div className="flex items-baseline gap-1 tabular-nums">
-                      <span className={`text-lg font-bold ${unlocked ? "text-emerald-200 drop-shadow-[0_0_10px_rgba(52,211,153,0.55)]" : isNext ? "text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" : "text-foreground/80"}`}>
+                      <span className={`text-2xl font-bold ${unlocked ? "text-emerald-200 drop-shadow-[0_0_10px_rgba(52,211,153,0.55)]" : isNext ? "text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" : "text-foreground/80"}`}>
                         {stage.pct}%
                       </span>
-                      <span className="text-[10px] text-muted-foreground/65">
+                      <span className="text-[11px] text-muted-foreground/65">
                         {t("mr.dash.pool.airdropRelease")}
                       </span>
                     </div>
-                    <div className={`text-[10px] tabular-nums mt-0.5 ${unlocked ? "text-emerald-400/80" : isNext ? "text-amber-400/80" : "text-muted-foreground/75"}`}>
+                    <div className={`text-[11px] tabular-nums mt-1 ${unlocked ? "text-emerald-400/80" : isNext ? "text-amber-400/80" : "text-muted-foreground/75"}`}>
                       TLP ≥ ${stage.tlpM}M
                     </div>
-                    <div className="text-[9px] text-muted-foreground/55 mt-1">
+                    <div className="text-[10px] text-muted-foreground/55 mt-1">
                       {stage.driver === "fundraise"
                         ? t("mr.dash.pool.driverFundraise")
                         : t("mr.dash.pool.driverMarket")}
@@ -1411,47 +1411,47 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               viewer actually holds a node; otherwise there's nothing to
               project, so we hide the panel instead of rendering zeros. */}
           {userAirdrop && userTierMeta && (
-            <div className="rounded-lg border border-amber-500/55 bg-gradient-to-br from-amber-950/45 via-amber-950/15 to-transparent p-3.5 space-y-3 shadow-[0_0_20px_rgba(251,191,36,0.1),inset_0_1px_0_rgba(251,191,36,0.2)]">
+            <div className="rounded-lg border border-amber-500/55 bg-gradient-to-br from-amber-950/45 via-amber-950/15 to-transparent p-4 space-y-4 shadow-[0_0_20px_rgba(251,191,36,0.1),inset_0_1px_0_rgba(251,191,36,0.2)]">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">
+                <span className="text-xs font-mono uppercase tracking-[0.22em] text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">
                   {t("mr.dash.pool.nextStageTitle")}
                 </span>
-                <span className="text-[9px] font-mono uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-950/40 text-amber-300 shrink-0">
+                <span className="text-[10px] font-mono uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-950/40 text-amber-300 shrink-0">
                   {t(`mr.dash.pool.stage${nextStageIdx + 1}Num`)} · {nextStage.pct}%
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">
+                  <div className="text-xs text-muted-foreground/75 mb-1">
                     {t("mr.dash.pool.yourUnlock")}
                   </div>
-                  <div className="text-lg font-bold tabular-nums text-amber-200">
+                  <div className="text-2xl sm:text-3xl font-bold tabular-nums text-amber-200">
                     {nextUnlockTokens.toLocaleString("en-US")}
                   </div>
-                  <div className="text-[9px] text-muted-foreground/65">
+                  <div className="text-[10px] text-muted-foreground/65 mt-0.5">
                     {t("mr.dash.pool.motherTokens")}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground/75 mb-0.5">
+                  <div className="text-xs text-muted-foreground/75 mb-1">
                     {t("mr.dash.pool.stagePrice")}
                   </div>
-                  <div className="text-lg font-bold tabular-nums text-foreground/95">
+                  <div className="text-2xl sm:text-3xl font-bold tabular-nums text-foreground/95">
                     ${nextBatch.priceAt}
                   </div>
-                  <div className="text-[9px] text-muted-foreground/65">
+                  <div className="text-[10px] text-muted-foreground/65 mt-0.5">
                     {t("mr.dash.pool.perToken")}
                   </div>
                 </div>
               </div>
 
-              <div className="text-[11px] text-muted-foreground/85 leading-snug pt-2 border-t border-amber-500/15">
+              <div className="text-xs text-muted-foreground/85 leading-snug pt-2.5 border-t border-amber-500/15">
                 <span className="text-amber-300/90 font-semibold mr-1.5">{t("mr.dash.pool.trigger")}:</span>
                 {t(nextBatch.trig)}
               </div>
 
-              <div className="text-[10px] text-muted-foreground/60 tabular-nums">
+              <div className="text-[11px] text-muted-foreground/60 tabular-nums">
                 {userTierMeta.nameEn} · {userTierMeta.nameCn} ·{" "}
                 {userAirdrop.perSeat.toLocaleString("en-US")} × {nextStage.pct}% ={" "}
                 {nextUnlockTokens.toLocaleString("en-US")} RUNE
@@ -1517,7 +1517,7 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
         <CardContent className="pt-4 space-y-4 relative z-10">
           {/* Trigger stats — show all three, highlight the one that
               actually qualified the user. */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <GenesisTriggerCell
               label={t("mr.dash.genesis.triggerDirect")}
               value={directFounder}
@@ -1585,8 +1585,8 @@ function GenesisTriggerCell({
         )}
       </div>
       <div className="flex items-baseline gap-1.5 tabular-nums">
-        <span className={`text-2xl font-bold ${triggered ? "text-fuchsia-200" : "text-foreground/90"}`}>{value}</span>
-        <span className="text-xs text-muted-foreground/70">/ {target}</span>
+        <span className={`text-3xl font-bold ${triggered ? "text-fuchsia-200" : "text-foreground/90"}`}>{value}</span>
+        <span className="text-sm text-muted-foreground/70">/ {target}</span>
       </div>
       <div className="mt-2 h-1 rounded-full bg-black/40 overflow-hidden">
         <div
@@ -1613,12 +1613,12 @@ function BenefitCell({
         ? "border-amber-500/40 bg-gradient-to-br from-amber-950/30 to-card/20 shadow-[inset_0_1px_0_rgba(251,191,36,0.15)]"
         : "border-border/35 bg-card/30"
     }`}>
-      <div className="text-[10px] uppercase tracking-widest text-muted-foreground/80 mb-1">{label}</div>
+      <div className="text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-1.5">{label}</div>
       <div
-        className={`text-lg font-bold tabular-nums leading-tight ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}
+        className={`text-xl sm:text-2xl font-bold tabular-nums leading-tight ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}
         style={highlight ? { textShadow: "0 0 18px rgba(251,191,36,0.5)" } : undefined}
       >{value}</div>
-      {sub && <div className="text-[10px] text-muted-foreground/70 mt-0.5">{sub}</div>}
+      {sub && <div className="text-xs text-muted-foreground/70 mt-1">{sub}</div>}
     </div>
   );
 }
@@ -2506,7 +2506,7 @@ function Kpi({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: EASE }}
       whileHover={{ y: -3 }}
-      className={`group relative border rounded-xl p-3 sm:p-4 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
+      className={`group relative border rounded-xl p-4 sm:p-5 corner-brackets overflow-hidden surface-3d transition-all duration-300 ${
         highlight
           ? "border-amber-500/55 bg-gradient-to-br from-amber-950/40 via-slate-900/80 to-slate-950/90 hover:border-amber-400/75 hover:shadow-[0_0_36px_rgba(251,191,36,0.35),inset_0_1px_0_rgba(251,191,36,0.2)]"
           : "border-white/15 bg-gradient-to-br from-slate-800/60 to-slate-900/85 hover:border-amber-500/20 hover:shadow-[0_0_20px_rgba(251,191,36,0.08)]"
@@ -2521,14 +2521,14 @@ function Kpi({
             : "bg-[radial-gradient(circle_at_75%_-20%,rgba(251,191,36,0.08),transparent_55%)]"
         }`}
       />
-      <div className="relative flex items-center justify-between mb-1.5">
-        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/85">{label}</span>
+      <div className="relative flex items-center justify-between mb-2">
+        <span className="text-xs uppercase tracking-[0.20em] text-muted-foreground/85">{label}</span>
         {Icon && (
-          <Icon className={`h-3.5 w-3.5 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-muted-foreground/60 group-hover:text-amber-400/70"}`} />
+          <Icon className={`h-4 w-4 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-muted-foreground/60 group-hover:text-amber-400/70"}`} />
         )}
       </div>
-      <div className={`relative text-lg sm:text-xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
-      {sub && <div className="relative text-[10px] text-muted-foreground/80 mt-1 tracking-[0.14em] uppercase">{sub}</div>}
+      <div className={`relative text-2xl sm:text-3xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
+      {sub && <div className="relative text-xs text-muted-foreground/80 mt-1.5 tracking-[0.14em] uppercase">{sub}</div>}
     </motion.div>
   );
 }
