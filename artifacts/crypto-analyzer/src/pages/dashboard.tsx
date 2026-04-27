@@ -481,7 +481,7 @@ export default function Dashboard() {
                   >
                     {meta.nameCn}
                   </span>
-                  <span className="text-foreground/35 text-base sm:text-xl ml-2 sm:ml-3 font-mono tabular-nums">#{ownedNodeId}</span>
+                  <span className="text-foreground/55 text-base sm:text-xl ml-2 sm:ml-3 font-mono tabular-nums">#{ownedNodeId}</span>
                 </h1>
               </motion.div>
             ) : (
@@ -706,7 +706,7 @@ function NodeBenefitsCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             className="mt-4 pt-4 border-t border-border/30"
           >
             <div className="flex items-baseline justify-between mb-2">
-              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">180-Day Cumulative USDT</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/87">180-Day Cumulative USDT</span>
               <span className={`text-xs font-mono font-semibold ${theme.accent}`}>${(def.dailyUsdt * 180).toLocaleString("en-US")}</span>
             </div>
             <ResponsiveContainer width="100%" height={64}>
@@ -976,7 +976,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
         <div className="space-y-4">
           {/* Mother-token airdrop · 4 stages */}
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 mb-2">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground/90 mb-2">
               {t("mr.dash.benefits.airdropSection")}
             </div>
             <div className="space-y-1.5">
@@ -1016,29 +1016,29 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
             <div className="space-y-3 tabular-nums">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-xs text-muted-foreground/75 mb-1">{t("mr.dash.benefits.weightCoeff")}</div>
+                  <div className="text-xs text-muted-foreground/90 mb-1">{t("mr.dash.benefits.weightCoeff")}</div>
                   <div className={`text-3xl sm:text-4xl font-bold ${theme.accentBright}`} style={{ textShadow: `0 0 20px rgba(${theme.rgb}, 0.5)` }}>{weight ? `${weight.coeff.toFixed(1)}×` : "—"}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground/75 mb-1">{t("mr.dash.benefits.yourShare")}</div>
+                  <div className="text-xs text-muted-foreground/90 mb-1">{t("mr.dash.benefits.yourShare")}</div>
                   <div className="text-3xl sm:text-4xl font-bold text-white">{weight?.share ?? "—"}</div>
                 </div>
               </div>
               {meta && (
                 <div>
-                  <div className="text-xs text-muted-foreground/70 mb-0.5">{t("mr.dash.owned.tier")}</div>
+                  <div className="text-xs text-muted-foreground/87 mb-0.5">{t("mr.dash.owned.tier")}</div>
                   <div className={`text-base font-semibold ${meta.color}`}>{meta.nameEn} · {meta.nameCn}</div>
                 </div>
               )}
             </div>
-            <p className="text-[11px] font-mono text-muted-foreground/65 mt-3 tabular-nums border-t border-amber-500/10 pt-2.5">
+            <p className="text-[11px] font-mono text-muted-foreground/82 mt-3 tabular-nums border-t border-amber-500/10 pt-2.5">
               {t("mr.dash.benefits.poolFormula")}
             </p>
           </div>
 
           {/* Six-stream sources — where dividend pool money comes from. */}
           <div>
-            <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/75 mb-2.5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/90 mb-2.5">
               {t("mr.dash.benefits.poolSourcesTitle")}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -1088,7 +1088,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
                 <p className="text-xs font-medium text-foreground/90 leading-snug pr-1">
                   {t(f.labelKey)}
                 </p>
-                <div className={`mt-2 text-[10px] font-mono uppercase tracking-[0.18em] ${available ? "text-emerald-400/80" : "text-muted-foreground/40"}`}>
+                <div className={`mt-2 text-[10px] font-mono uppercase tracking-[0.18em] ${available ? "text-emerald-400/80" : "text-muted-foreground/62"}`}>
                   {available ? "● ACTIVE" : "○ LOCKED"}
                 </div>
               </div>
@@ -1097,7 +1097,7 @@ function BenefitsSection({ ownedNodeId }: { ownedNodeId: number | undefined }) {
         </div>
       </BenefitGroup>
 
-      <p className="text-[10px] text-muted-foreground/65 text-center pt-1">
+      <p className="text-[10px] text-muted-foreground/82 text-center pt-1">
         {t("mr.dash.benefits.footer")}
       </p>
     </div>
@@ -1136,7 +1136,7 @@ function BenefitGroup({
             <Icon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.65)] shrink-0" />
             <span className="text-sm font-semibold text-foreground truncate">{title}</span>
             {subtitle && (
-              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70 hidden sm:inline truncate">{subtitle}</span>
+              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/87 hidden sm:inline truncate">{subtitle}</span>
             )}
           </div>
           {rightTag && (
@@ -1265,7 +1265,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">
                 {t("mr.dash.pool.raised")}
               </span>
-              <span className="text-[10px] font-mono tabular-nums text-muted-foreground/65">
+              <span className="text-[10px] font-mono tabular-nums text-muted-foreground/82">
                 {raisedPct.toFixed(1)}%
               </span>
             </div>
@@ -1273,7 +1273,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
               <span className="text-2xl sm:text-3xl font-bold text-emerald-200 drop-shadow-[0_0_14px_rgba(52,211,153,0.5)]">
                 $<CountUp to={totalRaised} fmt={formatShortUsd} />
               </span>
-              <span className="text-xs text-muted-foreground/70">
+              <span className="text-xs text-muted-foreground/87">
                 / ${formatShortUsd(fundraiseCap)} USDT
               </span>
             </div>
@@ -1287,7 +1287,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                 <div className="animate-bar-sweep absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
               </motion.div>
             </div>
-            <div className="text-[10px] text-muted-foreground/65 mt-2">
+            <div className="text-[10px] text-muted-foreground/82 mt-2">
               {fundraiseComplete
                 ? t("mr.dash.pool.fundraiseDone")
                 : t("mr.dash.pool.fundraiseHint")}
@@ -1302,7 +1302,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
             <div className="text-xl font-bold tabular-nums text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]">
               ${formatShortUsd(fundraiseComplete ? tlpInitial : projectedTlp)} USDT
             </div>
-            <p className="text-xs text-muted-foreground/75 leading-snug">
+            <p className="text-xs text-muted-foreground/90 leading-snug">
               {t("mr.dash.pool.tlpNote")}
             </p>
           </div>
@@ -1337,7 +1337,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                   </PieChart>
                 </div>
                 <div className="flex flex-col gap-1.5 flex-1 w-full">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 mb-0.5">Fund Allocation</div>
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/87 mb-0.5">Fund Allocation</div>
                   {ALLOC.map((e) => (
                     <div key={e.name} className="flex items-center gap-2 text-[10px]">
                       <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: e.color }} />
@@ -1352,7 +1352,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
 
           {/* Four stage milestones */}
           <div className="pt-1">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/75 mb-3">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/90 mb-3">
               {t("mr.dash.pool.stagesTitle")}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
@@ -1372,7 +1372,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70">
+                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/87">
                         {t(`mr.dash.pool.stage${i + 1}Num`)}
                       </span>
                       <span
@@ -1381,7 +1381,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                             ? "text-emerald-300"
                             : isNext
                             ? "text-amber-300"
-                            : "text-muted-foreground/55"
+                            : "text-muted-foreground/72"
                         }`}
                       >
                         {unlocked
@@ -1395,14 +1395,14 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                       <span className={`text-2xl font-bold ${unlocked ? "text-emerald-200 drop-shadow-[0_0_10px_rgba(52,211,153,0.55)]" : isNext ? "text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" : "text-foreground/80"}`}>
                         {stage.pct}%
                       </span>
-                      <span className="text-[11px] text-muted-foreground/65">
+                      <span className="text-[11px] text-muted-foreground/82">
                         {t("mr.dash.pool.airdropRelease")}
                       </span>
                     </div>
-                    <div className={`text-[11px] tabular-nums mt-1 ${unlocked ? "text-emerald-400/80" : isNext ? "text-amber-400/80" : "text-muted-foreground/75"}`}>
+                    <div className={`text-[11px] tabular-nums mt-1 ${unlocked ? "text-emerald-400/80" : isNext ? "text-amber-400/80" : "text-muted-foreground/90"}`}>
                       TLP ≥ ${stage.tlpM}M
                     </div>
-                    <div className="text-[10px] text-muted-foreground/55 mt-1">
+                    <div className="text-[10px] text-muted-foreground/72 mt-1">
                       {stage.driver === "fundraise"
                         ? t("mr.dash.pool.driverFundraise")
                         : t("mr.dash.pool.driverMarket")}
@@ -1430,24 +1430,24 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-xs text-muted-foreground/75 mb-1">
+                  <div className="text-xs text-muted-foreground/90 mb-1">
                     {t("mr.dash.pool.yourUnlock")}
                   </div>
                   <div className="text-2xl sm:text-3xl font-bold tabular-nums text-amber-200">
                     {nextUnlockTokens.toLocaleString("en-US")}
                   </div>
-                  <div className="text-[10px] text-muted-foreground/65 mt-0.5">
+                  <div className="text-[10px] text-muted-foreground/82 mt-0.5">
                     {t("mr.dash.pool.motherTokens")}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground/75 mb-1">
+                  <div className="text-xs text-muted-foreground/90 mb-1">
                     {t("mr.dash.pool.stagePrice")}
                   </div>
                   <div className="text-2xl sm:text-3xl font-bold tabular-nums text-foreground/95">
                     ${nextBatch.priceAt}
                   </div>
-                  <div className="text-[10px] text-muted-foreground/65 mt-0.5">
+                  <div className="text-[10px] text-muted-foreground/82 mt-0.5">
                     {t("mr.dash.pool.perToken")}
                   </div>
                 </div>
@@ -1458,7 +1458,7 @@ function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) 
                 {t(nextBatch.trig)}
               </div>
 
-              <div className="text-[11px] text-muted-foreground/60 tabular-nums">
+              <div className="text-[11px] text-muted-foreground/77 tabular-nums">
                 {userTierMeta.nameEn} · {userTierMeta.nameCn} ·{" "}
                 {userAirdrop.perSeat.toLocaleString("en-US")} × {nextStage.pct}% ={" "}
                 {nextUnlockTokens.toLocaleString("en-US")} RUNE
@@ -1556,12 +1556,12 @@ function GenesisEarningsPanel({ address, ownedNodeId }: { address: string; owned
               </div>
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/75 mb-0.5">
+              <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/90 mb-0.5">
                 {t("mr.dash.genesis.weightLabel")}
               </div>
               <div className="text-sm font-semibold text-foreground/95 tabular-nums">
                 {weight ? `${weight.coeff.toFixed(1)}×` : "—"}
-                {meta && <span className="text-xs text-muted-foreground/70 ml-2">{meta.nameCn} · {meta.nameEn}</span>}
+                {meta && <span className="text-xs text-muted-foreground/87 ml-2">{meta.nameCn} · {meta.nameEn}</span>}
               </div>
             </div>
           </div>
@@ -1593,7 +1593,7 @@ function GenesisTriggerCell({
       </div>
       <div className="flex items-baseline gap-1.5 tabular-nums">
         <span className={`text-3xl font-bold ${triggered ? "text-fuchsia-200" : "text-foreground/90"}`}>{value}</span>
-        <span className="text-sm text-muted-foreground/70">/ {target}</span>
+        <span className="text-sm text-muted-foreground/87">/ {target}</span>
       </div>
       <div className="mt-2 h-1 rounded-full bg-black/40 overflow-hidden">
         <div
@@ -1625,7 +1625,7 @@ function BenefitCell({
         className={`text-xl sm:text-2xl font-bold tabular-nums leading-tight ${highlight ? (theme?.accentBright ?? "text-amber-200") : "text-foreground"}`}
         style={highlight ? { textShadow: "0 0 18px rgba(251,191,36,0.5)" } : undefined}
       >{value}</div>
-      {sub && <div className="text-xs text-muted-foreground/70 mt-1">{sub}</div>}
+      {sub && <div className="text-xs text-muted-foreground/87 mt-1">{sub}</div>}
     </div>
   );
 }
@@ -1865,7 +1865,7 @@ function TeamTab({ address }: { address: string }) {
         </CardContent>
       </Card>
 
-      <p className="text-[10px] text-muted-foreground/70 text-center">
+      <p className="text-[10px] text-muted-foreground/87 text-center">
         {t("mr.dash.team.treeNote")}
       </p>
     </div>
@@ -1885,7 +1885,7 @@ function TeamBreadcrumb({ path, onJump }: { path: string[]; onJump: (index: numb
         const label = isRoot ? t("mr.dash.team.rootSelf") : short(addr);
         return (
           <div key={`${addr}-${i}`} className="flex items-center gap-1">
-            {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/65" />}
+            {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/82" />}
             {isLast ? (
               <span className={`font-mono px-2 py-1 rounded-md text-[11px] ${
                 isRoot
@@ -2108,7 +2108,7 @@ function RewardsTab({ address }: { address: string }) {
         </Card>
       </motion.div>
 
-      <p className="text-[10px] text-muted-foreground/70 text-center">
+      <p className="text-[10px] text-muted-foreground/87 text-center">
         {t("mr.dash.reward.note")}
       </p>
     </div>
@@ -2328,7 +2328,7 @@ function RewardListFilters({
           aria-label={t("mr.dash.reward.filterFrom")}
           className={`${inputCls} w-[120px] sm:w-[132px]`}
         />
-        <span className="text-[10px] text-muted-foreground/70">→</span>
+        <span className="text-[10px] text-muted-foreground/87">→</span>
         <input
           type="date"
           value={to}
@@ -2338,7 +2338,7 @@ function RewardListFilters({
         />
       </div>
       <div className="relative flex-1 min-w-[140px]">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/77 pointer-events-none" />
         <input
           type="text"
           value={q}
@@ -2424,7 +2424,7 @@ function TierCompositionChart({ stats }: { stats: PersonalStats }) {
                   className={`rounded-full px-3 py-0.5 num tabular-nums transition-all ${
                     mode === m
                       ? "bg-primary/25 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.4)]"
-                      : "text-muted-foreground/60 hover:text-primary/80"
+                      : "text-muted-foreground/77 hover:text-primary/80"
                   }`}
                 >
                   {m === "direct" ? t("mr.dash.team.compDirect") : t("mr.dash.team.compTeam")}
@@ -2531,7 +2531,7 @@ function Kpi({
       <div className="relative flex items-center justify-between mb-2">
         <span className="text-xs uppercase tracking-[0.20em] text-muted-foreground/85">{label}</span>
         {Icon && (
-          <Icon className={`h-4 w-4 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-muted-foreground/60 group-hover:text-amber-400/70"}`} />
+          <Icon className={`h-4 w-4 transition-colors ${highlight ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-muted-foreground/77 group-hover:text-amber-400/70"}`} />
         )}
       </div>
       <div className={`relative text-2xl sm:text-3xl num tabular-nums ${highlight ? "num-gold" : "text-foreground"}`}>{value}</div>
