@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { useActiveAccount } from "thirdweb/react";
 import { useDemoStore } from "@/lib/demo-store";
 import { DEMO_ADDRESS } from "@/lib/demo-mock-data";
+import { useReferrerOf } from "@/hooks/rune/use-community";
 import { NODE_META, type NodeId } from "@/lib/thirdweb/contracts";
 import { useShowZh, useT, type Language } from "@/contexts/language-context";
 
@@ -197,11 +198,13 @@ interface GuideCardProps {
   step: TStep;
   realAddress?: string;
   connectedAddr: string;
+  buyOpen: boolean;
   onConnect: (addr?: string) => void;
+  onBuyNow: () => void;
   onExit: () => void;
 }
 
-function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: GuideCardProps) {
+function GuideCard({ step, realAddress, connectedAddr, buyOpen, onConnect, onBuyNow, onExit }: GuideCardProps) {
   const showZh = useShowZh();
   const tt = useT();
   // step 1 → guideIdx 0 (Purchase Node), step 2 → guideIdx 1 (Done)
@@ -287,6 +290,28 @@ function GuideCard({ step, realAddress, connectedAddr, onConnect, onExit }: Guid
             {tt({ zh: "· 钱包已连接", "zh-TW": "· 錢包已連接", en: "· Wallet connected", ja: "· ウォレット接続済", ko: "· 지갑 연결됨", th: "· เชื่อมกระเป๋าแล้ว", vi: "· Ví đã kết nối" })}
           </span>
         </div>
+      )}
+
+      {/* Re-trigger purchase button — shown when user dismissed the modal with "Later" */}
+      {step === 1 && !buyOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between gap-3"
+        >
+          <span className="text-[11px] text-amber-200/60">
+            {tt({ zh: "随时可以开始购买节点", "zh-TW": "隨時可以開始購買節點", en: "You can purchase a node whenever you're ready", ja: "いつでもノードを購入できます", ko: "언제든지 노드를 구매할 수 있어요", th: "ซื้อโหนดได้เมื่อพร้อม", vi: "Bạn có thể mua node bất cứ lúc nào" })}
+          </span>
+          <Button
+            size="sm"
+            onClick={onBuyNow}
+            className="h-7 px-3 text-[11px] font-semibold bg-amber-500 hover:bg-amber-400 text-black gap-1.5 shrink-0"
+          >
+            <Coins className="h-3 w-3" />
+            {tt({ zh: "立即购买", "zh-TW": "立即購買", en: "Buy Now", ja: "今すぐ購入", ko: "지금 구매", th: "ซื้อเลย", vi: "Mua ngay" })}
+          </Button>
+        </motion.div>
       )}
     </motion.div>
   );
@@ -748,6 +773,7 @@ export default function Tutorial() {
   const { enterDemo } = useDemoStore();
   const [, navigate] = useLocation();
   const account = useActiveAccount();
+  const { isBound, isLoading: boundLoading } = useReferrerOf(account?.address);
   const [step, setStep] = useState<TStep>(0);
   const [walletAddress, setWalletAddress] = useState<string>(DEMO_ADDRESS);
   const [isChecking, setIsChecking] = useState(false);
@@ -755,17 +781,35 @@ export default function Tutorial() {
   const [buyOpen, setBuyOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   // "connect" → spotlight on connect button (no wallet)
-  // "purchase" → spotlight on purchase button (wallet already connected)
+  // "purchase" → spotlight on purchase button (wallet connected but not yet bound)
   // null → no spotlight (modal open or step > 0)
   const [spotlight, setSpotlight] = useState<"connect" | "purchase" | null>(null);
 
+  // Auto-skip step 0 when wallet is already connected AND already registered.
+  useEffect(() => {
+    if (step !== 0 || bindOpen || buyOpen || boundLoading) return;
+    if (account?.address && isBound) {
+      setWalletAddress(account.address);
+      setStep(1);
+      setBuyOpen(true);
+    }
+  }, [account?.address, isBound, boundLoading, step, bindOpen, buyOpen]);
+
   useEffect(() => {
     if (step === 0 && !bindOpen && !buyOpen) {
-      setSpotlight(account?.address ? "purchase" : "connect");
+      // Only spotlight "connect" or "purchase" when NOT already bound.
+      // If already bound, the auto-skip above handles it.
+      if (!account?.address) {
+        setSpotlight("connect");
+      } else if (!isBound && !boundLoading) {
+        setSpotlight("purchase");
+      } else {
+        setSpotlight(null);
+      }
     } else {
       setSpotlight(null);
     }
-  }, [account?.address, step, bindOpen, buyOpen]);
+  }, [account?.address, isBound, boundLoading, step, bindOpen, buyOpen]);
 
   // Simulate: connect → contract checks community registration → not found → bind required
   function handleConnect(addr?: string) {
@@ -942,7 +986,9 @@ export default function Tutorial() {
           step={step}
           realAddress={account?.address}
           connectedAddr={walletAddress}
+          buyOpen={buyOpen}
           onConnect={handleConnect}
+          onBuyNow={() => setBuyOpen(true)}
           onExit={handleExit}
         />
       )}
@@ -1078,23 +1124,21 @@ export default function Tutorial() {
                   <div className="mt-4 h-9 rounded-lg border border-dashed border-amber-700/30 bg-amber-950/10 flex items-center justify-center text-[11px] text-amber-200/70">
                     {tt({ zh: "连接钱包后可购买", "zh-TW": "連接錢包後可購買", en: "Connect wallet to purchase", ja: "ウォレット接続で購入可能", ko: "지갑을 연결하면 구매 가능", th: "เชื่อมกระเป๋าเพื่อซื้อ", vi: "Kết nối ví để mua" })}
                   </div>
-                ) : step === 3 ? (
+                ) : step >= 2 ? (
                   <Button
                     variant="outline"
                     className="mt-4 w-full h-9 text-sm font-medium border-emerald-700/40 text-emerald-200 cursor-default"
                   >
-                    {tt({ zh: "已购买 · 查看面板", "zh-TW": "已購買 · 查看面板", en: "Purchased · Open Dashboard", ja: "購入済 · ダッシュボードへ", ko: "구매 완료 · 대시보드 열기", th: "ซื้อแล้ว · เปิด Dashboard", vi: "Đã mua · Mở Dashboard" })}
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                    {tt({ zh: "已购买 · 跳转面板中...", "zh-TW": "已購買 · 跳轉面板中...", en: "Purchased · Redirecting…", ja: "購入済 · 移動中…", ko: "구매 완료 · 이동 중…", th: "ซื้อแล้ว · กำลังไป Dashboard…", vi: "Đã mua · Đang chuyển…" })}
                   </Button>
                 ) : (
                   <Button
                     onClick={() => setBuyOpen(true)}
-                    disabled={step === 1}
                     className={`mt-4 w-full h-9 text-sm font-semibold ${NODE_BTN[level]}`}
                   >
-                    {step === 1
-                      ? tt({ zh: "请先完成绑定...", "zh-TW": "請先完成綁定...", en: "Complete binding first…", ja: "先にバインドを完了してください…", ko: "먼저 바인딩을 완료하세요…", th: "ผูกผู้แนะนำให้เสร็จก่อน…", vi: "Hoàn tất liên kết trước…" })
-                      : tt({ zh: "立即购买 · Buy Now", "zh-TW": "立即購買 · Buy Now", en: "Buy Now", ja: "今すぐ購入", ko: "지금 구매", th: "ซื้อเลย", vi: "Mua ngay" })
-                    }
+                    <Coins className="h-3.5 w-3.5 mr-1" />
+                    {tt({ zh: "立即购买 · Buy Now", "zh-TW": "立即購買 · Buy Now", en: "Buy Now", ja: "今すぐ購入", ko: "지금 구매", th: "ซื้อเลย", vi: "Mua ngay" })}
                   </Button>
                 )}
               </motion.div>
