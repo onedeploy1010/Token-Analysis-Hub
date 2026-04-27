@@ -564,8 +564,13 @@ export default function Dashboard() {
         <div className="flex gap-0.5 min-w-max relative">
           {[
             { id: "overview" as const, Icon: LayoutDashboard, label: t("mr.dash.tab.overview") },
-            { id: "team"     as const, Icon: Users,           label: t("mr.dash.tab.team") },
-            { id: "rewards"  as const, Icon: Gift,            label: t("mr.dash.tab.rewards") },
+            // Team / rewards are hidden entirely for unpurchased members —
+            // the data behind them is purchase-gated, no use teasing it
+            // with a tab the user can't meaningfully open.
+            ...(hasPurchased ? [
+              { id: "team"     as const, Icon: Users, label: t("mr.dash.tab.team") },
+              { id: "rewards"  as const, Icon: Gift,  label: t("mr.dash.tab.rewards") },
+            ] : []),
           ].map(({ id, Icon, label }) => {
             const active = tab === id;
             return (
