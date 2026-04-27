@@ -15,11 +15,22 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const NAV_ITEMS = [
-  { href: "/projects",  label: "PROJECTS",   key: "projects",   icon: Grid },
-  { href: "/tools",     label: "SIMULATORS", key: "simulators", icon: Activity },
-  { href: "/recruit",   label: "RECRUIT",    key: "recruit",    icon: Users },
-  { href: "/resources", label: "LIBRARY",    key: "library",    icon: BookOpen },
+interface NavItem {
+  href: string;
+  label: string;
+  key: string;
+  icon: React.ComponentType<{ className?: string }>;
+  /** Renders as a plain <a target="_blank"> instead of wouter <Link>.
+   *  Used for the LIBRARY slot, which opens the external protocol site
+   *  rather than the internal /resources page. */
+  external?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/projects",                     label: "PROJECTS",   key: "projects",   icon: Grid },
+  { href: "/tools",                        label: "SIMULATORS", key: "simulators", icon: Activity },
+  { href: "/recruit",                      label: "RECRUIT",    key: "recruit",    icon: Users },
+  { href: "https://www.rune-protocol.com", label: "LIBRARY",    key: "library",    icon: BookOpen, external: true },
 ];
 
 /* ─── Animated Logo ──────────────────────────────────────────────── */
@@ -255,19 +266,16 @@ function Navbar() {
               + wallet fit on a 1024 px viewport without wrapping. */}
           <nav className="hidden md:flex items-stretch h-[72px] gap-0 ml-auto">
             {visibleNavItems.map((item) => {
-              const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.key)}
-                  className={cn(
-                    "relative flex flex-col items-center justify-center px-4 lg:px-5 transition-all duration-200 group border-b-2",
-                    isActive
-                      ? "border-amber-400 text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/50"
-                  )}
-                >
+              const isExternal = (item as NavItem).external;
+              const isActive = !isExternal && (location === item.href || (item.href !== "/" && location.startsWith(item.href)));
+              const className = cn(
+                "relative flex flex-col items-center justify-center px-4 lg:px-5 transition-all duration-200 group border-b-2",
+                isActive
+                  ? "border-amber-400 text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/50"
+              );
+              const inner = (
+                <>
                   <span className={cn(
                     "text-[13.5px] font-semibold tracking-tight leading-none transition-colors whitespace-nowrap",
                     isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
@@ -282,6 +290,26 @@ function Navbar() {
                       {item.label}
                     </span>
                   )}
+                </>
+              );
+              return isExternal ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className={className}
+                >
+                  {inner}
+                </a>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.key)}
+                  className={className}
+                >
+                  {inner}
                 </Link>
               );
             })}
@@ -360,7 +388,42 @@ function Navbar() {
               <nav className="flex-1 flex flex-col justify-center px-6 gap-1 py-8">
                 {visibleNavItems.map((item, i) => {
                   const Icon = item.icon;
-                  const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                  const isExternal = (item as NavItem).external;
+                  const isActive = !isExternal && (location === item.href || (item.href !== "/" && location.startsWith(item.href)));
+                  const linkClass = cn(
+                    "group flex items-center gap-5 py-5 border-b transition-all",
+                    isActive ? "border-primary/30" : "border-border/20 hover:border-border/40"
+                  );
+                  const inner = (
+                    <>
+                      <span className={cn(
+                        "text-[11px] font-mono tabular-nums w-5 shrink-0",
+                        isActive ? "text-primary/80" : "text-muted-foreground/40"
+                      )}>
+                        0{i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn(
+                          "text-xl font-bold tracking-tight leading-none",
+                          isActive ? "text-primary" : "text-foreground/70 group-hover:text-foreground transition-colors"
+                        )}>
+                          {t(`mr.nav.${item.key}`)}
+                        </p>
+                        {!isEn && (
+                          <p className={cn(
+                            "text-[11px] mt-1 tracking-widest uppercase",
+                            isActive ? "text-primary/60" : "text-muted-foreground/40"
+                          )}>
+                            {item.label}
+                          </p>
+                        )}
+                      </div>
+                      <Icon className={cn(
+                        "h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5",
+                        isActive ? "text-primary" : "text-muted-foreground/30"
+                      )} />
+                    </>
+                  );
                   return (
                     <motion.div
                       key={item.href}
@@ -368,41 +431,25 @@ function Navbar() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.07 + 0.1, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <Link
-                        href={item.href}
-                        onClick={(e) => { handleNavClick(e, item.key); setMenuOpen(false); }}
-                        className={cn(
-                          "group flex items-center gap-5 py-5 border-b transition-all",
-                          isActive ? "border-primary/30" : "border-border/20 hover:border-border/40"
-                        )}
-                      >
-                        <span className={cn(
-                          "text-[11px] font-mono tabular-nums w-5 shrink-0",
-                          isActive ? "text-primary/80" : "text-muted-foreground/40"
-                        )}>
-                          0{i + 1}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className={cn(
-                            "text-xl font-bold tracking-tight leading-none",
-                            isActive ? "text-primary" : "text-foreground/70 group-hover:text-foreground transition-colors"
-                          )}>
-                            {t(`mr.nav.${item.key}`)}
-                          </p>
-                          {!isEn && (
-                            <p className={cn(
-                              "text-[11px] mt-1 tracking-widest uppercase",
-                              isActive ? "text-primary/60" : "text-muted-foreground/40"
-                            )}>
-                              {item.label}
-                            </p>
-                          )}
-                        </div>
-                        <Icon className={cn(
-                          "h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5",
-                          isActive ? "text-primary" : "text-muted-foreground/30"
-                        )} />
-                      </Link>
+                      {isExternal ? (
+                        <a
+                          href={item.href}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          onClick={() => setMenuOpen(false)}
+                          className={linkClass}
+                        >
+                          {inner}
+                        </a>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          onClick={(e) => { handleNavClick(e, item.key); setMenuOpen(false); }}
+                          className={linkClass}
+                        >
+                          {inner}
+                        </Link>
+                      )}
                     </motion.div>
                   );
                 })}
