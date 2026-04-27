@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -789,6 +789,24 @@ export default function Tutorial() {
   // null → no spotlight (modal open or step > 0)
   const [spotlight, setSpotlight] = useState<"connect" | "purchase" | null>(null);
   const setConnectSpotlight = useTutorialStore((s) => s.setConnectSpotlight);
+
+  // Track the previous real wallet address so we can detect disconnection.
+  const prevAddressRef = useRef<string | undefined>(account?.address);
+
+  // If the real wallet disconnects mid-tutorial, fully reset to step 0
+  // so the UI returns to the "connect wallet" entry state.
+  useEffect(() => {
+    const prev = prevAddressRef.current;
+    prevAddressRef.current = account?.address;
+    // prev was a real address, now it's gone → user disconnected
+    if (prev !== undefined && account?.address === undefined) {
+      setStep(0);
+      setWalletAddress(DEMO_ADDRESS);
+      setBindOpen(false);
+      setBuyOpen(false);
+      setPreSelectedBuyNode(null);
+    }
+  }, [account?.address]);
 
   // Auto-skip step 0 when wallet is already connected AND already registered.
   useEffect(() => {
