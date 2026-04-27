@@ -43,11 +43,19 @@ export function RuneOnboarding() {
   const [bindOpen, setBindOpen] = useState(false);
   const [buyOpen, setBuyOpen]   = useState(false);
   const [preSelectedNodeId, setPreSelectedNodeId] = useState<NodeId | undefined>();
-  // Buy modal is dismissable per session; bind modal is not (it only
-  // closes once the on-chain tx confirms). Cleared on disconnect.
+  // Both modals are dismissable per session. The dismissed flags prevent
+  // the effect below from snapping a modal back open during the brief
+  // window between `setOpen(false)` and the wallet/contract state update
+  // propagating to `address` / `isBound`. Without them, a Radix Dialog
+  // open→close→open micro-cycle leaves the page with a lingering body
+  // `pointer-events: none` that requires a refresh to clear.
+  const [bindDismissed, setBindDismissed] = useState(false);
   const [buyDismissed, setBuyDismissed] = useState(false);
 
-  useEffect(() => { setBuyDismissed(false); }, [address]);
+  useEffect(() => {
+    setBindDismissed(false);
+    setBuyDismissed(false);
+  }, [address]);
 
   // Re-open signal from outside (card clicks, nav clicks).
   // Optionally carries a specific nodeId to pre-select in the modal.
@@ -64,8 +72,9 @@ export function RuneOnboarding() {
     if (!address || referrer === undefined || purchaseLoading) return;
 
     // Not bound — must bind before anything else. Modal is dismissable
-    // (close = disconnect wallet).
-    if (!isBound) {
+    // (close = disconnect wallet); `bindDismissed` keeps this branch from
+    // re-opening it during the disconnect's propagation window.
+    if (!isBound && !bindDismissed) {
       setBindOpen(true);
       setBuyOpen(false);
       return;
@@ -85,7 +94,7 @@ export function RuneOnboarding() {
       setBuyOpen(true);
       return;
     }
-  }, [address, referrer, isBound, hasPurchased, purchaseLoading, buyDismissed, navigate]);
+  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, buyDismissed, navigate]);
 
   return (
     <>
@@ -95,6 +104,7 @@ export function RuneOnboarding() {
         // Closing without binding rolls the wallet back to disconnected —
         // there's nothing useful a connected-but-unbound wallet can do here.
         onClose={() => {
+          setBindDismissed(true);
           setBindOpen(false);
           if (wallet) disconnect(wallet);
         }}
