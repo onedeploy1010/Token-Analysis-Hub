@@ -257,7 +257,14 @@ function TechChartCard({
 const STAGE_EN_LABELS = ["① Launch", "② Batch 2", "③ Batch 3", "④ Batch 4", "⑤ Target (Low)", "⑥ Target (High)"];
 
 // ─── Main page ────────────────────────────────────────────────────────────────
-type V2Tab = "node" | "staking" | "summary";
+// Three product tracks per the 2026-04-29 user clarification:
+//   • node — buy a node (existing reference tables + the ROI calculator
+//     formerly in the "summary" tab)
+//   • pkg  — USDT → buy RUNE → activate 套餐 (deposit staking).
+//     Daily 0.5-0.9% × bonus → 65% USDT static + 35% buys sub-token.
+//   • dual — USDT → buy RUNE → permanently burn → daily 1.0-1.5%
+//     sub-token → auto-stake → AI dividend + IDO allocations.
+type V2Tab = "node" | "pkg" | "dual";
 
 export default function RuneV2() {
   const { t, bi, isEn, isZh } = useBi();
@@ -347,8 +354,24 @@ export default function RuneV2() {
   // 2500万/mo → ~38 days.
   const SIM_HORIZON_DAYS = 540;
 
-  // Staking-tab "complete cycle" (套餐 → static USDT + dynamic 子币 →
-  // 子币 auto-stake → AI revenue + IDO). Client-side calc, no backend.
+  // ── 质押 (pkg) tab — USDT 套餐 calculator ───────────────────────────────
+  // User deposits USDT; protocol auto-buys RUNE and activates 套餐.
+  // Daily yield 0.5-0.9% × duration bonus (per 模型制度.md §叁):
+  //   30d   0.3-0.5% / no bonus
+  //   90d   0.5-0.7% / no bonus
+  //   180d  0.5-0.9% / +10%
+  //   360d  0.5-0.9% / +20%
+  //   540d  0.5-0.9% / +30%
+  // Yield split: 65% USDT直发 (静态) + 35% 自动买子币 (动态).
+  // Sub-token valued at launch price $0.038 per user's choice (no dynamic
+  // sub-side model yet).
+  const [pkgUsdt, setPkgUsdt] = useState(1000);
+  const [pkgDays, setPkgDays] = useState<30 | 90 | 180 | 360 | 540>(540);
+  const [pkgRatePct, setPkgRatePct] = useState(0.7); // base daily rate, slider midpoint
+  const PKG_SUB_LAUNCH_PRICE = 0.038;
+
+  // ── 双币联动 (dual) tab — burn-stake mother → sub-token → AI + IDO ──
+  // Client-side calc, no backend.
   const [stakeUsdt,        setStakeUsdt]        = useState(1000);    // USDT principal
   const [stakeDays,        setStakeDays]        = useState(360);     // duration
   const [stakeStage,       setStakeStage]       = useState(3);       // price stage (Stage 4 default)
@@ -1263,9 +1286,9 @@ export default function RuneV2() {
       <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
         <div className="flex gap-0.5 min-w-max relative">
           {[
-            { id: "node"    as const, labelEn: "NODES",   labelCn: "节点" },
-            { id: "staking" as const, labelEn: "STAKING", labelCn: "质押" },
-            { id: "summary" as const, labelEn: "SUMMARY", labelCn: "综合" },
+            { id: "node" as const, labelEn: "NODES",      labelCn: "节点" },
+            { id: "pkg"  as const, labelEn: "STAKE PKG",  labelCn: "质押" },
+            { id: "dual" as const, labelEn: "DUAL CHAIN", labelCn: "双币联动" },
           ].map(({ id, labelEn, labelCn }) => {
             const active = v2Tab === id;
             return (
@@ -1519,7 +1542,9 @@ export default function RuneV2() {
 
       {/* ═══ SUMMARY TAB ═══ — original calculator (input form + Total Returns + result charts).
           Was wrapped under Nodes tab; user wants it as a separate "综合" tab summarizing total returns. */}
-      {v2Tab === "summary" && (<>
+      {/* Node ROI calculator — moved from the old "Summary" tab so the Node
+          tab is now self-contained: reference tables above, calculator here. */}
+      {v2Tab === "node" && (<>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           CALCULATOR SECTION — 节点收益模拟器
@@ -2042,7 +2067,169 @@ export default function RuneV2() {
       </motion.div>
 
       </>)}
-      {/* end SUMMARY TAB */}
+      {/* end NODE TAB calculator */}
+
+
+      {/* ═══ 质押 TAB ═══ — USDT 套餐 calculator. Per 模型制度.md §叁
+          deposit terms × yield × duration bonus. Per the 资金流向 doc,
+          daily AI-quant yield splits 65% USDT static + 35% auto-buy
+          sub-token. */}
+      {v2Tab === "pkg" && (() => {
+        // Yield bracket per duration (模型制度.md §叁)
+        const bracket =
+          pkgDays === 30  ? { min: 0.3, max: 0.5, bonus: 0    }
+        : pkgDays === 90  ? { min: 0.5, max: 0.7, bonus: 0    }
+        : pkgDays === 180 ? { min: 0.5, max: 0.9, bonus: 0.10 }
+        : pkgDays === 360 ? { min: 0.5, max: 0.9, bonus: 0.20 }
+        :                   { min: 0.5, max: 0.9, bonus: 0.30 };
+        // Effective rate after bonus, clamped to bracket
+        const baseRate    = Math.min(Math.max(pkgRatePct, bracket.min), bracket.max);
+        const effDailyPct = baseRate * (1 + bracket.bonus);                 // % per day (post-bonus)
+        const dailyYieldU = pkgUsdt * (effDailyPct / 100);                  // USDT/day total yield
+        const totalYieldU = dailyYieldU * pkgDays;                          // total over period
+        const staticUsdt  = totalYieldU * 0.65;                             // 65% USDT direct
+        const dynamicUsdt = totalYieldU * 0.35;                             // 35% auto-buy sub
+        const subTokens   = dynamicUsdt / PKG_SUB_LAUNCH_PRICE;             // sub-tokens accumulated
+        const subValue    = subTokens * PKG_SUB_LAUNCH_PRICE;               // == dynamicUsdt at launch
+        const totalValue  = staticUsdt + subValue;                          // book value at launch sub-price
+        const roi         = pkgUsdt > 0 ? (totalValue / pkgUsdt) * 100 : 0;
+        const roiX        = pkgUsdt > 0 ?  totalValue / pkgUsdt        : 0;
+        return (
+          <Card className="surface-3d border-border/40">
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap text-foreground">
+                <Activity className="h-4 w-4 text-primary shrink-0" />
+                {isEn ? "Stake Package · USDT → RUNE → Daily Yield" : "质押套餐 · USDT 买 RUNE 激活套餐"}
+                <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Doc-Driven" : "按文档"}</span>
+              </CardTitle>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                {isEn
+                  ? "Per 模型制度.md §叁: 30/90d no bonus, 180d +10%, 360d +20%, 540d +30%. Daily yield splits 65% USDT direct + 35% auto-buys sub-token (valued at $0.038 launch price)."
+                  : "套餐期限按 §叁：30/90 天无加成；180 天 +10%；360 天 +20%；540 天 +30%。日化收益 65% USDT 直发 + 35% 自动买子币（按 $0.038 开盘价估值）。"}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Principal (USDT)" : "本金 (USDT)"}</Label>
+                  <input type="number" value={pkgUsdt} min={100} step={100}
+                    onChange={(e) => setPkgUsdt(Math.max(100, Number(e.target.value)))}
+                    className="w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm text-foreground" />
+                  <p className="text-[10px] text-muted-foreground/70">{isEn ? "Per-order cap $1,000 per spec" : "单单上限 $1,000（文档规定）"}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Duration" : "套餐期限"}</Label>
+                  <select value={pkgDays} onChange={(e) => setPkgDays(Number(e.target.value) as typeof pkgDays)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm text-foreground">
+                    <option value={30}>30 {isEn ? "days · no bonus" : "天 · 无加成"}</option>
+                    <option value={90}>90 {isEn ? "days · no bonus" : "天 · 无加成"}</option>
+                    <option value={180}>180 {isEn ? "days · +10%" : "天 · +10%"}</option>
+                    <option value={360}>360 {isEn ? "days · +20%" : "天 · +20%"}</option>
+                    <option value={540}>540 {isEn ? "days · +30%" : "天 · +30%"}</option>
+                  </select>
+                  <p className="text-[10px] text-muted-foreground/70">{isEn ? `Yield bracket: ${bracket.min}%-${bracket.max}% daily` : `日化区间：${bracket.min}%-${bracket.max}%`}</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Base daily rate" : "基础日化"}</Label>
+                    <span className="num text-xs text-primary">{baseRate.toFixed(2)}%</span>
+                  </div>
+                  <Slider value={[baseRate]} min={bracket.min} max={bracket.max} step={0.05}
+                    onValueChange={(v) => setPkgRatePct(v[0] ?? baseRate)} className="py-1" />
+                  <div className="flex justify-between text-[9px] text-muted-foreground/60">
+                    <span>{bracket.min}%</span><span>{bracket.max}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total card */}
+              <div className="p-4 sm:p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
+                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                  <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
+                    {isEn ? "Total Book Value @ launch sub-price" : "总账面价值（开盘子币价）"}
+                  </p>
+                  <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
+                </div>
+                <div className="flex items-end gap-3 flex-wrap">
+                  <p className="num-shimmer text-3xl sm:text-4xl">${fmt(totalValue, 0)}</p>
+                  <div className="flex gap-2 flex-wrap mb-1">
+                    <span className="text-xs bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full num">ROI {fmt(roi, 1)}%</span>
+                    <span className="text-xs bg-muted/40 text-foreground border border-border/40 px-2 py-0.5 rounded-full num">{fmt(roiX, 2)}×</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  {isEn
+                    ? `${baseRate.toFixed(2)}% × (1+${(bracket.bonus*100).toFixed(0)}% bonus) = ${effDailyPct.toFixed(3)}%/day · ${pkgDays}d total yield $${fmt(totalYieldU, 0)}`
+                    : `${baseRate.toFixed(2)}% × (1+${(bracket.bonus*100).toFixed(0)}% 加成) = ${effDailyPct.toFixed(3)}%/日 · ${pkgDays} 天总收益 $${fmt(totalYieldU, 0)}`}
+                </p>
+              </div>
+
+              {/* Two-card breakdown: 65% static / 35% dynamic */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl border border-border/40 bg-card/60">
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{isEn ? "Static USDT (65%)" : "静态 USDT（65%）"}</p>
+                  <p className="num text-lg text-foreground">${fmt(staticUsdt, 2)}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {isEn ? "Direct to wallet, daily settled" : "直发钱包，每日结算"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                    ${fmt(dailyYieldU * 0.65, 2)}{isEn ? "/day" : "/日"} × {pkgDays}{isEn ? "d" : "天"}
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl border border-border/40 bg-card/60">
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{isEn ? "Dynamic Sub-Token (35%)" : "动态子币（35%）"}</p>
+                  <p className="num text-lg text-foreground">${fmt(subValue, 2)}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {fmt(subTokens, 0)} {isEn ? "sub-tokens" : "枚子币"} × ${PKG_SUB_LAUNCH_PRICE}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                    {isEn ? "Auto-purchased into pool" : "自动注入底池"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Doc reference table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground uppercase tracking-wider">
+                    <tr className="border-b border-border/40">
+                      <th className="text-left py-2 px-2">{isEn ? "Term" : "套餐"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Daily" : "日化"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Bonus" : "加成"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Cap" : "单单上限"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Day Cap (gross)" : "日额度"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { d: 30,  rate: "0.3-0.5%", bonus: "—",   cap: "$1,000", dayCap: "20万U" },
+                      { d: 90,  rate: "0.5-0.7%", bonus: "—",   cap: "$1,000", dayCap: "30万U" },
+                      { d: 180, rate: "0.5-0.9%", bonus: "+10%", cap: "$1,000", dayCap: isEn ? "unlimited" : "不限" },
+                      { d: 360, rate: "0.5-0.9%", bonus: "+20%", cap: "$1,000", dayCap: isEn ? "unlimited" : "不限" },
+                      { d: 540, rate: "0.5-0.9%", bonus: "+30%", cap: "$1,000", dayCap: isEn ? "unlimited" : "不限" },
+                    ].map((r) => (
+                      <tr key={r.d} className={`border-b border-border/20 ${r.d === pkgDays ? "bg-primary/5" : ""}`}>
+                        <td className="py-2 px-2 text-foreground">{r.d} {isEn ? "days" : "天"}</td>
+                        <td className="py-2 px-2 text-right num text-foreground/80">{r.rate}</td>
+                        <td className="py-2 px-2 text-right num text-primary">{r.bonus}</td>
+                        <td className="py-2 px-2 text-right num text-foreground/70">{r.cap}</td>
+                        <td className="py-2 px-2 text-right num text-foreground/70">{r.dayCap}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                {isEn
+                  ? "Estimated. Daily AI-quant yield splits 65% USDT (paid out) + 35% buys sub-token at market. Sub-token holdings here valued at $0.038 launch price (no dynamic sub-side model). At later stages with higher sub-price, dynamic 35% portion is worth more — see Dual Chain tab for the burn-stake pathway."
+                  : "预估。AI 量化日化收益 65% USDT 直发 + 35% 按市价自动买子币。此处子币按 $0.038 开盘价估值（子币暂无动态价格模型）。后期阶段子币涨价时，动态 35% 部分实际价值更高——见「双币联动」tab 销毁路径。"}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
 
       {/* ═══ STAKING TAB ═══ — single unified chain (re-read 2026-04-28).
@@ -2053,7 +2240,7 @@ export default function RuneV2() {
             burn N mother → daily 1-1.5%×N **sub-tokens** → auto-stake
             sub-stake earns AI monthly distribution + IDO 50× allocation
           One calculator covers the whole chain; no separate 套餐 panel. */}
-      {v2Tab === "staking" && (<>
+      {v2Tab === "dual" && (<>
       {/* ── DEAD: old separate burn-stake panel (mother token yield). ── */}
       {false && (<>
       {/* ── Burn-Stake panel (mother token) ──
