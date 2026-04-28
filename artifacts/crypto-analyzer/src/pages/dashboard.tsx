@@ -288,27 +288,21 @@ export default function Dashboard() {
   const hasPurchased   = isDemoMode || chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
   const ownedNodeId    = chainNodeId ?? (dbNodeId ?? previewNodeId);
 
-  // No-address bounce only — bound-but-not-purchased users stay here and
-  // see the restricted view rendered below.
+  // Hard purchase gate (re-instated 2026-04-28): dashboard requires both
+  // a connected wallet AND an on-chain node purchase. Bound-but-unpurchased
+  // users get bounced to /recruit with the buy modal triggered. Matches the
+  // contract-side rule that referrer must have purchased — no halfway state.
   useEffect(() => {
     if (isDemoMode) return;
-    if (!address) navigate("/recruit");
-  }, [address, isDemoMode, navigate]);
+    if (!address) { navigate("/recruit"); return; }
+    if (previewNodeId !== undefined) return;
+    if (!purchaseLoading && !statsLoading && !hasPurchased) {
+      navigate("/recruit");
+      emitOpenPurchase();
+    }
+  }, [address, isDemoMode, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
 
-  // Periodic purchase nag for unpurchased members. Fires the global
-  // open-purchase signal every 120s; the modal in RuneOnboarding listens
-  // and pops. 5-minute cooldown after the user dismisses to keep it
-  // pushy without being adversarial.
-  useEffect(() => {
-    if (isDemoMode || !address || hasPurchased || purchaseLoading || statsLoading) return;
-    const NUDGE_MS = 120_000;
-    const id = setInterval(() => emitOpenPurchase(), NUDGE_MS);
-    // Kick once shortly after entry so users notice the gating immediately.
-    const kickoff = setTimeout(() => emitOpenPurchase(), 4_000);
-    return () => { clearInterval(id); clearTimeout(kickoff); };
-  }, [isDemoMode, address, hasPurchased, purchaseLoading, statsLoading]);
-
-  if (!isDemoMode && !address) return null;
+  if (!isDemoMode && (!address || !hasPurchased)) return null;
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
@@ -611,7 +605,7 @@ export default function Dashboard() {
           transition={{ duration: 0.28, ease: EASE }}
         >
           {tab === "overview" ? (
-            <OverviewTab address={address} restricted={!hasPurchased} />
+            <OverviewTab address={address} />
           ) : tab === "team" ? (
             <TeamTab address={address} />
           ) : (

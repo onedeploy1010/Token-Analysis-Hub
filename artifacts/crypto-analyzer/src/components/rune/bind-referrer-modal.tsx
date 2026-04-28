@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSendTransaction, useActiveAccount } from "thirdweb/react";
 import { prepareContractCall, readContract } from "thirdweb";
-import { communityContract, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
+import { communityContract, nodePresellContract, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
 import { UserPlus, Loader2, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/language-context";
@@ -61,15 +61,15 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
   const isRoot = isHex && resolved === COMMUNITY_ROOT.toLowerCase();
   const isSelf = account && resolved === account.address.toLowerCase();
 
-  // Debounced on-chain pre-check: once the user has typed a valid address,
-  // verify `referrerOf(ref) != 0` (or it's ROOT). This mirrors the contract's
-  // "Referrer not invited" rule and fails loudly before the user pays gas.
+  // Debounced on-chain pre-check (2 conditions, both must pass):
+  //   1. `referrerOf(ref) != 0` — the proposed referrer is in the community
+  //      (mirrors the contract's "Referrer not invited" revert).
+  //   2. `getUserPurchaseData(ref).amount > 0` — the proposed referrer has
+  //      actually purchased a node. The on-chain contract enforces this
+  //      since 2026-04-28; checking client-side surfaces the rejection
+  //      before the user pays gas. ROOT is exempt from both checks.
   useEffect(() => {
     if (!isHex || isSelf) { setPreCheck({ state: "idle" }); return; }
-    // ROOT is a valid upstream but we deliberately don't surface it —
-    // the alias is for internal use only, so show the same generic
-    // "validated" label external users would see after a successful
-    // referrer lookup.
     if (isRoot)           { setPreCheck({ state: "ok", label: t("mr.bind.okValidated") }); return; }
 
     setPreCheck({ state: "checking" });
@@ -82,13 +82,27 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
         })) as string;
 
         if (upstreamOfRef.toLowerCase() === ZERO) {
+          setPreCheck({ state: "reject", reason: t("mr.bind.rejectNotMember") });
+          return;
+        }
+
+        const purchase = (await readContract({
+          contract: nodePresellContract,
+          method: "function getUserPurchaseData(address) view returns (address, uint256, uint256, uint256)",
+          params: [resolved as `0x${string}`],
+        })) as readonly [string, bigint, bigint, bigint];
+        const purchasedAmount = purchase[1];
+        if (purchasedAmount === 0n) {
           setPreCheck({
             state: "reject",
-            reason: t("mr.bind.rejectNotMember"),
+            reason: t("mr.bind.rejectUplineNoNode") === "mr.bind.rejectUplineNoNode"
+              ? "上级地址尚未购买节点，无法作为推荐人"
+              : t("mr.bind.rejectUplineNoNode"),
           });
-        } else {
-          setPreCheck({ state: "ok", label: t("mr.bind.okValidated") });
+          return;
         }
+
+        setPreCheck({ state: "ok", label: t("mr.bind.okValidated") });
       } catch (e: any) {
         setPreCheck({ state: "reject", reason: e?.message ?? t("mr.bind.rejectRpc") });
       }

@@ -20,9 +20,10 @@ import type { NodeId } from "@/lib/thirdweb/contracts";
  *      → wallet disconnects → UI returns to the unauthenticated state).
  *      Pre-fills the input from `?ref=` if present.
  *   3. Bound + not purchased → pop PurchaseNodeModal. User may close
- *      it ("Later") and STAY on /recruit. They may also click the
- *      "Dashboard" nav to enter the dashboard manually, where they see
- *      a restricted view (referral link only + periodic purchase nag).
+ *      it ("Later") and STAY on /recruit. Dashboard is a hard gate —
+ *      clicking it bounces back to /recruit and re-opens the buy modal
+ *      (the contract-side rule that referrers must hold a node makes
+ *      a "browse-only dashboard" state useless).
  *   4. Already purchased → navigate straight to /dashboard.
  *
  * Each decision re-checks on-chain state after every tx so reloads
