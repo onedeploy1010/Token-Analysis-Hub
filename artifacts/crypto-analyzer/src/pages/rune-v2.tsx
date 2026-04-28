@@ -304,11 +304,10 @@ export default function RuneV2() {
   }, [nodeLevel, durationDays, priceStageIndex]);
 
   // Trading-tab assumptions (UI-tunable).
-  // Trading-divided assumptions stored as [low, high] ranges so the
-  // dividend table can show a band per stage instead of a single point.
-  const [tradeTurnoverRange,     setTradeTurnoverRange]     = useState<[number, number]>([10, 20]);
-  const [tradeProfitMarginRange, setTradeProfitMarginRange] = useState<[number, number]>([20, 40]);
-  const [nodeShareOfAiRange,     setNodeShareOfAiRange]     = useState<[number, number]>([3, 8]);
+  // Trading-dividend assumptions — single sliders within realistic bounds.
+  const [tradeTurnover,    setTradeTurnover]    = useState(15);   // ×/mo, [10, 20]
+  const [tradeProfitMargin, setTradeProfitMargin] = useState(30); // %,    [20, 40]
+  const [nodeShareOfAi,    setNodeShareOfAi]    = useState(5);   // %,    [3, 8]
 
   // ── Dynamic mother-token price simulation (replaces doc's static 80-120×) ──
   //   Day 0: LP = 280万 USDT × 1亿 RUNE (launch price $0.028)
@@ -1178,33 +1177,22 @@ export default function RuneV2() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Range sliders — dual-thumb horizontal sliders for low/high band selection. */}
+                {/* Single-thumb sliders within realistic bounds; table renders one value per cell. */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    // Slider min/max are the realistic bounds for each param;
-                    // both thumbs slide within these. Doesn't expose nonsense
-                    // extremes (e.g. AI turnover at 1× or 50× both unrealistic).
-                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",  value: tradeTurnoverRange,     setter: setTradeTurnoverRange,     min: 10, max: 20, step: 1,    suffix: "×" },
-                    { label: isEn ? "Profit margin %"    : "盈利率 %",    value: tradeProfitMarginRange, setter: setTradeProfitMarginRange, min: 20, max: 40, step: 1,    suffix: "%" },
-                    { label: isEn ? "Node share AI %"    : "节点占 AI %", value: nodeShareOfAiRange,     setter: setNodeShareOfAiRange,     min: 3,  max: 8,  step: 0.1,  suffix: "%" },
+                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",  value: tradeTurnover,     setter: setTradeTurnover,     min: 10, max: 20, step: 1,    suffix: "×" },
+                    { label: isEn ? "Profit margin %"    : "盈利率 %",    value: tradeProfitMargin, setter: setTradeProfitMargin, min: 20, max: 40, step: 1,    suffix: "%" },
+                    { label: isEn ? "Node share AI %"    : "节点占 AI %", value: nodeShareOfAi,     setter: setNodeShareOfAi,     min: 3,  max: 8,  step: 0.1,  suffix: "%" },
                   ].map(({ label, value, setter, min, max, step, suffix }) => (
                     <div key={label} className="space-y-2">
                       <div className="flex justify-between items-baseline">
                         <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</Label>
-                        <span className="num text-xs text-amber-300">
-                          {value[0]}{suffix} <span className="text-muted-foreground/60">–</span> {value[1]}{suffix}
-                        </span>
+                        <span className="num text-xs text-amber-300">{value}{suffix}</span>
                       </div>
-                      <Slider
-                        value={value}
-                        min={min} max={max} step={step}
-                        minStepsBetweenThumbs={1}
-                        onValueChange={(v) => { if (v.length >= 2) setter([v[0], v[1]]); }}
-                        className="py-1"
-                      />
+                      <Slider value={[value]} min={min} max={max} step={step}
+                        onValueChange={(v) => setter(v[0] ?? value)} className="py-1" />
                       <div className="flex justify-between text-[9px] text-muted-foreground/50">
-                        <span>{min}{suffix}</span>
-                        <span>{max}{suffix}</span>
+                        <span>{min}{suffix}</span><span>{max}{suffix}</span>
                       </div>
                     </div>
                   ))}
@@ -1215,7 +1203,7 @@ export default function RuneV2() {
                     <thead className="text-muted-foreground/70 uppercase tracking-wider">
                       <tr className="border-b border-border/40">
                         <th className="text-left py-2 px-2 sticky left-0 bg-card/80 backdrop-blur">{isEn ? "Stage" : "阶段"}</th>
-                        <th className="text-right py-2 px-2">{isEn ? "Pool/day (low–high)" : "节点池/日 (区间)"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Pool/day" : "节点池/日"}</th>
                         {nodes.map((n) => (
                           <th key={n.level} className="text-right py-2 px-2 whitespace-nowrap">{nodeName(n)}</th>
                         ))}
@@ -1223,33 +1211,23 @@ export default function RuneV2() {
                     </thead>
                     <tbody>
                       {stages4.map((s) => {
-                        // Compute pool/day at low and high bounds of all 3 ranges.
-                        const computePool = (turnover: number, _profit: number, nodeShare: number) => {
-                          const dailyVolU = (s.qep * 1e4 * turnover) / 30;
-                          const aiNetMoU  = s.qep * 1e4 * 0.25;
-                          const taxFromVolDay = dailyVolU * (TAX_NODE_RATE_BPS / 1e4);
-                          const aiShareDay  = (aiNetMoU * (nodeShare / 100)) / 30;
-                          return taxFromVolDay + aiShareDay;
-                        };
-                        const poolLow  = computePool(tradeTurnoverRange[0], tradeProfitMarginRange[0], nodeShareOfAiRange[0]);
-                        const poolHigh = computePool(tradeTurnoverRange[1], tradeProfitMarginRange[1], nodeShareOfAiRange[1]);
+                        const dailyVolU = (s.qep * 1e4 * tradeTurnover) / 30;
+                        const aiNetMoU  = s.qep * 1e4 * 0.25;
+                        const taxFromVolDay = dailyVolU * (TAX_NODE_RATE_BPS / 1e4);
+                        const aiShareDay  = (aiNetMoU * (nodeShareOfAi / 100)) / 30;
+                        const nodePoolDay = taxFromVolDay + aiShareDay;
                         return (
                           <tr key={s.idx} className="border-b border-border/20">
                             <td className="py-2 px-2 sticky left-0 bg-card/40 backdrop-blur whitespace-nowrap">
                               <div className="text-foreground">{isEn ? `Stage ${s.idx + 1}` : `阶段 ${s.idx + 1}`}</div>
                               <div className="text-[10px] text-muted-foreground">TLP {s.tlp}万</div>
                             </td>
-                            <td className="py-2 px-2 text-right num text-fuchsia-300 whitespace-nowrap">
-                              ${fmt(poolLow, 0)}<span className="text-muted-foreground/60"> – </span>${fmt(poolHigh, 0)}
-                            </td>
+                            <td className="py-2 px-2 text-right num text-fuchsia-300 whitespace-nowrap">${fmt(nodePoolDay, 0)}</td>
                             {nodes.map((n) => {
                               const wRatio = (n.weight * n.seats) / TOTAL_NODE_WEIGHT;
-                              const perSeatLow  = (poolLow  * wRatio) / n.seats;
-                              const perSeatHigh = (poolHigh * wRatio) / n.seats;
+                              const perSeat = (nodePoolDay * wRatio) / n.seats;
                               return (
-                                <td key={n.level} className="py-2 px-2 text-right num text-amber-200 whitespace-nowrap">
-                                  ${fmt(perSeatLow, 2)}<span className="text-muted-foreground/60"> – </span>${fmt(perSeatHigh, 2)}
-                                </td>
+                                <td key={n.level} className="py-2 px-2 text-right num text-amber-200 whitespace-nowrap">${fmt(perSeat, 2)}</td>
                               );
                             })}
                           </tr>
