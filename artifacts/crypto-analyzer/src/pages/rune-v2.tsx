@@ -358,7 +358,7 @@ export default function RuneV2() {
   const [globalSubStaked,  setGlobalSubStaked]  = useState(100_000);    // assumed total sub-stake
   const [idosPerMonth,     setIdosPerMonth]     = useState(1.5);
   const [idoAvgMultiplier, setIdoAvgMultiplier] = useState(50);
-  const [idoAllocFactor,   setIdoAllocFactor]   = useState(0.001);   // your sub-stake × this = USDT allocation per IDO
+  const [idoAllocFactor,   setIdoAllocFactor]   = useState(0.003);   // your sub-stake × this = USDT allocation per IDO. Calibrated against doc PART V: 6.27M IDO gain @ 540d/10000U → ~$4,738/IDO ÷ 1.44M avg sub-stake ≈ 0.0033.
 
   const selectedNode         = overview?.nodes?.find(n => n.level === nodeLevel);
   const selectedStagePreview = overview?.priceStages?.[priceStageIndex];
@@ -2244,30 +2244,35 @@ export default function RuneV2() {
             const idoCount = idosPerMonth * months;
             const idoAllocPerEvent = avgSubStake * idoAllocFactor;
             const idoGains = idoCount * idoAllocPerEvent * (idoAvgMultiplier - 1);
-            const totalIncome = subTokenValue + aiRevenue + idoGains;
+            // Per doc PART V: total cash returns = AI dividend + IDO gains.
+            // Sub-token holdings are "auto-staked" — their value is realized
+            // through the AI/IDO streams, not booked separately as a stage-
+            // priced asset. Including stage-priced sub-token value double-
+            // counts and inflated ROI ~7×. Sub-token value still shown below
+            // as informational, but no longer rolled into total/ROI.
+            const totalIncome = aiRevenue + idoGains;
             const roi  = burnCostUsd > 0 ? (totalIncome / burnCostUsd) * 100 : 0;
             const roiX = burnCostUsd > 0 ?  totalIncome / burnCostUsd        : 0;
-            // Breakdown values are now mixed (tokens count + USD), so render them as preformatted strings
             const breakdownSafe = [
-              { label: isEn ? "Sub-Tokens Yielded" : "累积子币产出",         displayValue: `${fmt(totalSubTokens, 0)} ${isEn ? "tokens" : "枚"}`, share: 0,                                              color: "text-amber-300" },
-              { label: isEn ? "Sub-Token Value @ stage" : "子币持仓估值",     displayValue: `$${fmt(subTokenValue, 0)}`,                            share: totalIncome > 0 ? subTokenValue / totalIncome : 0, color: "text-rose-300" },
-              { label: isEn ? "AI Revenue (sub-stake)" : "AI 月分红 (子币)",  displayValue: `$${fmt(aiRevenue, 0)}`,                                share: totalIncome > 0 ? aiRevenue / totalIncome : 0,    color: "text-cyan-300" },
-              { label: isEn ? "IDO Gains" : "IDO 打新收益",                  displayValue: `$${fmt(idoGains, 0)}`,                                 share: totalIncome > 0 ? idoGains / totalIncome : 0,     color: "text-fuchsia-300" },
+              { label: isEn ? "Sub-Tokens Yielded"      : "累积子币产出",       displayValue: `${fmt(totalSubTokens, 0)} ${isEn ? "tokens" : "枚"}`, share: 0, info: true },
+              { label: isEn ? "Sub-Token Value @ stage" : "子币持仓估值（参考）", displayValue: `$${fmt(subTokenValue, 0)}`,                            share: 0, info: true },
+              { label: isEn ? "AI Revenue (sub-stake)"  : "AI 月分红 (子币)",   displayValue: `$${fmt(aiRevenue, 0)}`,                                share: totalIncome > 0 ? aiRevenue / totalIncome : 0, info: false },
+              { label: isEn ? "IDO Gains"               : "IDO 打新收益",        displayValue: `$${fmt(idoGains, 0)}`,                                 share: totalIncome > 0 ? idoGains  / totalIncome : 0, info: false },
             ];
             return (
               <div className="space-y-4">
-                <div className="p-4 sm:p-5 rounded-xl border border-emerald-700/40 bg-gradient-to-br from-emerald-950/40 to-transparent">
+                <div className="p-4 sm:p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
                   <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                    <p className="text-[11px] text-emerald-400 uppercase tracking-widest font-semibold">
-                      {isEn ? "Total Chain Returns" : "完整链路总收益"}
+                    <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
+                      {isEn ? "Total Cash Returns (AI + IDO)" : "现金收益（AI + IDO）"}
                     </p>
-                    <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
+                    <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
                   </div>
                   <div className="flex items-end gap-3 flex-wrap">
                     <p className="num-shimmer text-3xl sm:text-4xl">${fmt(totalIncome, 0)}</p>
                     <div className="flex gap-2 flex-wrap mb-1">
-                      <span className="text-xs bg-green-900/50 text-green-300 border border-green-700/40 px-2 py-0.5 rounded-full num">ROI {fmt(roi, 0)}%</span>
-                      <span className="text-xs bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2 py-0.5 rounded-full num">{fmt(roiX, 1)}×</span>
+                      <span className="text-xs bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full num">ROI {fmt(roi, 0)}%</span>
+                      <span className="text-xs bg-muted/40 text-foreground border border-border/40 px-2 py-0.5 rounded-full num">{fmt(roiX, 1)}×</span>
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-2">
@@ -2282,12 +2287,14 @@ export default function RuneV2() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {breakdownSafe.map((b, i) => (
-                    <div key={i} className="p-3 sm:p-4 rounded-xl border border-border/40 bg-card/40">
+                    <div key={i} className={`p-3 sm:p-4 rounded-xl border ${b.info ? "border-border/30 bg-card/30" : "border-border/40 bg-card/60"}`}>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{b.label}</p>
-                      <p className={`num text-base sm:text-lg mt-1 ${b.color}`}>{b.displayValue}</p>
-                      {b.share > 0 && (
-                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{fmt(b.share * 100, 1)}% {isEn ? "of USD total" : "占 USD 总额"}</p>
-                      )}
+                      <p className={`num text-base sm:text-lg mt-1 ${b.info ? "text-muted-foreground" : "text-foreground"}`}>{b.displayValue}</p>
+                      {b.share > 0 ? (
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{fmt(b.share * 100, 1)}% {isEn ? "of total" : "占总收益"}</p>
+                      ) : b.info ? (
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{isEn ? "informational · not in total" : "参考 · 不计入总收益"}</p>
+                      ) : null}
                     </div>
                   ))}
                 </div>
