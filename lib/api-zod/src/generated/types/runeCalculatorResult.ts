@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { RuneCalculatorResultBreakdownItem } from "./runeCalculatorResultBreakdownItem";
+import type { RuneCalculatorResultEstimateMode } from "./runeCalculatorResultEstimateMode";
 import type { RunePriceStage } from "./runePriceStage";
 
 export interface RuneCalculatorResult {
@@ -13,8 +14,10 @@ export interface RuneCalculatorResult {
   privatePrice: number;
   motherTokens: number;
   airdropTokens: number;
+  /** Estimated daily STATIC USDT (preserved for backward compat). */
   dailyUsdt: number;
   durationDays: number;
+  /** Estimated total static USDT over the period. */
   totalUsdtIncome: number;
   selectedStage: RunePriceStage;
   motherTokenValue: number;
@@ -22,5 +25,17 @@ export interface RuneCalculatorResult {
   totalAssets: number;
   roi: number;
   roiMultiplier: number;
+  /** Indicates yield numbers are estimates, not contractual guarantees. */
+  estimateMode: RuneCalculatorResultEstimateMode;
+  /** Estimated sub-token tokens accumulated over the period (35% dynamic auto-purchased at selectedStage subPrice). */
+  subTokenAccumulated: number;
+  /** USD-equivalent value of subTokenAccumulated at selectedStage. */
+  subTokenValue: number;
+  /** ROI band — total assets at low end of yield range (15%/month). */
+  totalAssetsLow: number;
+  /** ROI band — total assets at high end of yield range (35%/month). */
+  totalAssetsHigh: number;
+  roiLow: number;
+  roiHigh: number;
   breakdown: RuneCalculatorResultBreakdownItem[];
 }

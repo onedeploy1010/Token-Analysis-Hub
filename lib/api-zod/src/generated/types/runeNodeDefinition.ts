@@ -14,9 +14,23 @@ export interface RuneNodeDefinition {
   seats: number;
   seatsRemaining: number;
   privatePrice: number;
+  /** Estimated daily STATIC USDT income (65% of daily yield).
+Per `核心权益.md` the AI quant engine has projected monthly
+yield 25-35% of which 65% is paid as USDT. Treat as estimate.
+ */
   dailyUsdt: number;
   weight: number;
   airdropTotal: number;
   airdropPerSeat: number;
   motherTokensPerSeat: number;
+  /** Low end of estimated monthly yield range (e.g. 15 = 15%/month). */
+  monthlyYieldRangePctLow: number;
+  /** High end of estimated monthly yield range (e.g. 35 = 35%/month). */
+  monthlyYieldRangePctHigh: number;
+  /** Estimated daily static USDT (≈ 65% of total daily yield). */
+  estimatedDailyStaticU: number;
+  /** Estimated daily dynamic value (≈ 35%) auto-purchased into sub-token. */
+  estimatedDailyDynamicU: number;
+  /** Estimated combined daily yield in U (static + dynamic). */
+  estimatedDailyTotalU: number;
 }

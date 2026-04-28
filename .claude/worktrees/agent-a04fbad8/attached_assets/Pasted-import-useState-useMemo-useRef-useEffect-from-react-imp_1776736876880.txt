@@ -1,0 +1,937 @@
+import { useState, useMemo, useRef, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { fadeUp, staggerContainer, staggerItem, slideRight, slideLeft } from "@/lib/animations";
+import {
+  Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer,
+  Line, ComposedChart,
+} from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
+import { Flame, TrendingUp, PieChart as PieIcon, Layers } from "lucide-react";
+import { SiteShell } from "@/components/SiteShell";
+import { useLocale } from "@/contexts/LocaleContext";
+
+// ─── Bilingual dictionary ─────────────────────────────────────────────────────
+const T = {
+  zh: {
+    eyebrow:       "价值预测模型",
+    title:         "币价估计",
+    subtitle:      "基于协议基本面、链上数据与宏观周期的六阶段价格路线图",
+    motherLabel:   "母TOKEN · MOTHER TOKEN",
+    subLabel:      "子TOKEN · SUB TOKEN",
+    launchPrice:   "开盘价",
+    initPrice:     "初始价",
+    totalSupply:   "总供应",
+    dailyBurn:     "日燃烧",
+    target24m:     "24M目标",
+    stageTitle:    "六阶段价格路线图",
+    stageSub:      "PRICE STAGE ROADMAP",
+    selectedTitle: "当前选中阶段详情",
+    stageField:    "阶段",
+    triggerField:  "触发条件",
+    motherPrice:   "母TOKEN价格",
+    subPrice:      "子TOKEN价格",
+    barTitle:      "价格阶段走势图",
+    barSub:        "Price Stage Progression",
+    pieTitle:      "资金分配结构",
+    lineTitle:     "双TOKEN价格走势对比",
+    lineSub:       "各触发阶段价格路径",
+    multTitle:     "各阶段涨幅倍数",
+    multSub:       "STAGE MULTIPLIERS",
+    motherKey:     "母TOKEN (符)",
+    subKey:        "子TOKEN (符火)",
+    tlpPool:       "TLP流动池",
+    treasury:      "国库储备",
+    operations:    "运营资金",
+    subLP:         "子TOKEN LP",
+    motherDesc:    "母TOKEN底池",
+    treasuryDesc:  "战略储备",
+    opsDesc:       "日常运营",
+    subLPDesc:     "子币流动性",
+    motherToken:   "母TOKEN",
+    subToken:      "子TOKEN",
+    openPrice:     "开盘价",
+    targetLow:     "目标低价",
+    targetHigh:    "目标高价",
+    maxGain:       "最高涨幅",
+  },
+  en: {
+    eyebrow:       "Value Prediction Model",
+    title:         "Token Price Estimate",
+    subtitle:      "6-stage price roadmap based on protocol fundamentals, on-chain data, and macro cycles",
+    motherLabel:   "MOTHER TOKEN · 母TOKEN",
+    subLabel:      "SUB TOKEN · 子TOKEN",
+    launchPrice:   "Launch Price",
+    initPrice:     "Init Price",
+    totalSupply:   "Total Supply",
+    dailyBurn:     "Daily Burn",
+    target24m:     "24M Target",
+    stageTitle:    "6-Stage Price Roadmap",
+    stageSub:      "价格阶段路线图",
+    selectedTitle: "Selected Stage Details",
+    stageField:    "Stage",
+    triggerField:  "Trigger",
+    motherPrice:   "Mother Token Price",
+    subPrice:      "Sub Token Price",
+    barTitle:      "Price Stage Progression",
+    barSub:        "价格阶段走势图",
+    pieTitle:      "Fund Allocation",
+    lineTitle:     "Dual-Token Price Comparison",
+    lineSub:       "Price path per trigger stage",
+    multTitle:     "Stage Multipliers",
+    multSub:       "各阶段涨幅倍数",
+    motherKey:     "Mother (符)",
+    subKey:        "Sub (符火)",
+    tlpPool:       "TLP Liquidity",
+    treasury:      "Treasury",
+    operations:    "Operations",
+    subLP:         "Sub Token LP",
+    motherDesc:    "Mother token pool",
+    treasuryDesc:  "Strategic reserve",
+    opsDesc:       "Daily operations",
+    subLPDesc:     "Sub token liquidity",
+    motherToken:   "Mother Token",
+    subToken:      "Sub Token",
+    openPrice:     "Launch Price",
+    targetLow:     "Target Low",
+    targetHigh:    "Target High",
+    maxGain:       "Max Upside",
+  },
+};
+
+// ─── Real data ────────────────────────────────────────────────────────────────
+const PRICE_STAGES = [
+  { zh: "① 开盘",       en: "① Launch",        triggerZh: "DO上线当日",                triggerEn: "DO listing day",        motherPrice: 0.028, subPrice: 0.038, multiplier: 1    },
+  { zh: "② 第2批触发",   en: "② Stage 2",        triggerZh: "TLP≥700万U",                triggerEn: "TLP ≥ $7M",             motherPrice: 0.070, subPrice: 0.095, multiplier: 2.5  },
+  { zh: "③ 第3批触发",   en: "③ Stage 3",        triggerZh: "TLP≥1750万U",               triggerEn: "TLP ≥ $17.5M",          motherPrice: 0.175, subPrice: 0.238, multiplier: 6.25 },
+  { zh: "④ 第4批触发",   en: "④ Stage 4",        triggerZh: "TLP≥3500万U / 180天",       triggerEn: "TLP ≥ $35M / 180d",     motherPrice: 0.350, subPrice: 0.475, multiplier: 12.5 },
+  { zh: "⑤ 目标价(低)",  en: "⑤ Target Low",     triggerZh: "24个月 80× 预测",           triggerEn: "24-month 80× forecast", motherPrice: 2.240, subPrice: 3.040, multiplier: 80   },
+  { zh: "⑥ 目标价(高)",  en: "⑥ Target High",    triggerZh: "24个月 120× 预测",          triggerEn: "24-month 120× forecast",motherPrice: 3.360, subPrice: 4.560, multiplier: 120  },
+];
+
+const MOTHER_TOKEN = { symbol: "符",   launchPrice: 0.028, totalSupply: 210_000_000, dailyBurnRate: 0.002, targetPriceLow: 2.24,  targetPriceHigh: 3.36 };
+const SUB_TOKEN    = { symbol: "符火",  launchPrice: 0.038, totalSupply:  13_100_000, dailyBurnRate: 0.002, targetPriceLow: 3.04,  targetPriceHigh: 4.56 };
+
+const FUNDRAISING = { total: 8_000_000, tlpPool: 2_800_000, operations: 2_100_000, treasury: 2_600_000, subTokenLP: 500_000 };
+
+const PIE_COLORS = ["hsl(38,92%,52%)", "hsl(30,75%,45%)", "hsl(20,60%,38%)", "hsl(35,45%,30%)"];
+
+const TT = {
+  contentStyle: { background: "hsl(30,15%,7%)", border: "1px solid hsl(35,40%,22%)", borderRadius: 8, fontSize: 12 },
+  labelStyle:   { color: "hsl(35,30%,55%)", marginBottom: 4 },
+  cursor:       { fill: "rgba(200,150,30,0.05)" },
+};
+
+const fmt = (n: number, d = 2) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+// ─── Animated counter ─────────────────────────────────────────────────────────
+function Counter({ value, prefix = "", suffix = "", decimals = 0, duration = 1600, className = "" }: {
+  value: number; prefix?: string; suffix?: string; decimals?: number; duration?: number; className?: string;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !inView) return;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      const v = value * ease;
+      el.textContent = prefix + (decimals > 0 ? v.toFixed(decimals) : Math.round(v).toLocaleString()) + suffix;
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [inView, value, prefix, suffix, decimals, duration]);
+  return <span ref={ref} className={className}>{prefix}{decimals > 0 ? (0).toFixed(decimals) : "0"}{suffix}</span>;
+}
+
+// ─── Section divider label ────────────────────────────────────────────────────
+function SectionLabel({ icon, title, sub }: { icon: React.ReactNode; title: string; sub?: string }) {
+  return (
+    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+      className="flex items-center gap-3 mb-7">
+      <div className="flex items-center gap-2 text-[color:var(--rune-accent)]">
+        {icon}
+        <span className="text-xs uppercase tracking-[0.32em] font-semibold">{title}</span>
+      </div>
+      {sub && <span className="hidden sm:block text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">{sub}</span>}
+      <div className="flex-1 h-px bg-gradient-to-r from-[color:var(--rune-accent-soft)]/50 to-transparent" />
+    </motion.div>
+  );
+}
+
+export default function Price() {
+  const { locale } = useLocale();
+  const t  = T[locale];
+  const isZh = locale === "zh";
+
+  const [activeStage, setActiveStage] = useState(3);
+  const [trendScale, setTrendScale] = useState<"log" | "linear">("log");
+
+  const fundAllocData = useMemo(() => [
+    { name: t.tlpPool,    value: FUNDRAISING.tlpPool,    desc: t.motherDesc   },
+    { name: t.treasury,   value: FUNDRAISING.treasury,   desc: t.treasuryDesc },
+    { name: t.operations, value: FUNDRAISING.operations, desc: t.opsDesc      },
+    { name: t.subLP,      value: FUNDRAISING.subTokenLP, desc: t.subLPDesc    },
+  ], [t]);
+
+  const trendLineData = useMemo(() =>
+    PRICE_STAGES.map(s => ({
+      label:            isZh ? s.zh.replace(/^[①②③④⑤⑥]\s/, "") : s.en.replace(/^[①②③④⑤⑥]\s/, ""),
+      [t.motherToken]:  s.motherPrice,
+      [t.subToken]:     s.subPrice,
+    })), [isZh, t.motherToken, t.subToken]);
+
+  const selected = PRICE_STAGES[activeStage];
+
+  return (
+    <SiteShell pageLabel={isZh ? "币价分析" : "Price Analysis"}>
+    <div className="container flex flex-col gap-14 pb-20">
+
+      {/* ── Hero ───────────────────────────────────────────────────────────── */}
+      <motion.section
+        initial="hidden" animate="visible"
+        variants={staggerContainer}
+        className="pt-8 md:pt-12 relative">
+
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 w-[600px] h-[260px]
+          bg-[radial-gradient(ellipse_at_center,rgba(180,120,30,0.09)_0%,transparent_70%)]" />
+
+        <motion.p variants={staggerItem}
+          className="text-[10px] uppercase tracking-[0.42em] text-[color:var(--rune-accent)] mb-3">
+          {t.eyebrow}
+        </motion.p>
+        <motion.h1 variants={staggerItem}
+          className="font-display text-[2.8rem] leading-[0.96] sm:text-6xl lg:text-7xl mb-4">
+          {t.title}
+        </motion.h1>
+        <motion.p variants={staggerItem}
+          className="text-muted-foreground text-base sm:text-lg max-w-2xl mb-10 leading-relaxed">
+          {t.subtitle}
+        </motion.p>
+
+        {/* KPI row */}
+        <motion.div variants={staggerContainer} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: t.openPrice,  value: `$${MOTHER_TOKEN.launchPrice}`, sub: isZh ? "母TOKEN开盘" : "Mother Token" },
+            { label: t.targetLow,  value: `$${MOTHER_TOKEN.targetPriceLow}`,  sub: isZh ? "24个月预测" : "24M forecast", accent: true },
+            { label: t.targetHigh, value: `$${MOTHER_TOKEN.targetPriceHigh}`, sub: isZh ? "24个月预测" : "24M forecast", accent: true },
+            { label: t.maxGain,    value: null, counter: 120, suffix: "×", sub: isZh ? "最高涨幅倍数" : "Max multiplier", glow: true },
+          ].map((kpi, i) => (
+            <motion.div key={i} variants={staggerItem}
+              className={`relative overflow-hidden rounded-2xl border p-4 sm:p-5
+                ${kpi.glow
+                  ? "border-amber-600/50 bg-gradient-to-br from-amber-950/50 to-amber-900/10 shadow-[0_0_30px_rgba(180,120,30,0.12)]"
+                  : kpi.accent
+                  ? "border-amber-800/40 bg-amber-950/20"
+                  : "border-border/50 bg-card/60"
+                }`}>
+              {kpi.glow && (
+                <motion.div
+                  animate={{ opacity: [0.3, 0.7, 0.3] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(245,158,11,0.08),transparent_70%)]"
+                />
+              )}
+              <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-2">{kpi.label}</p>
+              {kpi.counter !== undefined
+                ? <Counter value={kpi.counter} suffix={kpi.suffix} duration={1800}
+                    className="font-display text-3xl sm:text-4xl font-bold text-amber-300 block" />
+                : <p className={`font-display text-3xl sm:text-4xl font-bold tabular-nums ${kpi.accent || kpi.glow ? "text-amber-300" : "text-foreground"}`}>
+                    {kpi.value}
+                  </p>
+              }
+              <p className="text-[9px] text-muted-foreground/60 mt-1.5">{kpi.sub}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </motion.section>
+
+      {/* ── Token Overview ─────────────────────────────────────────────────── */}
+      <section>
+        <SectionLabel icon={<Flame className="h-3.5 w-3.5" />} title={isZh ? "代币概览" : "Token Overview"} sub="DUAL TOKEN STRUCTURE" />
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+
+          {/* Mother Token */}
+          <motion.div variants={slideRight}
+            className="relative overflow-hidden rounded-2xl border border-amber-800/40 bg-gradient-to-br from-amber-950/35 to-card/60 p-6 sm:p-7">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-amber-500 via-amber-700/60 to-transparent rounded-l-2xl" />
+            <div className="absolute right-0 top-0 w-48 h-48 opacity-10
+              bg-[radial-gradient(ellipse_at_100%_0%,hsl(38,92%,52%),transparent_60%)] pointer-events-none" />
+
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.38em] text-amber-500/70 mb-1.5">{t.motherLabel}</p>
+                <motion.p
+                  initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="font-display text-6xl sm:text-7xl text-amber-300 leading-none">
+                  {MOTHER_TOKEN.symbol}
+                </motion.p>
+              </div>
+              <div className="text-right">
+                <p className="text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-1">{t.launchPrice}</p>
+                <p className="font-display text-3xl font-bold tabular-nums text-amber-300 leading-none">${MOTHER_TOKEN.launchPrice}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-4 border-t border-amber-900/30">
+              {[
+                [t.totalSupply, isZh ? "2.10亿枚" : "210M"],
+                [t.dailyBurn,   `${(MOTHER_TOKEN.dailyBurnRate*100).toFixed(1)}%`],
+                [t.target24m,   `$${MOTHER_TOKEN.targetPriceLow}`, "text-amber-400"],
+                ["",            `$${MOTHER_TOKEN.targetPriceHigh}`, "text-amber-400"],
+              ].map(([label, val, cls], i) => label ? (
+                <div key={i}>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-0.5">{label}</p>
+                  <p className={`font-mono text-sm font-semibold tabular-nums ${cls ?? "text-foreground"}`}>{val}</p>
+                </div>
+              ) : null)}
+            </div>
+          </motion.div>
+
+          {/* Sub Token */}
+          <motion.div variants={slideLeft}
+            className="relative overflow-hidden rounded-2xl border border-orange-800/35 bg-gradient-to-br from-orange-950/30 to-card/60 p-6 sm:p-7">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-orange-500 via-orange-700/60 to-transparent rounded-l-2xl" />
+            <div className="absolute right-0 top-0 w-48 h-48 opacity-10
+              bg-[radial-gradient(ellipse_at_100%_0%,hsl(24,90%,52%),transparent_60%)] pointer-events-none" />
+
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.38em] text-orange-500/70 mb-1.5">{t.subLabel}</p>
+                <motion.p
+                  initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="font-display text-5xl sm:text-6xl text-orange-300 leading-none">
+                  {SUB_TOKEN.symbol}
+                </motion.p>
+              </div>
+              <div className="text-right">
+                <p className="text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-1">{t.initPrice}</p>
+                <p className="font-display text-3xl font-bold tabular-nums text-orange-300 leading-none">${SUB_TOKEN.launchPrice}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-4 border-t border-orange-900/30">
+              {[
+                [t.totalSupply, isZh ? "1,310万枚" : "13.1M"],
+                [t.dailyBurn,   `${(SUB_TOKEN.dailyBurnRate*100).toFixed(1)}%`],
+                [t.target24m,   `$${SUB_TOKEN.targetPriceLow}`,  "text-amber-400"],
+                ["",            `$${SUB_TOKEN.targetPriceHigh}`, "text-amber-400"],
+              ].map(([label, val, cls], i) => label ? (
+                <div key={i}>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-0.5">{label}</p>
+                  <p className={`font-mono text-sm font-semibold tabular-nums ${cls ?? "text-foreground"}`}>{val}</p>
+                </div>
+              ) : null)}
+            </div>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ── Six-Stage Roadmap ──────────────────────────────────────────────── */}
+      <section>
+        <SectionLabel icon={<Layers className="h-3.5 w-3.5" />} title={t.stageTitle} sub={t.stageSub} />
+
+        {/* Timeline — mobile: 3×2 grid; sm+: horizontal row */}
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+
+          {/* ── MOBILE grid (< sm) ── */}
+          <motion.div
+            className="sm:hidden grid grid-cols-3 gap-2.5"
+            variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
+          >
+            {PRICE_STAGES.map((stage, i) => {
+              const isActive = activeStage === i;
+              const isHigh = stage.multiplier >= 80;
+              return (
+                <motion.button key={i} variants={staggerItem}
+                  onClick={() => setActiveStage(i)}
+                  className={`relative overflow-hidden rounded-xl border p-3 text-left transition-all focus:outline-none
+                    ${isActive
+                      ? "border-amber-500/70 bg-amber-950/50 shadow-[0_0_18px_rgba(245,158,11,0.22)]"
+                      : isHigh
+                      ? "border-amber-800/40 bg-amber-950/20"
+                      : "border-border/40 bg-card/50"
+                    }`}>
+                  {isActive && (
+                    <motion.div
+                      animate={{ opacity: [0.15, 0.4, 0.15] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(245,158,11,0.10),transparent_70%)]"
+                    />
+                  )}
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className={`font-mono text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shrink-0
+                      ${isActive ? "bg-amber-500 text-black" : "bg-border/60 text-muted-foreground"}`}>
+                      {i + 1}
+                    </span>
+                    {stage.multiplier > 1 && (
+                      <span className={`font-mono text-[9px] font-semibold
+                        ${isActive ? "text-amber-400" : "text-muted-foreground/40"}`}>
+                        {stage.multiplier}×
+                      </span>
+                    )}
+                  </div>
+                  <p className={`font-mono text-sm font-bold tabular-nums leading-none mb-1
+                    ${isActive ? "text-amber-300" : "text-muted-foreground/70"}`}>
+                    ${stage.motherPrice}
+                  </p>
+                  <p className={`text-[8px] leading-tight
+                    ${isActive ? "text-amber-500/70" : "text-muted-foreground/35"}`}>
+                    {isZh ? stage.zh.replace(/^[①-⑥]\s/, "") : stage.en.replace(/^[①-⑥]\s/, "")}
+                  </p>
+                </motion.button>
+              );
+            })}
+          </motion.div>
+
+          {/* ── DESKTOP horizontal timeline (sm+) ── */}
+          <div className="hidden sm:block relative pb-2">
+            <div className="absolute top-5 left-[40px] right-[40px] h-px
+              bg-gradient-to-r from-transparent via-amber-700/35 to-transparent pointer-events-none" />
+
+            <motion.div className="relative flex justify-between px-0"
+              variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+              {PRICE_STAGES.map((stage, i) => {
+                const isActive = activeStage === i;
+                const isHigh = stage.multiplier >= 80;
+                return (
+                  <motion.button key={i} variants={staggerItem}
+                    onClick={() => setActiveStage(i)}
+                    className="flex flex-col items-center gap-2.5 group focus:outline-none">
+                    <motion.div
+                      animate={{
+                        scale: isActive ? 1.18 : 1,
+                        boxShadow: isActive ? "0 0 22px rgba(245,158,11,0.45)" : "0 0 0px transparent",
+                      }}
+                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                      className={`relative z-10 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors
+                        ${isActive
+                          ? "border-amber-500 bg-amber-950/90"
+                          : isHigh
+                          ? "border-amber-700/60 bg-amber-950/40 group-hover:border-amber-500/60"
+                          : "border-border/50 bg-card/80 group-hover:border-amber-700/60"
+                        }`}>
+                      {isActive && (
+                        <motion.div
+                          animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="absolute inset-0 rounded-full bg-amber-500/20"
+                        />
+                      )}
+                      <span className={`font-mono text-xs font-bold relative z-10 ${isActive ? "text-amber-200" : "text-muted-foreground"}`}>{i+1}</span>
+                    </motion.div>
+
+                    <div className="text-center space-y-0.5">
+                      <p className={`font-mono text-sm font-bold tabular-nums transition-colors
+                        ${isActive ? "text-amber-300" : "text-muted-foreground/70 group-hover:text-muted-foreground"}`}>
+                        ${stage.motherPrice}
+                      </p>
+                      {stage.multiplier > 1 && (
+                        <p className={`font-mono text-[10px] font-semibold transition-colors
+                          ${isActive ? "text-amber-500" : "text-muted-foreground/40"}`}>
+                          {stage.multiplier}×
+                        </p>
+                      )}
+                      <p className={`text-[9px] leading-tight max-w-[62px] text-center transition-colors
+                        ${isActive ? "text-amber-500/70" : "text-muted-foreground/35"}`}>
+                        {isZh ? stage.zh.replace(/^[①-⑥]\s/, "") : stage.en.replace(/^[①-⑥]\s/, "")}
+                      </p>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          </div>
+
+          {/* Detail panel */}
+          <AnimatePresence mode="wait">
+            <motion.div key={activeStage}
+              initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+              animate={{ opacity: 1, y: 0,  filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -8,   filter: "blur(4px)" }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-5 rounded-2xl border border-amber-800/30 bg-gradient-to-br from-amber-950/15 to-transparent p-5 sm:p-6">
+
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                <p className="text-[9px] uppercase tracking-[0.3em] text-amber-500/70">{t.selectedTitle}</p>
+                <span className="ml-auto font-display text-xl font-bold tabular-nums text-amber-300 leading-none">
+                  {selected.multiplier > 1 ? `${selected.multiplier}×` : "—"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                {[
+                  { label: t.stageField,   val: isZh ? selected.zh : selected.en,           cls: "text-foreground" },
+                  { label: t.triggerField, val: isZh ? selected.triggerZh : selected.triggerEn, cls: "text-foreground text-sm" },
+                  { label: t.motherPrice,  val: `$${selected.motherPrice}`,                  cls: "font-display text-amber-300 text-xl font-bold tabular-nums leading-none" },
+                  { label: t.subPrice,     val: `$${selected.subPrice}`,                     cls: "font-display text-orange-300 text-xl font-bold tabular-nums leading-none" },
+                ].map(({ label, val, cls }) => (
+                  <div key={label}>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-1">{label}</p>
+                    <p className={cls}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
+      </section>
+
+      {/* ── Fund Allocation ───────────────────────────────────────────────── */}
+      <section>
+        <SectionLabel icon={<PieIcon className="h-3.5 w-3.5" />} title={t.pieTitle}
+          sub={isZh ? "FUNDRAISING STRUCTURE" : "融资结构"} />
+
+        <motion.div
+          initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.88, ease: [0.22, 1, 0.36, 1] }}
+          className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-6 sm:p-8"
+        >
+          {/* ambient glow */}
+          <div className="pointer-events-none absolute -top-8 -right-8 w-56 h-56 bg-[radial-gradient(circle,rgba(180,120,30,0.07),transparent_70%)]" />
+
+          {/* ── Total + stacked bar ── */}
+          <div className="relative mb-8">
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.36em] text-muted-foreground/60 mb-1.5">
+                  {isZh ? "总融资规模" : "Total Raised"}
+                </p>
+                <Counter
+                  value={FUNDRAISING.total / 1e6}
+                  prefix="$"
+                  suffix="M"
+                  decimals={0}
+                  duration={1400}
+                  className="font-display text-[2.4rem] sm:text-[2.8rem] leading-none text-amber-300 font-bold"
+                />
+              </div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-1">
+                {isZh ? "四项分配" : "4 Allocations"}
+              </p>
+            </div>
+
+            {/* Stacked bar */}
+            <div className="relative h-3 rounded-full bg-border/25 overflow-hidden flex gap-[2px]">
+              {fundAllocData.map((d, i) => {
+                const pct = (d.value / FUNDRAISING.total) * 100;
+                return (
+                  <motion.div
+                    key={i}
+                    className="h-full flex-none rounded-full"
+                    style={{ background: PIE_COLORS[i] }}
+                    initial={{ width: "0%" }}
+                    whileInView={{ width: `${pct}%` }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.1, delay: 0.2 + i * 0.16, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Percentage labels */}
+            <div className="flex mt-1.5">
+              {fundAllocData.map((d, i) => {
+                const pct = (d.value / FUNDRAISING.total) * 100;
+                return (
+                  <motion.div
+                    key={i}
+                    className="overflow-hidden"
+                    style={{ width: `${pct}%` }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 + i * 0.16 }}
+                  >
+                    <span className="text-[8px] font-mono" style={{ color: PIE_COLORS[i] }}>
+                      {pct.toFixed(0)}%
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Allocation rows ── */}
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {fundAllocData.map((d, i) => {
+              const pct = (d.value / FUNDRAISING.total) * 100;
+              return (
+                <motion.div
+                  key={i}
+                  variants={{
+                    hidden:   { opacity: 0, x: -16, filter: "blur(6px)" },
+                    visible:  { opacity: 1, x: 0,   filter: "blur(0px)",
+                      transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+                  }}
+                  className="space-y-2.5"
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <motion.div
+                        className="shrink-0 w-2.5 h-2.5 rounded-sm mt-0.5"
+                        style={{ background: PIE_COLORS[i] }}
+                        animate={{
+                          boxShadow: [
+                            `0 0 0px ${PIE_COLORS[i]}`,
+                            `0 0 8px ${PIE_COLORS[i]}`,
+                            `0 0 0px ${PIE_COLORS[i]}`,
+                          ],
+                        }}
+                        transition={{ duration: 2.5 + i * 0.4, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground leading-tight">{d.name}</p>
+                        <p className="text-[11px] text-muted-foreground/65 leading-snug mt-0.5">{d.desc}</p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-mono font-bold text-sm" style={{ color: PIE_COLORS[i] }}>
+                        <Counter
+                          value={d.value / 1e6}
+                          prefix="$"
+                          suffix="M"
+                          decimals={1}
+                          duration={1000 + i * 120}
+                        />
+                      </p>
+                      <p className="text-[10px] font-mono text-muted-foreground/50 mt-0.5">
+                        {pct.toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="h-[3px] rounded-full bg-border/30 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${PIE_COLORS[i]}, color-mix(in srgb, ${PIE_COLORS[i]} 55%, transparent))` }}
+                      initial={{ width: "0%" }}
+                      whileInView={{ width: `${pct}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.0, delay: 0.4 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ── Dual-Token Trajectory ──────────────────────────────────────────── */}
+      <section>
+        <SectionLabel icon={<TrendingUp className="h-3.5 w-3.5" />} title={t.lineTitle} sub={t.lineSub} />
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+          className="grid gap-4 lg:grid-cols-[1.55fr_1fr]"
+        >
+          {/* ── Chart card ── */}
+          <div className="relative overflow-hidden rounded-3xl border border-amber-800/35 bg-gradient-to-br from-amber-950/30 via-card/72 to-card/82 p-5 sm:p-7">
+            {/* corner ornaments */}
+            <span aria-hidden className="pointer-events-none absolute left-3 top-3 h-5 w-5 rounded-tl-lg border-l border-t border-amber-600/45" />
+            <span aria-hidden className="pointer-events-none absolute right-3 top-3 h-5 w-5 rounded-tr-lg border-r border-t border-amber-600/45" />
+            <span aria-hidden className="pointer-events-none absolute left-3 bottom-3 h-5 w-5 rounded-bl-lg border-l border-b border-amber-600/45" />
+            <span aria-hidden className="pointer-events-none absolute right-3 bottom-3 h-5 w-5 rounded-br-lg border-r border-b border-amber-600/45" />
+            {/* ambient glow */}
+            <motion.div
+              aria-hidden
+              className="pointer-events-none absolute -top-24 -right-24 h-[340px] w-[340px]"
+              style={{ background: "radial-gradient(circle, rgba(245,158,11,0.10), transparent 65%)" }}
+              animate={{ opacity: [0.55, 0.95, 0.55] }}
+              transition={{ duration: 4.4, repeat: Infinity, ease: "easeInOut" }}
+            />
+
+            {/* Header: caption + scale toggle */}
+            <div className="relative mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="font-display text-[10px] uppercase tracking-[0.34em] text-amber-500/80">
+                  {isZh ? "六阶段双线对照" : "Six-Stage Dual Line"}
+                </p>
+                <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/55 tabular-nums">
+                  $0.028 → $4.56 · 120×
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-1 self-start rounded-full border border-amber-800/35 bg-background/45 p-1 text-[10px] uppercase tracking-[0.18em] sm:self-auto">
+                {(["log", "linear"] as const).map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setTrendScale(s)}
+                    className={`relative rounded-full px-3 py-1 font-mono tabular-nums transition-all ${
+                      trendScale === s
+                        ? "bg-amber-500/22 text-amber-200 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.35)]"
+                        : "text-muted-foreground/55 hover:text-amber-200/70"
+                    }`}
+                  >
+                    {s === "log" ? (isZh ? "对数" : "Log") : (isZh ? "线性" : "Linear")}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <ResponsiveContainer width="100%" height={320}>
+                <ComposedChart data={trendLineData} margin={{ top: 16, right: 18, left: 0, bottom: 6 }}>
+                  <defs>
+                    <linearGradient id="motherFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(45,95%,62%)" stopOpacity={0.42} />
+                      <stop offset="100%" stopColor="hsl(38,92%,52%)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="subFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(24,90%,60%)" stopOpacity={0.28} />
+                      <stop offset="100%" stopColor="hsl(20,85%,48%)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="motherStroke" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="hsl(48,98%,72%)" />
+                      <stop offset="60%" stopColor="hsl(42,95%,58%)" />
+                      <stop offset="100%" stopColor="hsl(34,90%,46%)" />
+                    </linearGradient>
+                    <linearGradient id="subStroke" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="hsl(30,95%,72%)" />
+                      <stop offset="60%" stopColor="hsl(22,90%,58%)" />
+                      <stop offset="100%" stopColor="hsl(16,82%,46%)" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="2 5" stroke="hsl(35,25%,14%)" vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fill: "hsl(35,20%,48%)", fontSize: 10, fontFamily: "ui-monospace, monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={0}
+                  />
+                  <YAxis
+                    scale={trendScale}
+                    domain={trendScale === "log" ? [0.02, 5] : [0, "auto"]}
+                    ticks={trendScale === "log" ? [0.03, 0.1, 0.3, 1, 3] : undefined}
+                    tick={{ fill: "hsl(35,20%,48%)", fontSize: 10, fontFamily: "ui-monospace, monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={v => `$${v < 1 ? v.toFixed(2) : v.toFixed(0)}`}
+                    width={48}
+                  />
+                  <Tooltip
+                    {...TT}
+                    contentStyle={{
+                      background: "hsl(30,15%,7%)",
+                      border: "1px solid hsl(38,60%,32%)",
+                      borderRadius: 10,
+                      fontSize: 12,
+                      boxShadow: "0 8px 28px rgba(0,0,0,0.55), 0 0 18px rgba(245,158,11,0.15)",
+                    }}
+                    labelStyle={{ color: "hsl(45,90%,72%)", fontFamily: "Cinzel, serif", fontSize: 12, marginBottom: 6, letterSpacing: "0.06em" }}
+                    formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 3 : 2)}`, name]}
+                  />
+                  <Area type="monotone" dataKey={t.motherToken} stroke="none" fill="url(#motherFill)" isAnimationActive animationDuration={1800} animationEasing="ease-out" />
+                  <Area type="monotone" dataKey={t.subToken} stroke="none" fill="url(#subFill)" isAnimationActive animationDuration={2200} animationEasing="ease-out" />
+                  <Line
+                    type="monotone"
+                    dataKey={t.motherToken}
+                    stroke="url(#motherStroke)"
+                    strokeWidth={2.6}
+                    dot={{ fill: "hsl(48,98%,68%)", r: 4, strokeWidth: 0 }}
+                    activeDot={{ r: 8, fill: "hsl(48,98%,72%)", stroke: "hsl(50,100%,92%)", strokeWidth: 1.5 }}
+                    isAnimationActive
+                    animationDuration={1800}
+                    animationEasing="ease-out"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={t.subToken}
+                    stroke="url(#subStroke)"
+                    strokeWidth={2.2}
+                    strokeDasharray="6 3"
+                    dot={{ fill: "hsl(30,92%,62%)", r: 3.5, strokeWidth: 0 }}
+                    activeDot={{ r: 7, fill: "hsl(30,92%,66%)", stroke: "hsl(28,95%,88%)", strokeWidth: 1.5 }}
+                    isAnimationActive
+                    animationDuration={2200}
+                    animationEasing="ease-out"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Custom legend */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[11px]">
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block h-[2.5px] w-7 rounded-full"
+                  style={{ background: "linear-gradient(90deg, hsl(48,98%,72%), hsl(34,90%,46%))" }}
+                />
+                <span className="font-mono tabular-nums tracking-wider text-amber-200/95">{t.motherToken}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex w-7 items-center gap-[3px]">
+                  <span className="h-[2.5px] w-2.5 rounded-full" style={{ background: "hsl(28,92%,62%)" }} />
+                  <span className="h-[2.5px] w-2 rounded-full" style={{ background: "hsl(28,92%,62%)" }} />
+                  <span className="h-[2.5px] w-1.5 rounded-full" style={{ background: "hsl(28,92%,62%)" }} />
+                </span>
+                <span className="font-mono tabular-nums tracking-wider text-orange-200/95">{t.subToken}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Stat panel ── */}
+          <div className="relative overflow-hidden rounded-3xl border border-border/55 bg-card/65 p-5 sm:p-6">
+            <span aria-hidden className="pointer-events-none absolute -top-16 -right-16 h-[220px] w-[220px]"
+              style={{ background: "radial-gradient(circle, rgba(245,158,11,0.08), transparent 70%)" }}
+            />
+            <p className="font-display text-[10px] uppercase tracking-[0.34em] text-amber-500/80">
+              {isZh ? "峰值与溢价" : "Peak & Spread"}
+            </p>
+            <p className="mt-1.5 text-[10px] text-muted-foreground/55">
+              {isZh ? "终态目标与双币比例" : "Terminal target vs dual ratio"}
+            </p>
+
+            <div className="mt-5 space-y-3">
+              <div className="relative overflow-hidden rounded-2xl border border-amber-700/35 bg-gradient-to-br from-amber-950/40 to-amber-900/10 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-[9px] uppercase tracking-[0.28em] text-amber-500/70">{t.motherToken} · {isZh ? "峰值" : "Peak"}</p>
+                  <span className="font-mono text-[10px] tabular-nums text-amber-400/80">120×</span>
+                </div>
+                <p className="mt-2 font-display text-[2.1rem] leading-none text-amber-200 tabular-nums">
+                  $<Counter value={3.36} decimals={2} duration={1800} />
+                </p>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-amber-950/60">
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ originX: 0 }}
+                    className="h-full rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-700"
+                  />
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden rounded-2xl border border-orange-700/30 bg-gradient-to-br from-orange-950/35 to-orange-900/10 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-[9px] uppercase tracking-[0.28em] text-orange-500/70">{t.subToken} · {isZh ? "峰值" : "Peak"}</p>
+                  <span className="font-mono text-[10px] tabular-nums text-orange-400/80">120×</span>
+                </div>
+                <p className="mt-2 font-display text-[2.1rem] leading-none text-orange-200 tabular-nums">
+                  $<Counter value={4.56} decimals={2} duration={2000} />
+                </p>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-orange-950/60">
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.4, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ originX: 0 }}
+                    className="h-full rounded-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-700"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 border-t border-border/35 pt-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/55">
+                  {isZh ? "溢价比 子/母" : "Sub / Mother"}
+                </p>
+                <span className="font-mono text-[10px] uppercase tabular-nums text-muted-foreground/45">
+                  {isZh ? "稳定" : "Stable"}
+                </span>
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="font-display text-[1.85rem] leading-none text-amber-300 tabular-nums">
+                  <Counter value={1.36} decimals={2} duration={1600} />
+                </span>
+                <span className="font-mono text-xs text-muted-foreground/50 tabular-nums">×</span>
+              </div>
+              <div className="mt-3 h-[3px] overflow-hidden rounded-full bg-border/25">
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 0.68 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.2, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ originX: 0 }}
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
+                />
+              </div>
+              <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/40 tabular-nums">
+                {isZh ? "六阶段平均维持 1.30 – 1.40×" : "Stages avg 1.30 – 1.40×"}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ── Stage Multipliers ──────────────────────────────────────────────── */}
+      <section>
+        <SectionLabel icon={<Flame className="h-3.5 w-3.5" />} title={t.multTitle} sub={t.multSub} />
+        <motion.div
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
+          variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          {PRICE_STAGES.map((stage, i) => {
+            const isMax    = stage.multiplier === 120;
+            const isHigh   = stage.multiplier >= 80;
+            const isMid    = stage.multiplier >= 10;
+            return (
+              <motion.div key={i} variants={staggerItem}
+                whileHover={{ y: -5, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+                className={`relative overflow-hidden rounded-2xl border text-center p-5 sm:p-6 cursor-default
+                  ${isMax  ? "border-amber-500/60 bg-gradient-to-b from-amber-950/60 to-amber-900/20"
+                  : isHigh ? "border-amber-700/50 bg-gradient-to-b from-amber-950/40 to-transparent"
+                  : isMid  ? "border-amber-800/35 bg-amber-950/15"
+                           : "border-border/40 bg-card/50"}`}
+                style={{
+                  boxShadow: isMax  ? "0 0 36px rgba(245,158,11,0.18), inset 0 1px 0 rgba(245,158,11,0.15)"
+                           : isHigh ? "0 0 20px rgba(245,158,11,0.10)"
+                           : undefined,
+                }}>
+
+                {isMax && (
+                  <motion.div
+                    animate={{ opacity: [0.2, 0.5, 0.2] }}
+                    transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(245,158,11,0.12),transparent_70%)]"
+                  />
+                )}
+
+                <p className="text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-2 leading-tight">
+                  {isZh ? stage.zh.replace(/^[①-⑥]\s/, "") : stage.en.replace(/^[①-⑥]\s/, "")}
+                </p>
+                <Counter
+                  value={stage.multiplier}
+                  suffix="×"
+                  decimals={stage.multiplier % 1 !== 0 ? 2 : 0}
+                  duration={1200 + i * 100}
+                  className={`font-display text-[2rem] sm:text-[2.2rem] font-bold block leading-none
+                    ${isMax  ? "text-amber-200"
+                    : isHigh ? "text-amber-300"
+                    : isMid  ? "text-amber-400/80"
+                             : "text-muted-foreground/60"}`}
+                />
+                <p className="font-mono text-xs text-muted-foreground/50 mt-2">${stage.motherPrice}</p>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </section>
+
+    </div>
+    </SiteShell>
+  );
+}

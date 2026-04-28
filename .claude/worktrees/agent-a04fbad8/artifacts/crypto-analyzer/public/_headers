@@ -1,0 +1,13 @@
+# Cloudflare Pages — response headers.
+# Long-cache built assets, keep HTML short-lived so new deploys propagate fast.
+
+/*
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate

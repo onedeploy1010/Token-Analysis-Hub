@@ -1,0 +1,544 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+/* ────────────────────────────────────────────────────────────────────────
+   Global numeric font unification — Cinzel for every digit, site-wide.
+
+   By declaring this @font-face first in the font stacks (font-sans,
+   font-mono, font-num) with a digit-only unicode-range, every number
+   across every page renders in Cinzel automatically — no per-component
+   class changes needed. Non-digit glyphs fall through to the original
+   stacks (Inter for body, Space Mono for code).
+
+   Fallback order:
+   1. local('Cinzel')          — user has Cinzel installed
+   2. Google gstatic woff2 URL — resolves on first paint, cached thereafter
+   3. Skip face → next font in stack (graceful degrade)
+──────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'NumUnified';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  /* local() only — the separate @import above already loads the full Cinzel
+     family, so for users without Cinzel installed locally this face is just
+     skipped and the next family in the stack (Cinzel, then Space Mono) runs.
+     Keeping a gstatic URL here caused transient 404s when Google rotated the
+     versioned hash. */
+  src: local('Cinzel'), local('Cinzel-Regular'), local('Cinzel-Bold');
+  /* 0-9, $, %, +, ,, -, ., ×  (digits + common financial symbols) */
+  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002C, U+002D, U+002E, U+00D7;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root, .dark {
+  --background: 230 30% 5%;
+  --foreground: 210 40% 98%;
+  
+  --card: 230 25% 8%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 230 20% 18%;
+  
+  --popover: 230 25% 8%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 230 20% 18%;
+  
+  --primary: 38 90% 50%;
+  --primary-foreground: 230 30% 5%;
+  --primary-border: 38 90% 38%;
+  --glow-primary: 0 0 20px hsl(38, 90%, 50%, 0.35);
+  
+  --secondary: 230 20% 12%;
+  --secondary-foreground: 210 40% 98%;
+  --secondary-border: 230 20% 20%;
+  
+  --muted: 230 20% 12%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --muted-border: 230 20% 20%;
+  
+  --accent: 230 20% 12%;
+  --accent-foreground: 210 40% 98%;
+  --accent-border: 230 20% 20%;
+  
+  --destructive: 0 62.8% 40.6%;
+  --destructive-foreground: 210 40% 98%;
+  --destructive-border: 0 62.8% 50%;
+  
+  --border: 230 20% 18%;
+  --input: 230 20% 18%;
+  --ring: 38 90% 50%;
+  
+  --chart-1: 38 90% 50%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 217 76% 58%;
+  --chart-4: 0 84% 60%;
+  --chart-5: 215 25% 45%;
+  
+  --sidebar: 230 30% 5%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 230 20% 18%;
+  --sidebar-primary: 38 90% 50%;
+  --sidebar-primary-foreground: 230 30% 5%;
+  --sidebar-accent: 230 20% 12%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-ring: 38 90% 50%;
+  
+  /* Every stack leads with 'NumUnified' so digits are rendered in Cinzel
+     regardless of which font-family the element resolves to. */
+  --app-font-sans: 'NumUnified', 'Inter', 'Noto Sans SC', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --app-font-serif: 'NumUnified', Georgia, Cambria, "Times New Roman", Times, serif;
+  --app-font-mono: 'NumUnified', 'Space Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* Numeric display — full Cinzel (Roman serif) mirrors the RUNE / logo aesthetic */
+  --app-font-num: 'NumUnified', 'Cinzel', 'Space Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --app-font-num-tabular: 'NumUnified', 'Space Mono', 'JetBrains Mono', ui-monospace, monospace;
+  
+  --radius: 0.375rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
+    background-image: radial-gradient(circle at 1px 1px, hsl(38, 90%, 50%, 0.06) 1px, transparent 0);
+    background-size: 32px 32px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Force dark mode styling */
+  html {
+    color-scheme: dark;
+  }
+
+  /* ── Global number typography ── */
+  /* Tabular, proportional digits for all mono elements */
+  .font-mono, [class*="font-mono"] {
+    font-feature-settings: "tnum" 1, "zero" 1, "ss01" 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+
+  /* Large financial display numbers (APY, TVL, prices) — Cinzel serif, logo-aligned */
+  .num {
+    font-family: var(--app-font-num);
+    font-feature-settings: "lnum" 1, "tnum" 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-rendering: geometricPrecision;
+  }
+
+  /* Table-density numbers — monospaced for strict column alignment */
+  .num-tab {
+    font-family: var(--app-font-num-tabular);
+    font-feature-settings: "tnum" 1, "zero" 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+
+  /* Percentage and change badges */
+  .num-sm {
+    font-family: var(--app-font-num);
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    font-size: 0.75rem;
+  }
+
+  /* Gold gradient — hero stats, primary APY display */
+  .num-gold {
+    font-family: var(--app-font-num);
+    font-feature-settings: "lnum" 1, "tnum" 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-rendering: geometricPrecision;
+    letter-spacing: 0.01em;
+    filter: drop-shadow(0 1px 0 hsl(38, 90%, 20%, 0.25));
+  }
+
+  /* Shimmer — animated light sweep on key numbers */
+  .num-shimmer {
+    font-family: var(--app-font-num);
+    font-feature-settings: "lnum" 1, "tnum" 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 700;
+    background: linear-gradient(90deg, #d97706 0%, #fbbf24 35%, #fef9c3 50%, #fbbf24 65%, #d97706 100%);
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: num-shimmer 4s linear infinite;
+    text-rendering: geometricPrecision;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── 3D raised token-card button ── */
+  .token-card-3d {
+    position: relative;
+    isolation: isolate;
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--token-border, var(--primary)) / 0.35);
+    background:
+      linear-gradient(180deg, hsl(var(--token-tint, var(--primary)) / 0.10) 0%, transparent 55%),
+      linear-gradient(180deg, hsl(230, 28%, 9%) 0%, hsl(230, 30%, 6%) 100%);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--token-tint, var(--primary)) / 0.35),
+      inset 0 -1px 0 hsl(0, 0%, 0%, 0.5),
+      0 1px 0 hsl(var(--token-tint, var(--primary)) / 0.12),
+      0 8px 0 -2px hsl(230, 30%, 3%),
+      0 12px 28px -6px hsl(var(--token-tint, var(--primary)) / 0.22),
+      0 18px 50px -12px rgba(0, 0, 0, 0.75);
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms ease;
+    cursor: pointer;
+    will-change: transform;
+  }
+  .token-card-3d::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 48%;
+    border-radius: 1rem 1rem 0 0;
+    background: linear-gradient(180deg, hsl(0, 0%, 100%, 0.06), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .token-card-3d::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--token-tint, var(--primary)) / 0.55),
+      hsl(var(--token-tint, var(--primary)) / 0) 45%,
+      hsl(var(--token-tint, var(--primary)) / 0) 65%,
+      hsl(var(--token-tint, var(--primary)) / 0.35)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+  .token-card-3d > * { position: relative; z-index: 1; }
+
+  .token-card-3d:hover {
+    transform: translateY(-3px);
+    border-color: hsl(var(--token-border, var(--primary)) / 0.6);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--token-tint, var(--primary)) / 0.5),
+      inset 0 -1px 0 hsl(0, 0%, 0%, 0.55),
+      0 1px 0 hsl(var(--token-tint, var(--primary)) / 0.2),
+      0 12px 0 -2px hsl(230, 30%, 3%),
+      0 18px 36px -6px hsl(var(--token-tint, var(--primary)) / 0.35),
+      0 24px 64px -14px rgba(0, 0, 0, 0.85);
+  }
+  .token-card-3d:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 2px 6px hsl(0, 0%, 0%, 0.5),
+      inset 0 1px 0 hsl(var(--token-tint, var(--primary)) / 0.25),
+      0 2px 0 -1px hsl(230, 30%, 3%),
+      0 4px 16px -4px hsl(var(--token-tint, var(--primary)) / 0.3);
+    transition:
+      transform 90ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 90ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .token-card-3d:focus-visible {
+    outline: none;
+    border-color: hsl(var(--token-border, var(--primary)) / 0.9);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--token-tint, var(--primary)) / 0.5),
+      0 0 0 3px hsl(var(--token-tint, var(--primary)) / 0.25),
+      0 18px 36px -6px hsl(var(--token-tint, var(--primary)) / 0.35),
+      0 24px 64px -14px rgba(0, 0, 0, 0.85);
+  }
+
+  /* ── Chinese-only inline labels ──
+     Legacy pages use inline bilingual "English CHINESE" patterns. Tag the
+     Chinese-side span with .zh-only and it is hidden whenever the active
+     language is not a Chinese variant. LanguageProvider toggles
+     <html data-zh> so CSS can react without re-rendering the tree. */
+  html:not([data-zh]) .zh-only { display: none !important; }
+
+  /* Corner bracket decoration — HUD / terminal aesthetic */
+  .corner-brackets { position: relative; }
+  .corner-brackets::before,
+  .corner-brackets::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: hsl(var(--primary) / 0.45);
+    border-style: solid;
+    pointer-events: none;
+    transition: border-color 0.25s ease;
+  }
+  .corner-brackets::before { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; }
+  .corner-brackets::after  { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
+  .corner-brackets:hover::before,
+  .corner-brackets:hover::after { border-color: hsl(var(--primary) / 0.9); }
+}
+
+/* ── Keyframes ── */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.2), 0 0 20px hsl(var(--primary) / 0.2);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.6), 0 0 40px hsl(var(--primary) / 0.4);
+    opacity: 0.8;
+  }
+}
+
+@keyframes slide-up {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Scan line — top-to-bottom glowing sweep */
+@keyframes scan-line {
+  0%   { transform: translateY(0px); opacity: 0; }
+  4%   { opacity: 1; }
+  96%  { opacity: 0.6; }
+  100% { transform: translateY(480px); opacity: 0; }
+}
+
+/* Number shimmer sweep */
+@keyframes num-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+/* RUNE wordmark — gold light sweep */
+@keyframes rune-shine {
+  0%          { background-position: 200% center; }
+  35%, 100%   { background-position: -200% center; }
+}
+
+.rune-wordmark {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1;
+  display: inline-block;
+  background: linear-gradient(
+    100deg,
+    #78350f 0%,
+    #d97706 20%,
+    #fbbf24 35%,
+    #fef9c3 50%,
+    #fbbf24 65%,
+    #d97706 80%,
+    #78350f 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: rune-shine 4s ease-in-out infinite;
+}
+
+/* Gentle float */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* Ambient orb drift */
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.18; }
+  33%       { transform: translate(30px, -20px) scale(1.06); opacity: 0.28; }
+  66%       { transform: translate(-15px, 15px) scale(0.95); opacity: 0.14; }
+}
+
+/* Live dot pulse */
+@keyframes live-ping {
+  0%, 100% { transform: scale(1);   opacity: 0.9; }
+  50%       { transform: scale(2.2); opacity: 0;   }
+}
+
+/* Card border glow pulse */
+@keyframes card-glow {
+  0%, 100% { box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1), 0 4px 24px rgba(0,0,0,0.3); }
+  50%       { box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35), 0 4px 32px rgba(0,0,0,0.4), 0 0 20px hsl(var(--primary) / 0.12); }
+}
+
+.animate-pulse-glow  { animation: pulse-glow 2s infinite ease-in-out; }
+.animate-slide-up    { animation: slide-up   0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-scan-line   { animation: scan-line  8s linear infinite; }
+.animate-float-y     { animation: float-y    5s ease-in-out infinite; }
+.animate-orb-drift   { animation: orb-drift  14s ease-in-out infinite; }
+.animate-live-ping   { animation: live-ping  1.5s ease-in-out infinite; }
+.animate-card-glow   { animation: card-glow  3s ease-in-out infinite; }
+
+/* ── Number reveal (on scroll into view / mount) ── */
+@keyframes num-reveal {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.92); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0)   scale(1);    filter: blur(0);   }
+}
+.animate-num-reveal { animation: num-reveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ── 3D card haptic tap pulse ── */
+@keyframes haptic-pulse {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--token-tint, var(--primary)) / 0.55); }
+  100% { box-shadow: 0 0 0 14px hsl(var(--token-tint, var(--primary)) / 0); }
+}
+.haptic-pulse::after {
+  animation: haptic-pulse 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Dashboard premium polish ──
+   A family of layered, 3D-feeling surfaces the crypto dashboard reaches
+   for. `.surface-3d` is the base — a subtle 1px inner bevel highlight
+   riding on top of a soft rim light + long-throw shadow so cards read
+   as floating tiles instead of flat rectangles. `.surface-3d-tinted`
+   adds a tier-colour bleed via `--tier-rgb`. Tokens are local custom
+   props so callers can set the tint per-instance.
+*/
+.surface-3d {
+  position: relative;
+  isolation: isolate;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(0, 0, 0, 0.35),
+    0 10px 32px -12px rgba(0, 0, 0, 0.55),
+    0 24px 60px -28px rgba(0, 0, 0, 0.85);
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.surface-3d-tinted {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(var(--tier-rgb, 251, 191, 36), 0.08),
+    0 12px 40px -14px rgba(var(--tier-rgb, 251, 191, 36), 0.18),
+    0 28px 64px -28px rgba(0, 0, 0, 0.9);
+}
+.surface-3d-tinted:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(var(--tier-rgb, 251, 191, 36), 0.14),
+    0 18px 48px -14px rgba(var(--tier-rgb, 251, 191, 36), 0.32),
+    0 32px 72px -28px rgba(0, 0, 0, 0.95);
+}
+
+/* Inner rim-light highlight rendered as a pseudo-element.
+   Keeps `::before` / `::after` free on the host element for other
+   decorations; callers add `.rim-highlight` to opt in. */
+.rim-highlight { position: relative; }
+.rim-highlight > .rim-highlight-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0) 40%);
+  mix-blend-mode: overlay;
+  z-index: 0;
+}
+
+/* Copy-button pulse — the brief gold ring that fires when a copy
+   action succeeds. Fire-and-forget, triggered by toggling the class
+   on/off or by keeping it mounted for the full 0.6s. */
+@keyframes copy-pop {
+  0%   { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+  70%  { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+.animate-copy-pop { animation: copy-pop 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Scan line for the hero — a thin horizontal highlight that
+   sweeps across the banner every 7s. Different from `.animate-scan-line`
+   (vertical) — this one rides the width. */
+@keyframes hero-sweep {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  12%  { opacity: 0.9; }
+  50%  { opacity: 0.9; }
+  88%  { opacity: 0; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+.animate-hero-sweep { animation: hero-sweep 8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }

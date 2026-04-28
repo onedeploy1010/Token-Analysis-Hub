@@ -1,0 +1,593 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Crypto Project Analyzer API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: projects
+    description: Crypto project operations
+  - name: tools
+    description: Economic simulator tools
+  - name: rune
+    description: RUNE token analysis
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all featured crypto projects
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [trending, newest, rating]
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a specific project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+
+  /projects/stats/summary:
+    get:
+      operationId: getProjectsSummary
+      tags: [projects]
+      summary: Get summary stats for all projects
+      responses:
+        "200":
+          description: Project stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectsSummary"
+
+  /tools/apy-calculator:
+    post:
+      operationId: calculateApy
+      tags: [tools]
+      summary: Calculate APY and returns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApyCalculatorInput"
+      responses:
+        "200":
+          description: APY calculation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApyCalculatorResult"
+
+  /tools/investment-simulator:
+    post:
+      operationId: simulateInvestment
+      tags: [tools]
+      summary: Simulate investment growth over time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvestmentSimulatorInput"
+      responses:
+        "200":
+          description: Investment simulation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentSimulatorResult"
+
+  /tools/impermanent-loss:
+    post:
+      operationId: calculateImpermanentLoss
+      tags: [tools]
+      summary: Calculate impermanent loss for LP positions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImpermanentLossInput"
+      responses:
+        "200":
+          description: Impermanent loss calculation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImpermanentLossResult"
+
+  /rune/overview:
+    get:
+      operationId: getRuneOverview
+      tags: [rune]
+      summary: Get RUNE token overview and key metrics
+      responses:
+        "200":
+          description: RUNE overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuneOverview"
+
+  /rune/calculator:
+    post:
+      operationId: calculateRuneReturns
+      tags: [rune]
+      summary: Calculate RUNE staking/LP returns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuneCalculatorInput"
+      responses:
+        "200":
+          description: RUNE calculation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuneCalculatorResult"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        symbol:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        rating:
+          type: number
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+        apy:
+          type: number
+        tvl:
+          type: string
+        marketCap:
+          type: string
+        website:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isRecommended:
+          type: boolean
+        trending:
+          type: boolean
+      required:
+        - id
+        - name
+        - symbol
+        - category
+        - description
+        - rating
+        - riskLevel
+        - apy
+        - tvl
+        - marketCap
+        - isRecommended
+        - trending
+
+    ProjectsSummary:
+      type: object
+      properties:
+        totalProjects:
+          type: integer
+        totalTvl:
+          type: string
+        avgApy:
+          type: number
+        recommendedCount:
+          type: integer
+        categoryCounts:
+          type: object
+          additionalProperties:
+            type: integer
+      required:
+        - totalProjects
+        - totalTvl
+        - avgApy
+        - recommendedCount
+        - categoryCounts
+
+    ApyCalculatorInput:
+      type: object
+      properties:
+        principal:
+          type: number
+        apy:
+          type: number
+        compoundFrequency:
+          type: string
+          enum: [daily, weekly, monthly, yearly]
+        durationDays:
+          type: integer
+      required:
+        - principal
+        - apy
+        - compoundFrequency
+        - durationDays
+
+    ApyCalculatorResult:
+      type: object
+      properties:
+        principal:
+          type: number
+        finalAmount:
+          type: number
+        totalReturn:
+          type: number
+        returnPercent:
+          type: number
+        dailyBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              day:
+                type: integer
+              amount:
+                type: number
+      required:
+        - principal
+        - finalAmount
+        - totalReturn
+        - returnPercent
+        - dailyBreakdown
+
+    InvestmentSimulatorInput:
+      type: object
+      properties:
+        initialInvestment:
+          type: number
+        monthlyContribution:
+          type: number
+        expectedApy:
+          type: number
+        years:
+          type: integer
+        tokenPriceChange:
+          type: number
+      required:
+        - initialInvestment
+        - monthlyContribution
+        - expectedApy
+        - years
+
+    InvestmentSimulatorResult:
+      type: object
+      properties:
+        finalValue:
+          type: number
+        totalContributed:
+          type: number
+        totalReturn:
+          type: number
+        returnPercent:
+          type: number
+        yearlyBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              year:
+                type: integer
+              value:
+                type: number
+              contributed:
+                type: number
+              yield:
+                type: number
+      required:
+        - finalValue
+        - totalContributed
+        - totalReturn
+        - returnPercent
+        - yearlyBreakdown
+
+    ImpermanentLossInput:
+      type: object
+      properties:
+        initialPrice:
+          type: number
+        currentPrice:
+          type: number
+        liquidityValue:
+          type: number
+      required:
+        - initialPrice
+        - currentPrice
+        - liquidityValue
+
+    ImpermanentLossResult:
+      type: object
+      properties:
+        ilPercent:
+          type: number
+        ilUsd:
+          type: number
+        hodlValue:
+          type: number
+        lpValue:
+          type: number
+        priceChangePercent:
+          type: number
+      required:
+        - ilPercent
+        - ilUsd
+        - hodlValue
+        - lpValue
+        - priceChangePercent
+
+    RuneNodeDefinition:
+      type: object
+      properties:
+        level:
+          type: string
+        nameEn:
+          type: string
+        nameCn:
+          type: string
+        investment:
+          type: number
+        seats:
+          type: integer
+        seatsRemaining:
+          type: integer
+        privatePrice:
+          type: number
+        dailyUsdt:
+          type: number
+        weight:
+          type: number
+        airdropTotal:
+          type: integer
+        airdropPerSeat:
+          type: integer
+        motherTokensPerSeat:
+          type: number
+      required:
+        - level
+        - nameEn
+        - nameCn
+        - investment
+        - seats
+        - seatsRemaining
+        - privatePrice
+        - dailyUsdt
+        - weight
+        - airdropTotal
+        - airdropPerSeat
+        - motherTokensPerSeat
+
+    RunePriceStage:
+      type: object
+      properties:
+        index:
+          type: integer
+        label:
+          type: string
+        labelCn:
+          type: string
+        trigger:
+          type: string
+        motherPrice:
+          type: number
+        subPrice:
+          type: number
+        multiplier:
+          type: number
+      required:
+        - index
+        - label
+        - labelCn
+        - trigger
+        - motherPrice
+        - subPrice
+        - multiplier
+
+    RuneOverview:
+      type: object
+      properties:
+        protocolName:
+          type: string
+        motherToken:
+          type: object
+          properties:
+            symbol:
+              type: string
+            launchPrice:
+              type: number
+            totalSupply:
+              type: number
+            dailyBurnRate:
+              type: number
+            targetPriceLow:
+              type: number
+            targetPriceHigh:
+              type: number
+        subToken:
+          type: object
+          properties:
+            symbol:
+              type: string
+            launchPrice:
+              type: number
+            totalSupply:
+              type: number
+            dailyBurnRate:
+              type: number
+            targetPriceLow:
+              type: number
+            targetPriceHigh:
+              type: number
+        fundraising:
+          type: object
+          properties:
+            total:
+              type: number
+            tlpPool:
+              type: number
+            subTokenLP:
+              type: number
+            operations:
+              type: number
+            treasury:
+              type: number
+        priceStages:
+          type: array
+          items:
+            $ref: "#/components/schemas/RunePriceStage"
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuneNodeDefinition"
+      required:
+        - protocolName
+        - motherToken
+        - subToken
+        - fundraising
+        - priceStages
+        - nodes
+
+    RuneCalculatorInput:
+      type: object
+      properties:
+        nodeLevel:
+          type: string
+          enum: [pioneer, builder, guardian, strategic]
+        seats:
+          type: integer
+        durationDays:
+          type: integer
+        priceStageIndex:
+          type: integer
+      required:
+        - nodeLevel
+        - seats
+        - durationDays
+        - priceStageIndex
+
+    RuneCalculatorResult:
+      type: object
+      properties:
+        investment:
+          type: number
+        privatePrice:
+          type: number
+        motherTokens:
+          type: number
+        airdropTokens:
+          type: integer
+        dailyUsdt:
+          type: number
+        durationDays:
+          type: integer
+        totalUsdtIncome:
+          type: number
+        selectedStage:
+          $ref: "#/components/schemas/RunePriceStage"
+        motherTokenValue:
+          type: number
+        airdropTokenValue:
+          type: number
+        totalAssets:
+          type: number
+        roi:
+          type: number
+        roiMultiplier:
+          type: number
+        breakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              labelCn:
+                type: string
+              value:
+                type: string
+      required:
+        - investment
+        - privatePrice
+        - motherTokens
+        - airdropTokens
+        - dailyUsdt
+        - durationDays
+        - totalUsdtIncome
+        - selectedStage
+        - motherTokenValue
+        - airdropTokenValue
+        - totalAssets
+        - roi
+        - roiMultiplier
+        - breakdown

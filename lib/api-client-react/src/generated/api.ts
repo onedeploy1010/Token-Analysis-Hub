@@ -27,6 +27,8 @@ import type {
   ListProjectsParams,
   Project,
   ProjectsSummary,
+  RuneBurnStakeInput,
+  RuneBurnStakeResult,
   RuneCalculatorInput,
   RuneCalculatorResult,
   RuneOverview,
@@ -790,4 +792,90 @@ export const useCalculateRuneReturns = <
   TContext
 > => {
   return useMutation(getCalculateRuneReturnsMutationOptions(options));
+};
+
+/**
+ * @summary Calculate burn-stake mother-token investment returns
+ */
+export const getCalculateRuneBurnStakeUrl = () => {
+  return `/api/rune/burn-stake-calculator`;
+};
+
+export const calculateRuneBurnStake = async (
+  runeBurnStakeInput: RuneBurnStakeInput,
+  options?: RequestInit,
+): Promise<RuneBurnStakeResult> => {
+  return customFetch<RuneBurnStakeResult>(getCalculateRuneBurnStakeUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(runeBurnStakeInput),
+  });
+};
+
+export const getCalculateRuneBurnStakeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof calculateRuneBurnStake>>,
+    TError,
+    { data: BodyType<RuneBurnStakeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof calculateRuneBurnStake>>,
+  TError,
+  { data: BodyType<RuneBurnStakeInput> },
+  TContext
+> => {
+  const mutationKey = ["calculateRuneBurnStake"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof calculateRuneBurnStake>>,
+    { data: BodyType<RuneBurnStakeInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return calculateRuneBurnStake(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CalculateRuneBurnStakeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof calculateRuneBurnStake>>
+>;
+export type CalculateRuneBurnStakeMutationBody = BodyType<RuneBurnStakeInput>;
+export type CalculateRuneBurnStakeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Calculate burn-stake mother-token investment returns
+ */
+export const useCalculateRuneBurnStake = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof calculateRuneBurnStake>>,
+    TError,
+    { data: BodyType<RuneBurnStakeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof calculateRuneBurnStake>>,
+  TError,
+  { data: BodyType<RuneBurnStakeInput> },
+  TContext
+> => {
+  return useMutation(getCalculateRuneBurnStakeMutationOptions(options));
 };

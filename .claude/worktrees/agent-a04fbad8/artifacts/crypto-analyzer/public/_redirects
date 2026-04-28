@@ -1,0 +1,6 @@
+# Cloudflare Pages — SPA fallback, but exclude /api/* so a mis-pointed
+# frontend doesn't silently receive index.html (HTTP 200) in place of a
+# proper 404. Without this, axios treats the SPA shell as a JSON body
+# and every page breaks with "s?.filter is not a function" downstream.
+/api/*    /api/:splat    404
+/*        /index.html    200
