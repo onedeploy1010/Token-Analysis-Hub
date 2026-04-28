@@ -341,13 +341,8 @@ export default function RuneV2() {
   const selectedStagePreview = overview?.priceStages?.[priceStageIndex];
 
   // ── Derived chart data ────────────────────────────────────────────────────
-  const priceStageChartData = useMemo(() =>
-    (overview?.priceStages ?? []).map((s, i) => ({
-      label: stageLabel(s, i),
-      mother: s.motherPrice,
-      sub:    s.subPrice,
-      mult:   s.multiplier,
-    })), [overview, isEn]);
+  // Placeholder — re-declared below after dynamicMotherPriceByStage so
+  // the chart can pull dynamic mother prices and update with the slider.
 
   const nodeCompareData = useMemo(() => {
     const stages = overview?.priceStages ?? [];
@@ -411,6 +406,65 @@ export default function RuneV2() {
       { day: 360, data: find(360) },
     ];
   }, [priceSimulation]);
+
+  // Dynamic mother-token target price per stage. Replaces doc's static
+  // motherPrice (which encoded fixed 80×/120× targets) with a price
+  // derived from the same TLP-ramp + LP-decay simulation as the chart
+  // above, so the calculator's "target stage" always reflects the burn-
+  // stake slider. Stage→day mapping:
+  //   0: launch (day 0)
+  //   1: TLP 700万  ≈ day 24
+  //   2: TLP 1750万 ≈ day 82
+  //   3: TLP 3500万   = day 180 (TARGET_DAY)
+  //   4: 18-month extrapolation (day 540) — replaces doc 80× target
+  //   5: 24-month extrapolation (day 720) — replaces doc 120× target
+  const dynamicMotherPriceByStage = useMemo(() => {
+    const stageDays: Record<number, number> = {
+      0: 0,
+      1: ((700  - LAUNCH_TLP_WAN) / (TARGET_TLP_WAN - LAUNCH_TLP_WAN)) * TARGET_DAY,
+      2: ((1750 - LAUNCH_TLP_WAN) / (TARGET_TLP_WAN - LAUNCH_TLP_WAN)) * TARGET_DAY,
+      3: TARGET_DAY,
+      4: 540,
+      5: 720,
+    };
+    const dailyUserBurn = userBurnRateMonthly / 100 / 30;
+    const dailyDecay    = (1 - DAILY_PROTOCOL_BURN) * (1 - dailyUserBurn);
+    const out: Record<number, number> = {};
+    for (const [idx, d] of Object.entries(stageDays)) {
+      const tlpWan = d <= TARGET_DAY
+        ? LAUNCH_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * (d / TARGET_DAY)
+        : TARGET_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * ((d - TARGET_DAY) / TARGET_DAY) * 0.5;
+      const lpRune  = LAUNCH_LP_RUNE * Math.pow(dailyDecay, d);
+      const price   = lpRune > 0 ? (tlpWan * 10000) / lpRune : 0;
+      out[Number(idx)] = price;
+    }
+    return out;
+  }, [userBurnRateMonthly]);
+
+  /** Returns the dynamic price for a stage, falling back to the API
+   *  static motherPrice if the stage index isn't in the dynamic map. */
+  const motherPriceForStage = (idx: number, fallback: number): number =>
+    dynamicMotherPriceByStage[idx] ?? fallback;
+
+  /** Format a price with sensible decimals (more for cents, fewer for $$). */
+  const fmtPrice = (p: number): string =>
+    p < 0.01 ? p.toFixed(4) : p < 1 ? p.toFixed(3) : p.toFixed(2);
+
+  // Six-stage trend chart data — uses dynamic mother prices so the curve
+  // reacts to the burn-stake slider above. Sub-token retains static doc
+  // targets (no dynamic model for sub-token yet).
+  const priceStageChartData = useMemo(() => {
+    const launchPrice = overview?.motherToken?.launchPrice ?? 0.028;
+    return (overview?.priceStages ?? []).map((s, i) => {
+      const dynMother = motherPriceForStage(i, s.motherPrice);
+      return {
+        label:  stageLabel(s, i),
+        mother: Math.round(dynMother * 1e4) / 1e4,
+        sub:    s.subPrice,
+        mult:   launchPrice > 0 ? Math.round((dynMother / launchPrice) * 100) / 100 : s.multiplier,
+      };
+    });
+  }, [overview, isEn, dynamicMotherPriceByStage]);
 
   const fundAllocData = useMemo(() => {
     const f = overview?.fundraising;
@@ -720,17 +774,34 @@ export default function RuneV2() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
                     <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                    {/* Dual Y axes: mother (~$0.03–$3) and sub (~$0.04–$450)
+                        differ by ~100×, so a single linear axis crushes the
+                        mother line to a flat baseline. Splitting them lets
+                        each token render on its own scale. */}
                     <YAxis
-                      tick={{ fill: C.muted, fontSize: 10 }}
+                      yAxisId="mother"
+                      orientation="left"
+                      tick={{ fill: C.mother, fontSize: 10 }}
                       axisLine={false} tickLine={false}
                       scale={trendScale}
                       domain={trendScale === "log" ? [0.02, "auto"] : [0, "auto"]}
                       allowDataOverflow
-                      tickFormatter={v => v >= 1 ? `$${v}` : `$${(+v).toFixed(2)}`}
+                      tickFormatter={v => v >= 1 ? `$${(+v).toFixed(1)}` : `$${(+v).toFixed(2)}`}
+                    />
+                    <YAxis
+                      yAxisId="sub"
+                      orientation="right"
+                      tick={{ fill: C.sub, fontSize: 10 }}
+                      axisLine={false} tickLine={false}
+                      scale={trendScale}
+                      domain={trendScale === "log" ? [0.04, "auto"] : [0, "auto"]}
+                      allowDataOverflow
+                      tickFormatter={v => v >= 100 ? `$${(+v).toFixed(0)}` : v >= 1 ? `$${(+v).toFixed(0)}` : `$${(+v).toFixed(2)}`}
                     />
                     <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 4 : 2)}`, name]} animationDuration={180} />
                     <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 8 }} iconType="circle" />
                     <Line
+                      yAxisId="mother"
                       type="monotone" dataKey="mother"
                       name={isEn ? "Mother Token (符)" : `${t("mr.rune.token.mother")} (符)`}
                       stroke={C.mother} strokeWidth={2.8}
@@ -740,6 +811,7 @@ export default function RuneV2() {
                       animationDuration={1600} animationBegin={150}
                     />
                     <Line
+                      yAxisId="sub"
                       type="monotone" dataKey="sub"
                       name={isEn ? "Sub Token (符火)" : `${t("mr.rune.token.sub")} (符火)`}
                       stroke={C.sub} strokeWidth={2.8}
@@ -1148,7 +1220,8 @@ export default function RuneV2() {
                           {stagesUnlock.map((s) => {
                             const tokens = n.airdropPerSeat * s.release;
                             const stage = overview?.priceStages?.[s.idx];
-                            const usd = stage ? tokens * stage.motherPrice : 0;
+                            const dynPrice = motherPriceForStage(s.idx, stage?.motherPrice ?? 0);
+                            const usd = tokens * dynPrice;
                             return (
                               <td key={s.idx} className="py-2 px-2 text-right">
                                 <div className="num text-foreground">{tokens.toLocaleString()}</div>
@@ -1391,14 +1464,18 @@ export default function RuneV2() {
                       {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Target Stage</span>}
                     </Label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                      {(overview.priceStages ?? []).map((s, i) => (
+                      {(overview.priceStages ?? []).map((s, i) => {
+                        const dynPrice = motherPriceForStage(i, s.motherPrice);
+                        const dynMult  = s.motherPrice > 0 ? dynPrice / overview.motherToken.launchPrice : 0;
+                        return (
                         <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
                           className={`text-left p-2.5 rounded-lg border transition-all active:scale-[0.98] ${priceStageIndex === i ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_4px_14px_-4px_hsl(var(--primary)/0.45)]" : "border-border/50 hover:border-border hover:-translate-y-[1px]"}`}>
                           <p className="text-xs text-muted-foreground leading-tight mb-0.5">{stageLabel(s, i)}</p>
-                          <p className="num text-sm text-foreground">${s.motherPrice}</p>
-                          {s.multiplier > 1 && <p className="text-green-400 num text-xs">{s.multiplier}×</p>}
+                          <p className="num text-sm text-foreground">${fmtPrice(dynPrice)}</p>
+                          {dynMult > 1.05 && <p className="text-green-400 num text-xs">{dynMult.toFixed(dynMult >= 10 ? 0 : 1)}×</p>}
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                     {selectedStagePreview && isZh && (
                       <p className="text-xs text-muted-foreground px-1">{selectedStagePreview.trigger}</p>
@@ -1565,16 +1642,19 @@ export default function RuneV2() {
                       {selectedNode && (overview?.priceStages?.length) ? (
                         <ResponsiveContainer width="100%" height={220}>
                           <BarChart
-                            data={(overview.priceStages ?? []).map((s, i) => ({
-                              label: stageLabel(s, i),
-                              // Airdrop is mother-token, so it prices off motherPrice (not subPrice).
-                              totalAssets: Math.round(
-                                selectedNode.motherTokensPerSeat * seats * s.motherPrice +
-                                selectedNode.airdropPerSeat      * seats * s.motherPrice +
-                                selectedNode.dailyUsdt           * seats * durationDays
-                              ),
-                              isActive: i === priceStageIndex,
-                            }))}
+                            data={(overview.priceStages ?? []).map((s, i) => {
+                              const dynPrice = motherPriceForStage(i, s.motherPrice);
+                              return {
+                                label: stageLabel(s, i),
+                                // Airdrop is mother-token, so it prices off motherPrice (not subPrice).
+                                totalAssets: Math.round(
+                                  selectedNode.motherTokensPerSeat * seats * dynPrice +
+                                  selectedNode.airdropPerSeat      * seats * dynPrice +
+                                  selectedNode.dailyUsdt           * seats * durationDays
+                                ),
+                                isActive: i === priceStageIndex,
+                              };
+                            })}
                             margin={{ top: 8, right: 8, left: -10, bottom: 4 }}
                           >
                             <defs>
