@@ -309,6 +309,20 @@ export default function RuneV2() {
   const [tradeTurnoverRange,     setTradeTurnoverRange]     = useState<[number, number]>([10, 20]);
   const [tradeProfitMarginRange, setTradeProfitMarginRange] = useState<[number, number]>([20, 40]);
   const [nodeShareOfAiRange,     setNodeShareOfAiRange]     = useState<[number, number]>([3, 8]);
+
+  // ── Dynamic mother-token price simulation (replaces doc's static 80-120×) ──
+  //   Day 0: LP = 280万 USDT × 1亿 RUNE (launch price $0.028)
+  //   TLP USDT side ramps linearly to 3500万 by day 180 (节点招募 §权益2 cap),
+  //     then plateaus.
+  //   LP RUNE drains daily from (a) protocol auto-burn 0.2% (b) user
+  //     burn-stake (configurable monthly %).
+  //   price(d) = LP_USDT(d) / LP_RUNE(d)
+  const [userBurnRateMonthly, setUserBurnRateMonthly] = useState<number>(1.0);
+  const TARGET_DAY = 180;
+  const TARGET_TLP_WAN = 3500;
+  const LAUNCH_TLP_WAN = 280;
+  const LAUNCH_LP_RUNE = 1e8;
+  const DAILY_PROTOCOL_BURN = 0.002;
   const TOTAL_NODE_WEIGHT = 2880;
 
   // Staking-tab "complete cycle" (套餐 → static USDT + dynamic 子币 →
@@ -366,6 +380,38 @@ export default function RuneV2() {
       burned:      Math.round(total - total * Math.pow(1 - burnRate, m * 30)),
     }));
   }, [overview, monthSuffix]);
+
+  // Daily simulation: TLP USDT side ramps linearly to TARGET_TLP_WAN over
+  // TARGET_DAY days, then plateaus. LP RUNE drains by protocol burn 0.2%
+  // daily AND user burn-stake (monthly rate spread daily). Price is the
+  // resulting LP_USDT / LP_RUNE ratio per day. Sampled every 10 days for
+  // chart density that's readable on mobile.
+  const priceSimulation = useMemo(() => {
+    const dailyUserBurn = userBurnRateMonthly / 100 / 30;
+    const dailyDecay    = (1 - DAILY_PROTOCOL_BURN) * (1 - dailyUserBurn);
+    const out: Array<{ day: number; tlp: number; lpRune: number; price: number }> = [];
+    for (let d = 0; d <= 360; d += 10) {
+      const tlpWan = d <= TARGET_DAY
+        ? LAUNCH_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * (d / TARGET_DAY)
+        : TARGET_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * ((d - TARGET_DAY) / TARGET_DAY) * 0.5;  // gentler post-target growth
+      const lpRune  = LAUNCH_LP_RUNE * Math.pow(dailyDecay, d);
+      const lpUsdt  = tlpWan * 10000;
+      const price   = lpRune > 0 ? lpUsdt / lpRune : 0;
+      out.push({ day: d, tlp: tlpWan, lpRune: Math.round(lpRune), price: Math.round(price * 1e6) / 1e6 });
+    }
+    return out;
+  }, [userBurnRateMonthly]);
+
+  // Pre-computed key milestones for the KPI strip below the chart.
+  const priceMilestones = useMemo(() => {
+    const find = (d: number) => priceSimulation.find(p => p.day === d) ?? priceSimulation[0];
+    return [
+      { day: 30,  data: find(30)  },
+      { day: 90,  data: find(90)  },
+      { day: 180, data: find(180) },
+      { day: 360, data: find(360) },
+    ];
+  }, [priceSimulation]);
 
   const fundAllocData = useMemo(() => {
     const f = overview?.fundraising;
@@ -939,6 +985,83 @@ export default function RuneV2() {
           </TechChartCard>
         </div>
       </motion.div>
+
+      {/* ── Dynamic mother-token price simulation (added 2026-04-28) ──
+          Drops doc's static 80-120× target. Models price from LP supply
+          dynamics: TLP USDT side ramps to 3500万 by day 180, LP RUNE
+          drains by 0.2% protocol burn + user burn-stake (slider). */}
+      <Card className="surface-3d border-amber-700/30 bg-gradient-to-br from-slate-900/70 to-slate-950/80">
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+            <TrendingUp className="h-4 w-4 text-amber-400 shrink-0" />
+            <span className="break-keep">{isEn ? "Dynamic RUNE Price Simulation" : "动态 RUNE 价格模拟"}</span>
+            <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
+          </CardTitle>
+          <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
+            {isEn
+              ? "TLP ramps linearly to 3500万 USDT by day 180 (节点招募 milestone). LP RUNE drains daily by 0.2% protocol burn + user burn-stake. Price = LP_USDT / LP_RUNE."
+              : "TLP 按节点招募 §权益2 里程碑——180 天内达 3500万 USDT；LP RUNE 每日 0.2% 协议销毁 + 用户 burn-stake 衰减。价格 = LP_USDT / LP_RUNE。"}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Burn-stake rate slider */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-baseline">
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "User burn-stake (% / month)" : "用户月度销毁质押率 (%)"}</Label>
+              <span className="num text-xs text-amber-300">{userBurnRateMonthly.toFixed(1)}% / mo</span>
+            </div>
+            <Slider value={[userBurnRateMonthly]} min={0} max={5} step={0.1}
+              onValueChange={(v) => setUserBurnRateMonthly(v[0] ?? 0)} className="py-1" />
+            <div className="flex justify-between text-[9px] text-muted-foreground/50">
+              <span>0%</span><span>2.5%</span><span>5%</span>
+            </div>
+          </div>
+
+          {/* Milestone KPI row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {priceMilestones.map(({ day, data }) => (
+              <div key={day} className="p-3 rounded-xl border border-border/40 bg-card/40">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isEn ? `Day ${day}` : `第 ${day} 天`}</p>
+                <p className="num text-base text-amber-200 mt-1">${(data?.price ?? 0).toFixed(data && data.price < 1 ? 4 : 2)}</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5 num">
+                  TLP {fmt(data?.tlp ?? 0, 0)}万 · LP {fmt((data?.lpRune ?? 0) / 1e6, 1)}M
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Price curve chart */}
+          <div className="overflow-hidden">
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={priceSimulation} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="gradPriceSim"  x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={C.mother} stopOpacity={0.5} />
+                    <stop offset="95%" stopColor={C.mother} stopOpacity={0}   />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
+                <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                  tickFormatter={(v) => `${v}d`} />
+                <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                  tickFormatter={(v) => v < 1 ? `$${v.toFixed(3)}` : `$${v.toFixed(2)}`} />
+                <Tooltip {...tooltipStyle}
+                  formatter={(v: number, name: string) => name === "price" ? [`$${v.toFixed(4)}`, isEn ? "RUNE Price" : "RUNE 价格"] : [v, name]}
+                  labelFormatter={(d: number) => isEn ? `Day ${d}` : `第 ${d} 天`}
+                  animationDuration={180} />
+                <Area type="monotone" dataKey="price" stroke={C.mother} strokeWidth={2.4}
+                  fill="url(#gradPriceSim)" dot={false} animationDuration={1400} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+            {isEn
+              ? "Linear TLP ramp to 3500万 by day 180; gentler post-target growth. LP RUNE supply decays geometrically with combined daily rate of 0.2% protocol + (user-rate)/30. Burn-stake slider lets you compare: 0% (protocol-only, ~0.2%/day decay) vs 5% (aggressive user burn ~0.366%/day combined). Higher burn-stake compresses LP RUNE faster → price climbs faster on the same TLP ramp."
+              : "TLP 180 天线性达 3500万 后小幅增长。LP RUNE 按 0.2%(协议) + (用户%)/30 几何衰减。滑动 burn-stake 看不同假设：0% (仅协议销毁) vs 5% (激进用户销毁，日合计 ~0.366%)。用户参与度越高 → LP RUNE 越快被压缩 → 同样 TLP 增长下价格涨得越快。"}
+          </p>
+        </CardContent>
+      </Card>
 
       {/* ── v2 tab nav (sits AFTER shared dashboards per user request 2026-04-28) ── */}
       <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
