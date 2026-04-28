@@ -517,11 +517,44 @@ export default function RuneV2() {
     ];
   }, [overview, isZh]);
 
-  const resultPieData = calcMutation.data ? [
-    { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: calcMutation.data.motherTokenValue  },
-    { name: isEn ? "Mother Airdrop"     : t("mr.rune.kpi.airdropValue"), value: calcMutation.data.airdropTokenValue },
-    { name: isEn ? "Sub-Token (35% dyn)" : "子币 (动态35%)",            value: calcMutation.data.subTokenValue ?? 0 },
-    { name: isEn ? "USDT Income (65% static)" : t("mr.rune.kpi.usdtIncome"), value: calcMutation.data.totalUsdtIncome },
+  // Re-price the calculator results using the dynamic mother price
+  // (drives both sliders). Backend uses static priceStages.motherPrice;
+  // we scale mother + airdrop by dynamic/static ratio. USDT income and
+  // sub-token value are unaffected (not mother-priced).
+  const dynamicCalc = useMemo(() => {
+    if (!calcMutation.data) return null;
+    const staticPrice  = overview?.priceStages?.[priceStageIndex]?.motherPrice ?? 0;
+    const dynamicPrice = motherPriceForStage(priceStageIndex, staticPrice);
+    const ratio = staticPrice > 0 ? dynamicPrice / staticPrice : 1;
+    const d = calcMutation.data;
+    const motherTokenValue  = d.motherTokenValue  * ratio;
+    const airdropTokenValue = d.airdropTokenValue * ratio;
+    const usdt              = d.totalUsdtIncome;
+    const sub               = d.subTokenValue ?? 0;
+    const totalAssets       = motherTokenValue + airdropTokenValue + usdt + sub;
+    const investment        = d.investment;
+    const roi               = investment > 0 ? (totalAssets / investment) * 100 : 0;
+    const roiMultiplier     = investment > 0 ? totalAssets / investment : 0;
+    return {
+      ...d,
+      motherTokenValue,
+      airdropTokenValue,
+      totalAssets,
+      totalAssetsLow:  (d.totalAssetsLow  ?? 0) * ratio,
+      totalAssetsHigh: (d.totalAssetsHigh ?? 0) * ratio,
+      roi,
+      roiMultiplier,
+      ratio,
+      dynamicPrice,
+      staticPrice,
+    };
+  }, [calcMutation.data, priceStageIndex, dynamicMotherPriceByStage, overview]);
+
+  const resultPieData = dynamicCalc ? [
+    { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: dynamicCalc.motherTokenValue  },
+    { name: isEn ? "Mother Airdrop"     : t("mr.rune.kpi.airdropValue"), value: dynamicCalc.airdropTokenValue },
+    { name: isEn ? "Sub-Token (35% dyn)" : "子币 (动态35%)",            value: dynamicCalc.subTokenValue ?? 0 },
+    { name: isEn ? "USDT Income (65% static)" : t("mr.rune.kpi.usdtIncome"), value: dynamicCalc.totalUsdtIncome },
   ] : [];
 
   // mother (gold) / mother-airdrop (gold variant) / sub-token (orange) / USDT (green-blue)
@@ -1559,7 +1592,7 @@ export default function RuneV2() {
           {/* Right: Results */}
           <div className="lg:col-span-3 space-y-6">
             <AnimatePresence mode="wait">
-              {calcMutation.data ? (
+              {dynamicCalc ? (
                 <motion.div key="results" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="space-y-6">
 
@@ -1580,37 +1613,37 @@ export default function RuneV2() {
                           : "仅含收益。本金达到回本周期（静态约 128 天）后可赎回。"}
                       </p>
                       <div className="flex items-end gap-4 flex-wrap">
-                        <p className="num-shimmer text-4xl">${fmt(calcMutation.data.totalAssets)}</p>
+                        <p className="num-shimmer text-4xl">${fmt(dynamicCalc.totalAssets)}</p>
                         <div className="mb-1 flex gap-3 flex-wrap">
-                          <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(calcMutation.data.roi)}%</span>
-                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(calcMutation.data.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
+                          <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(dynamicCalc.roi)}%</span>
+                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(dynamicCalc.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
                         </div>
                       </div>
                       {/* Yield range strip — explicitly shows low/high bands so users see this is a band, not a guarantee */}
                       <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="num text-amber-300/80">${fmt(calcMutation.data.totalAssetsLow ?? 0)}</span>
+                        <span className="num text-amber-300/80">${fmt(dynamicCalc.totalAssetsLow)}</span>
                         <span className="opacity-60">— {isEn ? "monthly 15% (conservative)" : "月化 15% 保守"} ↔ {isEn ? "35% (optimistic)" : "35% 乐观"} —</span>
-                        <span className="num text-emerald-300/80">${fmt(calcMutation.data.totalAssetsHigh ?? 0)}</span>
+                        <span className="num text-emerald-300/80">${fmt(dynamicCalc.totalAssetsHigh)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(calcMutation.data.investment)}</span>
+                        {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "price" : "价格"} <span className="num text-amber-300">${fmtPrice(dynamicCalc.dynamicPrice)}</span> · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(dynamicCalc.investment)}</span>
                       </p>
                     </div>
                     <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
                       <p className="text-[11px] text-primary uppercase tracking-wider mb-1">{isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue")}</p>
-                      <p className="num text-lg">${fmt(calcMutation.data.motherTokenValue)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
+                      <p className="num text-lg">${fmt(dynamicCalc.motherTokenValue)}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{dynamicCalc.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-orange-800/30 bg-orange-950/20">
                       <p className="text-[11px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
-                      <p className="num text-lg text-orange-300">${fmt(calcMutation.data.airdropTokenValue)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
+                      <p className="num text-lg text-orange-300">${fmt(dynamicCalc.airdropTokenValue)}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{dynamicCalc.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-green-800/30 bg-green-950/20">
                       <p className="text-[11px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "Static USDT (65%)" : "静态 USDT (65%)"}</p>
-                      <p className="num text-lg text-green-300">${fmt(calcMutation.data.totalUsdtIncome)}</p>
+                      <p className="num text-lg text-green-300">${fmt(dynamicCalc.totalUsdtIncome)}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        <span className="num">${fmt(calcMutation.data.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{calcMutation.data.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}
+                        <span className="num">${fmt(dynamicCalc.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{dynamicCalc.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}
                       </p>
                     </div>
                     {/* Dynamic 35% — auto-purchased into sub-token at the day's price */}
@@ -1618,9 +1651,9 @@ export default function RuneV2() {
                       <p className="text-[11px] text-rose-300 uppercase tracking-wider mb-1">
                         {isEn ? "Sub-Token (35% dyn)" : "动态 子币 (35%)"}
                       </p>
-                      <p className="num text-lg text-rose-200">${fmt(calcMutation.data.subTokenValue ?? 0)}</p>
+                      <p className="num text-lg text-rose-200">${fmt(dynamicCalc.subTokenValue ?? 0)}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        <span className="num">{fmt(calcMutation.data.subTokenAccumulated ?? 0)}</span> {isEn ? "tokens accumulated" : "枚累计"}
+                        <span className="num">{fmt(dynamicCalc.subTokenAccumulated ?? 0)}</span> {isEn ? "tokens accumulated" : "枚累计"}
                       </p>
                     </div>
                   </div>
@@ -1775,7 +1808,7 @@ export default function RuneV2() {
                     <CardContent className="p-0">
                       <table className="w-full text-sm">
                         <tbody>
-                          {calcMutation.data.breakdown.map((item, i) => (
+                          {dynamicCalc.breakdown.map((item, i) => (
                             <tr key={i} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors">
                               <td className="py-2.5 px-5 text-muted-foreground">
                                 {item.label}
