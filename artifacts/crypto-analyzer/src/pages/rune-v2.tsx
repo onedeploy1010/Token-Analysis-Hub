@@ -304,9 +304,11 @@ export default function RuneV2() {
   }, [nodeLevel, durationDays, priceStageIndex]);
 
   // Trading-tab assumptions (UI-tunable).
-  const [tradeTurnover,    setTradeTurnover]    = useState(15);
-  const [tradeProfitMargin, setTradeProfitMargin] = useState(30);
-  const [nodeShareOfAi,    setNodeShareOfAi]    = useState(5);
+  // Trading-divided assumptions stored as [low, high] ranges so the
+  // dividend table can show a band per stage instead of a single point.
+  const [tradeTurnoverRange,     setTradeTurnoverRange]     = useState<[number, number]>([10, 20]);
+  const [tradeProfitMarginRange, setTradeProfitMarginRange] = useState<[number, number]>([20, 40]);
+  const [nodeShareOfAiRange,     setNodeShareOfAiRange]     = useState<[number, number]>([3, 8]);
   const TOTAL_NODE_WEIGHT = 2880;
 
   // Staking-tab "complete cycle" (套餐 → static USDT + dynamic 子币 →
@@ -1053,22 +1055,31 @@ export default function RuneV2() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Range inputs — each param is a [low, high] band so dividend output is a range. */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "AI turnover (×/mo)" : "AI 月转换"}</Label>
-                    <input type="number" value={tradeTurnover} min={1} max={50} onChange={(e) => setTradeTurnover(Math.max(1, Math.min(50, Number(e.target.value))))}
-                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Profit margin %" : "盈利率 %"}</Label>
-                    <input type="number" value={tradeProfitMargin} min={0} max={100} onChange={(e) => setTradeProfitMargin(Math.max(0, Math.min(100, Number(e.target.value))))}
-                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Node share AI %" : "节点占 AI %"}</Label>
-                    <input type="number" value={nodeShareOfAi} min={0} max={50} onChange={(e) => setNodeShareOfAi(Math.max(0, Math.min(50, Number(e.target.value))))}
-                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-                  </div>
+                  {[
+                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",       value: tradeTurnoverRange,     setter: setTradeTurnoverRange,     min: 1, max: 50 },
+                    { label: isEn ? "Profit margin %"    : "盈利率 %",         value: tradeProfitMarginRange, setter: setTradeProfitMarginRange, min: 0, max: 100 },
+                    { label: isEn ? "Node share AI %"    : "节点占 AI %",      value: nodeShareOfAiRange,     setter: setNodeShareOfAiRange,     min: 0, max: 50 },
+                  ].map(({ label, value, setter, min, max }) => (
+                    <div key={label}>
+                      <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</Label>
+                      <div className="grid grid-cols-2 gap-1.5 mt-1">
+                        <div>
+                          <input type="number" value={value[0]} min={min} max={max}
+                            onChange={(e) => { const v = Math.max(min, Math.min(max, Number(e.target.value))); setter([v, Math.max(v, value[1])]); }}
+                            className="w-full px-2 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+                          <p className="text-[9px] text-muted-foreground/60 mt-0.5 text-center">{isEn ? "low" : "保守"}</p>
+                        </div>
+                        <div>
+                          <input type="number" value={value[1]} min={min} max={max}
+                            onChange={(e) => { const v = Math.max(min, Math.min(max, Number(e.target.value))); setter([Math.min(value[0], v), v]); }}
+                            className="w-full px-2 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+                          <p className="text-[9px] text-muted-foreground/60 mt-0.5 text-center">{isEn ? "high" : "乐观"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="overflow-x-auto">
@@ -1076,7 +1087,7 @@ export default function RuneV2() {
                     <thead className="text-muted-foreground/70 uppercase tracking-wider">
                       <tr className="border-b border-border/40">
                         <th className="text-left py-2 px-2 sticky left-0 bg-card/80 backdrop-blur">{isEn ? "Stage" : "阶段"}</th>
-                        <th className="text-right py-2 px-2">{isEn ? "Pool/day" : "节点池/日"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Pool/day (low–high)" : "节点池/日 (区间)"}</th>
                         {nodes.map((n) => (
                           <th key={n.level} className="text-right py-2 px-2 whitespace-nowrap">{nodeName(n)}</th>
                         ))}
@@ -1084,22 +1095,33 @@ export default function RuneV2() {
                     </thead>
                     <tbody>
                       {stages4.map((s) => {
-                        const dailyVolU = (s.qep * 1e4 * tradeTurnover) / 30;
-                        const aiNetMoU  = s.qep * 1e4 * 0.25;
-                        const taxFromVolDay = dailyVolU * (TAX_NODE_RATE_BPS / 1e4);
-                        const aiShareDay  = (aiNetMoU * (nodeShareOfAi / 100)) / 30;
-                        const nodePoolDay = taxFromVolDay + aiShareDay;
+                        // Compute pool/day at low and high bounds of all 3 ranges.
+                        const computePool = (turnover: number, _profit: number, nodeShare: number) => {
+                          const dailyVolU = (s.qep * 1e4 * turnover) / 30;
+                          const aiNetMoU  = s.qep * 1e4 * 0.25;
+                          const taxFromVolDay = dailyVolU * (TAX_NODE_RATE_BPS / 1e4);
+                          const aiShareDay  = (aiNetMoU * (nodeShare / 100)) / 30;
+                          return taxFromVolDay + aiShareDay;
+                        };
+                        const poolLow  = computePool(tradeTurnoverRange[0], tradeProfitMarginRange[0], nodeShareOfAiRange[0]);
+                        const poolHigh = computePool(tradeTurnoverRange[1], tradeProfitMarginRange[1], nodeShareOfAiRange[1]);
                         return (
                           <tr key={s.idx} className="border-b border-border/20">
                             <td className="py-2 px-2 sticky left-0 bg-card/40 backdrop-blur whitespace-nowrap">
                               <div className="text-foreground">{isEn ? `Stage ${s.idx + 1}` : `阶段 ${s.idx + 1}`}</div>
                               <div className="text-[10px] text-muted-foreground">TLP {s.tlp}万</div>
                             </td>
-                            <td className="py-2 px-2 text-right num text-fuchsia-300">${fmt(nodePoolDay, 0)}</td>
+                            <td className="py-2 px-2 text-right num text-fuchsia-300 whitespace-nowrap">
+                              ${fmt(poolLow, 0)}<span className="text-muted-foreground/60"> – </span>${fmt(poolHigh, 0)}
+                            </td>
                             {nodes.map((n) => {
-                              const perSeat = nodePoolDay * (n.weight * 100 / TOTAL_NODE_WEIGHT) / 100;
+                              const wRatio = (n.weight * n.seats) / TOTAL_NODE_WEIGHT;
+                              const perSeatLow  = (poolLow  * wRatio) / n.seats;
+                              const perSeatHigh = (poolHigh * wRatio) / n.seats;
                               return (
-                                <td key={n.level} className="py-2 px-2 text-right num text-amber-200">${fmt(perSeat, 2)}</td>
+                                <td key={n.level} className="py-2 px-2 text-right num text-amber-200 whitespace-nowrap">
+                                  ${fmt(perSeatLow, 2)}<span className="text-muted-foreground/60"> – </span>${fmt(perSeatHigh, 2)}
+                                </td>
                               );
                             })}
                           </tr>
