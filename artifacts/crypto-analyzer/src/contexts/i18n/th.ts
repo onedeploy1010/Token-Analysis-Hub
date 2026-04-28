@@ -314,7 +314,7 @@ const th: Dict = {
   "mr.rune.input.targetStage": "ขั้นราคาเป้าหมาย",
   "mr.rune.btn.simulate": "เริ่มจำลอง",
   "mr.rune.btn.simulating": "กำลังคำนวณ…",
-  "mr.rune.kpi.totalAssets": "ทรัพย์สินรวม",
+  "mr.rune.kpi.totalAssets": "ผลตอบแทนรวม",
   "mr.rune.kpi.principalMultiple": "เงินต้น",
   "mr.rune.kpi.stage": "ขั้น",
   "mr.rune.kpi.invest": "การลงทุน",

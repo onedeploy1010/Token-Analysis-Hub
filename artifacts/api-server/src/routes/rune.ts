@@ -279,11 +279,12 @@ router.post("/rune/calculator", async (req, res): Promise<void> => {
     { label: "Price Stage", labelCn: "价格阶段", value: `${selectedStage.labelCn} (母TOKEN $${selectedStage.motherPrice})` },
     { label: "Mother Token Value", labelCn: "母TOKEN持仓市值", value: `$${fmt(motherTokenValue)}` },
     { label: "Airdrop Value", labelCn: "母TOKEN空投价值", value: `$${fmt(airdropTokenValue)}` },
-    { label: "Total Assets (est. midpoint)", labelCn: "总资产 (预估中位)", value: `$${fmt(totalAssets)}` },
+    { label: "Total Returns (est. midpoint)", labelCn: "总收益 (预估中位)", value: `$${fmt(totalAssets)}` },
     { label: "Range (Low @ 15%/mo)", labelCn: "保守区间 (月化15%)", value: `$${fmt(totalAssetsLow)}` },
     { label: "Range (High @ 35%/mo)", labelCn: "乐观区间 (月化35%)", value: `$${fmt(totalAssetsHigh)}` },
+    { label: "Principal Redeemable", labelCn: "本金可赎回", value: `$${fmt(investment)} USDT (≈128d 静态回本后)` },
     { label: "ROI (midpoint)", labelCn: "投资回报率 (中位)", value: `${fmt(roi)}%` },
-    { label: "ROI Multiplier", labelCn: "资产倍数", value: `${fmt(roiMultiplier)}×` },
+    { label: "ROI Multiplier", labelCn: "收益倍数", value: `${fmt(roiMultiplier)}×` },
   ];
 
   res.json(

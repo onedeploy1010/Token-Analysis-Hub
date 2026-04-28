@@ -314,7 +314,7 @@ const ko: Dict = {
   "mr.rune.input.targetStage": "목표 가격 단계",
   "mr.rune.btn.simulate": "시뮬레이션 시작",
   "mr.rune.btn.simulating": "계산 중…",
-  "mr.rune.kpi.totalAssets": "총자산",
+  "mr.rune.kpi.totalAssets": "총수익",
   "mr.rune.kpi.principalMultiple": "원금",
   "mr.rune.kpi.stage": "단계",
   "mr.rune.kpi.invest": "투자",

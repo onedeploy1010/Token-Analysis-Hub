@@ -314,7 +314,7 @@ const zhTW: Dict = {
   "mr.rune.input.targetStage": "目標價格階段",
   "mr.rune.btn.simulate": "開始模擬",
   "mr.rune.btn.simulating": "計算中…",
-  "mr.rune.kpi.totalAssets": "總資產",
+  "mr.rune.kpi.totalAssets": "總收益",
   "mr.rune.kpi.principalMultiple": "本金",
   "mr.rune.kpi.stage": "階段",
   "mr.rune.kpi.invest": "投入",

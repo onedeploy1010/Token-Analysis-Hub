@@ -1057,12 +1057,17 @@ export default function Rune() {
                     <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-green-700/40 bg-gradient-to-br from-green-950/50 to-transparent shadow-[0_0_24px_hsl(142,70%,45%,0.1)]">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold">
-                          {bi("mr.rune.kpi.totalAssets", "Total Assets")}
+                          {bi("mr.rune.kpi.totalAssets", "Total Returns")}
                         </p>
                         <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">
                           {isEn ? "Estimated" : "预估"}
                         </span>
                       </div>
+                      <p className="text-[10px] text-muted-foreground/70 mb-2">
+                        {isEn
+                          ? "Returns only — principal is redeemable after the breakeven window (≈128d static)."
+                          : "仅含收益。本金达到回本周期（静态约 128 天）后可赎回。"}
+                      </p>
                       <div className="flex items-end gap-4 flex-wrap">
                         <p className="num-shimmer text-4xl">${fmt(calcMutation.data.totalAssets)}</p>
                         <div className="mb-1 flex gap-3 flex-wrap">
@@ -1217,8 +1222,8 @@ export default function Rune() {
                             <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false} />
                             <YAxis tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false}
                               tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${(v/1e3).toFixed(0)}K`} />
-                            <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")]} animationDuration={180} />
-                            <Bar dataKey="totalAssets" name={isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")} radius={[6,6,0,0]} maxBarSize={40}
+                            <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, isEn ? "Total Returns" : t("mr.rune.kpi.totalAssets")]} animationDuration={180} />
+                            <Bar dataKey="totalAssets" name={isEn ? "Total Returns" : t("mr.rune.kpi.totalAssets")} radius={[6,6,0,0]} maxBarSize={40}
                               animationDuration={1100} animationBegin={250}>
                               {(overview.priceStages ?? []).map((_, i) => (
                                 <Cell key={i}

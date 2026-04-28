@@ -314,7 +314,7 @@ const en: Dict = {
   "mr.rune.input.targetStage": "Target Stage",
   "mr.rune.btn.simulate": "Run Simulation",
   "mr.rune.btn.simulating": "Calculating…",
-  "mr.rune.kpi.totalAssets": "Total Assets",
+  "mr.rune.kpi.totalAssets": "Total Returns",
   "mr.rune.kpi.principalMultiple": "Principal",
   "mr.rune.kpi.stage": "stage",
   "mr.rune.kpi.invest": "investment",

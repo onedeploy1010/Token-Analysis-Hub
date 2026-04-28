@@ -314,7 +314,7 @@ const vi: Dict = {
   "mr.rune.input.targetStage": "Giai đoạn Giá Mục tiêu",
   "mr.rune.btn.simulate": "Bắt đầu Mô phỏng",
   "mr.rune.btn.simulating": "Đang tính…",
-  "mr.rune.kpi.totalAssets": "Tổng Tài sản",
+  "mr.rune.kpi.totalAssets": "Tổng Lợi Nhuận",
   "mr.rune.kpi.principalMultiple": "Vốn gốc",
   "mr.rune.kpi.stage": "giai đoạn",
   "mr.rune.kpi.invest": "đầu tư",
