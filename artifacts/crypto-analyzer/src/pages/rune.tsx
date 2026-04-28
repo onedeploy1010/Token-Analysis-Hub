@@ -270,7 +270,12 @@ export default function Rune() {
    * every other locale gets nameEn. */
   const nodeName = (n: { nameCn: string; nameEn: string }) => (isZh ? n.nameCn : n.nameEn);
 
-  const [nodeLevel, setNodeLevel]   = useState<RuneCalculatorInputNodeLevel>(RuneCalculatorInputNodeLevel.pioneer);
+  // Default to `initial` — the smallest tier. The earlier `pioneer` value
+  // refers to the legacy 4-tier schema; the current 5-tier enum (initial/
+  // mid/advanced/super/founder) doesn't include it, so reading `.pioneer`
+  // at runtime returned undefined → the calculator silently POSTed
+  // `nodeLevel: undefined` and got a 400 from the server.
+  const [nodeLevel, setNodeLevel]   = useState<RuneCalculatorInputNodeLevel>(RuneCalculatorInputNodeLevel.initial);
   const [seats,     setSeats]       = useState(1);
   const [durationDays, setDurationDays] = useState(180);
   const [priceStageIndex, setPriceStageIndex] = useState(3);

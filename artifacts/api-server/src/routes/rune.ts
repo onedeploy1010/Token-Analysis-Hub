@@ -25,13 +25,22 @@ function estimateDailyAt(investment: number, monthlyPct: number) {
   return investment * (monthlyPct / 100) / 30;
 }
 
+// Price stage progression — keyed on TLP/TVL milestones from
+// `子母币双币结合.md` PART V "PRICE MILESTONES · THE NUMBERS SPEAK".
+// Mother-token (RUNE) follows the 80-120× projection from `模型制度.md`.
+// Sub-token (EMBER) follows the steeper P_EMBER ∝ effective-TVL² curve
+// from the milestones table — going from ~$2 at $10M TVL to $450 at $150M
+// TVL PEAK. Earlier values (subPrice 0.038→4.56, treating sub like mother
+// with the same 120× multiplier) understated EMBER target prices ~100×.
+const LAUNCH_MOTHER_PRICE = 0.028;  // pre-launch nominal
+const LAUNCH_SUB_PRICE    = 0.038;  // pre-launch nominal — sub trades after TLP≥500万U
 const PRICE_STAGES = [
-  { index: 0, label: "Stage 1 · Launch", labelCn: "① 开盘", trigger: "DO上线当日", motherPrice: 0.028, subPrice: 0.038, multiplier: 1 },
-  { index: 1, label: "Stage 2 · TLP 7M", labelCn: "② 第2批触发", trigger: "TLP≥700万U", motherPrice: 0.07, subPrice: 0.095, multiplier: 2.5 },
-  { index: 2, label: "Stage 3 · TLP 17.5M", labelCn: "③ 第3批触发", trigger: "TLP≥1750万U", motherPrice: 0.175, subPrice: 0.238, multiplier: 6.25 },
-  { index: 3, label: "Stage 4 · TLP 35M", labelCn: "④ 第4批触发", trigger: "TLP≥3500万U / 180天", motherPrice: 0.35, subPrice: 0.475, multiplier: 12.5 },
-  { index: 4, label: "Stage 5 · Target Low", labelCn: "⑤ 目标价（低）", trigger: "24个月 80× 预测", motherPrice: 2.24, subPrice: 3.04, multiplier: 80 },
-  { index: 5, label: "Stage 6 · Target High", labelCn: "⑥ 目标价（高）", trigger: "24个月 120× 预测", motherPrice: 3.36, subPrice: 4.56, multiplier: 120 },
+  { index: 0, label: "Stage 1 · Launch", labelCn: "① 开盘", trigger: "DO上线当日 / TLP≥500万U开放子币", motherPrice: 0.028, subPrice: 0.038, multiplier: 1 },
+  { index: 1, label: "Stage 2 · TVL 10M", labelCn: "② TVL 1000万", trigger: "TVL≥1000万U / TLP≥700万U", motherPrice: 0.07, subPrice: 2, multiplier: 2.5 },
+  { index: 2, label: "Stage 3 · TVL 30M", labelCn: "③ TVL 3000万", trigger: "TVL≥3000万U / TLP≥1750万U", motherPrice: 0.175, subPrice: 18, multiplier: 6.25 },
+  { index: 3, label: "Stage 4 · TVL 50M", labelCn: "④ TVL 5000万", trigger: "TVL≥5000万U / TLP≥3500万U", motherPrice: 0.35, subPrice: 50, multiplier: 12.5 },
+  { index: 4, label: "Stage 5 · TVL 100M", labelCn: "⑤ TVL 1亿 (目标低)", trigger: "TVL≥1亿U · 24mo 预测", motherPrice: 2.24, subPrice: 200, multiplier: 80 },
+  { index: 5, label: "Stage 6 · TVL 150M PEAK", labelCn: "⑥ TVL 1.5亿 (目标高)", trigger: "TVL≥1.5亿U PEAK · 24mo 预测", motherPrice: 3.36, subPrice: 450, multiplier: 120 },
 ];
 
 // Airdrop numbers come from the 2026 spec's pool model:
