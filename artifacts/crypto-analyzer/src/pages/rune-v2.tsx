@@ -459,39 +459,7 @@ export default function RuneV2() {
         </div>
       </motion.div>
 
-      {/* ── v2 4-tab nav ── */}
-      <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
-        <div className="flex gap-0.5 min-w-max relative">
-          {[
-            { id: "node"    as const, labelEn: "NODES",   labelCn: "节点" },
-            { id: "staking" as const, labelEn: "STAKING", labelCn: "质押" },
-            { id: "summary" as const, labelEn: "SUMMARY", labelCn: "综合" },
-          ].map(({ id, labelEn, labelCn }) => {
-            const active = v2Tab === id;
-            return (
-              <button
-                key={id}
-                onClick={() => setV2Tab(id)}
-                className={`relative z-10 flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap ${
-                  active ? "text-amber-100" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="runeV2TabPill"
-                    className="absolute inset-0 rounded-lg bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.35),0_8px_24px_-8px_rgba(251,191,36,0.35)]"
-                    transition={{ type: "spring", stiffness: 340, damping: 32 }}
-                  />
-                )}
-                <span className="relative tracking-wider">{isEn ? labelEn : labelCn}</span>
-                {!isEn && <span className="relative text-[9.5px] uppercase tracking-[0.18em] text-muted-foreground/60">{labelEn}</span>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ═══ SHARED — protocol-level data dashboards (visible across all tabs) ═══
+      {/* ═══ SHARED — protocol-level data dashboards (always visible above tabs).
           Token info / 6-stage price curve / fund allocation pie / sub-token deflation. */}
 
       {/* ── Token Info — 3D raised buttons ── */}
@@ -957,6 +925,38 @@ export default function RuneV2() {
           </TechChartCard>
         </div>
       </motion.div>
+
+      {/* ── v2 tab nav (sits AFTER shared dashboards per user request 2026-04-28) ── */}
+      <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-0.5 min-w-max relative">
+          {[
+            { id: "node"    as const, labelEn: "NODES",   labelCn: "节点" },
+            { id: "staking" as const, labelEn: "STAKING", labelCn: "质押" },
+            { id: "summary" as const, labelEn: "SUMMARY", labelCn: "综合" },
+          ].map(({ id, labelEn, labelCn }) => {
+            const active = v2Tab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setV2Tab(id)}
+                className={`relative z-10 flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap ${
+                  active ? "text-amber-100" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="runeV2TabPill"
+                    className="absolute inset-0 rounded-lg bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.35),0_8px_24px_-8px_rgba(251,191,36,0.35)]"
+                    transition={{ type: "spring", stiffness: 340, damping: 32 }}
+                  />
+                )}
+                <span className="relative tracking-wider">{isEn ? labelEn : labelCn}</span>
+                {!isEn && <span className="relative text-[9.5px] uppercase tracking-[0.18em] text-muted-foreground/60">{labelEn}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ═══ NODES TAB ═══ — node-specific data: airdrop release table per stage,
           trading-driven daily dividend per tier, weight allocation. */}
@@ -1886,8 +1886,17 @@ export default function RuneV2() {
         </div>
       )}
 
-      {/* ═══ STAKING TAB ═══ — burn-stake mother (existing) + sub-token stake (placeholder). */}
+      {/* ═══ STAKING TAB ═══ — single unified chain (re-read 2026-04-28).
+          Per `核心机制.md` §壹: 销毁母币 → "永久通缩 + 永久日化 1.0-1.5%"。
+          The "永久通缩" framing only holds if yield is in SUB-TOKENS — if it
+          were mother, the burn → mint cycle wouldn't be net-deflationary.
+          So the chain is:
+            burn N mother → daily 1-1.5%×N **sub-tokens** → auto-stake
+            sub-stake earns AI monthly distribution + IDO 50× allocation
+          One calculator covers the whole chain; no separate 套餐 panel. */}
       {v2Tab === "staking" && (<>
+      {/* ── DEAD: old separate burn-stake panel (mother token yield). ── */}
+      {false && (<>
       {/* ── Burn-Stake panel (mother token) ──
           Per `核心机制.md` §壹: burn N mother tokens → permanent daily yield
           1.0%-1.5% × N in mother tokens. Tier rate increases with N. */}
@@ -1972,36 +1981,43 @@ export default function RuneV2() {
         )}
       </Card>
 
-      {/* ── Complete cycle: 套餐质押 → 65% USDT + 35% 子币 → 子币自动质押 → AI 月分红 + IDO 打新 ──
-          模型制度.md §伍 + 核心机制.md §壹 + 核心权益.md §肆 三份文档拼出来的"综合 510×"路径。
-          客户端纯计算，UI 全响应式（grid-cols-1 sm:grid-cols-2 md:grid-cols-3 模式）。 */}
+      </>)}
+      {/* end DEAD burn-stake panel */}
+
+      {/* ── Real unified chain: burn-stake mother → daily sub-token yield → auto-stake → AI revenue + IDO ── */}
       <Card className="surface-3d border-amber-700/30 bg-gradient-to-br from-slate-900/70 to-slate-950/80">
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
-            <Coins className="h-4 w-4 text-amber-400 shrink-0" />
-            <span className="break-keep">{isEn ? "Complete Cycle Stake" : "完整周期质押"}</span>
+            <Flame className="h-4 w-4 text-amber-400 shrink-0" />
+            <span className="break-keep">{isEn ? "Burn-Stake Chain · Mother → Sub → AI + IDO" : "完整链路 · 销毁母币 → 子币 → AI 分红 + IDO"}</span>
             <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
           </CardTitle>
           <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
             {isEn
-              ? "USDT in → 65% static USDT + 35% buys sub-token → sub-token auto-stakes → AI monthly revenue + IDO."
-              : "USDT 投入 → 65% 静态直发 USDT + 35% 自动买子币 → 子币自动质押 → 享 AI 月分红 + IDO 打新"}
+              ? "Burn N mother (永久通缩) → daily 1.0-1.5% × N sub-tokens → auto-stake → monthly AI revenue (1M USDT/mo by weight) + IDO new-token allocations (~50× avg)."
+              : "销毁 N 枚母币（永久通缩，本金不归还）→ 每日产 1.0-1.5%×N **子币** → 自动入子币质押池 → 享 AI 月分红（100万U/月按权重）+ IDO 打新（平均 50×）"}
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
-          {/* Inputs — primary */}
+          {/* Inputs — primary: burn N mother tokens (永久销毁), pick window for valuation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Principal (USDT)" : "本金 (USDT)"}</Label>
-              <input type="number" value={stakeUsdt} min={1} onChange={(e) => setStakeUsdt(Math.max(1, Number(e.target.value)))}
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Mother tokens to burn" : "销毁母币数量"}</Label>
+              <input type="number" value={burnTokens} min={1} onChange={(e) => setBurnTokens(Math.max(1, Number(e.target.value)))}
                 className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              <p className="text-[10px] text-muted-foreground/70 mt-1">
+                {isEn ? "Tier rate: <100=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%" : "阶梯：<100枚=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%"}
+              </p>
             </div>
             <div>
               <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Duration (days)" : "周期 (天)"}</Label>
-              <select value={stakeDays} onChange={(e) => { const v = Number(e.target.value); setStakeDays(v); setStakeBonusPct(v>=540?30:v>=360?20:v>=180?10:0); }}
+              <select value={burnDays} onChange={(e) => setBurnDays(Number(e.target.value))}
                 className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm">
-                <option value={30}>30</option><option value={90}>90</option><option value={180}>180 (+10%)</option><option value={360}>360 (+20%)</option><option value={540}>540 (+30%)</option>
+                <option value={30}>30</option><option value={90}>90</option><option value={180}>180</option><option value={360}>360</option><option value={540}>540</option><option value={1080}>1080 (3yr)</option><option value={3600}>3600 (10yr)</option>
               </select>
+              <p className="text-[10px] text-muted-foreground/70 mt-1">
+                {isEn ? "Yield is permanent on-chain — pick a window for valuation." : "链上永久产出，仅取窗口估值"}
+              </p>
             </div>
             <div>
               <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Price Stage" : "价格阶段"}</Label>
@@ -2018,16 +2034,6 @@ export default function RuneV2() {
               {isEn ? "Assumptions (advanced)" : "假设参数 (高级)"} ▾
             </summary>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-              <div>
-                <Label className="text-[11px] text-muted-foreground">{isEn ? "Daily yield % (套餐 base)" : "套餐基础日化 %"}</Label>
-                <input type="number" step="0.1" value={stakeDailyPct} onChange={(e) => setStakeDailyPct(Math.max(0.1, Math.min(1.5, Number(e.target.value))))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-              </div>
-              <div>
-                <Label className="text-[11px] text-muted-foreground">{isEn ? "Long-lock bonus %" : "长仓加成 %"}</Label>
-                <input type="number" value={stakeBonusPct} readOnly
-                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/40 border border-border/30 num text-sm text-muted-foreground" />
-              </div>
               <div>
                 <Label className="text-[11px] text-muted-foreground">{isEn ? "Global sub-stake (tokens)" : "全网子币质押 (枚)"}</Label>
                 <input type="number" value={globalSubStaked} min={1} onChange={(e) => setGlobalSubStaked(Math.max(1, Number(e.target.value)))}
@@ -2056,48 +2062,45 @@ export default function RuneV2() {
             </div>
           </details>
 
-          {/* Computed outputs */}
+          {/* Computed outputs — burn-stake mother → daily sub-tokens → AI + IDO */}
           {(() => {
             const stage = overview?.priceStages?.[stakeStage];
             if (!stage) return null;
-            const launchSubPrice = overview?.priceStages?.[0]?.subPrice ?? 0.038;
-            const effectiveDailyPct = stakeDailyPct * (1 + stakeBonusPct / 100);
-            const dailyTotalU  = stakeUsdt * (effectiveDailyPct / 100);
-            const dailyStaticU = dailyTotalU * 0.65;
-            const dailyDynamicU = dailyTotalU * 0.35;
-            const totalStatic   = dailyStaticU * stakeDays;
-            // 35% dynamic accumulates daily — for simplicity assume constant
-            // sub-token buy price = launch (best case for user). At maturity
-            // valued at selected stage's subPrice.
-            const totalDynamicU = dailyDynamicU * stakeDays;
-            const subTokensAcc  = totalDynamicU / launchSubPrice;
-            const subTokenValue = subTokensAcc * stage.subPrice;
-            // AI revenue: monthly pool × (your sub-stake / global sub-stake) × months
-            // Use AVERAGE sub-stake over period (linear ramp from 0 to subTokensAcc).
-            const months = stakeDays / 30;
-            const avgSubStake = subTokensAcc / 2;
+            const launchMotherPrice = overview?.priceStages?.[0]?.motherPrice ?? 0.028;
+            // Tier rate by burn amount (per `核心机制.md` §壹 "按销毁金额分层")
+            const tierRate = burnTokens >= 100_000 ? 1.5
+                          : burnTokens >=  10_000 ? 1.4
+                          : burnTokens >=   1_000 ? 1.3
+                          : burnTokens >=     100 ? 1.2
+                          :                          1.0;
+            const dailySubYield  = burnTokens * (tierRate / 100);   // sub-tokens per day
+            const totalSubTokens = dailySubYield * burnDays;
+            const subTokenValue  = totalSubTokens * stage.subPrice;
+            const burnCostUsd    = burnTokens * launchMotherPrice;  // sunk cost basis
+            const months = burnDays / 30;
+            const avgSubStake = totalSubTokens / 2;
             const aiRevenue = months > 0 && globalSubStaked > 0
               ? aiPoolMonthly * (avgSubStake / (globalSubStaked + avgSubStake)) * months
               : 0;
-            // IDO: # of IDOs × allocation × multiplier (allocation = avgSubStake × allocFactor)
             const idoCount = idosPerMonth * months;
             const idoAllocPerEvent = avgSubStake * idoAllocFactor;
             const idoGains = idoCount * idoAllocPerEvent * (idoAvgMultiplier - 1);
-            const totalIncome = totalStatic + subTokenValue + aiRevenue + idoGains;
-            const roi = ((totalIncome) / stakeUsdt) * 100;  // returns / principal
-            const roiX = totalIncome / stakeUsdt;
-            const breakdown = [
-              { label: isEn ? "Static USDT (65%)" : "静态 USDT (65%)", value: totalStatic, color: "text-green-300" },
-              { label: isEn ? "Sub-Token Value @ stage" : "子币持仓估值",  value: subTokenValue, color: "text-rose-300" },
-              { label: isEn ? "AI Revenue (sub-stake)" : "AI 月分红 (子币)", value: aiRevenue, color: "text-cyan-300" },
-              { label: isEn ? "IDO Gains" : "IDO 打新收益", value: idoGains, color: "text-fuchsia-300" },
+            const totalIncome = subTokenValue + aiRevenue + idoGains;
+            const roi  = burnCostUsd > 0 ? (totalIncome / burnCostUsd) * 100 : 0;
+            const roiX = burnCostUsd > 0 ?  totalIncome / burnCostUsd        : 0;
+            // Breakdown values are now mixed (tokens count + USD), so render them as preformatted strings
+            const breakdownSafe = [
+              { label: isEn ? "Sub-Tokens Yielded" : "累积子币产出",         displayValue: `${fmt(totalSubTokens, 0)} ${isEn ? "tokens" : "枚"}`, share: 0,                                              color: "text-amber-300" },
+              { label: isEn ? "Sub-Token Value @ stage" : "子币持仓估值",     displayValue: `$${fmt(subTokenValue, 0)}`,                            share: totalIncome > 0 ? subTokenValue / totalIncome : 0, color: "text-rose-300" },
+              { label: isEn ? "AI Revenue (sub-stake)" : "AI 月分红 (子币)",  displayValue: `$${fmt(aiRevenue, 0)}`,                                share: totalIncome > 0 ? aiRevenue / totalIncome : 0,    color: "text-cyan-300" },
+              { label: isEn ? "IDO Gains" : "IDO 打新收益",                  displayValue: `$${fmt(idoGains, 0)}`,                                 share: totalIncome > 0 ? idoGains / totalIncome : 0,     color: "text-fuchsia-300" },
             ];
             return (
               <div className="space-y-4">
                 <div className="p-4 sm:p-5 rounded-xl border border-emerald-700/40 bg-gradient-to-br from-emerald-950/40 to-transparent">
                   <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                     <p className="text-[11px] text-emerald-400 uppercase tracking-widest font-semibold">
-                      {isEn ? "Total Returns (cycle)" : "周期总收益"}
+                      {isEn ? "Total Chain Returns" : "完整链路总收益"}
                     </p>
                     <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
                   </div>
@@ -2109,24 +2112,31 @@ export default function RuneV2() {
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-2">
-                    {isEn ? "Principal" : "本金"} ${fmt(stakeUsdt, 0)} · {stakeDays}d · {stageLabel(stage, stakeStage)} · {isEn ? "principal redeemable at maturity" : "本金到期可赎回"}
+                    {isEn
+                      ? `Burned ${burnTokens.toLocaleString()} mother (≈$${fmt(burnCostUsd, 0)} @ launch) · ${tierRate}% daily = ${fmt(dailySubYield, 0)} sub/day · ${burnDays}d window @ ${stageLabel(stage, stakeStage)}`
+                      : `销毁 ${burnTokens.toLocaleString()} 母币（按开盘价 ≈ $${fmt(burnCostUsd, 0)}）· 日化 ${tierRate}% = ${fmt(dailySubYield, 0)} 子币/天 · ${burnDays} 天估值窗口 @ ${stageLabel(stage, stakeStage)}`}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-1">
+                    {isEn ? "⚠ Mother burn is permanent — principal not redeemable. Yield in sub-tokens auto-stakes for AI + IDO." : "⚠ 销毁母币本金不归还（永久通缩）。日产出子币自动入质押池享 AI 分红 + IDO 打新。"}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {breakdown.map((b, i) => (
+                  {breakdownSafe.map((b, i) => (
                     <div key={i} className="p-3 sm:p-4 rounded-xl border border-border/40 bg-card/40">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{b.label}</p>
-                      <p className={`num text-base sm:text-lg mt-1 ${b.color}`}>${fmt(b.value, 0)}</p>
-                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">{fmt((b.value / totalIncome) * 100, 1)}%</p>
+                      <p className={`num text-base sm:text-lg mt-1 ${b.color}`}>{b.displayValue}</p>
+                      {b.share > 0 && (
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{fmt(b.share * 100, 1)}% {isEn ? "of USD total" : "占 USD 总额"}</p>
+                      )}
                     </div>
                   ))}
                 </div>
 
                 <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
                   {isEn
-                    ? "Cycle: every USDT day yields static+dynamic. Dynamic buys sub-tokens at launch price → auto-stakes → earns AI revenue (pro-rata of monthly pool) + IDO allocations (50× avg). Sub-token value at maturity uses selected stage's subPrice. Numbers are projections — AI engine 25-35% monthly is the underlying assumption, not guaranteed."
-                    : "循环：每日按 套餐日化×(1+长仓加成) 产生收益。65% 直发 USDT，35% 自动按 launch 价买子币累积，子币自动入质押池享 AI 月分红（按权重比例）+ IDO 打新（平均 50×）。子币最终估值按所选阶段。所有数字为基于 AI 月化 25-35% 估算的预测，非合约保证。"}
+                    ? "Chain: burn N mother (永久通缩) → daily 1.0-1.5%×N sub-tokens (tier rate by burn amount) → sub-tokens auto-stake → AI monthly USDT pool 1M split by weight (your share = avg sub-stake / global) + IDO allocations averaging 50× returns. Sub-token holdings valued at selectedStage subPrice. AI engine 25-35% monthly is projection, not guaranteed; mother burn is irreversible on-chain."
+                    : "链路：销毁 N 母币（永久通缩、本金不归还）→ 永久日产 1.0-1.5%×N 子币（按销毁数量分层）→ 子币自动入质押池 → 享 AI 月分红（100万U 池按权重分，你的占比 = 平均子币质押 / 全网）+ IDO 打新（平均 50× 涨幅）。子币最终估值按所选阶段。AI 月化 25-35% 为预估、非合约保证；母币销毁链上不可逆。"}
                 </p>
               </div>
             );
