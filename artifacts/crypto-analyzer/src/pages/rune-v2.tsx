@@ -316,13 +316,28 @@ export default function RuneV2() {
   //   LP RUNE drains daily from (a) protocol auto-burn 0.2% (b) user
   //     burn-stake (configurable monthly %).
   //   price(d) = LP_USDT(d) / LP_RUNE(d)
+  // Two-axis dynamics:
+  //   • LP RUNE side  — drains from protocol auto-burn (0.2%/day) and
+  //     user burn-stake (configurable monthly %). The user buys mother
+  //     tokens, then locks them into burn-stake to mint sub-tokens.
+  //   • TLP USDT side — grows from buy-and-stake purchases. Every burn-
+  //     stake action requires the user to first acquire mother tokens,
+  //     which puts USDT into the LP. We model this as a configurable
+  //     monthly inflow rate (万 USDT/month).
+  // The 4 stage-milestones (TLP 280→700→1750→3500万) are no longer fixed
+  // to specific days — they emerge wherever the cumulative inflow crosses
+  // each threshold. Faster inflow / heavier burn → milestones arrive
+  // earlier and at higher prices.
   const [userBurnRateMonthly, setUserBurnRateMonthly] = useState<number>(1.0);
-  const TARGET_DAY = 180;
+  const [monthlyInflowWan,    setMonthlyInflowWan]    = useState<number>(540); // 万 USDT/mo into TLP from buy-stake
   const TARGET_TLP_WAN = 3500;
   const LAUNCH_TLP_WAN = 280;
   const LAUNCH_LP_RUNE = 1e8;
   const DAILY_PROTOCOL_BURN = 0.002;
   const TOTAL_NODE_WEIGHT = 2880;
+  // Reference: 540万/mo ≈ 18万/day → reaches TLP 3500万 in ~180 days.
+  // Slow path 200万/mo → ~480 days; aggressive 1200万/mo → ~80 days.
+  const SIM_HORIZON_DAYS = 540;
 
   // Staking-tab "complete cycle" (套餐 → static USDT + dynamic 子币 →
   // 子币 auto-stake → AI revenue + IDO). Client-side calc, no backend.
@@ -344,24 +359,7 @@ export default function RuneV2() {
   // Placeholder — re-declared below after dynamicMotherPriceByStage so
   // the chart can pull dynamic mother prices and update with the slider.
 
-  const nodeCompareData = useMemo(() => {
-    const stages = overview?.priceStages ?? [];
-    const nodes  = overview?.nodes       ?? [];
-    return stages.map((stage, i) => {
-      const row: Record<string, string | number> = { label: stageLabel(stage, i) };
-      nodes.forEach(n => {
-        const motherVal   = n.motherTokensPerSeat * stage.motherPrice;
-        // The airdrop is mother-token per the 2026 spec (§六 "节点母TOKEN
-        // 空投 · 10,000,000 枚母TOKEN"), so it prices off motherPrice —
-        // using subPrice here was overstating airdrop value ~35%.
-        const airdropVal  = n.airdropPerSeat      * stage.motherPrice;
-        const usdtVal     = n.dailyUsdt * 180;
-        const total       = motherVal + airdropVal + usdtVal;
-        row[n.level]      = Math.round(total);
-      });
-      return row;
-    });
-  }, [overview, isEn]);
+  // Placeholder — declared again below after dynamicMotherPriceByStage.
 
   const monthSuffix = isEn ? "mo" : t("mr.rune.input.months");
   const deflationData = useMemo(() => {
@@ -375,71 +373,93 @@ export default function RuneV2() {
     }));
   }, [overview, monthSuffix]);
 
-  // Daily simulation: TLP USDT side ramps linearly to TARGET_TLP_WAN over
-  // TARGET_DAY days, then plateaus. LP RUNE drains by protocol burn 0.2%
-  // daily AND user burn-stake (monthly rate spread daily). Price is the
-  // resulting LP_USDT / LP_RUNE ratio per day. Sampled every 10 days for
-  // chart density that's readable on mobile.
+  // Daily simulation — two-axis activity-driven model (replaces the old
+  // fixed linear ramp). Per-day:
+  //   tlpWan(d) = LAUNCH + (monthlyInflow/30)·d  (cumulative buy-stake inflow)
+  //   lpRune(d) = LAUNCH_LP_RUNE · dailyDecay^d  (protocol+user burn drain)
+  //   price(d)  = (tlpWan·1e4) / lpRune
+  // Inflow is capped at TARGET_TLP_WAN since the §权益2 cap is the
+  // protocol's published TLP ceiling — beyond which buy-stake routes
+  // would presumably stop generating airdrop releases.
   const priceSimulation = useMemo(() => {
+    const dailyInflow   = monthlyInflowWan / 30;
     const dailyUserBurn = userBurnRateMonthly / 100 / 30;
     const dailyDecay    = (1 - DAILY_PROTOCOL_BURN) * (1 - dailyUserBurn);
     const out: Array<{ day: number; tlp: number; lpRune: number; price: number }> = [];
-    for (let d = 0; d <= 360; d += 10) {
-      const tlpWan = d <= TARGET_DAY
-        ? LAUNCH_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * (d / TARGET_DAY)
-        : TARGET_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * ((d - TARGET_DAY) / TARGET_DAY) * 0.5;  // gentler post-target growth
-      const lpRune  = LAUNCH_LP_RUNE * Math.pow(dailyDecay, d);
-      const lpUsdt  = tlpWan * 10000;
-      const price   = lpRune > 0 ? lpUsdt / lpRune : 0;
+    for (let d = 0; d <= SIM_HORIZON_DAYS; d += 10) {
+      const tlpWan = Math.min(LAUNCH_TLP_WAN + dailyInflow * d, TARGET_TLP_WAN);
+      const lpRune = LAUNCH_LP_RUNE * Math.pow(dailyDecay, d);
+      const price  = lpRune > 0 ? (tlpWan * 10000) / lpRune : 0;
       out.push({ day: d, tlp: tlpWan, lpRune: Math.round(lpRune), price: Math.round(price * 1e6) / 1e6 });
     }
     return out;
-  }, [userBurnRateMonthly]);
+  }, [userBurnRateMonthly, monthlyInflowWan]);
 
-  // Pre-computed key milestones for the KPI strip below the chart.
-  const priceMilestones = useMemo(() => {
-    const find = (d: number) => priceSimulation.find(p => p.day === d) ?? priceSimulation[0];
-    return [
-      { day: 30,  data: find(30)  },
-      { day: 90,  data: find(90)  },
-      { day: 180, data: find(180) },
-      { day: 360, data: find(360) },
-    ];
-  }, [priceSimulation]);
+  /** Return the day at which TLP first reaches the given target万 USDT
+   *  given the current monthly inflow. Returns the simulation horizon
+   *  if not reached within window. */
+  const dayWhenTlpReaches = (targetWan: number): number => {
+    const dailyInflow = monthlyInflowWan / 30;
+    if (dailyInflow <= 0 || targetWan <= LAUNCH_TLP_WAN) return 0;
+    const d = (targetWan - LAUNCH_TLP_WAN) / dailyInflow;
+    return Math.min(d, SIM_HORIZON_DAYS);
+  };
 
-  // Dynamic mother-token target price per stage. Replaces doc's static
-  // motherPrice (which encoded fixed 80×/120× targets) with a price
-  // derived from the same TLP-ramp + LP-decay simulation as the chart
-  // above, so the calculator's "target stage" always reflects the burn-
-  // stake slider. Stage→day mapping:
-  //   0: launch (day 0)
-  //   1: TLP 700万  ≈ day 24
-  //   2: TLP 1750万 ≈ day 82
-  //   3: TLP 3500万   = day 180 (TARGET_DAY)
-  //   4: 18-month extrapolation (day 540) — replaces doc 80× target
-  //   5: 24-month extrapolation (day 720) — replaces doc 120× target
-  const dynamicMotherPriceByStage = useMemo(() => {
-    const stageDays: Record<number, number> = {
-      0: 0,
-      1: ((700  - LAUNCH_TLP_WAN) / (TARGET_TLP_WAN - LAUNCH_TLP_WAN)) * TARGET_DAY,
-      2: ((1750 - LAUNCH_TLP_WAN) / (TARGET_TLP_WAN - LAUNCH_TLP_WAN)) * TARGET_DAY,
-      3: TARGET_DAY,
-      4: 540,
-      5: 720,
-    };
+  /** Compute LP RUNE at day d under current burn settings. */
+  const lpRuneAt = (d: number): number => {
     const dailyUserBurn = userBurnRateMonthly / 100 / 30;
     const dailyDecay    = (1 - DAILY_PROTOCOL_BURN) * (1 - dailyUserBurn);
+    return LAUNCH_LP_RUNE * Math.pow(dailyDecay, d);
+  };
+
+  // Pre-computed key milestones — uses days the cumulative inflow hits
+  // each TLP target, NOT fixed days. So the strip moves with both sliders.
+  const priceMilestones = useMemo(() => {
+    const milestones = [
+      { tlpTarget: 700,  label: "TLP 700万"   },
+      { tlpTarget: 1750, label: "TLP 1750万"  },
+      { tlpTarget: 3500, label: "TLP 3500万"  },
+    ];
+    return milestones.map(({ tlpTarget, label }) => {
+      const day    = dayWhenTlpReaches(tlpTarget);
+      const lpRune = lpRuneAt(day);
+      const price  = lpRune > 0 ? (Math.min(tlpTarget, TARGET_TLP_WAN) * 10000) / lpRune : 0;
+      return { day, label, data: { tlp: tlpTarget, lpRune: Math.round(lpRune), price } };
+    });
+  }, [userBurnRateMonthly, monthlyInflowWan]);
+
+  // Dynamic mother-token target price per stage. Each stage maps to a TLP
+  // milestone; the day each is reached comes from cumulative inflow, and
+  // the price at that day comes from LP_USDT / LP_RUNE under both burn +
+  // inflow sliders. Replaces doc's static 80×/120× targets.
+  //   Stage 0: launch (TLP 280万, day 0)
+  //   Stage 1: TLP 700万   (day depends on inflow)
+  //   Stage 2: TLP 1750万  (day depends on inflow)
+  //   Stage 3: TLP 3500万  (day depends on inflow — equals 180d at default 540万/mo)
+  //   Stage 4-5: post-target extrapolation (TLP capped, LP RUNE keeps draining
+  //              from auto-burn → mild price growth at 18mo / 24mo).
+  const dynamicMotherPriceByStage = useMemo(() => {
+    const stageTlp: Record<number, number> = {
+      0: LAUNCH_TLP_WAN,
+      1: 700,
+      2: 1750,
+      3: TARGET_TLP_WAN,
+    };
     const out: Record<number, number> = {};
-    for (const [idx, d] of Object.entries(stageDays)) {
-      const tlpWan = d <= TARGET_DAY
-        ? LAUNCH_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * (d / TARGET_DAY)
-        : TARGET_TLP_WAN + (TARGET_TLP_WAN - LAUNCH_TLP_WAN) * ((d - TARGET_DAY) / TARGET_DAY) * 0.5;
-      const lpRune  = LAUNCH_LP_RUNE * Math.pow(dailyDecay, d);
-      const price   = lpRune > 0 ? (tlpWan * 10000) / lpRune : 0;
-      out[Number(idx)] = price;
+    for (const [idx, tlp] of Object.entries(stageTlp)) {
+      const d = dayWhenTlpReaches(tlp);
+      const lp = lpRuneAt(d);
+      out[Number(idx)] = lp > 0 ? (tlp * 10000) / lp : 0;
+    }
+    // Post-target extrapolation — TLP plateaus at cap, but auto-burn keeps
+    // grinding LP RUNE down at 0.2%/day (user burn-stake stops since the
+    // cap removes the buy incentive — assumption only).
+    for (const [idx, day] of [[4, 540], [5, 720]] as const) {
+      const lpRune = LAUNCH_LP_RUNE * Math.pow(1 - DAILY_PROTOCOL_BURN, day);
+      out[idx] = lpRune > 0 ? (TARGET_TLP_WAN * 10000) / lpRune : 0;
     }
     return out;
-  }, [userBurnRateMonthly]);
+  }, [userBurnRateMonthly, monthlyInflowWan]);
 
   /** Returns the dynamic price for a stage, falling back to the API
    *  static motherPrice if the stage index isn't in the dynamic map. */
@@ -449,6 +469,25 @@ export default function RuneV2() {
   /** Format a price with sensible decimals (more for cents, fewer for $$). */
   const fmtPrice = (p: number): string =>
     p < 0.01 ? p.toFixed(4) : p < 1 ? p.toFixed(3) : p.toFixed(2);
+
+  // Node comparison data — total returns per tier across all 6 stages,
+  // priced via dynamic mother price so it reacts to both sliders.
+  const nodeCompareData = useMemo(() => {
+    const stages = overview?.priceStages ?? [];
+    const nodes  = overview?.nodes       ?? [];
+    return stages.map((stage, i) => {
+      const dynPrice = motherPriceForStage(i, stage.motherPrice);
+      const row: Record<string, string | number> = { label: stageLabel(stage, i) };
+      nodes.forEach(n => {
+        const motherVal  = n.motherTokensPerSeat * dynPrice;
+        // Airdrop is mother-token (§六), so it prices off motherPrice too.
+        const airdropVal = n.airdropPerSeat      * dynPrice;
+        const usdtVal    = n.dailyUsdt * 180;
+        row[n.level]     = Math.round(motherVal + airdropVal + usdtVal);
+      });
+      return row;
+    });
+  }, [overview, isEn, dynamicMotherPriceByStage]);
 
   // Six-stage trend chart data — uses dynamic mother prices so the curve
   // reacts to the burn-stake slider above. Sub-token retains static doc
@@ -1070,35 +1109,57 @@ export default function RuneV2() {
           </CardTitle>
           <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
             {isEn
-              ? "TLP ramps linearly to 3500万 USDT by day 180 (节点招募 milestone). LP RUNE drains daily by 0.2% protocol burn + user burn-stake. Price = LP_USDT / LP_RUNE."
-              : "TLP 按节点招募 §权益2 里程碑——180 天内达 3500万 USDT；LP RUNE 每日 0.2% 协议销毁 + 用户 burn-stake 衰减。价格 = LP_USDT / LP_RUNE。"}
+              ? "Two-axis activity model. TLP grows from buy-stake inflow (USDT/mo slider). LP RUNE drains from protocol auto-burn (0.2%/day) + user burn-stake (%/mo). Stage milestones (700/1750/3500万) emerge wherever cumulative inflow crosses each threshold."
+              : "双轴活动驱动模型。TLP 由「买入做质押」月度流入推动，LP RUNE 由协议销毁 0.2%/日 + 用户销毁质押 %/月 收缩。阶段时间点（700/1750/3500万）随两根滑条共同移动，不再写死 24/82/180 天。"}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Burn-stake rate slider */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-baseline">
-              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "User burn-stake (% / month)" : "用户月度销毁质押率 (%)"}</Label>
-              <span className="num text-xs text-amber-300">{userBurnRateMonthly.toFixed(1)}% / mo</span>
+          {/* Activity sliders — two-axis */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Burn-stake rate */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "User burn-stake (% / mo)" : "用户销毁质押率 (%/月)"}</Label>
+                <span className="num text-xs text-amber-300">{userBurnRateMonthly.toFixed(1)}% / mo</span>
+              </div>
+              <Slider value={[userBurnRateMonthly]} min={0} max={5} step={0.1}
+                onValueChange={(v) => setUserBurnRateMonthly(v[0] ?? 0)} className="py-1" />
+              <div className="flex justify-between text-[9px] text-muted-foreground/50">
+                <span>0%</span><span>2.5%</span><span>5%</span>
+              </div>
             </div>
-            <Slider value={[userBurnRateMonthly]} min={0} max={5} step={0.1}
-              onValueChange={(v) => setUserBurnRateMonthly(v[0] ?? 0)} className="py-1" />
-            <div className="flex justify-between text-[9px] text-muted-foreground/50">
-              <span>0%</span><span>2.5%</span><span>5%</span>
+            {/* Buy-stake inflow */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Buy-stake inflow (万 USDT / mo)" : "买入做质押月度流入 (万 USDT)"}</Label>
+                <span className="num text-xs text-amber-300">{monthlyInflowWan}万 / mo</span>
+              </div>
+              <Slider value={[monthlyInflowWan]} min={100} max={1500} step={20}
+                onValueChange={(v) => setMonthlyInflowWan(v[0] ?? 540)} className="py-1" />
+              <div className="flex justify-between text-[9px] text-muted-foreground/50">
+                <span>100万 (慢)</span><span>540万 (180d)</span><span>1500万 (快)</span>
+              </div>
             </div>
           </div>
 
-          {/* Milestone KPI row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {priceMilestones.map(({ day, data }) => (
-              <div key={day} className="p-3 rounded-xl border border-border/40 bg-card/40">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isEn ? `Day ${day}` : `第 ${day} 天`}</p>
-                <p className="num text-base text-amber-200 mt-1">${(data?.price ?? 0).toFixed(data && data.price < 1 ? 4 : 2)}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5 num">
-                  TLP {fmt(data?.tlp ?? 0, 0)}万 · LP {fmt((data?.lpRune ?? 0) / 1e6, 1)}M
-                </p>
-              </div>
-            ))}
+          {/* Milestone KPI row — TLP-target-driven (when does each milestone arrive?) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {priceMilestones.map(({ day, label, data }) => {
+              const reached = day < SIM_HORIZON_DAYS;
+              return (
+                <div key={label} className="p-3 rounded-xl border border-border/40 bg-card/40">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                  <p className="text-[10px] text-muted-foreground/60 num">
+                    {reached ? (isEn ? `≈ Day ${Math.round(day)}` : `≈ 第 ${Math.round(day)} 天`)
+                             : (isEn ? "Out of horizon" : "超出 18 个月窗口")}
+                  </p>
+                  <p className="num text-base text-amber-200 mt-1">${(data?.price ?? 0).toFixed(data && data.price < 1 ? 4 : 2)}</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 num">
+                    LP {fmt((data?.lpRune ?? 0) / 1e6, 1)}M
+                  </p>
+                </div>
+              );
+            })}
           </div>
 
           {/* Price curve chart */}
@@ -1128,8 +1189,8 @@ export default function RuneV2() {
 
           <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
             {isEn
-              ? "Linear TLP ramp to 3500万 by day 180; gentler post-target growth. LP RUNE supply decays geometrically with combined daily rate of 0.2% protocol + (user-rate)/30. Burn-stake slider lets you compare: 0% (protocol-only, ~0.2%/day decay) vs 5% (aggressive user burn ~0.366%/day combined). Higher burn-stake compresses LP RUNE faster → price climbs faster on the same TLP ramp."
-              : "TLP 180 天线性达 3500万 后小幅增长。LP RUNE 按 0.2%(协议) + (用户%)/30 几何衰减。滑动 burn-stake 看不同假设：0% (仅协议销毁) vs 5% (激进用户销毁，日合计 ~0.366%)。用户参与度越高 → LP RUNE 越快被压缩 → 同样 TLP 增长下价格涨得越快。"}
+              ? "TLP grows day-by-day from cumulative buy-stake inflow (capped at 3500万 USDT). LP RUNE decays geometrically at 0.2%/day protocol burn × (1 - user-rate/30). Crank inflow → milestones arrive earlier and at lower prices (more LP RUNE intact). Crank burn → milestones arrive at higher prices (LP RUNE thinner)."
+              : "TLP 每日按「买入做质押」累计流入增长（封顶 3500万 USDT）。LP RUNE 按 0.2%/日(协议) × (1 - 用户%/30) 几何衰减。流入越快 → 阶段提前抵达但价格偏低（LP RUNE 还多）；销毁越猛 → 阶段抵达时价格更高（LP RUNE 更薄）。两根滑条相互独立。"}
           </p>
         </CardContent>
       </Card>
