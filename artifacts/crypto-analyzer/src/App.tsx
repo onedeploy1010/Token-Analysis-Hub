@@ -11,6 +11,7 @@ import Projects from "@/pages/projects";
 import ProjectDetail from "@/pages/project-detail";
 import Tools from "@/pages/tools";
 import Rune from "@/pages/rune";
+import RuneV2 from "@/pages/rune-v2";
 import B18 from "@/pages/b18";
 import HyperLiquid from "@/pages/hyperliquid";
 import LegendATM from "@/pages/legend-atm";
@@ -36,6 +37,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/projects" component={Projects} />
         <Route path="/projects/rune" component={Rune} />
+        <Route path="/projects/rune-v2" component={RuneV2} />
         <Route path="/projects/b18" component={B18} />
         <Route path="/projects/hyperliquid" component={HyperLiquid} />
         <Route path="/projects/hyperliquid/:address" component={HyperLiquid} />
