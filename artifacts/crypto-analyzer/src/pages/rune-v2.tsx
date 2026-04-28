@@ -1055,28 +1055,30 @@ export default function RuneV2() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Range inputs — each param is a [low, high] band so dividend output is a range. */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Range sliders — dual-thumb horizontal sliders for low/high band selection. */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",       value: tradeTurnoverRange,     setter: setTradeTurnoverRange,     min: 1, max: 50 },
-                    { label: isEn ? "Profit margin %"    : "盈利率 %",         value: tradeProfitMarginRange, setter: setTradeProfitMarginRange, min: 0, max: 100 },
-                    { label: isEn ? "Node share AI %"    : "节点占 AI %",      value: nodeShareOfAiRange,     setter: setNodeShareOfAiRange,     min: 0, max: 50 },
-                  ].map(({ label, value, setter, min, max }) => (
-                    <div key={label}>
-                      <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</Label>
-                      <div className="grid grid-cols-2 gap-1.5 mt-1">
-                        <div>
-                          <input type="number" value={value[0]} min={min} max={max}
-                            onChange={(e) => { const v = Math.max(min, Math.min(max, Number(e.target.value))); setter([v, Math.max(v, value[1])]); }}
-                            className="w-full px-2 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-                          <p className="text-[9px] text-muted-foreground/60 mt-0.5 text-center">{isEn ? "low" : "保守"}</p>
-                        </div>
-                        <div>
-                          <input type="number" value={value[1]} min={min} max={max}
-                            onChange={(e) => { const v = Math.max(min, Math.min(max, Number(e.target.value))); setter([Math.min(value[0], v), v]); }}
-                            className="w-full px-2 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-                          <p className="text-[9px] text-muted-foreground/60 mt-0.5 text-center">{isEn ? "high" : "乐观"}</p>
-                        </div>
+                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",  value: tradeTurnoverRange,     setter: setTradeTurnoverRange,     min: 1, max: 50,  step: 1,    suffix: "×" },
+                    { label: isEn ? "Profit margin %"    : "盈利率 %",    value: tradeProfitMarginRange, setter: setTradeProfitMarginRange, min: 0, max: 100, step: 1,    suffix: "%" },
+                    { label: isEn ? "Node share AI %"    : "节点占 AI %", value: nodeShareOfAiRange,     setter: setNodeShareOfAiRange,     min: 0, max: 30,  step: 0.5,  suffix: "%" },
+                  ].map(({ label, value, setter, min, max, step, suffix }) => (
+                    <div key={label} className="space-y-2">
+                      <div className="flex justify-between items-baseline">
+                        <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</Label>
+                        <span className="num text-xs text-amber-300">
+                          {value[0]}{suffix} <span className="text-muted-foreground/60">–</span> {value[1]}{suffix}
+                        </span>
+                      </div>
+                      <Slider
+                        value={value}
+                        min={min} max={max} step={step}
+                        minStepsBetweenThumbs={1}
+                        onValueChange={(v) => { if (v.length >= 2) setter([v[0], v[1]]); }}
+                        className="py-1"
+                      />
+                      <div className="flex justify-between text-[9px] text-muted-foreground/50">
+                        <span>{min}{suffix}</span>
+                        <span>{max}{suffix}</span>
                       </div>
                     </div>
                   ))}
