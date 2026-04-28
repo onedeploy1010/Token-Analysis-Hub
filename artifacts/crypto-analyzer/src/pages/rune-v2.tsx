@@ -257,7 +257,7 @@ function TechChartCard({
 const STAGE_EN_LABELS = ["① Launch", "② Batch 2", "③ Batch 3", "④ Batch 4", "⑤ Target (Low)", "⑥ Target (High)"];
 
 // ─── Main page ────────────────────────────────────────────────────────────────
-type V2Tab = "node" | "trading" | "staking" | "stats";
+type V2Tab = "node" | "staking" | "summary";
 
 export default function RuneV2() {
   const { t, bi, isEn, isZh } = useBi();
@@ -291,15 +291,24 @@ export default function RuneV2() {
   // v2: top-level tab — splits the original "all-in-one" page into 4 lenses.
   const [v2Tab, setV2Tab] = useState<V2Tab>("node");
 
-  // Trading-tab assumptions (UI-tunable). AI quant turnover is the number of
-  // times QEP capital is rotated in a month; profit-margin is the average
-  // realized gain on profitable trades (used for the 10% profit-tax slice).
-  // Defaults: 15× / 30% / 5% (per discussion). Slider/input wires below.
-  const [tradeTurnover,    setTradeTurnover]    = useState(15);   // ×/month
-  const [tradeProfitMargin, setTradeProfitMargin] = useState(30); // %
-  const [nodeShareOfAi,    setNodeShareOfAi]    = useState(5);   // % of AI net income
-  // Total weight across 5 tiers fully sold: 1000+960+560+320+40 = 2880.
+  // Trading-tab assumptions (UI-tunable).
+  const [tradeTurnover,    setTradeTurnover]    = useState(15);
+  const [tradeProfitMargin, setTradeProfitMargin] = useState(30);
+  const [nodeShareOfAi,    setNodeShareOfAi]    = useState(5);
   const TOTAL_NODE_WEIGHT = 2880;
+
+  // Staking-tab "complete cycle" (套餐 → static USDT + dynamic 子币 →
+  // 子币 auto-stake → AI revenue + IDO). Client-side calc, no backend.
+  const [stakeUsdt,        setStakeUsdt]        = useState(1000);    // USDT principal
+  const [stakeDays,        setStakeDays]        = useState(360);     // duration
+  const [stakeStage,       setStakeStage]       = useState(3);       // price stage (Stage 4 default)
+  const [stakeDailyPct,    setStakeDailyPct]    = useState(0.7);     // 套餐 daily, 0.3-0.9 + bonus
+  const [stakeBonusPct,    setStakeBonusPct]    = useState(20);      // long-lock bonus
+  const [aiPoolMonthly,    setAiPoolMonthly]    = useState(1_000_000);  // 100万U total monthly AI pool
+  const [globalSubStaked,  setGlobalSubStaked]  = useState(100_000);    // assumed total sub-stake
+  const [idosPerMonth,     setIdosPerMonth]     = useState(1.5);
+  const [idoAvgMultiplier, setIdoAvgMultiplier] = useState(50);
+  const [idoAllocFactor,   setIdoAllocFactor]   = useState(0.001);   // your sub-stake × this = USDT allocation per IDO
 
   const selectedNode         = overview?.nodes?.find(n => n.level === nodeLevel);
   const selectedStagePreview = overview?.priceStages?.[priceStageIndex];
@@ -454,10 +463,9 @@ export default function RuneV2() {
       <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
         <div className="flex gap-0.5 min-w-max relative">
           {[
-            { id: "node"    as const, labelEn: "NODES",    labelCn: "节点" },
-            { id: "trading" as const, labelEn: "TRADING",  labelCn: "交易" },
-            { id: "staking" as const, labelEn: "STAKING",  labelCn: "质押" },
-            { id: "stats"   as const, labelEn: "STATS",    labelCn: "统计" },
+            { id: "node"    as const, labelEn: "NODES",   labelCn: "节点" },
+            { id: "staking" as const, labelEn: "STAKING", labelCn: "质押" },
+            { id: "summary" as const, labelEn: "SUMMARY", labelCn: "综合" },
           ].map(({ id, labelEn, labelCn }) => {
             const active = v2Tab === id;
             return (
@@ -483,8 +491,8 @@ export default function RuneV2() {
         </div>
       </div>
 
-      {/* ═══ NODES TAB ═══ — original full-page calculator + node selector + charts. */}
-      {v2Tab === "node" && (<>
+      {/* ═══ SHARED — protocol-level data dashboards (visible across all tabs) ═══
+          Token info / 6-stage price curve / fund allocation pie / sub-token deflation. */}
 
       {/* ── Token Info — 3D raised buttons ── */}
       {isLoading ? (
@@ -949,6 +957,198 @@ export default function RuneV2() {
           </TechChartCard>
         </div>
       </motion.div>
+
+      {/* ═══ NODES TAB ═══ — node-specific data: airdrop release table per stage,
+          trading-driven daily dividend per tier, weight allocation. */}
+      {v2Tab === "node" && (() => {
+        const stagesUnlock = [
+          { idx: 0, label: isEn ? "Stage 1 · Launch (10%)" : "阶段 1 · 启动 (10%)",   release: 0.10 },
+          { idx: 1, label: isEn ? "Stage 2 · TLP 700万 (20%)" : "阶段 2 · TLP 700万 (20%)", release: 0.20 },
+          { idx: 2, label: isEn ? "Stage 3 · TLP 1750万 (30%)" : "阶段 3 · TLP 1750万 (30%)", release: 0.30 },
+          { idx: 3, label: isEn ? "Stage 4 · TLP 3500万 (40%)" : "阶段 4 · TLP 3500万 (40%)", release: 0.40 },
+        ];
+        const stages4 = [
+          { idx: 0, tlp: 280,  qep: 360,  trp: 160,  tvl: 800 },
+          { idx: 1, tlp: 700,  qep: 900,  trp: 400,  tvl: 2000 },
+          { idx: 2, tlp: 1750, qep: 2250, trp: 1000, tvl: 5000 },
+          { idx: 3, tlp: 3500, qep: 4500, trp: 2000, tvl: 10000 },
+        ];
+        const TAX_NODE_RATE_BPS = 125; // 1.25% of daily volume goes to node pool
+        const nodes = overview?.nodes ?? [];
+        return (
+          <div className="space-y-6">
+
+            {/* 4-stage airdrop release table */}
+            <Card className="surface-3d border-amber-700/30">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                  <Layers className="h-4 w-4 text-amber-400 shrink-0" />
+                  {isEn ? "Mother-Token Airdrop · 4-Stage Release Per Tier" : "节点空投 · 4 阶段释放表"}
+                </CardTitle>
+                <p className="text-[11px] text-muted-foreground/80 mt-1">
+                  {isEn ? "Per `节点招募计划.md` §权益2: tokens unlock at TLP milestones (10/20/30/40%)." : "节点招募计划.md §权益2：按 TLP 里程碑解锁释放（10/20/30/40%）。"}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground/70 uppercase tracking-wider">
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-2 px-2 sticky left-0 bg-card/80 backdrop-blur">{isEn ? "Tier" : "档位"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Total" : "总额"}</th>
+                        {stagesUnlock.map((s) => (
+                          <th key={s.idx} className="text-right py-2 px-2 whitespace-nowrap">{s.label}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodes.map((n) => (
+                        <tr key={n.level} className="border-b border-border/20">
+                          <td className="py-2 px-2 sticky left-0 bg-card/40 backdrop-blur">
+                            <div className="text-foreground">{nodeName(n)}</div>
+                            <div className="text-[10px] text-muted-foreground">${n.investment.toLocaleString()}</div>
+                          </td>
+                          <td className="py-2 px-2 text-right num">{n.airdropPerSeat.toLocaleString()}</td>
+                          {stagesUnlock.map((s) => {
+                            const tokens = n.airdropPerSeat * s.release;
+                            const stage = overview?.priceStages?.[s.idx];
+                            const usd = stage ? tokens * stage.motherPrice : 0;
+                            return (
+                              <td key={s.idx} className="py-2 px-2 text-right">
+                                <div className="num text-foreground">{tokens.toLocaleString()}</div>
+                                <div className="text-[10px] text-amber-300/80 num">${fmt(usd, 0)}</div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Trading dividend per tier per stage */}
+            <Card className="surface-3d border-amber-700/30">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                  <Activity className="h-4 w-4 text-amber-400 shrink-0" />
+                  {isEn ? "Trading Dividend · Daily Per Tier" : "交易分红 · 每档每日"}
+                  <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
+                </CardTitle>
+                <p className="text-[11px] text-muted-foreground/80 mt-1">
+                  {isEn ? "Daily volume = QEP × turnover (15×/mo default). Node pool = volume × 1.25% + AI net × 5%. Split by weight (2880 total)." : "日交易额 = QEP × 月转换 (默认 15×)。节点池 = 日交易额 × 1.25% + AI 净 × 5%。按权重 2880 分配。"}
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "AI turnover (×/mo)" : "AI 月转换"}</Label>
+                    <input type="number" value={tradeTurnover} min={1} max={50} onChange={(e) => setTradeTurnover(Math.max(1, Math.min(50, Number(e.target.value))))}
+                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Profit margin %" : "盈利率 %"}</Label>
+                    <input type="number" value={tradeProfitMargin} min={0} max={100} onChange={(e) => setTradeProfitMargin(Math.max(0, Math.min(100, Number(e.target.value))))}
+                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Node share AI %" : "节点占 AI %"}</Label>
+                    <input type="number" value={nodeShareOfAi} min={0} max={50} onChange={(e) => setNodeShareOfAi(Math.max(0, Math.min(50, Number(e.target.value))))}
+                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground/70 uppercase tracking-wider">
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-2 px-2 sticky left-0 bg-card/80 backdrop-blur">{isEn ? "Stage" : "阶段"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Pool/day" : "节点池/日"}</th>
+                        {nodes.map((n) => (
+                          <th key={n.level} className="text-right py-2 px-2 whitespace-nowrap">{nodeName(n)}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stages4.map((s) => {
+                        const dailyVolU = (s.qep * 1e4 * tradeTurnover) / 30;
+                        const aiNetMoU  = s.qep * 1e4 * 0.25;
+                        const taxFromVolDay = dailyVolU * (TAX_NODE_RATE_BPS / 1e4);
+                        const aiShareDay  = (aiNetMoU * (nodeShareOfAi / 100)) / 30;
+                        const nodePoolDay = taxFromVolDay + aiShareDay;
+                        return (
+                          <tr key={s.idx} className="border-b border-border/20">
+                            <td className="py-2 px-2 sticky left-0 bg-card/40 backdrop-blur whitespace-nowrap">
+                              <div className="text-foreground">{isEn ? `Stage ${s.idx + 1}` : `阶段 ${s.idx + 1}`}</div>
+                              <div className="text-[10px] text-muted-foreground">TLP {s.tlp}万</div>
+                            </td>
+                            <td className="py-2 px-2 text-right num text-fuchsia-300">${fmt(nodePoolDay, 0)}</td>
+                            {nodes.map((n) => {
+                              const perSeat = nodePoolDay * (n.weight * 100 / TOTAL_NODE_WEIGHT) / 100;
+                              return (
+                                <td key={n.level} className="py-2 px-2 text-right num text-amber-200">${fmt(perSeat, 2)}</td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Node weight & seats */}
+            <Card className="surface-3d border-amber-700/30">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                  <BarChart2 className="h-4 w-4 text-amber-400 shrink-0" />
+                  {isEn ? "Node Weights & Seats" : "节点权重 / 席位"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground/70 uppercase tracking-wider">
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-2 px-2">{isEn ? "Tier" : "档位"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Price" : "单价"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Seats" : "席位"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Weight" : "权重"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Total weight" : "总权重"}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodes.map((n) => (
+                        <tr key={n.level} className="border-b border-border/20">
+                          <td className="py-2 px-2">{nodeName(n)}</td>
+                          <td className="py-2 px-2 text-right num">${n.investment.toLocaleString()}</td>
+                          <td className="py-2 px-2 text-right num">{n.seats}</td>
+                          <td className="py-2 px-2 text-right num">{(n.weight * 100).toFixed(0)}%</td>
+                          <td className="py-2 px-2 text-right num text-amber-300">{(n.weight * n.seats).toFixed(0)}</td>
+                        </tr>
+                      ))}
+                      <tr className="bg-amber-950/30">
+                        <td className="py-2 px-2 font-semibold">{isEn ? "Total" : "合计"}</td>
+                        <td className="py-2 px-2 text-right num">$800万</td>
+                        <td className="py-2 px-2 text-right num">2420</td>
+                        <td className="py-2 px-2 text-right">—</td>
+                        <td className="py-2 px-2 text-right num text-amber-300 font-bold">{TOTAL_NODE_WEIGHT}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
+      {/* end NODES TAB */}
+
+      {/* ═══ SUMMARY TAB ═══ — original calculator (input form + Total Returns + result charts).
+          Was wrapped under Nodes tab; user wants it as a separate "综合" tab summarizing total returns. */}
+      {v2Tab === "summary" && (<>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           CALCULATOR SECTION — 节点收益模拟器
@@ -1480,10 +1680,10 @@ export default function RuneV2() {
       </motion.div>
 
       </>)}
-      {/* end NODES TAB */}
+      {/* end SUMMARY TAB */}
 
-      {/* ═══ TRADING TAB ═══ — AI quant trading on QEP capital + tax-driven node dividend pool. */}
-      {v2Tab === "trading" && (() => {
+      {/* DEAD CODE — old standalone trading/stats tabs (folded into Nodes tab and dropped). */}
+      {false && (() => {
         const stages = [
           { idx: 0, label: "Stage 1 启动", tlp: 280,  qep: 360,  trp: 160,  tvl: 800 },
           { idx: 1, label: "Stage 2",      tlp: 700,  qep: 900,  trp: 400,  tvl: 2000 },
@@ -1581,8 +1781,8 @@ export default function RuneV2() {
         );
       })()}
 
-      {/* ═══ STATS TAB ═══ — protocol-wide metrics: TLP progress, circulation, node sales. */}
-      {v2Tab === "stats" && (
+      {/* DEAD CODE — old standalone stats tab (folded into Nodes tab + shared section). */}
+      {false && (
         <div className="space-y-6">
           <Card className="surface-3d border-amber-700/30">
             <CardHeader>
@@ -1772,22 +1972,165 @@ export default function RuneV2() {
         )}
       </Card>
 
-      {/* Sub-token staking placeholder — full calc requires more spec
-          alignment (AI 月分 100万U 全网权重 + IDO 50× 平均涨幅)。 */}
+      {/* ── Complete cycle: 套餐质押 → 65% USDT + 35% 子币 → 子币自动质押 → AI 月分红 + IDO 打新 ──
+          模型制度.md §伍 + 核心机制.md §壹 + 核心权益.md §肆 三份文档拼出来的"综合 510×"路径。
+          客户端纯计算，UI 全响应式（grid-cols-1 sm:grid-cols-2 md:grid-cols-3 模式）。 */}
       <Card className="surface-3d border-amber-700/30 bg-gradient-to-br from-slate-900/70 to-slate-950/80">
         <CardHeader>
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Coins className="h-4 w-4 text-amber-400" />
-            {isEn ? "Sub-Token Stake (AI Revenue + IDO)" : "子币质押 · AI 分红 + 打新"}
-            <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">{isEn ? "Coming soon" : "即将上线"}</span>
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+            <Coins className="h-4 w-4 text-amber-400 shrink-0" />
+            <span className="break-keep">{isEn ? "Complete Cycle Stake" : "完整周期质押"}</span>
+            <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
           </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
             {isEn
-              ? "Per `核心机制.md` §壹: stake sub-tokens to earn (a) monthly AI revenue distribution (1M USDT/month split by stake weight) and (b) IDO new-token allocations averaging 50× returns. Full calculator pending spec finalization."
-              : "核心机制.md §壹：质押子币享 (a) AI 智能体月度分红（100万U/月，按权重）+ (b) 打新配额（平均 50× 涨幅）。完整计算器等规格定稿。"}
+              ? "USDT in → 65% static USDT + 35% buys sub-token → sub-token auto-stakes → AI monthly revenue + IDO."
+              : "USDT 投入 → 65% 静态直发 USDT + 35% 自动买子币 → 子币自动质押 → 享 AI 月分红 + IDO 打新"}
           </p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* Inputs — primary */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Principal (USDT)" : "本金 (USDT)"}</Label>
+              <input type="number" value={stakeUsdt} min={1} onChange={(e) => setStakeUsdt(Math.max(1, Number(e.target.value)))}
+                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+            </div>
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Duration (days)" : "周期 (天)"}</Label>
+              <select value={stakeDays} onChange={(e) => { const v = Number(e.target.value); setStakeDays(v); setStakeBonusPct(v>=540?30:v>=360?20:v>=180?10:0); }}
+                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm">
+                <option value={30}>30</option><option value={90}>90</option><option value={180}>180 (+10%)</option><option value={360}>360 (+20%)</option><option value={540}>540 (+30%)</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Price Stage" : "价格阶段"}</Label>
+              <select value={stakeStage} onChange={(e) => setStakeStage(Number(e.target.value))}
+                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm">
+                {(overview?.priceStages ?? []).map((s, i) => (<option key={i} value={i}>{stageLabel(s, i)}</option>))}
+              </select>
+            </div>
+          </div>
+
+          {/* Inputs — assumptions (collapsible) */}
+          <details className="group">
+            <summary className="cursor-pointer text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors">
+              {isEn ? "Assumptions (advanced)" : "假设参数 (高级)"} ▾
+            </summary>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "Daily yield % (套餐 base)" : "套餐基础日化 %"}</Label>
+                <input type="number" step="0.1" value={stakeDailyPct} onChange={(e) => setStakeDailyPct(Math.max(0.1, Math.min(1.5, Number(e.target.value))))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "Long-lock bonus %" : "长仓加成 %"}</Label>
+                <input type="number" value={stakeBonusPct} readOnly
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/40 border border-border/30 num text-sm text-muted-foreground" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "Global sub-stake (tokens)" : "全网子币质押 (枚)"}</Label>
+                <input type="number" value={globalSubStaked} min={1} onChange={(e) => setGlobalSubStaked(Math.max(1, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "AI pool / month (USDT)" : "AI 月度池 (USDT)"}</Label>
+                <input type="number" value={aiPoolMonthly} min={0} onChange={(e) => setAiPoolMonthly(Math.max(0, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDOs / month" : "每月 IDO 次数"}</Label>
+                <input type="number" step="0.5" value={idosPerMonth} min={0} onChange={(e) => setIdosPerMonth(Math.max(0, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDO avg multiplier" : "IDO 平均涨幅"}</Label>
+                <input type="number" value={idoAvgMultiplier} min={1} onChange={(e) => setIdoAvgMultiplier(Math.max(1, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDO alloc factor (USDT/sub)" : "IDO 配额系数 (U/枚)"}</Label>
+                <input type="number" step="0.0001" value={idoAllocFactor} min={0} onChange={(e) => setIdoAllocFactor(Math.max(0, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+            </div>
+          </details>
+
+          {/* Computed outputs */}
+          {(() => {
+            const stage = overview?.priceStages?.[stakeStage];
+            if (!stage) return null;
+            const launchSubPrice = overview?.priceStages?.[0]?.subPrice ?? 0.038;
+            const effectiveDailyPct = stakeDailyPct * (1 + stakeBonusPct / 100);
+            const dailyTotalU  = stakeUsdt * (effectiveDailyPct / 100);
+            const dailyStaticU = dailyTotalU * 0.65;
+            const dailyDynamicU = dailyTotalU * 0.35;
+            const totalStatic   = dailyStaticU * stakeDays;
+            // 35% dynamic accumulates daily — for simplicity assume constant
+            // sub-token buy price = launch (best case for user). At maturity
+            // valued at selected stage's subPrice.
+            const totalDynamicU = dailyDynamicU * stakeDays;
+            const subTokensAcc  = totalDynamicU / launchSubPrice;
+            const subTokenValue = subTokensAcc * stage.subPrice;
+            // AI revenue: monthly pool × (your sub-stake / global sub-stake) × months
+            // Use AVERAGE sub-stake over period (linear ramp from 0 to subTokensAcc).
+            const months = stakeDays / 30;
+            const avgSubStake = subTokensAcc / 2;
+            const aiRevenue = months > 0 && globalSubStaked > 0
+              ? aiPoolMonthly * (avgSubStake / (globalSubStaked + avgSubStake)) * months
+              : 0;
+            // IDO: # of IDOs × allocation × multiplier (allocation = avgSubStake × allocFactor)
+            const idoCount = idosPerMonth * months;
+            const idoAllocPerEvent = avgSubStake * idoAllocFactor;
+            const idoGains = idoCount * idoAllocPerEvent * (idoAvgMultiplier - 1);
+            const totalIncome = totalStatic + subTokenValue + aiRevenue + idoGains;
+            const roi = ((totalIncome) / stakeUsdt) * 100;  // returns / principal
+            const roiX = totalIncome / stakeUsdt;
+            const breakdown = [
+              { label: isEn ? "Static USDT (65%)" : "静态 USDT (65%)", value: totalStatic, color: "text-green-300" },
+              { label: isEn ? "Sub-Token Value @ stage" : "子币持仓估值",  value: subTokenValue, color: "text-rose-300" },
+              { label: isEn ? "AI Revenue (sub-stake)" : "AI 月分红 (子币)", value: aiRevenue, color: "text-cyan-300" },
+              { label: isEn ? "IDO Gains" : "IDO 打新收益", value: idoGains, color: "text-fuchsia-300" },
+            ];
+            return (
+              <div className="space-y-4">
+                <div className="p-4 sm:p-5 rounded-xl border border-emerald-700/40 bg-gradient-to-br from-emerald-950/40 to-transparent">
+                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                    <p className="text-[11px] text-emerald-400 uppercase tracking-widest font-semibold">
+                      {isEn ? "Total Returns (cycle)" : "周期总收益"}
+                    </p>
+                    <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
+                  </div>
+                  <div className="flex items-end gap-3 flex-wrap">
+                    <p className="num-shimmer text-3xl sm:text-4xl">${fmt(totalIncome, 0)}</p>
+                    <div className="flex gap-2 flex-wrap mb-1">
+                      <span className="text-xs bg-green-900/50 text-green-300 border border-green-700/40 px-2 py-0.5 rounded-full num">ROI {fmt(roi, 0)}%</span>
+                      <span className="text-xs bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2 py-0.5 rounded-full num">{fmt(roiX, 1)}×</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    {isEn ? "Principal" : "本金"} ${fmt(stakeUsdt, 0)} · {stakeDays}d · {stageLabel(stage, stakeStage)} · {isEn ? "principal redeemable at maturity" : "本金到期可赎回"}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {breakdown.map((b, i) => (
+                    <div key={i} className="p-3 sm:p-4 rounded-xl border border-border/40 bg-card/40">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{b.label}</p>
+                      <p className={`num text-base sm:text-lg mt-1 ${b.color}`}>${fmt(b.value, 0)}</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">{fmt((b.value / totalIncome) * 100, 1)}%</p>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                  {isEn
+                    ? "Cycle: every USDT day yields static+dynamic. Dynamic buys sub-tokens at launch price → auto-stakes → earns AI revenue (pro-rata of monthly pool) + IDO allocations (50× avg). Sub-token value at maturity uses selected stage's subPrice. Numbers are projections — AI engine 25-35% monthly is the underlying assumption, not guaranteed."
+                    : "循环：每日按 套餐日化×(1+长仓加成) 产生收益。65% 直发 USDT，35% 自动按 launch 价买子币累积，子币自动入质押池享 AI 月分红（按权重比例）+ IDO 打新（平均 50×）。子币最终估值按所选阶段。所有数字为基于 AI 月化 25-35% 估算的预测，非合约保证。"}
+                </p>
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
 
