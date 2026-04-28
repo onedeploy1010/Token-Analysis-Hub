@@ -1181,9 +1181,12 @@ export default function RuneV2() {
                 {/* Range sliders — dual-thumb horizontal sliders for low/high band selection. */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",  value: tradeTurnoverRange,     setter: setTradeTurnoverRange,     min: 1, max: 50,  step: 1,    suffix: "×" },
-                    { label: isEn ? "Profit margin %"    : "盈利率 %",    value: tradeProfitMarginRange, setter: setTradeProfitMarginRange, min: 0, max: 100, step: 1,    suffix: "%" },
-                    { label: isEn ? "Node share AI %"    : "节点占 AI %", value: nodeShareOfAiRange,     setter: setNodeShareOfAiRange,     min: 0, max: 30,  step: 0.5,  suffix: "%" },
+                    // Slider min/max are the realistic bounds for each param;
+                    // both thumbs slide within these. Doesn't expose nonsense
+                    // extremes (e.g. AI turnover at 1× or 50× both unrealistic).
+                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",  value: tradeTurnoverRange,     setter: setTradeTurnoverRange,     min: 10, max: 20, step: 1,    suffix: "×" },
+                    { label: isEn ? "Profit margin %"    : "盈利率 %",    value: tradeProfitMarginRange, setter: setTradeProfitMarginRange, min: 20, max: 40, step: 1,    suffix: "%" },
+                    { label: isEn ? "Node share AI %"    : "节点占 AI %", value: nodeShareOfAiRange,     setter: setNodeShareOfAiRange,     min: 3,  max: 8,  step: 0.1,  suffix: "%" },
                   ].map(({ label, value, setter, min, max, step, suffix }) => (
                     <div key={label} className="space-y-2">
                       <div className="flex justify-between items-baseline">
