@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CountUp from "react-countup";
 import {
@@ -290,6 +290,18 @@ export default function RuneV2() {
 
   // v2: top-level tab — splits the original "all-in-one" page into 4 lenses.
   const [v2Tab, setV2Tab] = useState<V2Tab>("node");
+
+  // Auto-recalc summary tab whenever node/duration/stage changes (250ms debounce).
+  // Removes the manual "Calculate" click — KPIs update live as user drags
+  // sliders / picks stages. seats is hardcoded to 1 (single-seat purchase).
+  useEffect(() => {
+    if (!nodeLevel) return;
+    const t = setTimeout(() => {
+      calcMutation.mutate({ data: { nodeLevel, seats: 1, durationDays, priceStageIndex } });
+    }, 250);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeLevel, durationDays, priceStageIndex]);
 
   // Trading-tab assumptions (UI-tunable).
   const [tradeTurnover,    setTradeTurnover]    = useState(15);
@@ -1230,24 +1242,6 @@ export default function RuneV2() {
               </CardHeader>
               <CardContent className="space-y-6">
 
-                {/* Seats */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium text-foreground">
-                      {isEn ? "Seats" : t("mr.rune.input.seats")}
-                      {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Seats</span>}
-                    </Label>
-                    <span className="num text-lg text-primary">{seats} {isEn ? "seats" : t("mr.rune.input.seatsUnit")}</span>
-                  </div>
-                  <Slider value={[seats]} min={1} max={Math.min(selectedNode?.seats ?? 10, 20)} step={1}
-                    onValueChange={v => { setSeats(v[0]); calcMutation.reset(); }} className="py-2" />
-                  <p className="text-xs text-muted-foreground text-right">
-                    {isEn ? "Total Investment" : t("mr.rune.input.totalInvest")} <span className="num text-foreground">
-                      ${selectedNode ? (selectedNode.investment * seats).toLocaleString() : "—"} USDT
-                    </span>
-                  </p>
-                </div>
-
                 {/* Duration */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
@@ -2113,8 +2107,8 @@ export default function RuneV2() {
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-2">
                     {isEn
-                      ? `Burned ${burnTokens.toLocaleString()} mother (≈$${fmt(burnCostUsd, 0)} @ launch) · ${tierRate}% daily = ${fmt(dailySubYield, 0)} sub/day · ${burnDays}d window @ ${stageLabel(stage, stakeStage)}`
-                      : `销毁 ${burnTokens.toLocaleString()} 母币（按开盘价 ≈ $${fmt(burnCostUsd, 0)}）· 日化 ${tierRate}% = ${fmt(dailySubYield, 0)} 子币/天 · ${burnDays} 天估值窗口 @ ${stageLabel(stage, stakeStage)}`}
+                      ? `Burned ${burnTokens.toLocaleString()} mother (cost basis ${burnTokens.toLocaleString()} × $${launchMotherPrice} = $${fmt(burnCostUsd, 2)} @ launch price) · ${tierRate}% daily = ${fmt(dailySubYield, 0)} sub/day · ${burnDays}d window @ ${stageLabel(stage, stakeStage)}`
+                      : `销毁 ${burnTokens.toLocaleString()} 枚母币（成本基数：${burnTokens.toLocaleString()} 枚 × $${launchMotherPrice}/枚 = $${fmt(burnCostUsd, 2)} 按开盘价）· 日化 ${tierRate}% = ${fmt(dailySubYield, 0)} 子币/天 · ${burnDays} 天估值窗口 @ ${stageLabel(stage, stakeStage)}`}
                   </p>
                   <p className="text-[10px] text-muted-foreground/70 mt-1">
                     {isEn ? "⚠ Mother burn is permanent — principal not redeemable. Yield in sub-tokens auto-stakes for AI + IDO." : "⚠ 销毁母币本金不归还（永久通缩）。日产出子币自动入质押池享 AI 分红 + IDO 打新。"}
