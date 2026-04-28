@@ -979,7 +979,7 @@ function PledgeMining() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { label: "Daily Revenue (Day 1)", labelZh: "第1天日收入", val: formatCurrency(mineCalc.chartData[0]?.dailyTokens * mineTokenPrice ?? 0) },
+                    { label: "Daily Revenue (Day 1)", labelZh: "第1天日收入", val: formatCurrency((mineCalc.chartData[0]?.dailyTokens ?? 0) * mineTokenPrice) },
                     { label: `Daily Revenue (Day ${miningDays})`, labelZh: "最后一天日收入", val: formatCurrency((mineCalc.chartData[mineCalc.chartData.length - 1]?.dailyTokens ?? 0) * mineTokenPrice) },
                     { label: "Break-even Price", labelZh: "盈亏平衡", val: `$${mineCalc.breakEvenPrice.toFixed(4)}` },
                   ].map(({ label, labelZh, val }) => (
