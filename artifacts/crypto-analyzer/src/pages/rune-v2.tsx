@@ -303,11 +303,16 @@ export default function RuneV2() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeLevel, durationDays, priceStageIndex]);
 
-  // Trading-tab assumptions (UI-tunable).
-  // Trading-dividend assumptions — single sliders within realistic bounds.
-  const [tradeTurnover,    setTradeTurnover]    = useState(15);   // ×/mo, [10, 20]
-  const [tradeProfitMargin, setTradeProfitMargin] = useState(30); // %,    [20, 40]
-  const [nodeShareOfAi,    setNodeShareOfAi]    = useState(5);   // %,    [3, 8]
+  // Trading-dividend inputs — replaces my made-up turnover/AI-share knobs
+  // with the formula from 节点招募计划.md §权益3:
+  //   • 母币买入滑点 2%  / 子币买入滑点 2%
+  //   • 母币卖出盈利税 5% / 子币卖出盈利税 3%
+  //   • 母币每日烧 0.2% × 1% 给节点池 / 子币 0.1% × 2% 给节点池
+  // Doc doesn't say buy:sell ratio, so we assume 50/50 (slippage taxes
+  // only the buy half; profit tax only the sell half).
+  const [motherDailyVolume, setMotherDailyVolume] = useState(1_000_000);  // USDT / day
+  const [subDailyVolume,    setSubDailyVolume]    = useState(500_000);    // USDT / day
+  const [avgSellProfitPct,  setAvgSellProfitPct]  = useState(20);          // % — sell-side profit ratio
 
   // ── Dynamic mother-token price simulation (replaces doc's static 80-120×) ──
   //   Day 0: LP = 280万 USDT × 1亿 RUNE (launch price $0.028)
@@ -1301,7 +1306,17 @@ export default function RuneV2() {
           { idx: 2, tlp: 1750, qep: 2250, trp: 1000, tvl: 5000 },
           { idx: 3, tlp: 3500, qep: 4500, trp: 2000, tvl: 10000 },
         ];
-        const TAX_NODE_RATE_BPS = 125; // 1.25% of daily volume goes to node pool
+        // Trading-dividend rates per 节点招募计划.md §权益3 (no made-up
+        // constants; values lifted directly from the doc).
+        const MOTHER_BUY_TAX  = 0.02;  // 母币买入滑点 2%
+        const MOTHER_SELL_TAX = 0.05;  // 母币卖出盈利税 5%
+        const SUB_BUY_TAX     = 0.02;  // 子币买入滑点 2%
+        const SUB_SELL_TAX    = 0.03;  // 子币卖出盈利税 3%
+        // "母币每天燃烧 0.2% 的 1%" / "子币每天燃烧 0.1% 的 2%"
+        const MOTHER_BURN_DAILY = 0.002;
+        const MOTHER_BURN_NODE  = 0.01;
+        const SUB_BURN_DAILY    = 0.001;
+        const SUB_BURN_NODE     = 0.02;
         const nodes = overview?.nodes ?? [];
         return (
           <div className="space-y-6">
@@ -1358,34 +1373,36 @@ export default function RuneV2() {
             </Card>
 
             {/* Trading dividend per tier per stage */}
-            <Card className="surface-3d border-amber-700/30">
+            <Card className="surface-3d border-border/40">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
-                  <Activity className="h-4 w-4 text-amber-400 shrink-0" />
-                  {isEn ? "Trading Dividend · Daily Per Tier" : "交易分红 · 每档每日"}
-                  <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap text-foreground">
+                  <Activity className="h-4 w-4 text-primary shrink-0" />
+                  {isEn ? "Trading Dividend · Per 节点招募计划 §权益3" : "交易分红 · 节点招募计划 §权益3"}
+                  <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Doc-Driven" : "按文档"}</span>
                 </CardTitle>
-                <p className="text-[11px] text-muted-foreground/80 mt-1">
-                  {isEn ? "Daily volume = QEP × turnover (15×/mo default). Node pool = volume × 1.25% + AI net × 5%. Split by weight (2880 total)." : "日交易额 = QEP × 月转换 (默认 15×)。节点池 = 日交易额 × 1.25% + AI 净 × 5%。按权重 2880 分配。"}
+                <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                  {isEn
+                    ? "Mother buy-tax 2% + sell-profit-tax 5%. Sub buy-tax 2% + sell-profit-tax 3%. Daily burn share: mother 0.2%·1%, sub 0.1%·2%. Pool split by weight (2880 total)."
+                    : "母币买入滑点 2% + 卖出盈利税 5%；子币买入滑点 2% + 卖出盈利税 3%；母币日烧 0.2%×1%、子币日烧 0.1%×2% 入节点池。按权重 2880 分配。"}
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Single-thumb sliders within realistic bounds; table renders one value per cell. */}
+                {/* Three doc-grounded inputs — replaces the made-up turnover/AI-share knobs. */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { label: isEn ? "AI turnover (×/mo)" : "AI 月转换",  value: tradeTurnover,     setter: setTradeTurnover,     min: 10, max: 20, step: 1,    suffix: "×" },
-                    { label: isEn ? "Profit margin %"    : "盈利率 %",    value: tradeProfitMargin, setter: setTradeProfitMargin, min: 20, max: 40, step: 1,    suffix: "%" },
-                    { label: isEn ? "Node share AI %"    : "节点占 AI %", value: nodeShareOfAi,     setter: setNodeShareOfAi,     min: 3,  max: 8,  step: 0.1,  suffix: "%" },
-                  ].map(({ label, value, setter, min, max, step, suffix }) => (
+                    { label: isEn ? "Mother daily volume (USDT)" : "母币日交易额 (USDT)", value: motherDailyVolume, setter: setMotherDailyVolume, min: 100_000, max: 10_000_000, step: 50_000, fmt: (v: number) => `$${(v/10000).toFixed(0)}万` },
+                    { label: isEn ? "Sub daily volume (USDT)"    : "子币日交易额 (USDT)", value: subDailyVolume,    setter: setSubDailyVolume,    min: 50_000,  max: 5_000_000,  step: 25_000, fmt: (v: number) => `$${(v/10000).toFixed(0)}万` },
+                    { label: isEn ? "Avg sell profit %"          : "平均卖出盈利率 (%)",  value: avgSellProfitPct,  setter: setAvgSellProfitPct,  min: 5,       max: 50,         step: 1,      fmt: (v: number) => `${v}%` },
+                  ].map(({ label, value, setter, min, max, step, fmt: vfmt }) => (
                     <div key={label} className="space-y-2">
                       <div className="flex justify-between items-baseline">
                         <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</Label>
-                        <span className="num text-xs text-amber-300">{value}{suffix}</span>
+                        <span className="num text-xs text-primary">{vfmt(value)}</span>
                       </div>
                       <Slider value={[value]} min={min} max={max} step={step}
                         onValueChange={(v) => setter(v[0] ?? value)} className="py-1" />
-                      <div className="flex justify-between text-[9px] text-muted-foreground/50">
-                        <span>{min}{suffix}</span><span>{max}{suffix}</span>
+                      <div className="flex justify-between text-[9px] text-muted-foreground/60">
+                        <span>{vfmt(min)}</span><span>{vfmt(max)}</span>
                       </div>
                     </div>
                   ))}
@@ -1393,10 +1410,12 @@ export default function RuneV2() {
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
-                    <thead className="text-muted-foreground/70 uppercase tracking-wider">
+                    <thead className="text-muted-foreground uppercase tracking-wider">
                       <tr className="border-b border-border/40">
                         <th className="text-left py-2 px-2 sticky left-0 bg-card/80 backdrop-blur">{isEn ? "Stage" : "阶段"}</th>
-                        <th className="text-right py-2 px-2">{isEn ? "Pool/day" : "节点池/日"}</th>
+                        <th className="text-right py-2 px-2 whitespace-nowrap">{isEn ? "Trade tax/day" : "交易税/日"}</th>
+                        <th className="text-right py-2 px-2 whitespace-nowrap">{isEn ? "Burn share/day" : "燃烧分红/日"}</th>
+                        <th className="text-right py-2 px-2 whitespace-nowrap">{isEn ? "Pool/day" : "节点池/日"}</th>
                         {nodes.map((n) => (
                           <th key={n.level} className="text-right py-2 px-2 whitespace-nowrap">{nodeName(n)}</th>
                         ))}
@@ -1404,23 +1423,42 @@ export default function RuneV2() {
                     </thead>
                     <tbody>
                       {stages4.map((s) => {
-                        const dailyVolU = (s.qep * 1e4 * tradeTurnover) / 30;
-                        const aiNetMoU  = s.qep * 1e4 * 0.25;
-                        const taxFromVolDay = dailyVolU * (TAX_NODE_RATE_BPS / 1e4);
-                        const aiShareDay  = (aiNetMoU * (nodeShareOfAi / 100)) / 30;
-                        const nodePoolDay = taxFromVolDay + aiShareDay;
+                        // Trade-tax slice: assume 50/50 buy/sell split. Buy half pays
+                        // slippage on full notional; sell half pays profit-tax on
+                        // (notional × profit %). Sub doesn't trade at Stage 1
+                        // (TLP < 500万 — sub launch threshold per 模型制度.md §壹).
+                        const subActive = s.tlp >= 500;
+                        const profit = avgSellProfitPct / 100;
+                        const motherTradeShare = motherDailyVolume * (0.5 * MOTHER_BUY_TAX + 0.5 * MOTHER_SELL_TAX * profit);
+                        const subTradeShare    = subActive ? subDailyVolume * (0.5 * SUB_BUY_TAX + 0.5 * SUB_SELL_TAX * profit) : 0;
+
+                        // Burn-share slice: mother LP + sub LP at this stage's day,
+                        // valued at that stage's price. Sub uses static doc target
+                        // since we don't have a sub-side dynamic model yet.
+                        const stageDay      = dayWhenTlpReaches(s.tlp);
+                        const motherLp      = lpRuneAt(stageDay);
+                        const motherPriceN  = motherPriceForStage(s.idx, overview?.priceStages?.[s.idx]?.motherPrice ?? 0);
+                        const motherBurnSh  = motherLp * MOTHER_BURN_DAILY * MOTHER_BURN_NODE * motherPriceN;
+                        const subSupplyEst  = subActive ? (overview?.subToken?.totalSupply ?? 13_100_000) : 0;
+                        const subPriceN     = overview?.priceStages?.[s.idx]?.subPrice ?? 0;
+                        const subBurnSh     = subSupplyEst * SUB_BURN_DAILY * SUB_BURN_NODE * subPriceN;
+
+                        const tradeTax    = motherTradeShare + subTradeShare;
+                        const burnShare   = motherBurnSh + subBurnSh;
+                        const nodePoolDay = tradeTax + burnShare;
                         return (
                           <tr key={s.idx} className="border-b border-border/20">
                             <td className="py-2 px-2 sticky left-0 bg-card/40 backdrop-blur whitespace-nowrap">
                               <div className="text-foreground">{isEn ? `Stage ${s.idx + 1}` : `阶段 ${s.idx + 1}`}</div>
-                              <div className="text-[10px] text-muted-foreground">TLP {s.tlp}万</div>
+                              <div className="text-[10px] text-muted-foreground">TLP {s.tlp}万{!subActive && (isEn ? " · sub paused" : " · 子币未开")}</div>
                             </td>
-                            <td className="py-2 px-2 text-right num text-fuchsia-300 whitespace-nowrap">${fmt(nodePoolDay, 0)}</td>
+                            <td className="py-2 px-2 text-right num text-foreground/80 whitespace-nowrap">${fmt(tradeTax, 0)}</td>
+                            <td className="py-2 px-2 text-right num text-foreground/80 whitespace-nowrap">${fmt(burnShare, 0)}</td>
+                            <td className="py-2 px-2 text-right num text-primary whitespace-nowrap">${fmt(nodePoolDay, 0)}</td>
                             {nodes.map((n) => {
-                              const wRatio = (n.weight * n.seats) / TOTAL_NODE_WEIGHT;
-                              const perSeat = (nodePoolDay * wRatio) / n.seats;
+                              const perSeat = (nodePoolDay * n.weight) / TOTAL_NODE_WEIGHT;
                               return (
-                                <td key={n.level} className="py-2 px-2 text-right num text-amber-200 whitespace-nowrap">${fmt(perSeat, 2)}</td>
+                                <td key={n.level} className="py-2 px-2 text-right num text-foreground whitespace-nowrap">${fmt(perSeat, 2)}</td>
                               );
                             })}
                           </tr>
@@ -1515,7 +1553,7 @@ export default function RuneV2() {
                     const apy    = ((node.dailyUsdt * 365) / node.investment * 100).toFixed(2);
                     return (
                       <button key={node.level}
-                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
+                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); }}
                         style={isOn ? {
                           boxShadow: `0 8px 24px -6px ${color}55, 0 0 0 1px ${color}80, inset 0 1px 0 0 ${color}40, inset 0 -12px 24px -12px ${color}30`,
                           borderColor: `${color}90`,
@@ -1573,7 +1611,7 @@ export default function RuneV2() {
                     <span className="num text-lg">{durationDays}{isEn ? "d" : t("mr.rune.kpi.daysUnit")} / ≈{Math.round(durationDays/30)}{isEn ? "mo" : t("mr.rune.input.months")}</span>
                   </div>
                   <Slider value={[durationDays]} min={30} max={720} step={30}
-                    onValueChange={v => { setDurationDays(v[0]); calcMutation.reset(); }} className="py-2" />
+                    onValueChange={v => setDurationDays(v[0])} className="py-2" />
                 </div>
 
                 {/* Price stage selector */}
@@ -1588,7 +1626,7 @@ export default function RuneV2() {
                         const dynPrice = motherPriceForStage(i, s.motherPrice);
                         const dynMult  = s.motherPrice > 0 ? dynPrice / overview.motherToken.launchPrice : 0;
                         return (
-                        <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
+                        <button key={i} onClick={() => { setPriceStageIndex(i); }}
                           className={`text-left p-2.5 rounded-lg border transition-all active:scale-[0.98] ${priceStageIndex === i ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_4px_14px_-4px_hsl(var(--primary)/0.45)]" : "border-border/50 hover:border-border hover:-translate-y-[1px]"}`}>
                           <p className="text-xs text-muted-foreground leading-tight mb-0.5">{stageLabel(s, i)}</p>
                           <p className="num text-sm text-foreground">${fmtPrice(dynPrice)}</p>
@@ -1622,18 +1660,19 @@ export default function RuneV2() {
                 <motion.div key="results" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="space-y-6">
 
-                  {/* KPI cards */}
+                  {/* KPI cards — unified theme: primary (amber) for accents, neutral
+                      surface for sub-cards. Drops the green/orange/rose/blue rainbow. */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-green-700/40 bg-gradient-to-br from-green-950/50 to-transparent shadow-[0_0_24px_hsl(142,70%,45%,0.1)]">
+                    <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold">
+                        <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
                           {bi("mr.rune.kpi.totalAssets", "Total Returns")}
                         </p>
-                        <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">
+                        <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">
                           {isEn ? "Estimated" : "预估"}
                         </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/70 mb-2">
+                      <p className="text-[10px] text-muted-foreground mb-2">
                         {isEn
                           ? "Returns only — principal is redeemable after the breakeven window (≈128d static)."
                           : "仅含收益。本金达到回本周期（静态约 128 天）后可赎回。"}
@@ -1641,47 +1680,48 @@ export default function RuneV2() {
                       <div className="flex items-end gap-4 flex-wrap">
                         <p className="num-shimmer text-4xl">${fmt(dynamicCalc.totalAssets)}</p>
                         <div className="mb-1 flex gap-3 flex-wrap">
-                          <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(dynamicCalc.roi)}%</span>
-                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(dynamicCalc.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
+                          <span className="text-sm bg-primary/15 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(dynamicCalc.roi)}%</span>
+                          <span className="text-sm bg-muted/40 text-foreground border border-border/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(dynamicCalc.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
                         </div>
                       </div>
-                      {/* Yield range strip — explicitly shows low/high bands so users see this is a band, not a guarantee */}
+                      {/* Yield range strip */}
                       <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="num text-amber-300/80">${fmt(dynamicCalc.totalAssetsLow)}</span>
+                        <span className="num text-foreground/70">${fmt(dynamicCalc.totalAssetsLow)}</span>
                         <span className="opacity-60">— {isEn ? "monthly 15% (conservative)" : "月化 15% 保守"} ↔ {isEn ? "35% (optimistic)" : "35% 乐观"} —</span>
-                        <span className="num text-emerald-300/80">${fmt(dynamicCalc.totalAssetsHigh)}</span>
+                        <span className="num text-foreground/70">${fmt(dynamicCalc.totalAssetsHigh)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "price" : "价格"} <span className="num text-amber-300">${fmtPrice(dynamicCalc.dynamicPrice)}</span> · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(dynamicCalc.investment)}</span>
+                        {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "price" : "价格"} <span className="num text-primary">${fmtPrice(dynamicCalc.dynamicPrice)}</span> · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num text-foreground">${fmt(dynamicCalc.investment)}</span>
                       </p>
                     </div>
-                    <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
-                      <p className="text-[11px] text-primary uppercase tracking-wider mb-1">{isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue")}</p>
-                      <p className="num text-lg">${fmt(dynamicCalc.motherTokenValue)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{dynamicCalc.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</p>
-                    </div>
-                    <div className="p-4 rounded-xl border border-orange-800/30 bg-orange-950/20">
-                      <p className="text-[11px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
-                      <p className="num text-lg text-orange-300">${fmt(dynamicCalc.airdropTokenValue)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{dynamicCalc.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</p>
-                    </div>
-                    <div className="p-4 rounded-xl border border-green-800/30 bg-green-950/20">
-                      <p className="text-[11px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "Static USDT (65%)" : "静态 USDT (65%)"}</p>
-                      <p className="num text-lg text-green-300">${fmt(dynamicCalc.totalUsdtIncome)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        <span className="num">${fmt(dynamicCalc.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{dynamicCalc.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}
-                      </p>
-                    </div>
-                    {/* Dynamic 35% — auto-purchased into sub-token at the day's price */}
-                    <div className="p-4 rounded-xl border border-rose-800/30 bg-rose-950/20">
-                      <p className="text-[11px] text-rose-300 uppercase tracking-wider mb-1">
-                        {isEn ? "Sub-Token (35% dyn)" : "动态 子币 (35%)"}
-                      </p>
-                      <p className="num text-lg text-rose-200">${fmt(dynamicCalc.subTokenValue ?? 0)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        <span className="num">{fmt(dynamicCalc.subTokenAccumulated ?? 0)}</span> {isEn ? "tokens accumulated" : "枚累计"}
-                      </p>
-                    </div>
+                    {[
+                      {
+                        label: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),
+                        value: dynamicCalc.motherTokenValue,
+                        sub: <><span className="num">{dynamicCalc.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</>,
+                      },
+                      {
+                        label: isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue"),
+                        value: dynamicCalc.airdropTokenValue,
+                        sub: <><span className="num">{dynamicCalc.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</>,
+                      },
+                      {
+                        label: isEn ? "Static USDT (65%)" : "静态 USDT (65%)",
+                        value: dynamicCalc.totalUsdtIncome,
+                        sub: <><span className="num">${fmt(dynamicCalc.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{dynamicCalc.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}</>,
+                      },
+                      {
+                        label: isEn ? "Sub-Token (35% dyn)" : "动态 子币 (35%)",
+                        value: dynamicCalc.subTokenValue ?? 0,
+                        sub: <><span className="num">{fmt(dynamicCalc.subTokenAccumulated ?? 0)}</span> {isEn ? "tokens accumulated" : "枚累计"}</>,
+                      },
+                    ].map((kpi) => (
+                      <div key={kpi.label} className="p-4 rounded-xl border border-border/40 bg-card/60">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{kpi.label}</p>
+                        <p className="num text-lg text-foreground">${fmt(kpi.value)}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{kpi.sub}</p>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Result chart: pie + bar side by side */}
@@ -1913,7 +1953,7 @@ export default function RuneV2() {
                         const color = (C as Record<string,string>)[node.level] ?? C.pioneer;
                         return (
                           <tr key={node.level}
-                            onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
+                            onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); }}
                             className={`border-b border-border/30 last:border-0 cursor-pointer transition-colors ${nodeLevel === node.level ? "bg-primary/5" : "hover:bg-muted/10"}`}>
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-2">
@@ -1943,7 +1983,7 @@ export default function RuneV2() {
                     return (
                       <div
                         key={node.level}
-                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
+                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); }}
                         className={`px-4 py-4 cursor-pointer transition-colors ${isSelected ? "bg-primary/5" : "hover:bg-muted/10"}`}
                       >
                         {/* Node name header */}
@@ -2004,209 +2044,6 @@ export default function RuneV2() {
       </>)}
       {/* end SUMMARY TAB */}
 
-      {/* DEAD CODE — old standalone trading/stats tabs (folded into Nodes tab and dropped). */}
-      {false && (() => {
-        const stages = [
-          { idx: 0, label: "Stage 1 启动", tlp: 280,  qep: 360,  trp: 160,  tvl: 800 },
-          { idx: 1, label: "Stage 2",      tlp: 700,  qep: 900,  trp: 400,  tvl: 2000 },
-          { idx: 2, label: "Stage 3",      tlp: 1750, qep: 2250, trp: 1000, tvl: 5000 },
-          { idx: 3, label: "Stage 4 封顶", tlp: 3500, qep: 4500, trp: 2000, tvl: 10000 },
-        ];
-        // AI net income (monthly midpoint 25%) × node share %
-        // Node trading-tax inflow per day = (daily AI volume) × (rates kept by nodes)
-        // Simplified: AI volume monthly = QEP × turnover × 万 → 日交易额
-        // 节点税总收 / day ≈ 日交易额 × node-tax-rate
-        // node-tax-rate 估算: 50% 买盘 × 5% 滑点 × (2/5 给节点)  + 50% 卖盘 × 10% 盈利率假设 × 5% 给节点 = 1% + 0.25%
-        // 加上 burn: 流通母币 × 0.2% × 1% + 流通子币 × 0.1% × 2%（子币流通假设 100万）
-        const TAX_NODE_RATE_BPS = 100 + 25; // 1.25% of daily volume (only mother coin trades for now)
-        return (
-          <div className="space-y-6">
-            <Card className="surface-3d border-amber-700/30">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-amber-400" />
-                  {isEn ? "Trading volume comes from AI quant on QEP capital" : "交易量来自 AI 量化在 QEP 资金上的轮转"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                {/* Tunable assumptions */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "AI monthly turnover (×)" : "AI 月转换次数"}</Label>
-                    <input type="number" value={tradeTurnover} min={1} max={50} onChange={(e) => setTradeTurnover(Math.max(1, Math.min(50, Number(e.target.value))))}
-                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num" />
-                    <p className="text-[10px] text-muted-foreground/70 mt-1">{isEn ? "Typical quant funds rotate 5-30× monthly" : "典型量化基金每月轮转 5-30 倍"}</p>
-                  </div>
-                  <div>
-                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Avg profit margin (%)" : "平均盈利率 (%)"}</Label>
-                    <input type="number" value={tradeProfitMargin} min={0} max={100} onChange={(e) => setTradeProfitMargin(Math.max(0, Math.min(100, Number(e.target.value))))}
-                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num" />
-                    <p className="text-[10px] text-muted-foreground/70 mt-1">{isEn ? "For 10% profit-tax slice" : "用于 10% 盈利税"}</p>
-                  </div>
-                  <div>
-                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Node share of AI net (%)" : "节点占 AI 净收 (%)"}</Label>
-                    <input type="number" value={nodeShareOfAi} min={0} max={50} onChange={(e) => setNodeShareOfAi(Math.max(0, Math.min(50, Number(e.target.value))))}
-                      className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num" />
-                    <p className="text-[10px] text-muted-foreground/70 mt-1">{isEn ? "External hematopoietic share" : "外部造血净收益占比"}</p>
-                  </div>
-                </div>
-
-                {/* 4-stage table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead className="text-muted-foreground/70 uppercase tracking-wider">
-                      <tr className="border-b border-border/40">
-                        <th className="text-left py-2 px-2">{isEn ? "Stage" : "阶段"}</th>
-                        <th className="text-right py-2 px-2">TLP</th>
-                        <th className="text-right py-2 px-2">QEP</th>
-                        <th className="text-right py-2 px-2">{isEn ? "Daily volume" : "日交易额"}</th>
-                        <th className="text-right py-2 px-2">{isEn ? "AI net (mo)" : "AI 月净收"}</th>
-                        <th className="text-right py-2 px-2">{isEn ? "Node pool / day" : "节点池/日"}</th>
-                        <th className="text-right py-2 px-2">{isEn ? "Per founder/day" : "每联创/日"}</th>
-                        <th className="text-right py-2 px-2">{isEn ? "Per initial/day" : "每初级/日"}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {stages.map((s) => {
-                        const dailyVolU = (s.qep * 1e4 * tradeTurnover) / 30;       // 万 U → U
-                        const aiNetMoU  = s.qep * 1e4 * 0.25;                        // monthly midpoint
-                        const taxFromVolDay = dailyVolU * (TAX_NODE_RATE_BPS / 1e4);
-                        const aiShareDay  = (aiNetMoU * (nodeShareOfAi / 100)) / 30;
-                        const nodePoolDay = taxFromVolDay + aiShareDay;
-                        const founderDay  = nodePoolDay * (200 / TOTAL_NODE_WEIGHT);
-                        const initialDay  = nodePoolDay * (100 / TOTAL_NODE_WEIGHT);
-                        return (
-                          <tr key={s.idx} className="border-b border-border/20 hover:bg-card/30">
-                            <td className="py-2 px-2 text-foreground">{s.label}</td>
-                            <td className="py-2 px-2 text-right num text-muted-foreground">{s.tlp}万</td>
-                            <td className="py-2 px-2 text-right num text-muted-foreground">{s.qep}万</td>
-                            <td className="py-2 px-2 text-right num text-amber-300">${fmt(dailyVolU, 0)}</td>
-                            <td className="py-2 px-2 text-right num text-emerald-300">${fmt(aiNetMoU, 0)}</td>
-                            <td className="py-2 px-2 text-right num text-fuchsia-300">${fmt(nodePoolDay, 0)}</td>
-                            <td className="py-2 px-2 text-right num text-foreground">${fmt(founderDay, 2)}</td>
-                            <td className="py-2 px-2 text-right num text-foreground">${fmt(initialDay, 2)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                <p className="text-[10px] text-muted-foreground/60 leading-snug">
-                  {isEn
-                    ? "Estimated. Node pool/day = (daily volume × 1.25% node-share of taxes) + (AI net × node-share %). Per-tier divides by total weight 2880 × tier weight (200 for founder, 100 for initial)."
-                    : "预估。节点池/日 = (日交易额 × 1.25% 节点税分成) + (AI 净 × 节点占比%)；按权重 2880 总重 × 各档权重（联创 200 / 初级 100）分配。"}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      })()}
-
-      {/* DEAD CODE — old standalone stats tab (folded into Nodes tab + shared section). */}
-      {false && (
-        <div className="space-y-6">
-          <Card className="surface-3d border-amber-700/30">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Layers className="h-4 w-4 text-amber-400" />
-                {isEn ? "4-Stage TLP progression" : "4 阶 TLP 推进"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { label: isEn ? "Stage 1 · Launch" : "阶段 1 · 启动",  thr: 280,  unlock: 10 },
-                { label: isEn ? "Stage 2"          : "阶段 2",         thr: 700,  unlock: 20 },
-                { label: isEn ? "Stage 3"          : "阶段 3",         thr: 1750, unlock: 30 },
-                { label: isEn ? "Stage 4 · Cap"    : "阶段 4 · 封顶",   thr: 3500, unlock: 40 },
-              ].map((s) => (
-                <div key={s.thr} className="flex items-center gap-4">
-                  <div className="text-xs text-muted-foreground w-24 shrink-0">{s.label}</div>
-                  <div className="flex-1 h-2 rounded-full bg-card/60 overflow-hidden border border-border/30">
-                    <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300" style={{ width: `${(s.thr / 3500) * 100}%` }} />
-                  </div>
-                  <div className="num text-xs text-amber-300 w-32 text-right shrink-0">TLP {s.thr}万 · {s.unlock}%</div>
-                </div>
-              ))}
-              <p className="text-[10px] text-muted-foreground/60 mt-3">
-                {isEn ? "Per `节点招募计划.md` §权益2: airdrop unlocks at TLP milestones." : "节点招募计划.md §权益2: TLP 里程碑触发空投释放。"}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="surface-3d border-amber-700/30">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Coins className="h-4 w-4 text-amber-400" />
-                {isEn ? "Token allocation (mother RUNE)" : "母币 RUNE 分配"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-lg border border-border/40 bg-card/40">
-                  <p className="text-muted-foreground">{isEn ? "Trading pool" : "交易池"}</p>
-                  <p className="num text-base text-amber-300 mt-1">1亿</p>
-                  <p className="text-[10px] text-muted-foreground/70">{isEn ? "Initial LP RUNE side" : "初始 LP RUNE 边"}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-border/40 bg-card/40">
-                  <p className="text-muted-foreground">{isEn ? "Smart contracts" : "交互合约"}</p>
-                  <p className="num text-base mt-1">3000万</p>
-                </div>
-                <div className="p-3 rounded-lg border border-border/40 bg-card/40">
-                  <p className="text-muted-foreground">{isEn ? "Node airdrop" : "节点空投"}</p>
-                  <p className="num text-base mt-1">1000万</p>
-                  <p className="text-[10px] text-muted-foreground/70">{isEn ? "5 tiers, 4-stage release" : "5 档 / 4 阶释放"}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-border/40 bg-card/40">
-                  <p className="text-muted-foreground">{isEn ? "Initial burn" : "初始销毁"}</p>
-                  <p className="num text-base text-rose-300 mt-1">7000万</p>
-                  <p className="text-[10px] text-muted-foreground/70">{isEn ? "Total → 2.1B; 90% deflation target" : "总量 2.1亿，90% 通缩目标"}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="surface-3d border-amber-700/30">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-amber-400" />
-                {isEn ? "Node sales & weight distribution" : "节点售出与权重分布"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full text-xs">
-                <thead className="text-muted-foreground/70 uppercase tracking-wider">
-                  <tr className="border-b border-border/40">
-                    <th className="text-left py-2 px-2">{isEn ? "Tier" : "档位"}</th>
-                    <th className="text-right py-2 px-2">{isEn ? "Price" : "单价"}</th>
-                    <th className="text-right py-2 px-2">{isEn ? "Seats" : "席位"}</th>
-                    <th className="text-right py-2 px-2">{isEn ? "Weight" : "权重"}</th>
-                    <th className="text-right py-2 px-2">{isEn ? "Total weight" : "总权重"}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(overview?.nodes ?? []).map((n) => (
-                    <tr key={n.level} className="border-b border-border/20">
-                      <td className="py-2 px-2">{nodeName(n)}</td>
-                      <td className="py-2 px-2 text-right num">${n.investment.toLocaleString()}</td>
-                      <td className="py-2 px-2 text-right num">{n.seats}</td>
-                      <td className="py-2 px-2 text-right num">{(n.weight * 100).toFixed(0)}%</td>
-                      <td className="py-2 px-2 text-right num text-amber-300">{(n.weight * n.seats).toFixed(0)}</td>
-                    </tr>
-                  ))}
-                  <tr className="bg-amber-950/30">
-                    <td className="py-2 px-2 font-semibold">{isEn ? "Total" : "合计"}</td>
-                    <td className="py-2 px-2 text-right num">$800万</td>
-                    <td className="py-2 px-2 text-right num">2420</td>
-                    <td className="py-2 px-2 text-right">—</td>
-                    <td className="py-2 px-2 text-right num text-amber-300 font-bold">{TOTAL_NODE_WEIGHT}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* ═══ STAKING TAB ═══ — single unified chain (re-read 2026-04-28).
           Per `核心机制.md` §壹: 销毁母币 → "永久通缩 + 永久日化 1.0-1.5%"。
