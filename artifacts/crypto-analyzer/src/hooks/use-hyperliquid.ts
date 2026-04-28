@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 
-const BASE = "/api";
+// Resolve API origin from build env so cross-origin deploys (Cloudflare
+// Pages frontend → Railway api-server) work. Falls back to same-origin
+// "/api" for local dev where the api-server is on the same host.
+const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+const BASE = `${API_ORIGIN}/api`;
 
 export const HL_TRACKED_VAULTS = [
   "0xc179e03922afe8fa9533d3f896338b9fb87ce0c8",
