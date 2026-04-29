@@ -26,25 +26,25 @@ const MENU_ITEMS = [
   { labelKey: "profile.settings",          icon: Settings,       path: "/profile/settings",     descKey: "profile.settingsDesc" },
 ];
 
+// Mirrors `src/lib/thirdweb/contracts.ts NODE_META`. RUNE nodes have NO
+// daily yield — the only earnings are direct-referral commission paid
+// on-chain when a downline buys a node (rate set per tier on-chain).
 const NODE_ID_TO_TIER: Record<number, string> = {
-  101: "BASIC", 201: "STANDARD", 301: "ADVANCED", 401: "SUPER", 501: "FOUNDER",
+  101: "FOUNDER",
+  201: "SUPER",
+  301: "ADVANCED",
+  401: "MID",
+  501: "INITIAL",
 };
 const TIER_COLOR: Record<string, string> = {
-  BASIC:    "hsl(215 28% 65%)",
-  STANDARD: "hsl(217 76% 58%)",
-  ADVANCED: "hsl(173 58% 50%)",
-  SUPER:    "hsl(38 95% 55%)",
-  FOUNDER:  "hsl(266 60% 65%)",
-};
-const TIER_DAILY_RATE: Record<string, number> = {
-  BASIC:    1000  * 0.01,
-  STANDARD: 2500  * 0.012,
-  ADVANCED: 5000  * 0.013,
-  SUPER:    10000 * 0.014,
-  FOUNDER:  50000 * 0.015,
+  FOUNDER:  "hsl(266 60% 70%)",
+  SUPER:    "hsl(38 95% 60%)",
+  ADVANCED: "hsl(160 64% 55%)",
+  MID:      "hsl(217 76% 64%)",
+  INITIAL:  "hsl(215 28% 75%)",
 };
 const TIER_PRICE: Record<string, number> = {
-  BASIC: 1000, STANDARD: 2500, ADVANCED: 5000, SUPER: 10000, FOUNDER: 50000,
+  FOUNDER: 50000, SUPER: 10000, ADVANCED: 5000, MID: 2500, INITIAL: 1000,
 };
 
 function fmtUsdt(v: number) {
@@ -140,28 +140,13 @@ export default function ProfilePage() {
   const ownTierLabel = ownTierFromStats ?? ownTierFromMembers;
   const ownTierColor = ownTierLabel ? TIER_COLOR[ownTierLabel] : "hsl(215 28% 65%)";
 
-  const investedUsdt      = ownTierLabel ? (TIER_PRICE[ownTierLabel]      ?? 0) : 0;
-  const dailyYieldEstUsdt = ownTierLabel ? (TIER_DAILY_RATE[ownTierLabel] ?? 0) : 0;
-  const nodeCount         = ownTierLabel ? 1 : 0; // RUNE = one node per wallet.
+  const investedUsdt = ownTierLabel ? (TIER_PRICE[ownTierLabel] ?? 0) : 0;
+  const nodeCount    = ownTierLabel ? 1 : 0; // RUNE = one node per wallet.
 
-  // Projected cumulative node yield since the user joined (for the hero).
-  // We need the first purchase paidAt for the elapsed days; pull from the
-  // Supabase membership row when available, else 0.
-  const nodeYieldProjectionUsdt = useMemo(() => {
-    if (!dailyYieldEstUsdt || !memberships.length) return 0;
-    const earliest = memberships.reduce<string | null>((acc, m) =>
-      !acc || new Date(m.paidAt).getTime() < new Date(acc).getTime() ? m.paidAt : acc,
-      null,
-    );
-    if (!earliest) return 0;
-    const days = Math.max(0, (Date.now() - new Date(earliest).getTime()) / (1000 * 60 * 60 * 24));
-    return dailyYieldEstUsdt * days;
-  }, [dailyYieldEstUsdt, memberships]);
-
-  // 总收益 = direct commission (real) + node projection. The hero shows
-  // the combined number; the breakdown row makes the source of each
-  // component explicit so users can tell what's settled vs projected.
-  const totalEarnings = directCommissionUsdt + nodeYieldProjectionUsdt;
+  // RUNE nodes don't pay daily yield — earnings come exclusively from the
+  // direct-referral commission paid on-chain when a downline buys a node.
+  // 总收益 = directCommissionUsdt (real, USDT, on-chain).
+  const totalEarnings = directCommissionUsdt;
 
   // Match mainnet's referral URL format — `useReferralParam` reads
   // `?ref=` (and `?referrer=`) from the query string, so the link must
@@ -283,7 +268,7 @@ export default function ProfilePage() {
                   </div>
                 )}
                 <div className="text-[10px] text-amber-100/55 mt-2">
-                  {t("profile.earningsSource", "Direct commission (on-chain) + node yield (projection) · USDT")}
+                  {t("profile.earningsSource", "Direct referral commission paid on-chain · USDT")}
                 </div>
               </div>
               <div
@@ -345,13 +330,13 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-1 mb-1.5">
                     <Coins className="h-3 w-3 text-amber-300" />
                     <span className="text-[9px] uppercase tracking-wider text-amber-200/85 font-bold">
-                      {t("profile.nodeYield", "Node")}
+                      {t("profile.investedKpi", "Invested")}
                     </span>
                   </div>
                   <div className="text-[15px] font-black text-amber-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(38 95% 55% / 0.45)" }}>
-                    <AnimUsdt value={nodeYieldProjectionUsdt} />
+                    <AnimUsdt value={investedUsdt} />
                   </div>
-                  <div className="text-[9px] text-amber-300/60 mt-0.5">USDT · projection</div>
+                  <div className="text-[9px] text-amber-300/60 mt-0.5">USDT · my node</div>
                 </div>
               </div>
             )}
@@ -385,7 +370,7 @@ export default function ProfilePage() {
                   <span className="text-[12px] font-normal ml-1.5 text-amber-300/70">× {ownTierLabel}</span>
                 </div>
                 <div className="text-[10px] text-amber-100/65 mt-1">
-                  {fmtUsdt(investedUsdt)} {t("profile.invested", "invested")} · +{fmtUsdt(dailyYieldEstUsdt)}/day
+                  {fmtUsdt(investedUsdt)} {t("profile.invested", "invested")}
                 </div>
               </>
             ) : (

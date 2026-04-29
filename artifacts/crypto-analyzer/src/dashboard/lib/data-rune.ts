@@ -16,21 +16,26 @@ import { supabase, w } from "./supabase-client";
  * Single source: connected wallet from thirdweb's useActiveAccount.
  */
 
-/** RUNE node tier IDs (101/201/301/401/501) ↔ TAICLAW tier strings. */
+/** RUNE node tier IDs ↔ display labels. Authoritative mapping lives in
+ *  `src/lib/thirdweb/contracts.ts NODE_META` — DO NOT edit one without
+ *  the other. 101 is the highest tier (FOUNDER, $50K), 501 is the
+ *  entry tier (INITIAL, $1K). Earlier code in this file had this
+ *  mapping reversed, which made the vault stats and node panels
+ *  read every wallet's purchase as the wrong tier. */
 const NODE_ID_TO_TIER: Record<number, string> = {
-  101: "BASIC",
-  201: "STANDARD",
+  101: "FOUNDER",
+  201: "SUPER",
   301: "ADVANCED",
-  401: "SUPER",
-  501: "FOUNDER",
+  401: "MID",
+  501: "INITIAL",
 };
 
 const NODE_ID_TO_PRICE: Record<number, number> = {
-  101: 1000,
-  201: 2500,
-  301: 5000,
-  401: 10000,
-  501: 50000,
+  101: 50000,
+  201: 10000,
+  301:  5000,
+  401:  2500,
+  501:  1000,
 };
 
 /** Minimal NodeMembership shape — matches what TAICLAW pages destructure. */
