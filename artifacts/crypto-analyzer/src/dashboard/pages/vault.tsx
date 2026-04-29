@@ -52,12 +52,14 @@ export default function Vault() {
         <p className="text-xs text-muted-foreground">{t("vault.pageSubtitle")}</p>
       </div>
 
-      {/* Tab strip — `grid-cols-3` keeps every cell at exactly 1/3 width
-          (independent of label length) so longer translations don't push
-          neighbours sideways on a 360px viewport. Icon hides under sm to
-          give the label more room on small phones. */}
+      {/* Tab strip — every button declares the same `border` on both states
+          (transparent vs amber) so its content box is identical pixel-for-
+          pixel; using `ring` for the active state shifted the visual centre
+          relative to inactive cells. `flex` instead of `grid` because
+          `flex-1 basis-0` is what guarantees true equal width regardless
+          of any pseudo-element / Safari quirks. */}
       <div className="relative px-4 lg:px-6 pt-4">
-        <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d">
+        <div className="flex gap-1.5 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -67,14 +69,10 @@ export default function Vault() {
                 onClick={() => setActiveTab(tab.key)}
                 title={t(tab.descKey)}
                 className={cn(
-                  // `inline-flex` inside a grid cell shrinks to content width,
-                  // so the active tab visibly drifts when its label is shorter
-                  // than its neighbours. `flex w-full` forces the button to
-                  // fill the cell — every tab is now exactly 1/3 wide.
-                  "flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 transition-all",
+                  "flex-1 basis-0 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2.5 transition-colors",
                   isActive
-                    ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-card/80",
+                    ? "border-amber-500/40 bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-card/80",
                 )}
                 data-testid={`tab-vault-${tab.key}`}
               >

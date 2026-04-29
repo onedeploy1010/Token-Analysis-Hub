@@ -84,17 +84,20 @@ export default function ProfilePage() {
     [stats],
   );
 
-  // Node ownership — `usePersonalStats.ownedNodeId` is the authoritative
-  // source (same indexer GraphQL the OverviewTab reads, so the two pages
-  // never disagree). The Supabase SDK fallback below covers the deposit
-  // timeline chart but isn't used for the count.
-  const ownNodeId = stats?.ownedNodeId ?? null;
-  const ownTierLabel = ownNodeId && NODE_ID_TO_TIER[ownNodeId] ? NODE_ID_TO_TIER[ownNodeId] : null;
+  // Node ownership — read from BOTH sources and union them, because the
+  // GraphQL `usePersonalStats.ownedNodeId` (used by OverviewTab) and the
+  // Supabase `useNodeMembershipsRune` (queried directly here) can drift if
+  // the indexer trails the on-chain event by a few blocks. Whichever
+  // source sees a tier first wins; this matches whatever the user already
+  // sees on /app/profile/nodes.
+  const ownTierFromStats   = stats?.ownedNodeId && NODE_ID_TO_TIER[stats.ownedNodeId] ? NODE_ID_TO_TIER[stats.ownedNodeId] : null;
+  const ownTierFromMembers = memberships.length > 0 ? memberships[0].nodeType : null;
+  const ownTierLabel = ownTierFromStats ?? ownTierFromMembers;
   const ownTierColor = ownTierLabel ? TIER_COLOR[ownTierLabel] : "hsl(215 28% 65%)";
 
-  const investedUsdt = ownTierLabel ? (TIER_PRICE[ownTierLabel] ?? 0) : 0;
+  const investedUsdt      = ownTierLabel ? (TIER_PRICE[ownTierLabel]      ?? 0) : 0;
   const dailyYieldEstUsdt = ownTierLabel ? (TIER_DAILY_RATE[ownTierLabel] ?? 0) : 0;
-  const nodeCount = ownTierLabel ? 1 : 0; // RUNE = one node per wallet.
+  const nodeCount         = ownTierLabel ? 1 : 0; // RUNE = one node per wallet.
 
   // Projected cumulative node yield since the user joined (for the hero).
   // We need the first purchase paidAt for the elapsed days; pull from the
@@ -138,45 +141,50 @@ export default function ProfilePage() {
   return (
     <div className="pb-24 lg:pb-8 lg:pt-4" data-testid="page-profile">
 
-      {/* Hero header */}
-      <div className="relative overflow-hidden border-b border-border/30">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.10),transparent_60%)] pointer-events-none" />
+      {/* Hero header — stronger amber wash, layered glows */}
+      <div className="relative overflow-hidden border-b border-amber-500/20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.18),transparent_60%)] pointer-events-none" />
+        <div className="absolute -top-20 -right-10 h-64 w-64 rounded-full bg-amber-500/[0.12] blur-[80px] pointer-events-none" />
+        <div className="absolute -bottom-12 left-10 h-40 w-40 rounded-full bg-amber-600/[0.08] blur-[70px] pointer-events-none" />
         <div className="relative px-4 lg:px-6 pt-6 pb-5">
           <div className="flex items-center gap-3">
             <div
-              className="h-12 w-12 rounded-full flex items-center justify-center shrink-0 ring-1 ring-primary/40"
-              style={{ background: "linear-gradient(135deg, hsl(43,74%,50%), hsl(38,70%,38%))", boxShadow: "0 4px 16px hsl(38_95%_55%/0.25)" }}
+              className="h-14 w-14 rounded-full flex items-center justify-center shrink-0 ring-2 ring-amber-400/60"
+              style={{
+                background: "linear-gradient(135deg, hsl(43,90%,58%), hsl(38,85%,42%))",
+                boxShadow: "0 6px 24px hsl(38_95%_55%/0.5), inset 0 1px 0 rgba(255,255,255,0.3)",
+              }}
             >
-              <User className="h-6 w-6 text-white" />
+              <User className="h-7 w-7 text-black/80" strokeWidth={2.5} />
             </div>
             <div className="flex-1 min-w-0">
               {!isConnected ? (
-                <div className="text-[15px] font-bold text-muted-foreground">{t("common.notConnected", "Not connected")}</div>
+                <div className="text-[15px] font-bold text-foreground/70">{t("common.notConnected", "Not connected")}</div>
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-[15px] font-bold text-foreground" data-testid="text-wallet-address">{shortAddr}</span>
-                    <button onClick={() => copyToClipboard(walletAddr)} className="p-1 rounded-md transition-colors hover:bg-white/10" data-testid="button-copy-address">
-                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-[16px] font-black text-foreground tracking-tight" data-testid="text-wallet-address">{shortAddr}</span>
+                    <button onClick={() => copyToClipboard(walletAddr)} className="p-1 rounded-md transition-colors hover:bg-amber-500/15" data-testid="button-copy-address">
+                      <Copy className="h-3.5 w-3.5 text-amber-300" />
                     </button>
                   </div>
-                  <div className="font-mono text-[10px] text-muted-foreground/70 truncate">{walletAddr}</div>
+                  <div className="font-mono text-[10px] text-foreground/45 truncate">{walletAddr}</div>
                 </>
               )}
               {/* Node tier inline */}
               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <div className="flex items-center gap-1.5 rounded-lg ring-1 ring-border/50 bg-muted/20 px-2.5 py-1">
-                  <span className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
+                <div className="flex items-center gap-1.5 rounded-lg ring-1 ring-amber-400/30 bg-amber-500/[0.08] px-2.5 py-1">
+                  <span className="text-[9px] uppercase tracking-[0.15em] text-amber-200/70 font-bold">
                     {t("profile.nodeTier", "Node")}
                   </span>
                   {!isConnected ? (
-                    <span className="text-[12px] font-bold text-muted-foreground/40">--</span>
+                    <span className="text-[12px] font-bold text-foreground/30">--</span>
                   ) : ownTierLabel ? (
-                    <span className="text-[12px] font-bold tabular-nums" style={{ color: ownTierColor }} data-testid="text-node-tier">
+                    <span className="text-[12px] font-black tabular-nums tracking-wide" style={{ color: ownTierColor, textShadow: `0 0 12px ${ownTierColor}` }} data-testid="text-node-tier">
                       {ownTierLabel}
                     </span>
                   ) : (
-                    <span className="text-[11px] font-semibold text-muted-foreground/60">
+                    <span className="text-[11px] font-semibold text-foreground/50">
                       {t("profile.noNode", "Not held")}
                     </span>
                   )}
@@ -189,74 +197,116 @@ export default function ProfilePage() {
 
       <div className="px-4 lg:px-6 pt-3 space-y-3">
 
-        {/* Cumulative earnings hero — USDT, on-chain */}
-        <div className="surface-3d relative overflow-hidden rounded-2xl border border-border/55 bg-gradient-to-br from-card/80 to-card/40 p-4 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
-          <div className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-amber-500/[0.18] blur-[80px]" />
+        {/* Cumulative earnings hero — strong amber gradient, multi-layer glow,
+            inner highlight for floating-tile depth (matches mainnet's
+            surface-3d-tinted dashboard cards). */}
+        <div
+          className="surface-3d relative overflow-hidden rounded-3xl border-2 border-amber-500/45 p-4"
+          style={{
+            background: "linear-gradient(135deg, rgba(60,40,8,0.85), rgba(28,20,8,0.95) 60%, rgba(14,10,4,0.98))",
+            boxShadow:
+              "inset 0 1px 0 rgba(251,191,36,0.30), inset 0 -1px 0 rgba(0,0,0,0.30), 0 12px 36px -12px rgba(251,191,36,0.30), 0 28px 60px -20px rgba(0,0,0,0.55)",
+          }}
+        >
+          <div className="pointer-events-none absolute -top-24 -right-12 h-64 w-64 rounded-full bg-amber-400/[0.30] blur-[90px]" />
+          <div className="pointer-events-none absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-amber-600/[0.18] blur-[70px]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-amber-300" />
+                  <span className="text-[11px] text-amber-200/85 font-bold uppercase tracking-[0.18em]">
                     {t("profile.totalEarnings", "Cumulative Earnings")}
                   </span>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 ring-1 ring-emerald-500/30 text-emerald-300">
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 ring-1 ring-emerald-500/45 text-emerald-300">
                     USDT
                   </span>
                 </div>
                 {!isConnected || statsLoading ? (
-                  <Skeleton className="h-9 w-32" />
+                  <Skeleton className="h-10 w-36" />
                 ) : (
-                  <div className="text-[30px] leading-none font-black tabular-nums text-primary drop-shadow-[0_0_18px_hsl(38_95%_55%/0.4)]" data-testid="text-total-earnings">
+                  <div
+                    className="text-[34px] leading-none font-black tabular-nums tracking-tight"
+                    style={{
+                      color: "hsl(43 100% 70%)",
+                      textShadow: "0 0 24px hsl(38 100% 55% / 0.65), 0 1px 0 rgba(0,0,0,0.4)",
+                    }}
+                    data-testid="text-total-earnings"
+                  >
                     {fmtUsdt(totalEarnings)}
                   </div>
                 )}
-                <div className="text-[10px] text-muted-foreground/60 mt-1.5">
+                <div className="text-[10px] text-amber-100/55 mt-2">
                   {t("profile.earningsSource", "Direct commission (on-chain) + node yield (projection) · USDT")}
                 </div>
               </div>
-              <div className="h-11 w-11 rounded-2xl flex items-center justify-center bg-primary/15 ring-1 ring-primary/30 shrink-0">
-                <Wallet className="h-5 w-5 text-primary" />
+              <div
+                className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ring-2 ring-amber-400/55"
+                style={{
+                  background: "linear-gradient(135deg, rgba(251,191,36,0.30), rgba(180,90,10,0.20))",
+                  boxShadow: "0 4px 18px hsl(38 95% 55% / 0.4), inset 0 1px 0 rgba(255,255,255,0.20)",
+                }}
+              >
+                <Wallet className="h-5 w-5 text-amber-300" />
               </div>
             </div>
 
             {isConnected && (
               <div className="grid grid-cols-3 gap-2 mt-3">
-                <div className="rounded-xl px-2.5 py-2.5 ring-1 ring-border/40 bg-muted/15">
-                  <div className="flex items-center gap-1 mb-1">
-                    <Gift className="h-3 w-3 text-emerald-400" />
-                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                <div
+                  className="rounded-2xl px-2.5 py-3 ring-1 ring-emerald-400/35"
+                  style={{
+                    background: "linear-gradient(160deg, rgba(34,197,94,0.16), rgba(20,80,40,0.10) 60%, rgba(0,0,0,0.20))",
+                    boxShadow: "inset 0 1px 0 rgba(34,197,94,0.30), 0 4px 14px -6px rgba(34,197,94,0.30)",
+                  }}
+                >
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <Gift className="h-3 w-3 text-emerald-300" />
+                    <span className="text-[9px] uppercase tracking-wider text-emerald-200/85 font-bold">
                       {t("profile.directCommission", "Direct")}
                     </span>
                   </div>
-                  <div className="text-[14px] font-bold text-foreground tabular-nums">
+                  <div className="text-[15px] font-black text-emerald-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(142 70% 50% / 0.4)" }}>
                     {fmtUsdt(directCommissionUsdt)}
                   </div>
-                  <div className="text-[9px] text-muted-foreground/70">USDT · on-chain</div>
+                  <div className="text-[9px] text-emerald-300/60 mt-0.5">USDT · on-chain</div>
                 </div>
-                <div className="rounded-xl px-2.5 py-2.5 ring-1 ring-border/40 bg-muted/15">
-                  <div className="flex items-center gap-1 mb-1">
-                    <GitBranch className="h-3 w-3 text-blue-400" />
-                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                <div
+                  className="rounded-2xl px-2.5 py-3 ring-1 ring-blue-400/35"
+                  style={{
+                    background: "linear-gradient(160deg, rgba(59,130,246,0.16), rgba(20,40,80,0.10) 60%, rgba(0,0,0,0.20))",
+                    boxShadow: "inset 0 1px 0 rgba(59,130,246,0.30), 0 4px 14px -6px rgba(59,130,246,0.30)",
+                  }}
+                >
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <GitBranch className="h-3 w-3 text-blue-300" />
+                    <span className="text-[9px] uppercase tracking-wider text-blue-200/85 font-bold">
                       {t("profile.teamVolume", "Team")}
                     </span>
                   </div>
-                  <div className="text-[14px] font-bold text-foreground tabular-nums">
+                  <div className="text-[15px] font-black text-blue-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(217 80% 60% / 0.4)" }}>
                     {fmtUsdt(teamCommissionUsdt)}
                   </div>
-                  <div className="text-[9px] text-muted-foreground/70">USDT · gross</div>
+                  <div className="text-[9px] text-blue-300/60 mt-0.5">USDT · gross</div>
                 </div>
-                <div className="rounded-xl px-2.5 py-2.5 ring-1 ring-amber-500/25 bg-amber-500/[0.06]">
-                  <div className="flex items-center gap-1 mb-1">
-                    <Coins className="h-3 w-3 text-amber-400" />
-                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                <div
+                  className="rounded-2xl px-2.5 py-3 ring-1 ring-amber-400/40"
+                  style={{
+                    background: "linear-gradient(160deg, rgba(251,191,36,0.18), rgba(120,80,10,0.10) 60%, rgba(0,0,0,0.20))",
+                    boxShadow: "inset 0 1px 0 rgba(251,191,36,0.32), 0 4px 14px -6px rgba(251,191,36,0.32)",
+                  }}
+                >
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <Coins className="h-3 w-3 text-amber-300" />
+                    <span className="text-[9px] uppercase tracking-wider text-amber-200/85 font-bold">
                       {t("profile.nodeYield", "Node")}
                     </span>
                   </div>
-                  <div className="text-[14px] font-bold text-amber-300 tabular-nums">
+                  <div className="text-[15px] font-black text-amber-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(38 95% 55% / 0.45)" }}>
                     {fmtUsdt(nodeYieldProjectionUsdt)}
                   </div>
-                  <div className="text-[9px] text-muted-foreground/70">USDT · projection</div>
+                  <div className="text-[9px] text-amber-300/60 mt-0.5">USDT · projection</div>
                 </div>
               </div>
             )}
@@ -265,52 +315,70 @@ export default function ProfilePage() {
 
         {/* My nodes summary + RUNE/EMBER pre-launch placeholder cells */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-2xl px-4 py-3.5 ring-1 ring-primary/25 bg-primary/[0.06]">
+          <div
+            className="rounded-2xl px-4 py-3.5 ring-1 ring-amber-400/45 surface-3d"
+            style={{
+              background: "linear-gradient(160deg, rgba(251,191,36,0.16), rgba(120,80,10,0.08) 60%, rgba(8,5,2,0.30))",
+              boxShadow: "inset 0 1px 0 rgba(251,191,36,0.28), 0 6px 20px -8px rgba(251,191,36,0.28)",
+            }}
+          >
             <div className="flex items-center gap-1.5 mb-1.5">
-              <Server className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] text-muted-foreground font-medium">
+              <Server className="h-3.5 w-3.5 text-amber-300" />
+              <span className="text-[10px] text-amber-200/85 font-bold uppercase tracking-wider">
                 {t("profile.myNodes", "My Nodes")}
               </span>
             </div>
             {!isConnected || statsLoading ? (
-              <div className="text-[20px] font-bold text-muted-foreground/40">--</div>
+              <div className="text-[22px] font-bold text-foreground/30">--</div>
             ) : nodeCount > 0 ? (
               <>
-                <div className="text-[20px] font-black text-primary tabular-nums">
+                <div className="text-[22px] font-black text-amber-200 tabular-nums" style={{ textShadow: "0 0 14px hsl(38 95% 55% / 0.55)" }}>
                   {nodeCount}
-                  <span className="text-[12px] font-normal ml-1 text-muted-foreground/70">× {ownTierLabel}</span>
+                  <span className="text-[12px] font-normal ml-1.5 text-amber-300/70">× {ownTierLabel}</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground/70 mt-0.5">
+                <div className="text-[10px] text-amber-100/65 mt-1">
                   {fmtUsdt(investedUsdt)} {t("profile.invested", "invested")} · +{fmtUsdt(dailyYieldEstUsdt)}/day
                 </div>
               </>
             ) : (
               <>
-                <div className="text-[20px] font-black text-foreground/40">0</div>
-                <div className="text-[10px] text-muted-foreground/60 mt-0.5">
+                <div className="text-[22px] font-black text-foreground/35">0</div>
+                <div className="text-[10px] text-foreground/50 mt-1">
                   {t("profile.noNodeYet", "No nodes yet")}
                 </div>
               </>
             )}
           </div>
-          <div className="rounded-2xl px-4 py-3.5 ring-1 ring-border/40 bg-muted/15">
+          <div
+            className="rounded-2xl px-4 py-3.5 ring-1 ring-purple-400/30 surface-3d"
+            style={{
+              background: "linear-gradient(160deg, rgba(168,85,247,0.10), rgba(50,30,80,0.06) 60%, rgba(8,5,2,0.30))",
+              boxShadow: "inset 0 1px 0 rgba(168,85,247,0.20), 0 6px 20px -8px rgba(168,85,247,0.18)",
+            }}
+          >
             <div className="flex items-center gap-1.5 mb-1.5">
-              <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground font-medium">
+              <Lock className="h-3.5 w-3.5 text-purple-300" />
+              <span className="text-[10px] text-purple-200/80 font-bold uppercase tracking-wider">
                 RUNE / EMBER
               </span>
             </div>
-            <div className="text-[20px] font-black text-muted-foreground/40">--</div>
-            <div className="text-[10px] text-muted-foreground/60 mt-0.5 flex items-center gap-1">
+            <div className="text-[22px] font-black text-foreground/30">--</div>
+            <div className="text-[10px] text-purple-200/60 mt-1 flex items-center gap-1">
               <Flame className="h-2.5 w-2.5" />
               {t("profile.preLaunch", "Pre-launch")}
             </div>
           </div>
         </div>
 
-        {/* Invite link card */}
+        {/* Invite link card — same elevated treatment so it reads as a peer
+            of the hero rather than a flat list item. */}
         {isConnected && referralLink && (
-          <div className="rounded-2xl p-4 space-y-3 ring-1 ring-border/55 bg-card/60 surface-3d">
+          <div
+            className="rounded-2xl p-4 space-y-3 ring-1 ring-amber-500/30 surface-3d"
+            style={{
+              background: "linear-gradient(160deg, rgba(40,30,8,0.65), rgba(20,15,8,0.85) 70%, rgba(10,8,4,0.92))",
+              boxShadow: "inset 0 1px 0 rgba(251,191,36,0.18), 0 8px 24px -10px rgba(251,191,36,0.20), 0 20px 40px -20px rgba(0,0,0,0.55)",
+            }}>
             <div>
               <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                 {t("profile.inviteFriends", "Invite Link")}
@@ -359,7 +427,12 @@ export default function ProfilePage() {
         )}
 
         {/* Menu items (mobile + desktop) */}
-        <div className="rounded-2xl overflow-hidden ring-1 ring-border/55 bg-card/60 surface-3d">
+        <div
+          className="rounded-2xl overflow-hidden ring-1 ring-amber-500/25 surface-3d"
+          style={{
+            background: "linear-gradient(180deg, rgba(28,22,12,0.85), rgba(14,10,6,0.95))",
+            boxShadow: "inset 0 1px 0 rgba(251,191,36,0.14), 0 8px 24px -10px rgba(0,0,0,0.55), 0 20px 40px -20px rgba(0,0,0,0.45)",
+          }}>
           {MENU_ITEMS.map((item, idx) => (
             <button
               key={item.path}
