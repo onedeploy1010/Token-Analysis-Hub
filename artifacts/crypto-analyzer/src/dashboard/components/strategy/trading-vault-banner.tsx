@@ -127,59 +127,140 @@ export function TradingVaultBanner() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
-      className="relative mx-4 lg:mx-0 rounded-2xl overflow-hidden border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]"
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="relative mx-4 lg:mx-0 rounded-3xl overflow-hidden border-2 border-blue-500/40"
+      style={{
+        background: "linear-gradient(140deg, rgba(8,18,40,0.95) 0%, rgba(20,18,40,0.92) 35%, rgba(40,30,8,0.85) 70%, rgba(8,12,28,0.98) 100%)",
+        boxShadow:
+          "inset 0 1px 0 rgba(96,165,250,0.30), inset 0 -1px 0 rgba(0,0,0,0.45), 0 14px 40px -12px rgba(59,130,246,0.35), 0 28px 64px -28px rgba(251,191,36,0.18), 0 32px 80px -24px rgba(0,0,0,0.65)",
+      }}
     >
-      {/* Ambient blue glow */}
-      <div className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-blue-500/[0.18] blur-[80px]" />
-      <div className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-blue-600/[0.08] blur-[70px]" />
+      {/* Layered ambient glows — blue + amber dual aurora */}
+      <div className="pointer-events-none absolute -top-32 -right-20 h-72 w-72 rounded-full bg-blue-500/[0.30] blur-[100px]" />
+      <div className="pointer-events-none absolute -top-20 left-1/3 h-56 w-56 rounded-full bg-amber-500/[0.18] blur-[90px]" />
+      <div className="pointer-events-none absolute -bottom-24 -left-16 h-60 w-60 rounded-full bg-blue-600/[0.18] blur-[80px]" />
 
-      {/* Top accent line — blue→amber→blue gradient */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 via-50% to-transparent" />
-      <div className="pointer-events-none absolute inset-x-1/4 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      {/* Top dual-tone accent lines */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-blue-300/85 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-[12%] top-[1.5px] h-[1px] bg-gradient-to-r from-transparent via-amber-300/55 to-transparent" />
 
-      <div className="relative p-4 space-y-3">
+      {/* Diagonal scan-line shimmer (slow infinite) */}
+      <motion.div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(115deg, transparent 0%, transparent 38%, rgba(255,255,255,0.04) 50%, transparent 62%, transparent 100%)",
+          backgroundSize: "250% 100%",
+          mixBlendMode: "screen",
+        }}
+        animate={{ backgroundPosition: ["180% 0%", "-80% 0%"] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+      />
 
-        {/* Header */}
+      {/* HUD corners — premium reactor look */}
+      {[
+        "top-3 left-3 border-t-2 border-l-2 rounded-tl-md",
+        "top-3 right-3 border-t-2 border-r-2 rounded-tr-md",
+        "bottom-3 left-3 border-b-2 border-l-2 rounded-bl-md",
+        "bottom-3 right-3 border-b-2 border-r-2 rounded-br-md",
+      ].map((cls, i) => (
+        <span key={i} className={`absolute w-3 h-3 pointer-events-none ${cls}`} style={{ borderColor: "rgba(96,165,250,0.50)" }} />
+      ))}
+
+      <div className="relative p-5 space-y-4">
+
+        {/* Header — bigger icon, premium typography */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500/25 to-blue-500/10 ring-1 ring-blue-500/40 shadow-[0_4px_12px_-4px_hsl(217_76%_58%/0.4)]">
-              <BarChart2 className="h-4 w-4 text-blue-400" />
+          <div className="flex items-center gap-3">
+            <div
+              className="h-12 w-12 rounded-2xl flex items-center justify-center ring-2 ring-blue-400/55"
+              style={{
+                background: "linear-gradient(135deg, rgba(96,165,250,0.40), rgba(30,64,160,0.20))",
+                boxShadow: "0 6px 20px -4px hsl(217 76% 58% / 0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+              }}
+            >
+              <BarChart2 className="h-5 w-5 text-blue-200" strokeWidth={2.5} />
             </div>
             <div>
-              <div className="text-sm font-bold leading-tight text-foreground tracking-tight">
+              <div
+                className="text-[16px] font-black leading-tight tracking-[0.02em]"
+                style={{
+                  background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fbbf24 65%, #d97706 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.5))",
+                }}
+              >
                 {t("strategy.banner.title")}
               </div>
-              <div className="text-[11px] text-muted-foreground/80 leading-tight mt-0.5">
+              <div className="text-[11px] text-blue-200/70 leading-tight mt-1 tracking-wide">
                 {t("strategy.banner.subtitle")}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+            style={{
+              background: "linear-gradient(135deg, rgba(96,165,250,0.20), rgba(96,165,250,0.05))",
+              border: "1px solid rgba(96,165,250,0.40)",
+              boxShadow: "0 0 12px hsl(217 76% 58% / 0.30)",
+            }}
+          >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-40 animate-ping" />
-              <span className="relative inline-flex h-full w-full rounded-full bg-blue-400" />
+              <span className="absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-50 animate-ping" />
+              <span className="relative inline-flex h-full w-full rounded-full bg-blue-300" />
             </span>
-            <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-blue-400">
+            <span className="text-[10px] uppercase tracking-[0.22em] font-black text-blue-200">
               {t("strategy.banner.live")}
             </span>
           </div>
         </div>
 
-        {/* KPI grid */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {STATS.map(({ icon: Icon, colorClass, bgClass, label, value, sub }) => (
-            <div key={label} className={`rounded-xl px-3 py-2.5 ring-1 ${bgClass}`}>
-              <Icon className={`h-3.5 w-3.5 mb-1.5 ${colorClass}`} />
-              <div className={`text-[15px] font-black tabular-nums leading-none ${colorClass}`}>
-                {value}
+        {/* KPI grid — taller, glow accent on the AUM tile (the headline number) */}
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          {STATS.map(({ icon: Icon, colorClass, label, value, sub }, idx) => {
+            const isHero = idx === 1; // Total AUM
+            return (
+              <div
+                key={label}
+                className={`relative rounded-2xl px-3 py-3 overflow-hidden ${isHero ? "ring-2 ring-amber-400/45" : "ring-1 ring-blue-400/25"}`}
+                style={{
+                  background: isHero
+                    ? "linear-gradient(160deg, rgba(251,191,36,0.20), rgba(120,80,10,0.12) 60%, rgba(0,0,0,0.30))"
+                    : "linear-gradient(160deg, rgba(96,165,250,0.14), rgba(20,40,80,0.08) 60%, rgba(0,0,0,0.30))",
+                  boxShadow: isHero
+                    ? "inset 0 1px 0 rgba(251,191,36,0.40), 0 6px 18px -6px rgba(251,191,36,0.40)"
+                    : "inset 0 1px 0 rgba(96,165,250,0.30), 0 4px 14px -6px rgba(59,130,246,0.30)",
+                }}
+              >
+                {isHero && (
+                  <div className="pointer-events-none absolute -top-8 -right-6 h-20 w-20 rounded-full bg-amber-400/30 blur-2xl" />
+                )}
+                <Icon className={`h-4 w-4 mb-1.5 ${isHero ? "text-amber-300" : colorClass}`} />
+                <div
+                  className={`text-[17px] font-black tabular-nums leading-none ${isHero ? "" : colorClass}`}
+                  style={
+                    isHero
+                      ? {
+                          background: "linear-gradient(135deg, #fef9c3 0%, #fde68a 40%, #f59e0b 100%)",
+                          WebkitBackgroundClip: "text",
+                          backgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          filter: "drop-shadow(0 0 12px hsl(38 95% 55% / 0.45))",
+                        }
+                      : { textShadow: "0 0 10px currentColor" }
+                  }
+                >
+                  {value}
+                </div>
+                <div className={`text-[10px] mt-1.5 leading-tight ${isHero ? "text-amber-200/85" : "text-muted-foreground"}`}>{label}</div>
+                <div className={`text-[9px] mt-0.5 ${isHero ? "text-amber-300/70" : `${colorClass} opacity-70`}`}>{sub}</div>
               </div>
-              <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{label}</div>
-              <div className={`text-[9px] mt-0.5 opacity-75 ${colorClass}`}>{sub}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Monthly performance area chart */}
