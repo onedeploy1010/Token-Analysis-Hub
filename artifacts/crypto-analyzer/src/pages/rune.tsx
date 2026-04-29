@@ -396,16 +396,30 @@ export default function Rune() {
   // Placeholder — declared again below after dynamicMotherPriceByStage.
 
   const monthSuffix = isEn ? "mo" : t("mr.rune.input.months");
+  // Sub-token deflation curve — follows the activity sliders so the chart
+  // reacts to changes in monthlyActiveUsers / avgPackageUsdt instead of
+  // sitting on a flat protocol baseline.
+  // Drivers (per 核心机制.md §贰 + 资金流向 §二):
+  //   - protocol 0.1%/day baseline burn
+  //   - IDO² locks EMBER → 100% burned (scales with activity → IDO count)
+  //   - C2C sell-tax 3% sub burn (scales with activity)
+  // Aggregate effective daily sub-burn = base × (1 + activity factor),
+  // where the factor is bounded so it doesn't run away at extreme inputs.
   const deflationData = useMemo(() => {
-    const total      = overview?.subToken?.totalSupply ?? 13_100_000;
-    const burnRate   = overview?.subToken?.dailyBurnRate ?? 0.002;
-    const months     = [0,1,2,3,4,5,6,9,12,15,18,21,24];
+    const total          = overview?.subToken?.totalSupply ?? 13_100_000;
+    const baseRate       = overview?.subToken?.dailyBurnRate ?? 0.001;
+    const dailyInflowU   = (monthlyActiveUsers * avgPackageUsdt) / 30;
+    // 540万/mo (default scenario) → activity factor ~1, so net daily burn
+    // doubles. 1500万/mo → factor ~3. Capped at 5× for visual sanity.
+    const activityFactor = Math.min(dailyInflowU / 180_000, 5);
+    const effectiveRate  = baseRate * (1 + activityFactor);
+    const months         = [0,1,2,3,4,5,6,9,12,15,18,21,24];
     return months.map(m => ({
       month: `${m}${monthSuffix}`,
-      circulating: Math.round(total * Math.pow(1 - burnRate, m * 30)),
-      burned:      Math.round(total - total * Math.pow(1 - burnRate, m * 30)),
+      circulating: Math.round(total * Math.pow(1 - effectiveRate, m * 30)),
+      burned:      Math.round(total - total * Math.pow(1 - effectiveRate, m * 30)),
     }));
-  }, [overview, monthSuffix]);
+  }, [overview, monthSuffix, monthlyActiveUsers, avgPackageUsdt]);
 
   // Day-stepped AMM simulation. No closed-form: each day we apply
   //   1. user buy: USDT in, RUNE out via constant-product math
@@ -1404,8 +1418,8 @@ export default function Rune() {
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap text-foreground">
                   <Activity className="h-4 w-4 text-primary shrink-0" />
-                  {isEn ? "Trading Dividend · Per 节点招募计划 §权益3" : "交易分红 · 节点招募计划 §权益3"}
-                  <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Doc-Driven" : "按文档"}</span>
+                  {isEn ? "Trading Dividend · Daily Per Tier" : "交易分红 · 每档每日"}
+                  <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
                 </CardTitle>
                 <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                   {isEn
@@ -2078,23 +2092,42 @@ export default function Rune() {
           daily AI-quant yield splits 65% USDT static + 35% auto-buy
           sub-token. */}
       {v2Tab === "pkg" && (() => {
-        // Yield bracket per duration (模型制度.md §叁)
+        // Yield bracket per duration
         const bracket =
           pkgDays === 30  ? { min: 0.3, max: 0.5, bonus: 0    }
         : pkgDays === 90  ? { min: 0.5, max: 0.7, bonus: 0    }
         : pkgDays === 180 ? { min: 0.5, max: 0.9, bonus: 0.10 }
         : pkgDays === 360 ? { min: 0.5, max: 0.9, bonus: 0.20 }
         :                   { min: 0.5, max: 0.9, bonus: 0.30 };
+        // Map package duration → corresponding price-stage on the curve
+        // above. Sub-token doesn't trade until TLP ≥ 500万U (~stage 1) so
+        // 30d still uses launch; longer locks ride further up the curve.
+        //   30d  → Stage 1 (TLP 700万,  ~day 24)
+        //   90d  → Stage 2 (TLP 1750万, ~day 82)
+        //   180d → Stage 3 (TLP 3500万,  day 180)
+        //   360d → Stage 4 (post-target plateau, ~12-18mo)
+        //   540d → Stage 5 (24mo target)
+        const stageForDuration =
+          pkgDays === 30  ? 1
+        : pkgDays === 90  ? 2
+        : pkgDays === 180 ? 3
+        : pkgDays === 360 ? 4
+        :                   5;
+        const stageData     = overview?.priceStages?.[stageForDuration];
+        const subPriceAtEnd = stageData?.subPrice ?? PKG_SUB_LAUNCH_PRICE;
         // Effective rate after bonus, clamped to bracket
         const baseRate    = Math.min(Math.max(pkgRatePct, bracket.min), bracket.max);
         const effDailyPct = baseRate * (1 + bracket.bonus);                 // % per day (post-bonus)
         const dailyYieldU = pkgUsdt * (effDailyPct / 100);                  // USDT/day total yield
         const totalYieldU = dailyYieldU * pkgDays;                          // total over period
         const staticUsdt  = totalYieldU * 0.65;                             // 65% USDT direct
-        const dynamicUsdt = totalYieldU * 0.35;                             // 35% auto-buy sub
-        const subTokens   = dynamicUsdt / PKG_SUB_LAUNCH_PRICE;             // sub-tokens accumulated
-        const subValue    = subTokens * PKG_SUB_LAUNCH_PRICE;               // == dynamicUsdt at launch
-        const totalValue  = staticUsdt + subValue;                          // book value at launch sub-price
+        const dynamicUsdt = totalYieldU * 0.35;                             // 35% auto-buy sub at LAUNCH price
+        // Sub purchased at $0.038 launch but valued at the stage matching
+        // the duration. So 30d-180d holds for short windows at growing
+        // prices; 360d/540d benefit most from price appreciation.
+        const subTokens   = dynamicUsdt / PKG_SUB_LAUNCH_PRICE;
+        const subValue    = subTokens * subPriceAtEnd;                      // value at end-of-package price
+        const totalValue  = staticUsdt + subValue;
         const roi         = pkgUsdt > 0 ? (totalValue / pkgUsdt) * 100 : 0;
         const roiX        = pkgUsdt > 0 ?  totalValue / pkgUsdt        : 0;
         return (
@@ -2103,12 +2136,12 @@ export default function Rune() {
               <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap text-foreground">
                 <Activity className="h-4 w-4 text-primary shrink-0" />
                 {isEn ? "Stake Package · USDT → RUNE → Daily Yield" : "质押套餐 · USDT 买 RUNE 激活套餐"}
-                <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Doc-Driven" : "按文档"}</span>
+                <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
               </CardTitle>
               <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                 {isEn
-                  ? "Per 模型制度.md §叁: 30/90d no bonus, 180d +10%, 360d +20%, 540d +30%. Daily yield splits 65% USDT direct + 35% auto-buys sub-token (valued at $0.038 launch price)."
-                  : "套餐期限按 §叁：30/90 天无加成；180 天 +10%；360 天 +20%；540 天 +30%。日化收益 65% USDT 直发 + 35% 自动买子币（按 $0.038 开盘价估值）。"}
+                  ? "30/90d no bonus, 180d +10%, 360d +20%, 540d +30%. Daily yield splits 65% USDT direct + 35% auto-buys sub-token (bought at $0.038 launch, valued at the stage matching the package duration)."
+                  : "30/90 天无加成；180 天 +10%；360 天 +20%；540 天 +30%。日化收益 65% USDT 直发 + 35% 自动买子币（按 $0.038 开盘价买入，按对应天数阶段价估值）。"}
               </p>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -2150,7 +2183,9 @@ export default function Rune() {
               <div className="p-4 sm:p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
                 <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                   <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
-                    {isEn ? "Total Book Value @ launch sub-price" : "总账面价值（开盘子币价）"}
+                    {isEn
+                      ? `Total Book Value @ ${stageLabel(stageData ?? { motherPrice: 0, subPrice: PKG_SUB_LAUNCH_PRICE, multiplier: 1, label: `Stage ${stageForDuration}`, labelCn: `阶段 ${stageForDuration}`, trigger: "" }, stageForDuration)}`
+                      : `总账面价值 · ${stageLabel(stageData ?? { motherPrice: 0, subPrice: PKG_SUB_LAUNCH_PRICE, multiplier: 1, label: `Stage ${stageForDuration}`, labelCn: `阶段 ${stageForDuration}`, trigger: "" }, stageForDuration)}`}
                   </p>
                   <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
                 </div>
@@ -2226,8 +2261,8 @@ export default function Rune() {
 
               <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
                 {isEn
-                  ? "Estimated. Daily AI-quant yield splits 65% USDT (paid out) + 35% buys sub-token at market. Sub-token holdings here valued at $0.038 launch price (no dynamic sub-side model). At later stages with higher sub-price, dynamic 35% portion is worth more — see Dual Chain tab for the burn-stake pathway."
-                  : "预估。AI 量化日化收益 65% USDT 直发 + 35% 按市价自动买子币。此处子币按 $0.038 开盘价估值（子币暂无动态价格模型）。后期阶段子币涨价时，动态 35% 部分实际价值更高——见「双币联动」tab 销毁路径。"}
+                  ? "Estimated. Daily yield splits 65% USDT direct + 35% auto-buys sub-token. Sub valued at $0.038 launch price."
+                  : "预估。日化收益 65% USDT 直发 + 35% 自动买子币。子币按 $0.038 开盘估值。"}
               </p>
             </CardContent>
           </Card>
@@ -2374,6 +2409,11 @@ export default function Rune() {
                 className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm">
                 {(overview?.priceStages ?? []).map((s, i) => (<option key={i} value={i}>{stageLabel(s, i)}</option>))}
               </select>
+              <p className="text-[10px] text-muted-foreground/70 mt-1">
+                {isEn
+                  ? "Affects only the informational sub-token valuation card; AI dividend + IDO totals are USDT-denominated and stage-independent."
+                  : "仅影响下方「子币持仓估值」参考卡。AI 分红 + IDO 是 USDT 计价，与阶段无关。"}
+              </p>
             </div>
           </div>
 
