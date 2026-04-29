@@ -99,6 +99,60 @@ export function useNodeMembershipsRune() {
   });
 }
 
+/** Aggregate on-chain node deposits into the 35/45/20 split that the vault +
+ *  market pages render. Pulled directly from `rune_purchases`; price comes
+ *  from the tier table (NodePresell sells fixed-price tiers, so per-tier count
+ *  × unit price is the authoritative deposit total — no need to convert raw
+ *  numeric(78,0) wei amounts). */
+export interface PoolStatsRune {
+  totalDepositUsdt: number;
+  totalMembers: number;
+  totalNodes: number;
+  /** count + total USDT for each tier (BASIC / STANDARD / ADVANCED / SUPER / FOUNDER). */
+  tiers: Record<string, { count: number; totalUsdt: number; unitPrice: number }>;
+  /** 35% — RUNE / USDT LP pool. */
+  runeLp: number;
+  /** 20% — strategic reserve. */
+  reserve: number;
+  /** 45% — AI quant / managed trading pool (rendered on /app/market). */
+  managedPool: number;
+}
+
+export function usePoolStatsRune() {
+  return useQuery<PoolStatsRune>({
+    queryKey: ["rune", "pool-stats"],
+    queryFn: async () => {
+      const [purchasesRes, membersRes] = await Promise.all([
+        supabase.from("rune_purchases").select("node_id"),
+        supabase.from("rune_members").select("*", { count: "exact", head: true }),
+      ]);
+      const rows = purchasesRes.data ?? [];
+      const tiers: PoolStatsRune["tiers"] = {};
+      for (const tier of Object.values(NODE_ID_TO_TIER)) {
+        tiers[tier] = { count: 0, totalUsdt: 0, unitPrice: 0 };
+      }
+      for (const row of rows) {
+        const tier = NODE_ID_TO_TIER[row.node_id] ?? "BASIC";
+        const price = NODE_ID_TO_PRICE[row.node_id] ?? 0;
+        tiers[tier].count += 1;
+        tiers[tier].totalUsdt += price;
+        tiers[tier].unitPrice = price;
+      }
+      const totalDepositUsdt = Object.values(tiers).reduce((s, t) => s + t.totalUsdt, 0);
+      return {
+        totalDepositUsdt,
+        totalMembers: membersRes.count ?? 0,
+        totalNodes: rows.length,
+        tiers,
+        runeLp: totalDepositUsdt * 0.35,
+        reserve: totalDepositUsdt * 0.20,
+        managedPool: totalDepositUsdt * 0.45,
+      };
+    },
+    refetchInterval: 60_000,
+  });
+}
+
 /** Network-wide member + node counts. Read directly off the event tables
  *  — `rune_members` is one row per registered wallet, `rune_purchases`
  *  is one row per node sold. */

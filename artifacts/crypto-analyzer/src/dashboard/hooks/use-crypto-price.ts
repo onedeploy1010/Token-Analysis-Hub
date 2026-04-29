@@ -1,13 +1,11 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { invokeFn } from "@dashboard/lib/supabase-client";
 
+// Routes through the Supabase `api-proxy` edge function instead of a
+// (defunct) `/api/proxy` on a Node api-server. The edge function does the
+// outbound CORS-bypassing fetch from its server-side runtime.
 async function proxyFetch(url: string): Promise<any> {
-  const res = await fetch("/api/proxy", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
-  });
-  if (!res.ok) throw new Error(`Proxy error ${res.status}`);
-  return res.json();
+  return invokeFn<any>("api-proxy", { url });
 }
 
 export interface CryptoPrice {

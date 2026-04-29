@@ -34,3 +34,15 @@ export const supabase: SupabaseClient = createClient(url, anonKey, {
  *  lowercased EVM hex everywhere (see `rune_purchases.user`). */
 export const w = (addr: string | undefined | null): string =>
   (addr ?? "").toLowerCase();
+
+/**
+ * Wrapper around `supabase.functions.invoke` — routes a frontend call to a
+ * Supabase Edge Function. Used as the replacement for the old TAICLAW
+ * `apiPost("/api/...")` and `proxyFetch(url)` paths now that we run no
+ * api-server. Throws on transport or non-2xx errors so callers can catch.
+ */
+export async function invokeFn<T = unknown>(name: string, body?: unknown): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T>(name, { body });
+  if (error) throw error;
+  return data as T;
+}

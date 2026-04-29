@@ -24,9 +24,12 @@ export async function apiPost(path: string, body: any) {
   return apiFetch(path, { method: "POST", body: JSON.stringify(body) });
 }
 
-// ── Helper: proxy external API calls through our server to avoid CORS ─────────
+// ── Helper: proxy external API calls through our Supabase `api-proxy` edge
+//    function (replaces the old api-server `/api/proxy` route — we no longer
+//    run one). Edge function does the CORS-bypassing outbound fetch.
+import { invokeFn } from "@dashboard/lib/supabase-client";
 async function proxyFetch(url: string): Promise<any> {
-  return apiPost("/api/proxy", { url });
+  return invokeFn<any>("api-proxy", { url });
 }
 
 // ── MA price ──────────────────────────────────────────────────────────────────
@@ -200,12 +203,15 @@ export async function getAiForecast(asset: string, timeframe: string, lang?: str
   return apiPost("/api/ai-forecast", { asset, timeframe, lang: lang || "en" });
 }
 
+// AI forecast lives on the Supabase `ai-forecast-multi` edge function — it
+// holds the OpenAI / Cloudflare AI Gateway / OpenRouter keys and runs the
+// 5-model fan-out + technical-indicator pipeline. Frontend just invokes.
 export async function getAiForecastMulti(asset: string, timeframe: string, lang?: string) {
-  return apiPost("/api/ai-forecast-multi", { asset, timeframe, lang: lang || "en" });
+  return invokeFn<any>("ai-forecast-multi", { asset, timeframe, lang: lang || "en" });
 }
 
 export async function getAiForecastSingle(asset: string, timeframe: string, model: string, lang?: string) {
-  return apiPost("/api/ai-forecast-multi", { asset, timeframe, model, lang: lang || "en" });
+  return invokeFn<any>("ai-forecast-multi", { asset, timeframe, model, lang: lang || "en" });
 }
 
 export const AI_MODEL_LABELS = ["GPT-4o", "DeepSeek", "Llama 3.1", "Gemini", "Grok"] as const;

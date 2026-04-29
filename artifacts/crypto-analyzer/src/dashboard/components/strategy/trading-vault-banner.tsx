@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { BarChart2, TrendingUp, Zap, Shield, RefreshCw, Activity } from "lucide-react";
 import {
@@ -7,16 +6,7 @@ import {
 } from "recharts";
 import { useTranslation } from "react-i18next";
 import { VaultCalendar } from "./vault-calendar";
-
-interface PoolStats {
-  tradingPool: {
-    balance: string;
-    contributionTotal: string;
-    monthlyYield: string;
-    poolRatio: string;
-  };
-  isLive: boolean;
-}
+import { usePoolStatsRune } from "@dashboard/lib/data-rune";
 
 /* ── Animated number that jitters in a range ── */
 function FlickerRate({ min, max, decimals = 1, suffix = "%" }: {
@@ -78,14 +68,12 @@ export function TradingVaultBanner() {
   const { i18n } = useTranslation();
   const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
 
-  const { data, isLoading } = useQuery<PoolStats>({
-    queryKey: ["/api/vault/pool-stats"],
-    queryFn: () => fetch("/api/vault/pool-stats").then(r => r.json()),
-    refetchInterval: 60_000,
-  });
+  // Pool data sources from RUNE on-chain `rune_purchases` (via Supabase),
+  // not the dead TAICLAW api-server. balance = 45% slice of total deposits.
+  const { data, isLoading } = usePoolStatsRune();
 
-  const balance    = Number(data?.tradingPool.balance    ?? 0);
-  const totalDeposits = Number(data?.tradingPool.contributionTotal ?? 0);
+  const balance    = data?.managedPool ?? 0;
+  const totalDeposits = data?.totalDepositUsdt ?? 0;
 
   const fmtUsd = (v: number) => {
     if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;

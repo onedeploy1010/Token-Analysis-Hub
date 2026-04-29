@@ -1,27 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@dashboard/components/ui/skeleton";
-import { Layers, Shield, BarChart2, TrendingUp, RefreshCw } from "lucide-react";
+import { Layers, Shield, TrendingUp, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@dashboard/lib/utils";
+import { usePoolStatsRune } from "@dashboard/lib/data-rune";
 
-interface PoolStats {
-  mother: { usdtTotal: string; runeTotal: string; lockPositions: number; nodeCount: number; ratio: string };
-  sub: { usdtTotal: string; runeTotal: string; burnPositions: number };
-  reservePool: { balance: string; ratio: string };
-  tradingPool: { balance: string; contributionTotal: string; monthlyYield: string; annualYield: string; monthlyRate: string; poolRatio: string };
-  nodes: {
-    totalMembers: number;
-    totalBuyers: number;
-    purchaseCount: number;
-    totalDepositUsdt: string;
-    superNode: { count: number; totalUsdt: string; unitPrice: number };
-    stdNode:   { count: number; totalUsdt: string; unitPrice: number };
-  };
-  isLive: boolean;
-}
-
-type PoolView = "mother" | "reserve";
+type PoolView = "rune" | "reserve";
 
 function fmtUsdt(val: string | number) {
   const n = Number(val);
@@ -30,35 +14,34 @@ function fmtUsdt(val: string | number) {
   return `$${n.toFixed(2)}`;
 }
 
-function fmtRune(val: string | number) {
-  const n = Number(val);
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
-  return n.toFixed(2);
-}
-
 const AMBER  = "rgba(212,168,50,0.9)";
 const GREEN  = "rgba(34,197,94,0.9)";
 const BLUE   = "rgba(59,130,246,0.9)";
 
+/**
+ * Vault page LP pool card. Aggregates on-chain `rune_purchases` deposits and
+ * renders the 35% RUNE LP / 20% Reserve breakdown. The 45% managed/trading
+ * pool deliberately lives on `/app/market`, not here.
+ */
 export function VaultLpPool() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
-  const [view, setView] = useState<PoolView>("mother");
+  const [view, setView] = useState<PoolView>("rune");
 
-  const { data, isLoading } = useQuery<PoolStats>({
-    queryKey: ["/api/vault/pool-stats"],
-    queryFn: () => fetch("/api/vault/pool-stats").then(r => r.json()),
-    refetchInterval: 60_000,
-  });
+  const { data, isLoading } = usePoolStatsRune();
 
-  const isLive = data?.isLive ?? false;
-  const accent = view === "mother" ? AMBER : GREEN;
+  const isLive = false; // RUNE token not yet listed; deposits accumulate as pre-launch sediment.
+  const accent = view === "rune" ? AMBER : GREEN;
 
   const POOL_TABS = [
-    { key: "mother" as const, icon: TrendingUp, labelZh: "母币底池", labelEn: "Mother LP", accent: AMBER, pct: "35%" },
+    { key: "rune" as const, icon: TrendingUp, labelZh: "RUNE LP", labelEn: "RUNE LP", accent: AMBER, pct: "35%" },
     { key: "reserve" as const, icon: Shield,    labelZh: "储备金库", labelEn: "Reserve",   accent: GREEN, pct: "20%" },
   ];
+
+  // Top 2 tiers worth showing in the breakdown — FOUNDER ($50K) and SUPER ($10K)
+  // are the two highest-impact tiers. Lower tiers fold into the totals row.
+  const founderTier = data?.tiers?.FOUNDER;
+  const superTier = data?.tiers?.SUPER;
 
   return (
     <div
@@ -132,13 +115,13 @@ export function VaultLpPool() {
             <div className="h-full transition-all duration-700" style={{ width: "20%", background: GREEN, opacity: 0.75 }} />
           </div>
           <div className="flex text-[8.5px] font-semibold">
-            <div className="flex-none w-[35%] text-center py-1" style={{ color: AMBER }}>母币 35%</div>
-            <div className="flex-none w-[45%] text-center py-1" style={{ color: BLUE }}>交易 45%</div>
-            <div className="flex-none w-[20%] text-center py-1" style={{ color: GREEN }}>储备 20%</div>
+            <div className="flex-none w-[35%] text-center py-1" style={{ color: AMBER }}>{isZh ? "RUNE LP 35%" : "RUNE LP 35%"}</div>
+            <div className="flex-none w-[45%] text-center py-1" style={{ color: BLUE }}>{isZh ? "管理资金 45%" : "Managed 45%"}</div>
+            <div className="flex-none w-[20%] text-center py-1" style={{ color: GREEN }}>{isZh ? "储备 20%" : "Reserve 20%"}</div>
           </div>
         </div>
 
-        {/* Toggle: Mother LP / Reserve Vault */}
+        {/* Toggle: RUNE LP / Reserve Vault */}
         <div className="flex gap-1.5">
           {POOL_TABS.map(tab => (
             <button key={tab.key} onClick={() => setView(tab.key)}
@@ -161,53 +144,57 @@ export function VaultLpPool() {
             <Skeleton className="h-14 rounded-xl" />
             <Skeleton className="h-10 rounded-xl" />
           </div>
-        ) : view === "mother" ? (
+        ) : view === "rune" ? (
           <div className="space-y-2">
-            {/* Total USDT bar */}
+            {/* RUNE LP allocation (35% of total deposits) */}
             <div className="rounded-xl px-3 py-2.5" style={{ background: `${AMBER}08`, border: `1px solid ${AMBER}18` }}>
               <div className="flex items-end justify-between">
                 <div>
                   <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                    {isZh ? "节点总入金 (链上)" : "Node Deposits (On-chain)"}
+                    {isZh ? "RUNE LP 池 (35%)" : "RUNE LP Pool (35%)"}
                   </div>
                   <div className="text-xl font-bold tabular-nums" style={{ color: AMBER }}>
-                    {fmtUsdt(data?.nodes?.totalDepositUsdt ?? data?.mother?.usdtTotal ?? 0)}
+                    {fmtUsdt(data?.runeLp ?? 0)}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground mt-0.5">
+                    {isZh ? "节点总入金 " : "of "}{fmtUsdt(data?.totalDepositUsdt ?? 0)}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-[9px] text-muted-foreground">{isZh ? "注册会员" : "Members"}</div>
                   <div className="text-base font-bold" style={{ color: AMBER }}>
-                    {data?.nodes?.totalMembers ?? data?.mother?.nodeCount ?? 0}
+                    {data?.totalMembers ?? 0}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground mt-0.5">
+                    {data?.totalNodes ?? 0} {isZh ? "节点" : "nodes"}
                   </div>
                 </div>
               </div>
             </div>
-            {/* Node tier breakdown */}
+            {/* Top tier breakdown */}
             <div className="grid grid-cols-2 gap-2">
-              {/* Super node */}
               <div className="rounded-xl px-3 py-2" style={{ background: "rgba(168,85,247,0.07)", border: "1px solid rgba(168,85,247,0.2)" }}>
                 <div className="text-[8.5px] text-purple-400/70 uppercase tracking-wider mb-1">
-                  {isZh ? "超级节点 · $2,500" : "Super Node · $2,500"}
+                  {isZh ? "FOUNDER · $50,000" : "Founder · $50,000"}
                 </div>
                 <div className="text-base font-bold text-purple-300">
-                  {data?.nodes?.superNode?.count ?? 0}
+                  {founderTier?.count ?? 0}
                   <span className="text-[9px] font-normal text-purple-400/60 ml-1">{isZh ? "个" : "nodes"}</span>
                 </div>
                 <div className="text-[9px] text-muted-foreground">
-                  {fmtUsdt(data?.nodes?.superNode?.totalUsdt ?? 0)}
+                  {fmtUsdt(founderTier?.totalUsdt ?? 0)}
                 </div>
               </div>
-              {/* Standard node */}
               <div className="rounded-xl px-3 py-2" style={{ background: `${AMBER}06`, border: `1px solid ${AMBER}20` }}>
                 <div className="text-[8.5px] uppercase tracking-wider mb-1" style={{ color: `${AMBER}80` }}>
-                  {isZh ? "标准节点 · $1,000" : "Std Node · $1,000"}
+                  {isZh ? "SUPER · $10,000" : "Super · $10,000"}
                 </div>
                 <div className="text-base font-bold" style={{ color: AMBER }}>
-                  {data?.nodes?.stdNode?.count ?? 0}
+                  {superTier?.count ?? 0}
                   <span className="text-[9px] font-normal ml-1" style={{ color: `${AMBER}60` }}>{isZh ? "个" : "nodes"}</span>
                 </div>
                 <div className="text-[9px] text-muted-foreground">
-                  {fmtUsdt(data?.nodes?.stdNode?.totalUsdt ?? 0)}
+                  {fmtUsdt(superTier?.totalUsdt ?? 0)}
                 </div>
               </div>
             </div>
@@ -233,7 +220,7 @@ export function VaultLpPool() {
                 {isZh ? "储备余额" : "Reserve Balance"}
               </div>
               <div className="text-xl font-bold tabular-nums" style={{ color: GREEN }}>
-                {fmtUsdt(data?.reservePool?.balance ?? 0)}
+                {fmtUsdt(data?.reserve ?? 0)}
               </div>
               <div className="text-[9px] text-muted-foreground mt-0.5">
                 {isZh ? "总入金 20%" : "20% of deposits"}
@@ -252,32 +239,6 @@ export function VaultLpPool() {
             </div>
           </div>
         )}
-
-        {/* Trading vault pool row */}
-        <div className="flex items-center justify-between rounded-xl px-3 py-2.5"
-          style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.18)" }}>
-          <div className="flex items-center gap-2">
-            <BarChart2 className="h-3.5 w-3.5 text-blue-400" />
-            <div>
-              <div className="text-[10px] font-semibold text-blue-300">
-                {isZh ? "交易金库池资金" : "Trading Vault Pool"}
-              </div>
-              <div className="text-[9px] text-muted-foreground">
-                {isZh ? "AI 量化交易池 · 45%" : "AI Quant Trading Pool · 45%"}
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            {isLoading ? <Skeleton className="h-5 w-16" /> : (
-              <>
-                <div className="text-sm font-bold tabular-nums text-blue-300">
-                  {fmtUsdt(data?.tradingPool?.balance ?? 0)}
-                </div>
-                <div className="text-[9px] text-muted-foreground">USDT</div>
-              </>
-            )}
-          </div>
-        </div>
 
         {/* Bottom note */}
         <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
