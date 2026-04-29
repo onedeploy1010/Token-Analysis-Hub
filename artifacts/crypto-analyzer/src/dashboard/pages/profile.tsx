@@ -84,26 +84,36 @@ export default function ProfilePage() {
     [stats],
   );
 
-  // Node investment + projected daily yield (live data + protocol-defined
-  // tier rates).
-  const { investedUsdt, dailyYieldEstUsdt, primaryTier, primaryNodeId } = useMemo(() => {
-    let invested = 0;
-    let daily = 0;
-    let primary: string | null = null;
-    let primaryId: number | null = null;
-    for (const m of memberships) {
-      const tier = m.nodeType;
-      invested += TIER_PRICE[tier] ?? 0;
-      daily += TIER_DAILY_RATE[tier] ?? 0;
-      if (!primary) { primary = tier; primaryId = TIER_PRICE[tier] ?? null; }
-    }
-    return { investedUsdt: invested, dailyYieldEstUsdt: daily, primaryTier: primary, primaryNodeId: primaryId };
-  }, [memberships]);
-
-  const totalEarnings = directCommissionUsdt; // Cumulative USDT actually received on chain.
+  // Node ownership — `usePersonalStats.ownedNodeId` is the authoritative
+  // source (same indexer GraphQL the OverviewTab reads, so the two pages
+  // never disagree). The Supabase SDK fallback below covers the deposit
+  // timeline chart but isn't used for the count.
   const ownNodeId = stats?.ownedNodeId ?? null;
-  const ownTierLabel = ownNodeId && NODE_ID_TO_TIER[ownNodeId] ? NODE_ID_TO_TIER[ownNodeId] : primaryTier;
+  const ownTierLabel = ownNodeId && NODE_ID_TO_TIER[ownNodeId] ? NODE_ID_TO_TIER[ownNodeId] : null;
   const ownTierColor = ownTierLabel ? TIER_COLOR[ownTierLabel] : "hsl(215 28% 65%)";
+
+  const investedUsdt = ownTierLabel ? (TIER_PRICE[ownTierLabel] ?? 0) : 0;
+  const dailyYieldEstUsdt = ownTierLabel ? (TIER_DAILY_RATE[ownTierLabel] ?? 0) : 0;
+  const nodeCount = ownTierLabel ? 1 : 0; // RUNE = one node per wallet.
+
+  // Projected cumulative node yield since the user joined (for the hero).
+  // We need the first purchase paidAt for the elapsed days; pull from the
+  // Supabase membership row when available, else 0.
+  const nodeYieldProjectionUsdt = useMemo(() => {
+    if (!dailyYieldEstUsdt || !memberships.length) return 0;
+    const earliest = memberships.reduce<string | null>((acc, m) =>
+      !acc || new Date(m.paidAt).getTime() < new Date(acc).getTime() ? m.paidAt : acc,
+      null,
+    );
+    if (!earliest) return 0;
+    const days = Math.max(0, (Date.now() - new Date(earliest).getTime()) / (1000 * 60 * 60 * 24));
+    return dailyYieldEstUsdt * days;
+  }, [dailyYieldEstUsdt, memberships]);
+
+  // 总收益 = direct commission (real) + node projection. The hero shows
+  // the combined number; the breakdown row makes the source of each
+  // component explicit so users can tell what's settled vs projected.
+  const totalEarnings = directCommissionUsdt + nodeYieldProjectionUsdt;
 
   const referralLink = useMemo(() => {
     if (!walletAddr || typeof window === "undefined") return "";
@@ -202,7 +212,7 @@ export default function ProfilePage() {
                   </div>
                 )}
                 <div className="text-[10px] text-muted-foreground/60 mt-1.5">
-                  {t("profile.earningsSource", "On-chain commission paid to your wallet · USDT")}
+                  {t("profile.earningsSource", "Direct commission (on-chain) + node yield (projection) · USDT")}
                 </div>
               </div>
               <div className="h-11 w-11 rounded-2xl flex items-center justify-center bg-primary/15 ring-1 ring-primary/30 shrink-0">
@@ -236,17 +246,17 @@ export default function ProfilePage() {
                   </div>
                   <div className="text-[9px] text-muted-foreground/70">USDT · gross</div>
                 </div>
-                <div className="rounded-xl px-2.5 py-2.5 ring-1 ring-border/40 bg-muted/15">
+                <div className="rounded-xl px-2.5 py-2.5 ring-1 ring-amber-500/25 bg-amber-500/[0.06]">
                   <div className="flex items-center gap-1 mb-1">
                     <Coins className="h-3 w-3 text-amber-400" />
                     <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
-                      {t("profile.nodeYield", "Node Est.")}
+                      {t("profile.nodeYield", "Node")}
                     </span>
                   </div>
-                  <div className="text-[14px] font-bold text-foreground tabular-nums">
-                    {fmtUsdt(dailyYieldEstUsdt)}
+                  <div className="text-[14px] font-bold text-amber-300 tabular-nums">
+                    {fmtUsdt(nodeYieldProjectionUsdt)}
                   </div>
-                  <div className="text-[9px] text-muted-foreground/70">USDT/day · projection</div>
+                  <div className="text-[9px] text-muted-foreground/70">USDT · projection</div>
                 </div>
               </div>
             )}
@@ -262,16 +272,16 @@ export default function ProfilePage() {
                 {t("profile.myNodes", "My Nodes")}
               </span>
             </div>
-            {!isConnected || nodesLoading ? (
+            {!isConnected || statsLoading ? (
               <div className="text-[20px] font-bold text-muted-foreground/40">--</div>
-            ) : memberships.length > 0 ? (
+            ) : nodeCount > 0 ? (
               <>
                 <div className="text-[20px] font-black text-primary tabular-nums">
-                  {memberships.length}
-                  <span className="text-[12px] font-normal ml-1 text-muted-foreground/70">×</span>
+                  {nodeCount}
+                  <span className="text-[12px] font-normal ml-1 text-muted-foreground/70">× {ownTierLabel}</span>
                 </div>
                 <div className="text-[10px] text-muted-foreground/70 mt-0.5">
-                  {fmtUsdt(investedUsdt)} {t("profile.invested", "invested")}
+                  {fmtUsdt(investedUsdt)} {t("profile.invested", "invested")} · +{fmtUsdt(dailyYieldEstUsdt)}/day
                 </div>
               </>
             ) : (

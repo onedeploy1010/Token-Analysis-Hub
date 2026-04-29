@@ -45,7 +45,10 @@ export function DashboardSubTabs<K extends string>({
             key={tab.key}
             onClick={() => onChange(tab.key)}
             className={cn(
-              "min-w-0 inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 transition-all",
+              // `flex w-full` (not inline-flex) so the button fills its
+              // grid cell — `inline-flex` shrinks to content and makes the
+              // active tab visibly off-centre when the label is shorter.
+              "flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 transition-all",
               isActive
                 ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35 text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-card/80",

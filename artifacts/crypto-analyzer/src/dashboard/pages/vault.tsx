@@ -67,7 +67,11 @@ export default function Vault() {
                 onClick={() => setActiveTab(tab.key)}
                 title={t(tab.descKey)}
                 className={cn(
-                  "min-w-0 inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 transition-all",
+                  // `inline-flex` inside a grid cell shrinks to content width,
+                  // so the active tab visibly drifts when its label is shorter
+                  // than its neighbours. `flex w-full` forces the button to
+                  // fill the cell — every tab is now exactly 1/3 wide.
+                  "flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 transition-all",
                   isActive
                     ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-card/80",
