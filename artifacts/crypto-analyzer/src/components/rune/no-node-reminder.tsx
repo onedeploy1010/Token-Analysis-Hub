@@ -30,11 +30,11 @@ export function NoNodeReminder({ open, onClose }: Props) {
               <AlertCircle className="h-4 w-4 text-amber-300" />
             </div>
             <DialogTitle className="text-base font-bold text-white">
-              {tx("mr.noNode.title", "持有节点才能拿返佣")}
+              {tx("mr.noNode.title", "节点持有者方可获得直推返佣")}
             </DialogTitle>
           </div>
           <DialogDescription className="text-xs text-white/70 leading-relaxed">
-            {tx("mr.noNode.desc", "下线买节点 → 按档位返佣 5%-15%。还没有节点，先买一个。")}
+            {tx("mr.noNode.desc", "下线节点购买将按档位（5%-15%）即时返佣至当前钱包。当前账户尚未持有节点。")}
           </DialogDescription>
           <div className="flex gap-2 pt-1">
             <Button
