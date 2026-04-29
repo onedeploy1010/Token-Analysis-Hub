@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { OverviewTab, RewardsTab } from "@/pages/dashboard";
 import { Server, Gift } from "lucide-react";
 import { DashboardSubTabs } from "@dashboard/components/dashboard-sub-tabs";
-import { PageEnter } from "@dashboard/components/page-enter";
+import { PageEnter, SubTabSwitch } from "@dashboard/components/page-enter";
 
 type Sub = "overview" | "rewards";
 
@@ -40,7 +40,9 @@ export default function ProfileNodes() {
         <div className="mb-4">
           <DashboardSubTabs tabs={TABS} active={sub} onChange={setSub} testIdPrefix="tab-nodes" />
         </div>
-        {sub === "overview" ? <OverviewTab address={address} /> : <RewardsTab address={address} />}
+        <SubTabSwitch tabKey={sub}>
+          {sub === "overview" ? <OverviewTab address={address} /> : <RewardsTab address={address} />}
+        </SubTabSwitch>
       </div>
     </PageEnter>
   );

@@ -6,7 +6,7 @@ import { EmberBurnSection } from "@dashboard/components/vault/ember-burn-section
 import { VaultLpPool } from "@dashboard/components/vault/vault-lp-pool";
 import { VaultCharts } from "@dashboard/components/vault/vault-charts";
 import { useTranslation } from "react-i18next";
-import { PageEnter } from "@dashboard/components/page-enter";
+import { PageEnter, SubTabSwitch } from "@dashboard/components/page-enter";
 
 type VaultTab = "pool" | "lock" | "burn";
 
@@ -90,15 +90,17 @@ export default function Vault() {
       </div>
 
       {/* Content */}
-      <div key={activeTab} className="vault-fade pt-4 space-y-4">
-        {activeTab === "pool" && (
-          <div className="space-y-4 pb-4">
-            <VaultLpPool />
-            <VaultCharts />
-          </div>
-        )}
-        {activeTab === "lock" && <RuneLockSection />}
-        {activeTab === "burn" && <EmberBurnSection />}
+      <div className="pt-4 space-y-4">
+        <SubTabSwitch tabKey={activeTab}>
+          {activeTab === "pool" && (
+            <div className="space-y-4 pb-4">
+              <VaultLpPool />
+              <VaultCharts />
+            </div>
+          )}
+          {activeTab === "lock" && <RuneLockSection />}
+          {activeTab === "burn" && <EmberBurnSection />}
+        </SubTabSwitch>
       </div>
     </div>
     </PageEnter>

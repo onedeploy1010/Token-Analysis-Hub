@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
 
 /**
@@ -48,5 +48,26 @@ export function PageEnterItem({ children, className }: { children: ReactNode; cl
     >
       {children}
     </motion.div>
+  );
+}
+
+/**
+ * SubTabSwitch — wrap conditional sub-tab content so swapping panels
+ * fades out → in instead of snapping. The `tabKey` prop must change
+ * with the active tab so AnimatePresence sees a fresh React tree.
+ */
+export function SubTabSwitch({ tabKey, children }: { tabKey: string; children: ReactNode }) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={tabKey}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -469,19 +469,19 @@ export default function ProfilePage() {
           {MENU_ITEMS.map((item, idx) => (
             <button
               key={item.path}
-              className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-all hover:bg-primary/[0.05]"
+              className="group w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-primary/[0.07] active:bg-primary/[0.10]"
               style={{ borderBottom: idx < MENU_ITEMS.length - 1 ? "1px solid hsl(228 22% 28% / 0.4)" : "none" }}
               onClick={() => navigate(item.path)}
               data-testid={`menu-${item.path.split("/").pop()}`}
             >
-              <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-primary/10 ring-1 ring-primary/25">
-                <item.icon className="h-4 w-4 text-primary" />
+              <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-primary/10 ring-1 ring-primary/25 transition-all group-hover:bg-primary/20 group-hover:ring-primary/45 group-hover:shadow-[0_0_14px_-2px_hsl(38_95%_55%/0.45)]">
+                <item.icon className="h-4 w-4 text-primary transition-transform group-hover:scale-110" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold text-foreground">{t(item.labelKey)}</div>
+              <div className="flex-1 min-w-0 transition-transform group-hover:translate-x-0.5">
+                <div className="text-[13px] font-semibold text-foreground group-hover:text-primary transition-colors">{t(item.labelKey)}</div>
                 <div className="text-[10px] text-muted-foreground/80 mt-0.5">{t(item.descKey)}</div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 transition-all group-hover:text-primary group-hover:translate-x-1" />
             </button>
           ))}
         </div>
