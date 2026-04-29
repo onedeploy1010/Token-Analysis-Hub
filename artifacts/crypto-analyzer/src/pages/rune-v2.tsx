@@ -257,14 +257,17 @@ function TechChartCard({
 const STAGE_EN_LABELS = ["① Launch", "② Batch 2", "③ Batch 3", "④ Batch 4", "⑤ Target (Low)", "⑥ Target (High)"];
 
 // ─── Main page ────────────────────────────────────────────────────────────────
-// Three product tracks per the 2026-04-29 user clarification:
-//   • node — buy a node (existing reference tables + the ROI calculator
-//     formerly in the "summary" tab)
-//   • pkg  — USDT → buy RUNE → activate 套餐 (deposit staking).
-//     Daily 0.5-0.9% × bonus → 65% USDT static + 35% buys sub-token.
-//   • dual — USDT → buy RUNE → permanently burn → daily 1.0-1.5%
-//     sub-token → auto-stake → AI dividend + IDO allocations.
-type V2Tab = "node" | "pkg" | "dual";
+// Four product tracks per 2026-04-29 user clarification:
+//   • calc — node ROI calculator
+//   • node — reference tables (airdrop, trading dividend, weights)
+//   • pkg  — USDT → buy RUNE → activate 套餐 (deposit). Daily 0.5-0.9% ×
+//     bonus, 65% USDT direct + 35% auto-buy sub-token. Principal returns.
+//   • dual — USDT → buy RUNE → permanently burn → daily 1.0-1.5% sub
+//     yield → auto-stake → AI monthly dividend + IDO. Tab now labelled
+//     "销毁质押". Principal NOT returnable.
+type V2Tab = "calc" | "node" | "pkg" | "dual";
+
+// (no extra mode types — pkg and dual are each single-mode tabs)
 
 export default function RuneV2() {
   const { t, bi, isEn, isZh } = useBi();
@@ -296,7 +299,7 @@ export default function RuneV2() {
   const [burnPanelOpen, setBurnPanelOpen] = useState(true);  // open by default in Staking tab
 
   // v2: top-level tab — splits the original "all-in-one" page into 4 lenses.
-  const [v2Tab, setV2Tab] = useState<V2Tab>("node");
+  const [v2Tab, setV2Tab]   = useState<V2Tab>("calc");
 
   // Auto-recalc summary tab whenever node/duration/stage changes (250ms debounce).
   // Removes the manual "Calculate" click — KPIs update live as user drags
@@ -1286,9 +1289,10 @@ export default function RuneV2() {
       <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
         <div className="flex gap-0.5 min-w-max relative">
           {[
+            { id: "calc" as const, labelEn: "CALC",       labelCn: "节点收益计算器" },
             { id: "node" as const, labelEn: "NODES",      labelCn: "节点" },
-            { id: "pkg"  as const, labelEn: "STAKE PKG",  labelCn: "质押" },
-            { id: "dual" as const, labelEn: "DUAL CHAIN", labelCn: "双币联动" },
+            { id: "pkg"  as const, labelEn: "STAKE",      labelCn: "质押" },
+            { id: "dual" as const, labelEn: "BURN STAKE", labelCn: "销毁质押" },
           ].map(({ id, labelEn, labelCn }) => {
             const active = v2Tab === id;
             return (
@@ -1542,9 +1546,8 @@ export default function RuneV2() {
 
       {/* ═══ SUMMARY TAB ═══ — original calculator (input form + Total Returns + result charts).
           Was wrapped under Nodes tab; user wants it as a separate "综合" tab summarizing total returns. */}
-      {/* Node ROI calculator — moved from the old "Summary" tab so the Node
-          tab is now self-contained: reference tables above, calculator here. */}
-      {v2Tab === "node" && (<>
+      {/* Node ROI calculator — own tab, first in nav. */}
+      {v2Tab === "calc" && (<>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           CALCULATOR SECTION — 节点收益模拟器
@@ -2232,7 +2235,7 @@ export default function RuneV2() {
       })()}
 
 
-      {/* ═══ STAKING TAB ═══ — single unified chain (re-read 2026-04-28).
+      {/* ═══ DUAL-WHEEL TAB ═══ — single unified chain (re-read 2026-04-28).
           Per `核心机制.md` §壹: 销毁母币 → "永久通缩 + 永久日化 1.0-1.5%"。
           The "永久通缩" framing only holds if yield is in SUB-TOKENS — if it
           were mother, the burn → mint cycle wouldn't be net-deflationary.
