@@ -34,7 +34,7 @@ export function NoNodeReminder({ open, onClose }: Props) {
             </DialogTitle>
           </div>
           <DialogDescription className="text-xs text-white/70 leading-relaxed">
-            {tx("mr.noNode.desc", "下线买节点 → 你按档位返佣 5%-15%。你还没节点，先买一个。")}
+            {tx("mr.noNode.desc", "下线买节点 → 按档位返佣 5%-15%。还没有节点，先买一个。")}
           </DialogDescription>
           <div className="flex gap-2 pt-1">
             <Button

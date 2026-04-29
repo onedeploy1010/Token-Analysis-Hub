@@ -537,7 +537,7 @@ const zhTW: Dict = {
   "mr.dash.team.treeNote": "下級關係由 Community 代理合約的 EventAddReferrer 事件索引而來。",
   "mr.bind.step": "第一步 · 綁定推薦人",
   "mr.noNode.title": "持有節點才能拿返傭",
-  "mr.noNode.desc": "下線買節點 → 你按檔位返傭 5%-15%。你還沒節點，先買一個。",
+  "mr.noNode.desc": "下線買節點 → 按檔位返傭 5%-15%。還沒有節點，先買一個。",
   "mr.noNode.cta": "購買節點",
   "mr.noNode.later": "稍後",
   "mr.bind.title": "連接你的推薦線",
