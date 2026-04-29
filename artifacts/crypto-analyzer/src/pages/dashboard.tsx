@@ -298,8 +298,6 @@ export default function Dashboard() {
     if (!address) { navigate("/recruit"); return; }
   }, [address, isDemoMode, navigate]);
 
-  if (!isDemoMode && !address) return null;
-
   // Restricted = bound (we got here, so they're connected) but no node yet.
   // Drives the OverviewTab's locked CTA, the Team/Rewards tab gates, and
   // the auto-popping NoNodeReminder dialog below.
@@ -310,6 +308,10 @@ export default function Dashboard() {
   // and immediately closed when `hasPurchased` flips true. `dismissed`
   // resets when address or hasPurchased changes (purchase completion or
   // wallet switch closes the loop without manual dismissal).
+  //
+  // ⚠️  These hooks MUST live above the early return below — moving them
+  // after the `return null` violates the Rules of Hooks and produces
+  // "Rendered fewer hooks than expected" once `address` resolves.
   const [reminderOpen, setReminderOpen]           = useState(false);
   const [reminderDismissed, setReminderDismissed] = useState(false);
   useEffect(() => { setReminderDismissed(false); }, [address, hasPurchased]);
@@ -319,6 +321,9 @@ export default function Dashboard() {
     if (reminderDismissed) return;
     setReminderOpen(true);
   }, [restricted, purchaseLoading, statsLoading, reminderDismissed]);
+
+  // Early return AFTER all hooks have been registered.
+  if (!isDemoMode && !address) return null;
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
