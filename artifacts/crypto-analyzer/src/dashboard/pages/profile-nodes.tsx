@@ -9,8 +9,12 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
-  getNodeOverview, getNodeMemberships, validateAuthCode,
-} from "@dashboard/lib/api";
+  validateAuthCodeRune as validateAuthCode,
+  useNodeOverviewRune,
+  useNodeMembershipsRune,
+  useGlobalStatsRune,
+  useTeamStatsRune,
+} from "@dashboard/lib/data-rune";
 import type { NodeOverview, NodeMembership } from "@dashboard-shared/types";
 import { NODE_PLANS } from "@dashboard/lib/data";
 import { useTranslation } from "react-i18next";
@@ -915,32 +919,14 @@ export default function ProfileNodesPage() {
     }
   };
 
-  const { data: overview } = useQuery<NodeOverview>({
-    queryKey: ["node-overview", walletAddr],
-    queryFn: () => getNodeOverview(walletAddr),
-    enabled: isConnected,
-  });
-
-  const { data: allMemberships = [] } = useQuery<NodeMembership[]>({
-    queryKey: ["node-memberships", walletAddr],
-    queryFn: () => getNodeMemberships(walletAddr),
-    enabled: isConnected,
-  });
-
-  const { data: globalStats } = useQuery<{ totalMembers: number; activeMembers: number; totalNodes: number }>({
-    queryKey: ["supabase-global-stats"],
-    queryFn: async () => { const r = await fetch("/api/supabase/global-stats"); return r.json(); },
-  });
-
-  const { data: sbTeam } = useQuery<{
-    directCount: number; teamSize: number; directUsdt: number; teamUsdt: number;
-    ownNode: { nodeTier: string } | null;
-    referrals: Array<{ nodeType?: string }>;
-  }>({
-    queryKey: ["supabase-team", walletAddr],
-    queryFn: async () => { const r = await fetch(`/api/supabase/team/${walletAddr}`); return r.json(); },
-    enabled: isConnected,
-  });
+  // Data sources are RUNE on-chain event tables (rune_purchases /
+  // rune_referrers / rune_members) via Supabase SDK. The data-rune adapter
+  // shapes them into the NodeOverview / NodeMembership types this page
+  // already consumes, so the rest of the rendering stays unchanged.
+  const { data: overview } = useNodeOverviewRune();
+  const { data: allMemberships = [] } = useNodeMembershipsRune();
+  const { data: globalStats } = useGlobalStatsRune();
+  const { data: sbTeam } = useTeamStatsRune();
 
   const nodes = overview?.nodes ?? [];
   const activeNodes = nodes.filter((n) => n.status === "ACTIVE" || n.status === "PENDING_MILESTONES");
