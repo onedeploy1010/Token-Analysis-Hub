@@ -30,8 +30,11 @@ export default function Vault() {
   const [activeTab, setActiveTab] = useState<VaultTab>("pool");
 
   return (
-    <div className="relative pb-24 lg:pb-8">
-      {/* Soft ambient glows — mainnet visual signature */}
+    <div className="relative overflow-hidden pb-24 lg:pb-8">
+      {/* Soft ambient glows — `overflow-hidden` on the wrapper clips them
+          inside the viewport. Without it, the 28rem/24rem circles would
+          push the page width past 360px on phones, creating a horizontal
+          scrollbar that visually drifts the tab strip off-centre. */}
       <div className="pointer-events-none absolute -top-20 left-[10%] h-[28rem] w-[28rem] rounded-full bg-amber-500/[0.04] blur-[120px]" />
       <div className="pointer-events-none absolute top-[40%] right-[8%] h-[24rem] w-[24rem] rounded-full bg-amber-500/[0.025] blur-[100px]" />
 

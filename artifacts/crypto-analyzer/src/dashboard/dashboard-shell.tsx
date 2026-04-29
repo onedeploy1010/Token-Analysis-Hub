@@ -187,7 +187,7 @@ export default function DashboardShell() {
         <ShellHeader />
         <div className="flex">
           <DesktopSidebar />
-          <main className="flex-1 mx-auto max-w-lg lg:max-w-4xl w-full pb-20 lg:pb-8">
+          <main className="flex-1 mx-auto max-w-lg lg:max-w-4xl w-full overflow-x-hidden pb-20 lg:pb-8">
             <DashboardRoutes />
           </main>
         </div>
