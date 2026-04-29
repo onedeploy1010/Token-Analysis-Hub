@@ -1709,7 +1709,7 @@ function BenefitCell({
   );
 }
 
-function OverviewTab({ address, restricted = false }: { address: string; restricted?: boolean }) {
+export function OverviewTab({ address, restricted = false }: { address: string; restricted?: boolean }) {
   const { t } = useLanguage();
   const { referrer, isBound, isRoot } = useReferrerOf(address);
   const { nodeId } = useUserPurchase(address);
@@ -1873,7 +1873,7 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
    jump back up. The root (you) is always the first segment, even when
    you've descended many levels, so it's trivial to reset.
 ──────────────────────────────────────────────────────────────────────────── */
-function TeamTab({ address }: { address: string }) {
+export function TeamTab({ address }: { address: string }) {
   const { t } = useLanguage();
   // The referral chain: path[0] is always the connected wallet (root),
   // path[path.length-1] is the wallet currently being inspected. Drilling
@@ -2089,7 +2089,7 @@ function TeamRow({ row, onDrill }: { row: ReferrerRow; onDrill: () => void }) {
 /* ─────────────────────────────────────────────────────────────────────────
    Rewards tab — per-payout detail of direct-commission USDT earned
 ──────────────────────────────────────────────────────────────────────────── */
-function RewardsTab({ address }: { address: string }) {
+export function RewardsTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { data: stats } = usePersonalStats(address);
   const { data: rewards, isLoading } = useRewards(address);
