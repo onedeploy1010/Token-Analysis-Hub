@@ -1,6 +1,7 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThirdwebProvider } from "thirdweb/react";
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
@@ -20,6 +21,11 @@ import Dashboard from "@/pages/dashboard";
 import Tutorial from "@/pages/tutorial";
 import NotFound from "@/pages/not-found";
 
+// TAICLAW dashboard mounts at /app/* with its own shell (sidebar + bottom-nav).
+// Lazy-loaded so a broken TAICLAW page doesn't bloat or break the marketing
+// bundle on initial load.
+const DashboardShell = lazy(() => import("@dashboard/dashboard-shell"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -30,6 +36,19 @@ const queryClient = new QueryClient({
 });
 
 function Router() {
+  const [location] = useLocation();
+
+  // TAICLAW dashboard owns its own shell (header + sidebar + bottom-nav) and
+  // should not be wrapped in mainnet's AppLayout — that would double-stack
+  // headers and the sidebar's `top-[53px]` offset would break.
+  if (location === "/app" || location.startsWith("/app/")) {
+    return (
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading…</div>}>
+        <DashboardShell />
+      </Suspense>
+    );
+  }
+
   return (
     <AppLayout>
       <Switch>

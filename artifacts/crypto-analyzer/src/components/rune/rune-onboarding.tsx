@@ -88,7 +88,7 @@ export function RuneOnboarding() {
     // hard-gate the dashboard on a purchase; the restricted view explains
     // that referral commission requires owning a node.
     if (isBound) {
-      navigate("/dashboard");
+      navigate("/app");
       return;
     }
   }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate]);
@@ -126,7 +126,7 @@ export function RuneOnboarding() {
           setBuyOpen(false);
           setPreSelectedNodeId(undefined);
           await refetchPurchase();
-          navigate("/dashboard");
+          navigate("/app");
         }}
       />
     </>
