@@ -2121,13 +2121,16 @@ export default function Rune() {
         const dailyYieldU = pkgUsdt * (effDailyPct / 100);                  // USDT/day total yield
         const totalYieldU = dailyYieldU * pkgDays;                          // total over period
         const staticUsdt  = totalYieldU * 0.65;                             // 65% USDT direct
-        const dynamicUsdt = totalYieldU * 0.35;                             // 35% auto-buy sub at LAUNCH price
-        // Sub purchased at $0.038 launch but valued at the stage matching
-        // the duration. So 30d-180d holds for short windows at growing
-        // prices; 360d/540d benefit most from price appreciation.
-        const subTokens   = dynamicUsdt / PKG_SUB_LAUNCH_PRICE;
-        const subValue    = subTokens * subPriceAtEnd;                      // value at end-of-package price
-        const totalValue  = staticUsdt + subValue;
+        // Per user 2026-04-29: the 35% dynamic portion isn't fully spent
+        // on sub-token. It's split LP-style — half buys sub, half stays
+        // USDT, both injected into the sub LP pool together.
+        const dynamicTotal    = totalYieldU * 0.35;
+        const dynamicSubBuy   = dynamicTotal * 0.5;                         // 17.5% buys sub
+        const dynamicUsdtSide = dynamicTotal * 0.5;                         // 17.5% USDT into pool
+        const subTokens       = dynamicSubBuy / PKG_SUB_LAUNCH_PRICE;       // sub bought at launch
+        const subValue        = subTokens * subPriceAtEnd;                  // valued at end-of-package stage
+        const dynamicValue    = subValue + dynamicUsdtSide;                 // user's claim on the 35% portion
+        const totalValue      = staticUsdt + dynamicValue;
         const roi         = pkgUsdt > 0 ? (totalValue / pkgUsdt) * 100 : 0;
         const roiX        = pkgUsdt > 0 ?  totalValue / pkgUsdt        : 0;
         return (
@@ -2218,13 +2221,20 @@ export default function Rune() {
                   </p>
                 </div>
                 <div className="p-4 rounded-xl border border-border/40 bg-card/60">
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{isEn ? "Dynamic Sub-Token (35%)" : "动态子币（35%）"}</p>
-                  <p className="num text-lg text-foreground">${fmt(subValue, 2)}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {fmt(subTokens, 0)} {isEn ? "sub-tokens" : "枚子币"} × ${PKG_SUB_LAUNCH_PRICE}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-                    {isEn ? "Auto-purchased into pool" : "自动注入底池"}
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{isEn ? "Dynamic LP Inject (35%)" : "动态注入底池（35%）"}</p>
+                  <p className="num text-lg text-foreground">${fmt(dynamicValue, 2)}</p>
+                  <div className="text-[11px] text-muted-foreground mt-0.5 space-y-0.5">
+                    <p>
+                      <span className="text-orange-300/80">17.5% {isEn ? "buys sub" : "买子币"}：</span>
+                      {fmt(subTokens, 0)} {isEn ? "枚 × " : "枚 × "}${stageData?.subPrice ?? PKG_SUB_LAUNCH_PRICE} = ${fmt(subValue, 2)}
+                    </p>
+                    <p>
+                      <span className="text-emerald-300/80">17.5% {isEn ? "USDT side" : "USDT 边"}：</span>
+                      ${fmt(dynamicUsdtSide, 2)}
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/70 mt-1">
+                    {isEn ? "Half buys sub at launch, half USDT — both injected into the LP together" : "一半买子币 + 一半 USDT，一起入底池"}
                   </p>
                 </div>
               </div>
