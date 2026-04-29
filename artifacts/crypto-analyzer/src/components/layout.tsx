@@ -191,7 +191,7 @@ function Navbar() {
   // Dashboard only appears in the nav when the wallet is connected — avoids
   // dead-ending unauthenticated users on the protected page.
   const visibleNavItems = activeAccount
-    ? [...NAV_ITEMS, { href: "/dashboard", label: "DASHBOARD", key: "dashboard", icon: LayoutDashboard }]
+    ? [...NAV_ITEMS, { href: "/app/profile", label: "DASHBOARD", key: "dashboard", icon: LayoutDashboard }]
     : NAV_ITEMS;
 
   /** Dashboard is now SOFT-gated (2026-04-29 revert): bound-but-unpurchased
@@ -269,7 +269,13 @@ function Navbar() {
           <nav className="hidden md:flex items-stretch h-[72px] gap-0 ml-auto">
             {visibleNavItems.map((item) => {
               const isExternal = (item as NavItem).external;
-              const isActive = !isExternal && (location === item.href || (item.href !== "/" && location.startsWith(item.href)));
+              // Dashboard nav points at /app/profile but covers the whole
+              // /app/* surface (vault, strategy, profile sub-pages, etc.).
+              const isActive = !isExternal && (
+                item.key === "dashboard"
+                  ? location === "/app" || location.startsWith("/app/")
+                  : (location === item.href || (item.href !== "/" && location.startsWith(item.href)))
+              );
               const className = cn(
                 "relative flex flex-col items-center justify-center px-4 lg:px-5 transition-all duration-200 group border-b-2",
                 isActive
@@ -391,7 +397,13 @@ function Navbar() {
                 {visibleNavItems.map((item, i) => {
                   const Icon = item.icon;
                   const isExternal = (item as NavItem).external;
-                  const isActive = !isExternal && (location === item.href || (item.href !== "/" && location.startsWith(item.href)));
+                  // Dashboard nav points at /app/profile but covers the whole
+              // /app/* surface (vault, strategy, profile sub-pages, etc.).
+              const isActive = !isExternal && (
+                item.key === "dashboard"
+                  ? location === "/app" || location.startsWith("/app/")
+                  : (location === item.href || (item.href !== "/" && location.startsWith(item.href)))
+              );
                   const linkClass = cn(
                     "group flex items-center gap-5 py-5 border-b transition-all",
                     isActive ? "border-primary/30" : "border-border/20 hover:border-border/40"
