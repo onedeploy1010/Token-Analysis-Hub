@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CountUp from "react-countup";
 import {
@@ -257,6 +257,18 @@ function TechChartCard({
 const STAGE_EN_LABELS = ["① Launch", "② Batch 2", "③ Batch 3", "④ Batch 4", "⑤ Target (Low)", "⑥ Target (High)"];
 
 // ─── Main page ────────────────────────────────────────────────────────────────
+// Four product tracks per 2026-04-29 user clarification:
+//   • calc — node ROI calculator
+//   • node — reference tables (airdrop, trading dividend, weights)
+//   • pkg  — USDT → buy RUNE → activate 套餐 (deposit). Daily 0.5-0.9% ×
+//     bonus, 65% USDT direct + 35% auto-buy sub-token. Principal returns.
+//   • dual — USDT → buy RUNE → permanently burn → daily 1.0-1.5% sub
+//     yield → auto-stake → AI monthly dividend + IDO. Tab now labelled
+//     "销毁质押". Principal NOT returnable.
+type V2Tab = "calc" | "node" | "pkg" | "dual";
+
+// (no extra mode types — pkg and dual are each single-mode tabs)
+
 export default function Rune() {
   const { t, bi, isEn, isZh } = useBi();
   const { data: overview, isLoading } = useGetRuneOverview();
@@ -284,38 +296,104 @@ export default function Rune() {
   const burnCalcMutation = useCalculateRuneBurnStake();
   const [burnTokens, setBurnTokens] = useState(1000);
   const [burnDays, setBurnDays] = useState(360);
-  const [burnPanelOpen, setBurnPanelOpen] = useState(false);
+  const [burnPanelOpen, setBurnPanelOpen] = useState(true);  // open by default in Staking tab
+
+  // v2: top-level tab — splits the original "all-in-one" page into 4 lenses.
+  const [v2Tab, setV2Tab]   = useState<V2Tab>("calc");
+
+  // Auto-recalc summary tab whenever node/duration/stage changes (250ms debounce).
+  // Removes the manual "Calculate" click — KPIs update live as user drags
+  // sliders / picks stages. seats is hardcoded to 1 (single-seat purchase).
+  useEffect(() => {
+    if (!nodeLevel) return;
+    const t = setTimeout(() => {
+      calcMutation.mutate({ data: { nodeLevel, seats: 1, durationDays, priceStageIndex } });
+    }, 250);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeLevel, durationDays, priceStageIndex]);
+
+  // Trading-dividend inputs — replaces my made-up turnover/AI-share knobs
+  // with the formula from 节点招募计划.md §权益3:
+  //   • 母币买入滑点 2%  / 子币买入滑点 2%
+  //   • 母币卖出盈利税 5% / 子币卖出盈利税 3%
+  //   • 母币每日烧 0.2% × 1% 给节点池 / 子币 0.1% × 2% 给节点池
+  // Doc doesn't say buy:sell ratio, so we assume 50/50 (slippage taxes
+  // only the buy half; profit tax only the sell half).
+  const [motherDailyVolume, setMotherDailyVolume] = useState(1_000_000);  // USDT / day
+  const [subDailyVolume,    setSubDailyVolume]    = useState(500_000);    // USDT / day
+  const [avgSellProfitPct,  setAvgSellProfitPct]  = useState(20);          // % — sell-side profit ratio
+
+  // ── Dynamic mother-token price simulation (replaces doc's static 80-120×) ──
+  //   Day 0: LP = 280万 USDT × 1亿 RUNE (launch price $0.028)
+  //   TLP USDT side ramps linearly to 3500万 by day 180 (节点招募 §权益2 cap),
+  //     then plateaus.
+  //   LP RUNE drains daily from (a) protocol auto-burn 0.2% (b) user
+  //     burn-stake (configurable monthly %).
+  //   price(d) = LP_USDT(d) / LP_RUNE(d)
+  // Activity-driven simulation. Two ground-truth inputs:
+  //   • monthlyActiveUsers — # users opening a 套餐 each month
+  //   • avgPackageUsdt     — avg USDT per package
+  // From these we derive everything:
+  //   1. dailyInflowUsdt  = users × pkg / 30  (TLP USDT growth)
+  //   2. dailyAmmDrain    = swap_out via constant-product AMM math
+  //                         (when a user buys mother to burn-stake, USDT
+  //                         enters LP and RUNE leaves LP — that's the
+  //                         "burn rate" component, no longer a free knob)
+  //   3. dailyProtocolBurn = LP_RUNE × 0.2%/day (protocol auto-burn)
+  // Stage milestones (TLP 280→700→1750→3500万) emerge from these — they're
+  // not pinned to specific days anymore. Heavier user activity → faster
+  // milestones AND thinner LP RUNE at each milestone (price climbs faster).
+  const [monthlyActiveUsers, setMonthlyActiveUsers] = useState<number>(1500);   // # active burn-stakers / mo
+  const [avgPackageUsdt,     setAvgPackageUsdt]     = useState<number>(3600);   // USDT / package, mid-tier default
+  const TARGET_TLP_WAN = 3500;
+  const LAUNCH_TLP_WAN = 280;
+  const LAUNCH_LP_RUNE = 1e8;
+  const DAILY_PROTOCOL_BURN = 0.002;
+  const TOTAL_NODE_WEIGHT = 2880;
+  // Reference math: 1500 users × $3600 / mo = 540万 USDT/mo ≈ 18万/day,
+  // which reaches the §权益2 cap (TLP 3500万) in ~180 days. Slow scenario
+  // 300 users × $1200 → 36万/mo → ~16 months; aggressive 5000 × $5000 →
+  // 2500万/mo → ~38 days.
+  const SIM_HORIZON_DAYS = 540;
+
+  // ── 质押 (pkg) tab — USDT 套餐 calculator ───────────────────────────────
+  // User deposits USDT; protocol auto-buys RUNE and activates 套餐.
+  // Daily yield 0.5-0.9% × duration bonus (per 模型制度.md §叁):
+  //   30d   0.3-0.5% / no bonus
+  //   90d   0.5-0.7% / no bonus
+  //   180d  0.5-0.9% / +10%
+  //   360d  0.5-0.9% / +20%
+  //   540d  0.5-0.9% / +30%
+  // Yield split: 65% USDT直发 (静态) + 35% 自动买子币 (动态).
+  // Sub-token valued at launch price $0.038 per user's choice (no dynamic
+  // sub-side model yet).
+  const [pkgUsdt, setPkgUsdt] = useState(1000);
+  const [pkgDays, setPkgDays] = useState<30 | 90 | 180 | 360 | 540>(540);
+  const [pkgRatePct, setPkgRatePct] = useState(0.7); // base daily rate, slider midpoint
+  const PKG_SUB_LAUNCH_PRICE = 0.038;
+
+  // ── 双币联动 (dual) tab — burn-stake mother → sub-token → AI + IDO ──
+  // Client-side calc, no backend.
+  const [stakeUsdt,        setStakeUsdt]        = useState(1000);    // USDT principal
+  const [stakeDays,        setStakeDays]        = useState(360);     // duration
+  const [stakeStage,       setStakeStage]       = useState(3);       // price stage (Stage 4 default)
+  const [stakeDailyPct,    setStakeDailyPct]    = useState(0.7);     // 套餐 daily, 0.3-0.9 + bonus
+  const [stakeBonusPct,    setStakeBonusPct]    = useState(20);      // long-lock bonus
+  const [aiPoolMonthly,    setAiPoolMonthly]    = useState(1_000_000);  // 100万U total monthly AI pool
+  const [globalSubStaked,  setGlobalSubStaked]  = useState(100_000);    // assumed total sub-stake
+  const [idosPerMonth,     setIdosPerMonth]     = useState(1.5);
+  const [idoAvgMultiplier, setIdoAvgMultiplier] = useState(50);
+  const [idoAllocFactor,   setIdoAllocFactor]   = useState(0.003);   // your sub-stake × this = USDT allocation per IDO. Calibrated against doc PART V: 6.27M IDO gain @ 540d/10000U → ~$4,738/IDO ÷ 1.44M avg sub-stake ≈ 0.0033.
 
   const selectedNode         = overview?.nodes?.find(n => n.level === nodeLevel);
   const selectedStagePreview = overview?.priceStages?.[priceStageIndex];
 
   // ── Derived chart data ────────────────────────────────────────────────────
-  const priceStageChartData = useMemo(() =>
-    (overview?.priceStages ?? []).map((s, i) => ({
-      label: stageLabel(s, i),
-      mother: s.motherPrice,
-      sub:    s.subPrice,
-      mult:   s.multiplier,
-    })), [overview, isEn]);
+  // Placeholder — re-declared below after dynamicMotherPriceByStage so
+  // the chart can pull dynamic mother prices and update with the slider.
 
-  const nodeCompareData = useMemo(() => {
-    const stages = overview?.priceStages ?? [];
-    const nodes  = overview?.nodes       ?? [];
-    return stages.map((stage, i) => {
-      const row: Record<string, string | number> = { label: stageLabel(stage, i) };
-      nodes.forEach(n => {
-        const motherVal   = n.motherTokensPerSeat * stage.motherPrice;
-        // The airdrop is mother-token per the 2026 spec (§六 "节点母TOKEN
-        // 空投 · 10,000,000 枚母TOKEN"), so it prices off motherPrice —
-        // using subPrice here was overstating airdrop value ~35%.
-        const airdropVal  = n.airdropPerSeat      * stage.motherPrice;
-        const usdtVal     = n.dailyUsdt * 180;
-        const total       = motherVal + airdropVal + usdtVal;
-        row[n.level]      = Math.round(total);
-      });
-      return row;
-    });
-  }, [overview, isEn]);
+  // Placeholder — declared again below after dynamicMotherPriceByStage.
 
   const monthSuffix = isEn ? "mo" : t("mr.rune.input.months");
   const deflationData = useMemo(() => {
@@ -329,6 +407,154 @@ export default function Rune() {
     }));
   }, [overview, monthSuffix]);
 
+  // Day-stepped AMM simulation. No closed-form: each day we apply
+  //   1. user buy: USDT in, RUNE out via constant-product math
+  //   2. protocol auto-burn: 0.2% of remaining LP RUNE
+  // until the TLP cap (3500万) is reached, after which buy-stake stops
+  // generating airdrop releases (assumption) so inflow halts; only the
+  // protocol auto-burn keeps grinding LP RUNE down past that point.
+  const fullSimulation = useMemo(() => {
+    const dailyInflowUsdt = (monthlyActiveUsers * avgPackageUsdt) / 30;
+    const TARGET_TLP_USDT = TARGET_TLP_WAN * 10000;
+    let tlpUsdt = LAUNCH_TLP_WAN * 10000;
+    let lpRune  = LAUNCH_LP_RUNE;
+    const out: Array<{ day: number; tlpUsdt: number; lpRune: number }> = [];
+    for (let d = 0; d <= SIM_HORIZON_DAYS; d++) {
+      out.push({ day: d, tlpUsdt, lpRune });
+      // Cap inflow to remaining headroom under TARGET cap.
+      const remainingCap = Math.max(0, TARGET_TLP_USDT - tlpUsdt);
+      const actualInflow = Math.min(dailyInflowUsdt, remainingCap);
+      // Constant-product AMM: x·y = k. Add P USDT, RUNE leaving = lpRune·P/(tlpUsdt+P).
+      const swapOut = actualInflow > 0 && tlpUsdt > 0
+        ? (actualInflow * lpRune) / (tlpUsdt + actualInflow)
+        : 0;
+      const burnOut = lpRune * DAILY_PROTOCOL_BURN;
+      tlpUsdt += actualInflow;
+      lpRune  = Math.max(1, lpRune - swapOut - burnOut);
+    }
+    return out;
+  }, [monthlyActiveUsers, avgPackageUsdt]);
+
+  // Sample every 10 days for chart density that's readable on mobile.
+  const priceSimulation = useMemo(() =>
+    fullSimulation
+      .filter((_, i) => i % 10 === 0)
+      .map(s => ({
+        day:   s.day,
+        tlp:   s.tlpUsdt / 10000,                // 万 USDT
+        lpRune: Math.round(s.lpRune),
+        price: s.lpRune > 0 ? Math.round((s.tlpUsdt / s.lpRune) * 1e6) / 1e6 : 0,
+      })),
+    [fullSimulation]);
+
+  /** Return the day TLP first reaches/exceeds the target. SIM_HORIZON_DAYS if not. */
+  const dayWhenTlpReaches = (targetWan: number): number => {
+    const target = targetWan * 10000;
+    const found  = fullSimulation.find(s => s.tlpUsdt >= target);
+    return found ? found.day : SIM_HORIZON_DAYS;
+  };
+
+  /** LP RUNE on a specific simulation day. */
+  const lpRuneAt = (d: number): number =>
+    fullSimulation[Math.min(d, SIM_HORIZON_DAYS)]?.lpRune ?? LAUNCH_LP_RUNE;
+
+  /** TLP USDT (in 万) on a specific simulation day. */
+  const tlpAt = (d: number): number =>
+    (fullSimulation[Math.min(d, SIM_HORIZON_DAYS)]?.tlpUsdt ?? 0) / 10000;
+
+  // Milestones — when each TLP target is reached, plus state at that day.
+  const priceMilestones = useMemo(() => {
+    return [
+      { tlpTarget: 700,  label: "TLP 700万"   },
+      { tlpTarget: 1750, label: "TLP 1750万"  },
+      { tlpTarget: 3500, label: "TLP 3500万"  },
+    ].map(({ tlpTarget, label }) => {
+      const day    = dayWhenTlpReaches(tlpTarget);
+      const lpRune = lpRuneAt(day);
+      const tlp    = tlpAt(day);
+      const price  = lpRune > 0 ? (tlp * 10000) / lpRune : 0;
+      return { day, label, data: { tlp, lpRune: Math.round(lpRune), price } };
+    });
+  }, [fullSimulation]);
+
+  // Dynamic mother-token target price per stage (six stages from the API).
+  //   0: launch   — day 0
+  //   1: TLP 700万  — day from sim
+  //   2: TLP 1750万 — day from sim
+  //   3: TLP 3500万 — day from sim
+  //   4: 18-month post-cap extrapolation (TLP plateau, auto-burn ongoing)
+  //   5: 24-month post-cap extrapolation
+  const dynamicMotherPriceByStage = useMemo(() => {
+    const stageTlp: Record<number, number> = {
+      0: LAUNCH_TLP_WAN,
+      1: 700,
+      2: 1750,
+      3: TARGET_TLP_WAN,
+    };
+    const out: Record<number, number> = {};
+    for (const [idx, tlp] of Object.entries(stageTlp)) {
+      const d  = dayWhenTlpReaches(tlp);
+      const lp = lpRuneAt(d);
+      const t  = tlpAt(d);
+      out[Number(idx)] = lp > 0 ? (t * 10000) / lp : 0;
+    }
+    // Post-cap days — sim only runs to SIM_HORIZON_DAYS=540, so for stage
+    // 5 (720d) extrapolate from the final state via auto-burn only.
+    const finalState = fullSimulation[fullSimulation.length - 1];
+    if (finalState) {
+      for (const [idx, day] of [[4, 540], [5, 720]] as const) {
+        const extraDays = Math.max(0, day - finalState.day);
+        const lpRune = finalState.lpRune * Math.pow(1 - DAILY_PROTOCOL_BURN, extraDays);
+        out[idx] = lpRune > 0 ? finalState.tlpUsdt / lpRune : 0;
+      }
+    }
+    return out;
+  }, [fullSimulation]);
+
+  /** Returns the dynamic price for a stage, falling back to the API
+   *  static motherPrice if the stage index isn't in the dynamic map. */
+  const motherPriceForStage = (idx: number, fallback: number): number =>
+    dynamicMotherPriceByStage[idx] ?? fallback;
+
+  /** Format a price with sensible decimals (more for cents, fewer for $$). */
+  const fmtPrice = (p: number): string =>
+    p < 0.01 ? p.toFixed(4) : p < 1 ? p.toFixed(3) : p.toFixed(2);
+
+  // Node comparison data — total returns per tier across all 6 stages,
+  // priced via dynamic mother price so it reacts to both sliders.
+  const nodeCompareData = useMemo(() => {
+    const stages = overview?.priceStages ?? [];
+    const nodes  = overview?.nodes       ?? [];
+    return stages.map((stage, i) => {
+      const dynPrice = motherPriceForStage(i, stage.motherPrice);
+      const row: Record<string, string | number> = { label: stageLabel(stage, i) };
+      nodes.forEach(n => {
+        const motherVal  = n.motherTokensPerSeat * dynPrice;
+        // Airdrop is mother-token (§六), so it prices off motherPrice too.
+        const airdropVal = n.airdropPerSeat      * dynPrice;
+        const usdtVal    = n.dailyUsdt * 180;
+        row[n.level]     = Math.round(motherVal + airdropVal + usdtVal);
+      });
+      return row;
+    });
+  }, [overview, isEn, dynamicMotherPriceByStage]);
+
+  // Six-stage trend chart data — uses dynamic mother prices so the curve
+  // reacts to the burn-stake slider above. Sub-token retains static doc
+  // targets (no dynamic model for sub-token yet).
+  const priceStageChartData = useMemo(() => {
+    const launchPrice = overview?.motherToken?.launchPrice ?? 0.028;
+    return (overview?.priceStages ?? []).map((s, i) => {
+      const dynMother = motherPriceForStage(i, s.motherPrice);
+      return {
+        label:  stageLabel(s, i),
+        mother: Math.round(dynMother * 1e4) / 1e4,
+        sub:    s.subPrice,
+        mult:   launchPrice > 0 ? Math.round((dynMother / launchPrice) * 100) / 100 : s.multiplier,
+      };
+    });
+  }, [overview, isEn, dynamicMotherPriceByStage]);
+
   const fundAllocData = useMemo(() => {
     const f = overview?.fundraising;
     if (!f) return [];
@@ -341,11 +567,44 @@ export default function Rune() {
     ];
   }, [overview, isZh]);
 
-  const resultPieData = calcMutation.data ? [
-    { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: calcMutation.data.motherTokenValue  },
-    { name: isEn ? "Mother Airdrop"     : t("mr.rune.kpi.airdropValue"), value: calcMutation.data.airdropTokenValue },
-    { name: isEn ? "Sub-Token (35% dyn)" : "子币 (动态35%)",            value: calcMutation.data.subTokenValue ?? 0 },
-    { name: isEn ? "USDT Income (65% static)" : t("mr.rune.kpi.usdtIncome"), value: calcMutation.data.totalUsdtIncome },
+  // Re-price the calculator results using the dynamic mother price
+  // (drives both sliders). Backend uses static priceStages.motherPrice;
+  // we scale mother + airdrop by dynamic/static ratio. USDT income and
+  // sub-token value are unaffected (not mother-priced).
+  const dynamicCalc = useMemo(() => {
+    if (!calcMutation.data) return null;
+    const staticPrice  = overview?.priceStages?.[priceStageIndex]?.motherPrice ?? 0;
+    const dynamicPrice = motherPriceForStage(priceStageIndex, staticPrice);
+    const ratio = staticPrice > 0 ? dynamicPrice / staticPrice : 1;
+    const d = calcMutation.data;
+    const motherTokenValue  = d.motherTokenValue  * ratio;
+    const airdropTokenValue = d.airdropTokenValue * ratio;
+    const usdt              = d.totalUsdtIncome;
+    const sub               = d.subTokenValue ?? 0;
+    const totalAssets       = motherTokenValue + airdropTokenValue + usdt + sub;
+    const investment        = d.investment;
+    const roi               = investment > 0 ? (totalAssets / investment) * 100 : 0;
+    const roiMultiplier     = investment > 0 ? totalAssets / investment : 0;
+    return {
+      ...d,
+      motherTokenValue,
+      airdropTokenValue,
+      totalAssets,
+      totalAssetsLow:  (d.totalAssetsLow  ?? 0) * ratio,
+      totalAssetsHigh: (d.totalAssetsHigh ?? 0) * ratio,
+      roi,
+      roiMultiplier,
+      ratio,
+      dynamicPrice,
+      staticPrice,
+    };
+  }, [calcMutation.data, priceStageIndex, dynamicMotherPriceByStage, overview]);
+
+  const resultPieData = dynamicCalc ? [
+    { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: dynamicCalc.motherTokenValue  },
+    { name: isEn ? "Mother Airdrop"     : t("mr.rune.kpi.airdropValue"), value: dynamicCalc.airdropTokenValue },
+    { name: isEn ? "Sub-Token (35% dyn)" : "子币 (动态35%)",            value: dynamicCalc.subTokenValue ?? 0 },
+    { name: isEn ? "USDT Income (65% static)" : t("mr.rune.kpi.usdtIncome"), value: dynamicCalc.totalUsdtIncome },
   ] : [];
 
   // mother (gold) / mother-airdrop (gold variant) / sub-token (orange) / USDT (green-blue)
@@ -434,6 +693,9 @@ export default function Rune() {
           </div>
         </div>
       </motion.div>
+
+      {/* ═══ SHARED — protocol-level data dashboards (always visible above tabs).
+          Token info / 6-stage price curve / fund allocation pie / sub-token deflation. */}
 
       {/* ── Token Info — 3D raised buttons ── */}
       {isLoading ? (
@@ -634,17 +896,34 @@ export default function Rune() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
                     <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                    {/* Dual Y axes: mother (~$0.03–$3) and sub (~$0.04–$450)
+                        differ by ~100×, so a single linear axis crushes the
+                        mother line to a flat baseline. Splitting them lets
+                        each token render on its own scale. */}
                     <YAxis
-                      tick={{ fill: C.muted, fontSize: 10 }}
+                      yAxisId="mother"
+                      orientation="left"
+                      tick={{ fill: C.mother, fontSize: 10 }}
                       axisLine={false} tickLine={false}
                       scale={trendScale}
                       domain={trendScale === "log" ? [0.02, "auto"] : [0, "auto"]}
                       allowDataOverflow
-                      tickFormatter={v => v >= 1 ? `$${v}` : `$${(+v).toFixed(2)}`}
+                      tickFormatter={v => v >= 1 ? `$${(+v).toFixed(1)}` : `$${(+v).toFixed(2)}`}
+                    />
+                    <YAxis
+                      yAxisId="sub"
+                      orientation="right"
+                      tick={{ fill: C.sub, fontSize: 10 }}
+                      axisLine={false} tickLine={false}
+                      scale={trendScale}
+                      domain={trendScale === "log" ? [0.04, "auto"] : [0, "auto"]}
+                      allowDataOverflow
+                      tickFormatter={v => v >= 100 ? `$${(+v).toFixed(0)}` : v >= 1 ? `$${(+v).toFixed(0)}` : `$${(+v).toFixed(2)}`}
                     />
                     <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`$${fmt(v, v < 1 ? 4 : 2)}`, name]} animationDuration={180} />
                     <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 8 }} iconType="circle" />
                     <Line
+                      yAxisId="mother"
                       type="monotone" dataKey="mother"
                       name={isEn ? "Mother Token (符)" : `${t("mr.rune.token.mother")} (符)`}
                       stroke={C.mother} strokeWidth={2.8}
@@ -654,6 +933,7 @@ export default function Rune() {
                       animationDuration={1600} animationBegin={150}
                     />
                     <Line
+                      yAxisId="sub"
                       type="monotone" dataKey="sub"
                       name={isEn ? "Sub Token (符火)" : `${t("mr.rune.token.sub")} (符火)`}
                       stroke={C.sub} strokeWidth={2.8}
@@ -899,6 +1179,376 @@ export default function Rune() {
         </div>
       </motion.div>
 
+      {/* ── Dynamic mother-token price simulation (added 2026-04-28) ──
+          Drops doc's static 80-120× target. Models price from LP supply
+          dynamics: TLP USDT side ramps to 3500万 by day 180, LP RUNE
+          drains by 0.2% protocol burn + user burn-stake (slider). */}
+      <Card className="surface-3d border-amber-700/30 bg-gradient-to-br from-slate-900/70 to-slate-950/80">
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+            <TrendingUp className="h-4 w-4 text-amber-400 shrink-0" />
+            <span className="break-keep">{isEn ? "Dynamic RUNE Price Simulation" : "动态 RUNE 价格模拟"}</span>
+            <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
+          </CardTitle>
+          <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
+            {isEn
+              ? "Bottom-up activity model. Two ground-truth knobs: monthly burn-stake users × avg package USDT. Their product feeds TLP (USDT in) and AMM-drains LP RUNE (RUNE out via constant-product math). Protocol auto-burn 0.2%/day stacks on top. Stage milestones emerge — they're not pinned to specific days."
+              : "自底向上活动模型。两个基本面输入：月度活跃 burn-staker 人数 × 平均套餐 USDT。乘积 = 月度 USDT 流入 TLP，同时按 AMM 恒定乘积公式从 LP 抽走 RUNE，叠加 0.2%/日 协议自销毁。阶段时间点完全由活动量涌现，不再写死。"}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Two ground-truth sliders — # users × pkg size drives everything. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Monthly active users */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Monthly active burn-stakers" : "月度活跃 burn-staker 人数"}</Label>
+                <span className="num text-xs text-amber-300">{monthlyActiveUsers.toLocaleString()}</span>
+              </div>
+              <Slider value={[monthlyActiveUsers]} min={100} max={5000} step={50}
+                onValueChange={(v) => setMonthlyActiveUsers(v[0] ?? 1500)} className="py-1" />
+              <div className="flex justify-between text-[9px] text-muted-foreground/50">
+                <span>100</span><span>1,500</span><span>5,000</span>
+              </div>
+            </div>
+            {/* Average package size */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Avg package (USDT)" : "平均套餐 (USDT)"}</Label>
+                <span className="num text-xs text-amber-300">${avgPackageUsdt.toLocaleString()}</span>
+              </div>
+              <Slider value={[avgPackageUsdt]} min={300} max={14000} step={100}
+                onValueChange={(v) => setAvgPackageUsdt(v[0] ?? 3600)} className="py-1" />
+              <div className="flex justify-between text-[9px] text-muted-foreground/50">
+                <span>$300</span><span>$3,600</span><span>$14,000</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Derived inflow tag — so users see the math */}
+          <div className="text-[10px] text-muted-foreground/70 text-center">
+            {isEn
+              ? `Derived: ${monthlyActiveUsers.toLocaleString()} users × $${avgPackageUsdt.toLocaleString()} = $${((monthlyActiveUsers * avgPackageUsdt)/10000).toFixed(0)}万 USDT / mo into TLP. RUNE drains via AMM swap math + 0.2%/day protocol auto-burn.`
+              : `推导：${monthlyActiveUsers.toLocaleString()} 人 × $${avgPackageUsdt.toLocaleString()} = ${((monthlyActiveUsers * avgPackageUsdt)/10000).toFixed(0)}万 USDT / 月 进入 TLP。RUNE 由 AMM 兑换数学 + 0.2%/日 协议自销毁同时收缩。`}
+          </div>
+
+          {/* Milestone KPI row — TLP-target-driven (when does each milestone arrive?) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {priceMilestones.map(({ day, label, data }) => {
+              const reached = day < SIM_HORIZON_DAYS;
+              return (
+                <div key={label} className="p-3 rounded-xl border border-border/40 bg-card/40">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                  <p className="text-[10px] text-muted-foreground/60 num">
+                    {reached ? (isEn ? `≈ Day ${Math.round(day)}` : `≈ 第 ${Math.round(day)} 天`)
+                             : (isEn ? "Out of horizon" : "超出 18 个月窗口")}
+                  </p>
+                  <p className="num text-base text-amber-200 mt-1">${(data?.price ?? 0).toFixed(data && data.price < 1 ? 4 : 2)}</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 num">
+                    LP {fmt((data?.lpRune ?? 0) / 1e6, 1)}M
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Price curve chart */}
+          <div className="overflow-hidden">
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={priceSimulation} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="gradPriceSim"  x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={C.mother} stopOpacity={0.5} />
+                    <stop offset="95%" stopColor={C.mother} stopOpacity={0}   />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
+                <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                  tickFormatter={(v) => `${v}d`} />
+                <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                  tickFormatter={(v) => v < 1 ? `$${v.toFixed(3)}` : `$${v.toFixed(2)}`} />
+                <Tooltip {...tooltipStyle}
+                  formatter={(v: number, name: string) => name === "price" ? [`$${v.toFixed(4)}`, isEn ? "RUNE Price" : "RUNE 价格"] : [v, name]}
+                  labelFormatter={(d: number) => isEn ? `Day ${d}` : `第 ${d} 天`}
+                  animationDuration={180} />
+                <Area type="monotone" dataKey="price" stroke={C.mother} strokeWidth={2.4}
+                  fill="url(#gradPriceSim)" dot={false} animationDuration={1400} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+            {isEn
+              ? "Day-stepped AMM sim. Each day: actualInflow = users·pkg/30 (capped at TLP cap headroom); swapOut = lpRune · actualInflow / (tlpUsdt + actualInflow); burnOut = lpRune · 0.2%; tlpUsdt += actualInflow; lpRune -= swapOut + burnOut. Inflow stops when cap is hit; auto-burn keeps grinding LP RUNE down past then. More users / bigger packages → both axes move faster simultaneously."
+              : "逐日 AMM 模拟。每天：实际流入 = 人数·套餐/30（受 TLP 余量限制）；AMM 兑换流出 = lpRune · 流入 / (tlpUsdt + 流入)；协议烧 = lpRune · 0.2%；tlpUsdt 加流入，lpRune 减(兑换 + 烧)。封顶后流入归零，协议烧继续。人数 ↑ 或套餐 ↑ → 两轴同步加速。"}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* ── v2 tab nav (sits AFTER shared dashboards per user request 2026-04-28) ── */}
+      <div className="surface-3d rounded-xl border border-border/40 bg-card/40 p-1 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-0.5 min-w-max relative">
+          {[
+            { id: "calc" as const, labelEn: "CALC",       labelCn: "节点收益计算器" },
+            { id: "node" as const, labelEn: "NODES",      labelCn: "节点" },
+            { id: "pkg"  as const, labelEn: "STAKE",      labelCn: "质押" },
+            { id: "dual" as const, labelEn: "BURN STAKE", labelCn: "销毁质押" },
+          ].map(({ id, labelEn, labelCn }) => {
+            const active = v2Tab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setV2Tab(id)}
+                className={`relative z-10 flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap ${
+                  active ? "text-amber-100" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="runeV2TabPill"
+                    className="absolute inset-0 rounded-lg bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.35),0_8px_24px_-8px_rgba(251,191,36,0.35)]"
+                    transition={{ type: "spring", stiffness: 340, damping: 32 }}
+                  />
+                )}
+                <span className="relative tracking-wider">{isEn ? labelEn : labelCn}</span>
+                {!isEn && <span className="relative text-[9.5px] uppercase tracking-[0.18em] text-muted-foreground/60">{labelEn}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ═══ NODES TAB ═══ — node-specific data: airdrop release table per stage,
+          trading-driven daily dividend per tier, weight allocation. */}
+      {v2Tab === "node" && (() => {
+        const stagesUnlock = [
+          { idx: 0, label: isEn ? "Stage 1 · Launch (10%)" : "阶段 1 · 启动 (10%)",   release: 0.10 },
+          { idx: 1, label: isEn ? "Stage 2 · TLP 700万 (20%)" : "阶段 2 · TLP 700万 (20%)", release: 0.20 },
+          { idx: 2, label: isEn ? "Stage 3 · TLP 1750万 (30%)" : "阶段 3 · TLP 1750万 (30%)", release: 0.30 },
+          { idx: 3, label: isEn ? "Stage 4 · TLP 3500万 (40%)" : "阶段 4 · TLP 3500万 (40%)", release: 0.40 },
+        ];
+        const stages4 = [
+          { idx: 0, tlp: 280,  qep: 360,  trp: 160,  tvl: 800 },
+          { idx: 1, tlp: 700,  qep: 900,  trp: 400,  tvl: 2000 },
+          { idx: 2, tlp: 1750, qep: 2250, trp: 1000, tvl: 5000 },
+          { idx: 3, tlp: 3500, qep: 4500, trp: 2000, tvl: 10000 },
+        ];
+        // Trading-dividend rates per 节点招募计划.md §权益3 (no made-up
+        // constants; values lifted directly from the doc).
+        const MOTHER_BUY_TAX  = 0.02;  // 母币买入滑点 2%
+        const MOTHER_SELL_TAX = 0.05;  // 母币卖出盈利税 5%
+        const SUB_BUY_TAX     = 0.02;  // 子币买入滑点 2%
+        const SUB_SELL_TAX    = 0.03;  // 子币卖出盈利税 3%
+        // "母币每天燃烧 0.2% 的 1%" / "子币每天燃烧 0.1% 的 2%"
+        const MOTHER_BURN_DAILY = 0.002;
+        const MOTHER_BURN_NODE  = 0.01;
+        const SUB_BURN_DAILY    = 0.001;
+        const SUB_BURN_NODE     = 0.02;
+        const nodes = overview?.nodes ?? [];
+        return (
+          <div className="space-y-6">
+
+            {/* 4-stage airdrop release table */}
+            <Card className="surface-3d border-amber-700/30">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                  <Layers className="h-4 w-4 text-amber-400 shrink-0" />
+                  {isEn ? "Mother-Token Airdrop · 4-Stage Release Per Tier" : "节点空投 · 4 阶段释放表"}
+                </CardTitle>
+                <p className="text-[11px] text-muted-foreground/80 mt-1">
+                  {isEn ? "Per `节点招募计划.md` §权益2: tokens unlock at TLP milestones (10/20/30/40%)." : "节点招募计划.md §权益2：按 TLP 里程碑解锁释放（10/20/30/40%）。"}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground/70 uppercase tracking-wider">
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-2 px-2 sticky left-0 bg-card/80 backdrop-blur">{isEn ? "Tier" : "档位"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Total" : "总额"}</th>
+                        {stagesUnlock.map((s) => (
+                          <th key={s.idx} className="text-right py-2 px-2 whitespace-nowrap">{s.label}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodes.map((n) => (
+                        <tr key={n.level} className="border-b border-border/20">
+                          <td className="py-2 px-2 sticky left-0 bg-card/40 backdrop-blur">
+                            <div className="text-foreground">{nodeName(n)}</div>
+                            <div className="text-[10px] text-muted-foreground">${n.investment.toLocaleString()}</div>
+                          </td>
+                          <td className="py-2 px-2 text-right num">{n.airdropPerSeat.toLocaleString()}</td>
+                          {stagesUnlock.map((s) => {
+                            const tokens = n.airdropPerSeat * s.release;
+                            const stage = overview?.priceStages?.[s.idx];
+                            const dynPrice = motherPriceForStage(s.idx, stage?.motherPrice ?? 0);
+                            const usd = tokens * dynPrice;
+                            return (
+                              <td key={s.idx} className="py-2 px-2 text-right">
+                                <div className="num text-foreground">{tokens.toLocaleString()}</div>
+                                <div className="text-[10px] text-amber-300/80 num">${fmt(usd, 0)}</div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Trading dividend per tier per stage */}
+            <Card className="surface-3d border-border/40">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap text-foreground">
+                  <Activity className="h-4 w-4 text-primary shrink-0" />
+                  {isEn ? "Trading Dividend · Per 节点招募计划 §权益3" : "交易分红 · 节点招募计划 §权益3"}
+                  <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Doc-Driven" : "按文档"}</span>
+                </CardTitle>
+                <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                  {isEn
+                    ? "Mother buy-tax 2% + sell-profit-tax 5%. Sub buy-tax 2% + sell-profit-tax 3%. Daily burn share: mother 0.2%·1%, sub 0.1%·2%. Pool split by weight (2880 total)."
+                    : "母币买入滑点 2% + 卖出盈利税 5%；子币买入滑点 2% + 卖出盈利税 3%；母币日烧 0.2%×1%、子币日烧 0.1%×2% 入节点池。按权重 2880 分配。"}
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Three doc-grounded inputs — replaces the made-up turnover/AI-share knobs. */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    { label: isEn ? "Mother daily volume (USDT)" : "母币日交易额 (USDT)", value: motherDailyVolume, setter: setMotherDailyVolume, min: 100_000, max: 10_000_000, step: 50_000, fmt: (v: number) => `$${(v/10000).toFixed(0)}万` },
+                    { label: isEn ? "Sub daily volume (USDT)"    : "子币日交易额 (USDT)", value: subDailyVolume,    setter: setSubDailyVolume,    min: 50_000,  max: 5_000_000,  step: 25_000, fmt: (v: number) => `$${(v/10000).toFixed(0)}万` },
+                    { label: isEn ? "Avg sell profit %"          : "平均卖出盈利率 (%)",  value: avgSellProfitPct,  setter: setAvgSellProfitPct,  min: 5,       max: 50,         step: 1,      fmt: (v: number) => `${v}%` },
+                  ].map(({ label, value, setter, min, max, step, fmt: vfmt }) => (
+                    <div key={label} className="space-y-2">
+                      <div className="flex justify-between items-baseline">
+                        <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</Label>
+                        <span className="num text-xs text-primary">{vfmt(value)}</span>
+                      </div>
+                      <Slider value={[value]} min={min} max={max} step={step}
+                        onValueChange={(v) => setter(v[0] ?? value)} className="py-1" />
+                      <div className="flex justify-between text-[9px] text-muted-foreground/60">
+                        <span>{vfmt(min)}</span><span>{vfmt(max)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground uppercase tracking-wider">
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-2 px-2 sticky left-0 bg-card/80 backdrop-blur">{isEn ? "Stage" : "阶段"}</th>
+                        <th className="text-right py-2 px-2 whitespace-nowrap">{isEn ? "Trade tax/day" : "交易税/日"}</th>
+                        <th className="text-right py-2 px-2 whitespace-nowrap">{isEn ? "Burn share/day" : "燃烧分红/日"}</th>
+                        <th className="text-right py-2 px-2 whitespace-nowrap">{isEn ? "Pool/day" : "节点池/日"}</th>
+                        {nodes.map((n) => (
+                          <th key={n.level} className="text-right py-2 px-2 whitespace-nowrap">{nodeName(n)}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stages4.map((s) => {
+                        // Trade-tax slice: assume 50/50 buy/sell split. Buy half pays
+                        // slippage on full notional; sell half pays profit-tax on
+                        // (notional × profit %). Sub doesn't trade at Stage 1
+                        // (TLP < 500万 — sub launch threshold per 模型制度.md §壹).
+                        const subActive = s.tlp >= 500;
+                        const profit = avgSellProfitPct / 100;
+                        const motherTradeShare = motherDailyVolume * (0.5 * MOTHER_BUY_TAX + 0.5 * MOTHER_SELL_TAX * profit);
+                        const subTradeShare    = subActive ? subDailyVolume * (0.5 * SUB_BUY_TAX + 0.5 * SUB_SELL_TAX * profit) : 0;
+
+                        // Burn-share slice: mother LP + sub LP at this stage's day,
+                        // valued at that stage's price. Sub uses static doc target
+                        // since we don't have a sub-side dynamic model yet.
+                        const stageDay      = dayWhenTlpReaches(s.tlp);
+                        const motherLp      = lpRuneAt(stageDay);
+                        const motherPriceN  = motherPriceForStage(s.idx, overview?.priceStages?.[s.idx]?.motherPrice ?? 0);
+                        const motherBurnSh  = motherLp * MOTHER_BURN_DAILY * MOTHER_BURN_NODE * motherPriceN;
+                        const subSupplyEst  = subActive ? (overview?.subToken?.totalSupply ?? 13_100_000) : 0;
+                        const subPriceN     = overview?.priceStages?.[s.idx]?.subPrice ?? 0;
+                        const subBurnSh     = subSupplyEst * SUB_BURN_DAILY * SUB_BURN_NODE * subPriceN;
+
+                        const tradeTax    = motherTradeShare + subTradeShare;
+                        const burnShare   = motherBurnSh + subBurnSh;
+                        const nodePoolDay = tradeTax + burnShare;
+                        return (
+                          <tr key={s.idx} className="border-b border-border/20">
+                            <td className="py-2 px-2 sticky left-0 bg-card/40 backdrop-blur whitespace-nowrap">
+                              <div className="text-foreground">{isEn ? `Stage ${s.idx + 1}` : `阶段 ${s.idx + 1}`}</div>
+                              <div className="text-[10px] text-muted-foreground">TLP {s.tlp}万{!subActive && (isEn ? " · sub paused" : " · 子币未开")}</div>
+                            </td>
+                            <td className="py-2 px-2 text-right num text-foreground/80 whitespace-nowrap">${fmt(tradeTax, 0)}</td>
+                            <td className="py-2 px-2 text-right num text-foreground/80 whitespace-nowrap">${fmt(burnShare, 0)}</td>
+                            <td className="py-2 px-2 text-right num text-primary whitespace-nowrap">${fmt(nodePoolDay, 0)}</td>
+                            {nodes.map((n) => {
+                              const perSeat = (nodePoolDay * n.weight) / TOTAL_NODE_WEIGHT;
+                              return (
+                                <td key={n.level} className="py-2 px-2 text-right num text-foreground whitespace-nowrap">${fmt(perSeat, 2)}</td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Node weight & seats */}
+            <Card className="surface-3d border-amber-700/30">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                  <BarChart2 className="h-4 w-4 text-amber-400 shrink-0" />
+                  {isEn ? "Node Weights & Seats" : "节点权重 / 席位"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground/70 uppercase tracking-wider">
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-2 px-2">{isEn ? "Tier" : "档位"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Price" : "单价"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Seats" : "席位"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Weight" : "权重"}</th>
+                        <th className="text-right py-2 px-2">{isEn ? "Total weight" : "总权重"}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nodes.map((n) => (
+                        <tr key={n.level} className="border-b border-border/20">
+                          <td className="py-2 px-2">{nodeName(n)}</td>
+                          <td className="py-2 px-2 text-right num">${n.investment.toLocaleString()}</td>
+                          <td className="py-2 px-2 text-right num">{n.seats}</td>
+                          <td className="py-2 px-2 text-right num">{(n.weight * 100).toFixed(0)}%</td>
+                          <td className="py-2 px-2 text-right num text-amber-300">{(n.weight * n.seats).toFixed(0)}</td>
+                        </tr>
+                      ))}
+                      <tr className="bg-amber-950/30">
+                        <td className="py-2 px-2 font-semibold">{isEn ? "Total" : "合计"}</td>
+                        <td className="py-2 px-2 text-right num">$800万</td>
+                        <td className="py-2 px-2 text-right num">2420</td>
+                        <td className="py-2 px-2 text-right">—</td>
+                        <td className="py-2 px-2 text-right num text-amber-300 font-bold">{TOTAL_NODE_WEIGHT}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
+      {/* end NODES TAB */}
+
+      {/* ═══ SUMMARY TAB ═══ — original calculator (input form + Total Returns + result charts).
+          Was wrapped under Nodes tab; user wants it as a separate "综合" tab summarizing total returns. */}
+      {/* Node ROI calculator — own tab, first in nav. */}
+      {v2Tab === "calc" && (<>
+
       {/* ═══════════════════════════════════════════════════════════════════════
           CALCULATOR SECTION — 节点收益模拟器
       ═══════════════════════════════════════════════════════════════════════ */}
@@ -931,7 +1581,7 @@ export default function Rune() {
                     const apy    = ((node.dailyUsdt * 365) / node.investment * 100).toFixed(2);
                     return (
                       <button key={node.level}
-                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
+                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); }}
                         style={isOn ? {
                           boxShadow: `0 8px 24px -6px ${color}55, 0 0 0 1px ${color}80, inset 0 1px 0 0 ${color}40, inset 0 -12px 24px -12px ${color}30`,
                           borderColor: `${color}90`,
@@ -979,24 +1629,6 @@ export default function Rune() {
               </CardHeader>
               <CardContent className="space-y-6">
 
-                {/* Seats */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium text-foreground">
-                      {isEn ? "Seats" : t("mr.rune.input.seats")}
-                      {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Seats</span>}
-                    </Label>
-                    <span className="num text-lg text-primary">{seats} {isEn ? "seats" : t("mr.rune.input.seatsUnit")}</span>
-                  </div>
-                  <Slider value={[seats]} min={1} max={Math.min(selectedNode?.seats ?? 10, 20)} step={1}
-                    onValueChange={v => { setSeats(v[0]); calcMutation.reset(); }} className="py-2" />
-                  <p className="text-xs text-muted-foreground text-right">
-                    {isEn ? "Total Investment" : t("mr.rune.input.totalInvest")} <span className="num text-foreground">
-                      ${selectedNode ? (selectedNode.investment * seats).toLocaleString() : "—"} USDT
-                    </span>
-                  </p>
-                </div>
-
                 {/* Duration */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
@@ -1007,7 +1639,7 @@ export default function Rune() {
                     <span className="num text-lg">{durationDays}{isEn ? "d" : t("mr.rune.kpi.daysUnit")} / ≈{Math.round(durationDays/30)}{isEn ? "mo" : t("mr.rune.input.months")}</span>
                   </div>
                   <Slider value={[durationDays]} min={30} max={720} step={30}
-                    onValueChange={v => { setDurationDays(v[0]); calcMutation.reset(); }} className="py-2" />
+                    onValueChange={v => setDurationDays(v[0])} className="py-2" />
                 </div>
 
                 {/* Price stage selector */}
@@ -1018,14 +1650,18 @@ export default function Rune() {
                       {isZh && <span className="text-xs text-muted-foreground font-normal ml-1">Target Stage</span>}
                     </Label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                      {(overview.priceStages ?? []).map((s, i) => (
-                        <button key={i} onClick={() => { setPriceStageIndex(i); calcMutation.reset(); }}
+                      {(overview.priceStages ?? []).map((s, i) => {
+                        const dynPrice = motherPriceForStage(i, s.motherPrice);
+                        const dynMult  = s.motherPrice > 0 ? dynPrice / overview.motherToken.launchPrice : 0;
+                        return (
+                        <button key={i} onClick={() => { setPriceStageIndex(i); }}
                           className={`text-left p-2.5 rounded-lg border transition-all active:scale-[0.98] ${priceStageIndex === i ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_4px_14px_-4px_hsl(var(--primary)/0.45)]" : "border-border/50 hover:border-border hover:-translate-y-[1px]"}`}>
                           <p className="text-xs text-muted-foreground leading-tight mb-0.5">{stageLabel(s, i)}</p>
-                          <p className="num text-sm text-foreground">${s.motherPrice}</p>
-                          {s.multiplier > 1 && <p className="text-green-400 num text-xs">{s.multiplier}×</p>}
+                          <p className="num text-sm text-foreground">${fmtPrice(dynPrice)}</p>
+                          {dynMult > 1.05 && <p className="text-green-400 num text-xs">{dynMult.toFixed(dynMult >= 10 ? 0 : 1)}×</p>}
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                     {selectedStagePreview && isZh && (
                       <p className="text-xs text-muted-foreground px-1">{selectedStagePreview.trigger}</p>
@@ -1048,70 +1684,72 @@ export default function Rune() {
           {/* Right: Results */}
           <div className="lg:col-span-3 space-y-6">
             <AnimatePresence mode="wait">
-              {calcMutation.data ? (
+              {dynamicCalc ? (
                 <motion.div key="results" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="space-y-6">
 
-                  {/* KPI cards */}
+                  {/* KPI cards — unified theme: primary (amber) for accents, neutral
+                      surface for sub-cards. Drops the green/orange/rose/blue rainbow. */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-green-700/40 bg-gradient-to-br from-green-950/50 to-transparent shadow-[0_0_24px_hsl(142,70%,45%,0.1)]">
+                    <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold">
+                        <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
                           {bi("mr.rune.kpi.totalAssets", "Total Returns")}
                         </p>
-                        <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">
+                        <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">
                           {isEn ? "Estimated" : "预估"}
                         </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/70 mb-2">
+                      <p className="text-[10px] text-muted-foreground mb-2">
                         {isEn
                           ? "Returns only — principal is redeemable after the breakeven window (≈128d static)."
                           : "仅含收益。本金达到回本周期（静态约 128 天）后可赎回。"}
                       </p>
                       <div className="flex items-end gap-4 flex-wrap">
-                        <p className="num-shimmer text-4xl">${fmt(calcMutation.data.totalAssets)}</p>
+                        <p className="num-shimmer text-4xl">${fmt(dynamicCalc.totalAssets)}</p>
                         <div className="mb-1 flex gap-3 flex-wrap">
-                          <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(calcMutation.data.roi)}%</span>
-                          <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(calcMutation.data.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
+                          <span className="text-sm bg-primary/15 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(dynamicCalc.roi)}%</span>
+                          <span className="text-sm bg-muted/40 text-foreground border border-border/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(dynamicCalc.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
                         </div>
                       </div>
-                      {/* Yield range strip — explicitly shows low/high bands so users see this is a band, not a guarantee */}
+                      {/* Yield range strip */}
                       <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="num text-amber-300/80">${fmt(calcMutation.data.totalAssetsLow ?? 0)}</span>
+                        <span className="num text-foreground/70">${fmt(dynamicCalc.totalAssetsLow)}</span>
                         <span className="opacity-60">— {isEn ? "monthly 15% (conservative)" : "月化 15% 保守"} ↔ {isEn ? "35% (optimistic)" : "35% 乐观"} —</span>
-                        <span className="num text-emerald-300/80">${fmt(calcMutation.data.totalAssetsHigh ?? 0)}</span>
+                        <span className="num text-foreground/70">${fmt(dynamicCalc.totalAssetsHigh)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(calcMutation.data.investment)}</span>
+                        {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "price" : "价格"} <span className="num text-primary">${fmtPrice(dynamicCalc.dynamicPrice)}</span> · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num text-foreground">${fmt(dynamicCalc.investment)}</span>
                       </p>
                     </div>
-                    <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
-                      <p className="text-[11px] text-primary uppercase tracking-wider mb-1">{isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue")}</p>
-                      <p className="num text-lg">${fmt(calcMutation.data.motherTokenValue)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
-                    </div>
-                    <div className="p-4 rounded-xl border border-orange-800/30 bg-orange-950/20">
-                      <p className="text-[11px] text-orange-400 uppercase tracking-wider mb-1">{isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue")}</p>
-                      <p className="num text-lg text-orange-300">${fmt(calcMutation.data.airdropTokenValue)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
-                    </div>
-                    <div className="p-4 rounded-xl border border-green-800/30 bg-green-950/20">
-                      <p className="text-[11px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "Static USDT (65%)" : "静态 USDT (65%)"}</p>
-                      <p className="num text-lg text-green-300">${fmt(calcMutation.data.totalUsdtIncome)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        <span className="num">${fmt(calcMutation.data.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{calcMutation.data.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}
-                      </p>
-                    </div>
-                    {/* Dynamic 35% — auto-purchased into sub-token at the day's price */}
-                    <div className="p-4 rounded-xl border border-rose-800/30 bg-rose-950/20">
-                      <p className="text-[11px] text-rose-300 uppercase tracking-wider mb-1">
-                        {isEn ? "Sub-Token (35% dyn)" : "动态 子币 (35%)"}
-                      </p>
-                      <p className="num text-lg text-rose-200">${fmt(calcMutation.data.subTokenValue ?? 0)}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        <span className="num">{fmt(calcMutation.data.subTokenAccumulated ?? 0)}</span> {isEn ? "tokens accumulated" : "枚累计"}
-                      </p>
-                    </div>
+                    {[
+                      {
+                        label: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),
+                        value: dynamicCalc.motherTokenValue,
+                        sub: <><span className="num">{dynamicCalc.motherTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</>,
+                      },
+                      {
+                        label: isEn ? "Mother Token Airdrop" : t("mr.rune.kpi.airdropValue"),
+                        value: dynamicCalc.airdropTokenValue,
+                        sub: <><span className="num">{dynamicCalc.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")} × ${fmtPrice(dynamicCalc.dynamicPrice)}</>,
+                      },
+                      {
+                        label: isEn ? "Static USDT (65%)" : "静态 USDT (65%)",
+                        value: dynamicCalc.totalUsdtIncome,
+                        sub: <><span className="num">${fmt(dynamicCalc.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{dynamicCalc.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}</>,
+                      },
+                      {
+                        label: isEn ? "Sub-Token (35% dyn)" : "动态 子币 (35%)",
+                        value: dynamicCalc.subTokenValue ?? 0,
+                        sub: <><span className="num">{fmt(dynamicCalc.subTokenAccumulated ?? 0)}</span> {isEn ? "tokens accumulated" : "枚累计"}</>,
+                      },
+                    ].map((kpi) => (
+                      <div key={kpi.label} className="p-4 rounded-xl border border-border/40 bg-card/60">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{kpi.label}</p>
+                        <p className="num text-lg text-foreground">${fmt(kpi.value)}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{kpi.sub}</p>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Result chart: pie + bar side by side */}
@@ -1192,16 +1830,19 @@ export default function Rune() {
                       {selectedNode && (overview?.priceStages?.length) ? (
                         <ResponsiveContainer width="100%" height={220}>
                           <BarChart
-                            data={(overview.priceStages ?? []).map((s, i) => ({
-                              label: stageLabel(s, i),
-                              // Airdrop is mother-token, so it prices off motherPrice (not subPrice).
-                              totalAssets: Math.round(
-                                selectedNode.motherTokensPerSeat * seats * s.motherPrice +
-                                selectedNode.airdropPerSeat      * seats * s.motherPrice +
-                                selectedNode.dailyUsdt           * seats * durationDays
-                              ),
-                              isActive: i === priceStageIndex,
-                            }))}
+                            data={(overview.priceStages ?? []).map((s, i) => {
+                              const dynPrice = motherPriceForStage(i, s.motherPrice);
+                              return {
+                                label: stageLabel(s, i),
+                                // Airdrop is mother-token, so it prices off motherPrice (not subPrice).
+                                totalAssets: Math.round(
+                                  selectedNode.motherTokensPerSeat * seats * dynPrice +
+                                  selectedNode.airdropPerSeat      * seats * dynPrice +
+                                  selectedNode.dailyUsdt           * seats * durationDays
+                                ),
+                                isActive: i === priceStageIndex,
+                              };
+                            })}
                             margin={{ top: 8, right: 8, left: -10, bottom: 4 }}
                           >
                             <defs>
@@ -1261,7 +1902,7 @@ export default function Rune() {
                     <CardContent className="p-0">
                       <table className="w-full text-sm">
                         <tbody>
-                          {calcMutation.data.breakdown.map((item, i) => (
+                          {dynamicCalc.breakdown.map((item, i) => (
                             <tr key={i} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors">
                               <td className="py-2.5 px-5 text-muted-foreground">
                                 {item.label}
@@ -1340,7 +1981,7 @@ export default function Rune() {
                         const color = (C as Record<string,string>)[node.level] ?? C.pioneer;
                         return (
                           <tr key={node.level}
-                            onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
+                            onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); }}
                             className={`border-b border-border/30 last:border-0 cursor-pointer transition-colors ${nodeLevel === node.level ? "bg-primary/5" : "hover:bg-muted/10"}`}>
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-2">
@@ -1370,7 +2011,7 @@ export default function Rune() {
                     return (
                       <div
                         key={node.level}
-                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); calcMutation.reset(); }}
+                        onClick={() => { setNodeLevel(node.level as RuneCalculatorInputNodeLevel); setSeats(1); }}
                         className={`px-4 py-4 cursor-pointer transition-colors ${isSelected ? "bg-primary/5" : "hover:bg-muted/10"}`}
                       >
                         {/* Node name header */}
@@ -1428,11 +2069,186 @@ export default function Rune() {
         </div>
       </motion.div>
 
-      {/* ── Burn-Stake (auxiliary) panel ──
+      </>)}
+      {/* end NODE TAB calculator */}
+
+
+      {/* ═══ 质押 TAB ═══ — USDT 套餐 calculator. Per 模型制度.md §叁
+          deposit terms × yield × duration bonus. Per the 资金流向 doc,
+          daily AI-quant yield splits 65% USDT static + 35% auto-buy
+          sub-token. */}
+      {v2Tab === "pkg" && (() => {
+        // Yield bracket per duration (模型制度.md §叁)
+        const bracket =
+          pkgDays === 30  ? { min: 0.3, max: 0.5, bonus: 0    }
+        : pkgDays === 90  ? { min: 0.5, max: 0.7, bonus: 0    }
+        : pkgDays === 180 ? { min: 0.5, max: 0.9, bonus: 0.10 }
+        : pkgDays === 360 ? { min: 0.5, max: 0.9, bonus: 0.20 }
+        :                   { min: 0.5, max: 0.9, bonus: 0.30 };
+        // Effective rate after bonus, clamped to bracket
+        const baseRate    = Math.min(Math.max(pkgRatePct, bracket.min), bracket.max);
+        const effDailyPct = baseRate * (1 + bracket.bonus);                 // % per day (post-bonus)
+        const dailyYieldU = pkgUsdt * (effDailyPct / 100);                  // USDT/day total yield
+        const totalYieldU = dailyYieldU * pkgDays;                          // total over period
+        const staticUsdt  = totalYieldU * 0.65;                             // 65% USDT direct
+        const dynamicUsdt = totalYieldU * 0.35;                             // 35% auto-buy sub
+        const subTokens   = dynamicUsdt / PKG_SUB_LAUNCH_PRICE;             // sub-tokens accumulated
+        const subValue    = subTokens * PKG_SUB_LAUNCH_PRICE;               // == dynamicUsdt at launch
+        const totalValue  = staticUsdt + subValue;                          // book value at launch sub-price
+        const roi         = pkgUsdt > 0 ? (totalValue / pkgUsdt) * 100 : 0;
+        const roiX        = pkgUsdt > 0 ?  totalValue / pkgUsdt        : 0;
+        return (
+          <Card className="surface-3d border-border/40">
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap text-foreground">
+                <Activity className="h-4 w-4 text-primary shrink-0" />
+                {isEn ? "Stake Package · USDT → RUNE → Daily Yield" : "质押套餐 · USDT 买 RUNE 激活套餐"}
+                <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Doc-Driven" : "按文档"}</span>
+              </CardTitle>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                {isEn
+                  ? "Per 模型制度.md §叁: 30/90d no bonus, 180d +10%, 360d +20%, 540d +30%. Daily yield splits 65% USDT direct + 35% auto-buys sub-token (valued at $0.038 launch price)."
+                  : "套餐期限按 §叁：30/90 天无加成；180 天 +10%；360 天 +20%；540 天 +30%。日化收益 65% USDT 直发 + 35% 自动买子币（按 $0.038 开盘价估值）。"}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Principal (USDT)" : "本金 (USDT)"}</Label>
+                  <input type="number" value={pkgUsdt} min={100} step={100}
+                    onChange={(e) => setPkgUsdt(Math.max(100, Number(e.target.value)))}
+                    className="w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm text-foreground" />
+                  <p className="text-[10px] text-muted-foreground/70">{isEn ? "Per-order cap $1,000 per spec" : "单单上限 $1,000（文档规定）"}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Duration" : "套餐期限"}</Label>
+                  <select value={pkgDays} onChange={(e) => setPkgDays(Number(e.target.value) as typeof pkgDays)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm text-foreground">
+                    <option value={30}>30 {isEn ? "days · no bonus" : "天 · 无加成"}</option>
+                    <option value={90}>90 {isEn ? "days · no bonus" : "天 · 无加成"}</option>
+                    <option value={180}>180 {isEn ? "days · +10%" : "天 · +10%"}</option>
+                    <option value={360}>360 {isEn ? "days · +20%" : "天 · +20%"}</option>
+                    <option value={540}>540 {isEn ? "days · +30%" : "天 · +30%"}</option>
+                  </select>
+                  <p className="text-[10px] text-muted-foreground/70">{isEn ? `Yield bracket: ${bracket.min}%-${bracket.max}% daily` : `日化区间：${bracket.min}%-${bracket.max}%`}</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Base daily rate" : "基础日化"}</Label>
+                    <span className="num text-xs text-primary">{baseRate.toFixed(2)}%</span>
+                  </div>
+                  <Slider value={[baseRate]} min={bracket.min} max={bracket.max} step={0.05}
+                    onValueChange={(v) => setPkgRatePct(v[0] ?? baseRate)} className="py-1" />
+                  <div className="flex justify-between text-[9px] text-muted-foreground/60">
+                    <span>{bracket.min}%</span><span>{bracket.max}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total card */}
+              <div className="p-4 sm:p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
+                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                  <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
+                    {isEn ? "Total Book Value @ launch sub-price" : "总账面价值（开盘子币价）"}
+                  </p>
+                  <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
+                </div>
+                <div className="flex items-end gap-3 flex-wrap">
+                  <p className="num-shimmer text-3xl sm:text-4xl">${fmt(totalValue, 0)}</p>
+                  <div className="flex gap-2 flex-wrap mb-1">
+                    <span className="text-xs bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full num">ROI {fmt(roi, 1)}%</span>
+                    <span className="text-xs bg-muted/40 text-foreground border border-border/40 px-2 py-0.5 rounded-full num">{fmt(roiX, 2)}×</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  {isEn
+                    ? `${baseRate.toFixed(2)}% × (1+${(bracket.bonus*100).toFixed(0)}% bonus) = ${effDailyPct.toFixed(3)}%/day · ${pkgDays}d total yield $${fmt(totalYieldU, 0)}`
+                    : `${baseRate.toFixed(2)}% × (1+${(bracket.bonus*100).toFixed(0)}% 加成) = ${effDailyPct.toFixed(3)}%/日 · ${pkgDays} 天总收益 $${fmt(totalYieldU, 0)}`}
+                </p>
+              </div>
+
+              {/* Two-card breakdown: 65% static / 35% dynamic */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl border border-border/40 bg-card/60">
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{isEn ? "Static USDT (65%)" : "静态 USDT（65%）"}</p>
+                  <p className="num text-lg text-foreground">${fmt(staticUsdt, 2)}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {isEn ? "Direct to wallet, daily settled" : "直发钱包，每日结算"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                    ${fmt(dailyYieldU * 0.65, 2)}{isEn ? "/day" : "/日"} × {pkgDays}{isEn ? "d" : "天"}
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl border border-border/40 bg-card/60">
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{isEn ? "Dynamic Sub-Token (35%)" : "动态子币（35%）"}</p>
+                  <p className="num text-lg text-foreground">${fmt(subValue, 2)}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {fmt(subTokens, 0)} {isEn ? "sub-tokens" : "枚子币"} × ${PKG_SUB_LAUNCH_PRICE}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                    {isEn ? "Auto-purchased into pool" : "自动注入底池"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Doc reference table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground uppercase tracking-wider">
+                    <tr className="border-b border-border/40">
+                      <th className="text-left py-2 px-2">{isEn ? "Term" : "套餐"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Daily" : "日化"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Bonus" : "加成"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Cap" : "单单上限"}</th>
+                      <th className="text-right py-2 px-2">{isEn ? "Day Cap (gross)" : "日额度"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { d: 30,  rate: "0.3-0.5%", bonus: "—",   cap: "$1,000", dayCap: "20万U" },
+                      { d: 90,  rate: "0.5-0.7%", bonus: "—",   cap: "$1,000", dayCap: "30万U" },
+                      { d: 180, rate: "0.5-0.9%", bonus: "+10%", cap: "$1,000", dayCap: isEn ? "unlimited" : "不限" },
+                      { d: 360, rate: "0.5-0.9%", bonus: "+20%", cap: "$1,000", dayCap: isEn ? "unlimited" : "不限" },
+                      { d: 540, rate: "0.5-0.9%", bonus: "+30%", cap: "$1,000", dayCap: isEn ? "unlimited" : "不限" },
+                    ].map((r) => (
+                      <tr key={r.d} className={`border-b border-border/20 ${r.d === pkgDays ? "bg-primary/5" : ""}`}>
+                        <td className="py-2 px-2 text-foreground">{r.d} {isEn ? "days" : "天"}</td>
+                        <td className="py-2 px-2 text-right num text-foreground/80">{r.rate}</td>
+                        <td className="py-2 px-2 text-right num text-primary">{r.bonus}</td>
+                        <td className="py-2 px-2 text-right num text-foreground/70">{r.cap}</td>
+                        <td className="py-2 px-2 text-right num text-foreground/70">{r.dayCap}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                {isEn
+                  ? "Estimated. Daily AI-quant yield splits 65% USDT (paid out) + 35% buys sub-token at market. Sub-token holdings here valued at $0.038 launch price (no dynamic sub-side model). At later stages with higher sub-price, dynamic 35% portion is worth more — see Dual Chain tab for the burn-stake pathway."
+                  : "预估。AI 量化日化收益 65% USDT 直发 + 35% 按市价自动买子币。此处子币按 $0.038 开盘价估值（子币暂无动态价格模型）。后期阶段子币涨价时，动态 35% 部分实际价值更高——见「双币联动」tab 销毁路径。"}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+
+      {/* ═══ DUAL-WHEEL TAB ═══ — single unified chain (re-read 2026-04-28).
+          Per `核心机制.md` §壹: 销毁母币 → "永久通缩 + 永久日化 1.0-1.5%"。
+          The "永久通缩" framing only holds if yield is in SUB-TOKENS — if it
+          were mother, the burn → mint cycle wouldn't be net-deflationary.
+          So the chain is:
+            burn N mother → daily 1-1.5%×N **sub-tokens** → auto-stake
+            sub-stake earns AI monthly distribution + IDO 50× allocation
+          One calculator covers the whole chain; no separate 套餐 panel. */}
+      {v2Tab === "dual" && (<>
+      {/* ── DEAD: old separate burn-stake panel (mother token yield). ── */}
+      {false && (<>
+      {/* ── Burn-Stake panel (mother token) ──
           Per `核心机制.md` §壹: burn N mother tokens → permanent daily yield
-          1.0%-1.5% × N in mother tokens. Tier rate increases with N.
-          UI deliberately collapsed by default — keeps the primary
-          (node-purchase) calculator above visually unchanged. */}
+          1.0%-1.5% × N in mother tokens. Tier rate increases with N. */}
       <Card className="surface-3d border-amber-700/30 bg-gradient-to-br from-slate-900/70 to-slate-950/80">
         <CardHeader className="cursor-pointer select-none" onClick={() => setBurnPanelOpen(o => !o)}>
           <div className="flex items-center justify-between gap-3">
@@ -1513,6 +2329,179 @@ export default function Rune() {
           </CardContent>
         )}
       </Card>
+
+      </>)}
+      {/* end DEAD burn-stake panel */}
+
+      {/* ── Real unified chain: burn-stake mother → daily sub-token yield → auto-stake → AI revenue + IDO ── */}
+      <Card className="surface-3d border-amber-700/30 bg-gradient-to-br from-slate-900/70 to-slate-950/80">
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+            <Flame className="h-4 w-4 text-amber-400 shrink-0" />
+            <span className="break-keep">{isEn ? "Burn-Stake Chain · Mother → Sub → AI + IDO" : "完整链路 · 销毁母币 → 子币 → AI 分红 + IDO"}</span>
+            <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
+          </CardTitle>
+          <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
+            {isEn
+              ? "Burn N mother (永久通缩) → daily 1.0-1.5% × N sub-tokens → auto-stake → monthly AI revenue (1M USDT/mo by weight) + IDO new-token allocations (~50× avg)."
+              : "销毁 N 枚母币（永久通缩，本金不归还）→ 每日产 1.0-1.5%×N **子币** → 自动入子币质押池 → 享 AI 月分红（100万U/月按权重）+ IDO 打新（平均 50×）"}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* Inputs — primary: burn N mother tokens (永久销毁), pick window for valuation */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Mother tokens to burn" : "销毁母币数量"}</Label>
+              <input type="number" value={burnTokens} min={1} onChange={(e) => setBurnTokens(Math.max(1, Number(e.target.value)))}
+                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              <p className="text-[10px] text-muted-foreground/70 mt-1">
+                {isEn ? "Tier rate: <100=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%" : "阶梯：<100枚=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%"}
+              </p>
+            </div>
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Duration (days)" : "周期 (天)"}</Label>
+              <select value={burnDays} onChange={(e) => setBurnDays(Number(e.target.value))}
+                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm">
+                <option value={30}>30</option><option value={90}>90</option><option value={180}>180</option><option value={360}>360</option><option value={540}>540</option><option value={1080}>1080 (3yr)</option><option value={3600}>3600 (10yr)</option>
+              </select>
+              <p className="text-[10px] text-muted-foreground/70 mt-1">
+                {isEn ? "Yield is permanent on-chain — pick a window for valuation." : "链上永久产出，仅取窗口估值"}
+              </p>
+            </div>
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Price Stage" : "价格阶段"}</Label>
+              <select value={stakeStage} onChange={(e) => setStakeStage(Number(e.target.value))}
+                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 text-sm">
+                {(overview?.priceStages ?? []).map((s, i) => (<option key={i} value={i}>{stageLabel(s, i)}</option>))}
+              </select>
+            </div>
+          </div>
+
+          {/* Inputs — assumptions (collapsible) */}
+          <details className="group">
+            <summary className="cursor-pointer text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors">
+              {isEn ? "Assumptions (advanced)" : "假设参数 (高级)"} ▾
+            </summary>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "Global sub-stake (tokens)" : "全网子币质押 (枚)"}</Label>
+                <input type="number" value={globalSubStaked} min={1} onChange={(e) => setGlobalSubStaked(Math.max(1, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "AI pool / month (USDT)" : "AI 月度池 (USDT)"}</Label>
+                <input type="number" value={aiPoolMonthly} min={0} onChange={(e) => setAiPoolMonthly(Math.max(0, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDOs / month" : "每月 IDO 次数"}</Label>
+                <input type="number" step="0.5" value={idosPerMonth} min={0} onChange={(e) => setIdosPerMonth(Math.max(0, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDO avg multiplier" : "IDO 平均涨幅"}</Label>
+                <input type="number" value={idoAvgMultiplier} min={1} onChange={(e) => setIdoAvgMultiplier(Math.max(1, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDO alloc factor (USDT/sub)" : "IDO 配额系数 (U/枚)"}</Label>
+                <input type="number" step="0.0001" value={idoAllocFactor} min={0} onChange={(e) => setIdoAllocFactor(Math.max(0, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              </div>
+            </div>
+          </details>
+
+          {/* Computed outputs — burn-stake mother → daily sub-tokens → AI + IDO */}
+          {(() => {
+            const stage = overview?.priceStages?.[stakeStage];
+            if (!stage) return null;
+            const launchMotherPrice = overview?.priceStages?.[0]?.motherPrice ?? 0.028;
+            // Tier rate by burn amount (per `核心机制.md` §壹 "按销毁金额分层")
+            const tierRate = burnTokens >= 100_000 ? 1.5
+                          : burnTokens >=  10_000 ? 1.4
+                          : burnTokens >=   1_000 ? 1.3
+                          : burnTokens >=     100 ? 1.2
+                          :                          1.0;
+            const dailySubYield  = burnTokens * (tierRate / 100);   // sub-tokens per day
+            const totalSubTokens = dailySubYield * burnDays;
+            const subTokenValue  = totalSubTokens * stage.subPrice;
+            const burnCostUsd    = burnTokens * launchMotherPrice;  // sunk cost basis
+            const months = burnDays / 30;
+            const avgSubStake = totalSubTokens / 2;
+            const aiRevenue = months > 0 && globalSubStaked > 0
+              ? aiPoolMonthly * (avgSubStake / (globalSubStaked + avgSubStake)) * months
+              : 0;
+            const idoCount = idosPerMonth * months;
+            const idoAllocPerEvent = avgSubStake * idoAllocFactor;
+            const idoGains = idoCount * idoAllocPerEvent * (idoAvgMultiplier - 1);
+            // Per doc PART V: total cash returns = AI dividend + IDO gains.
+            // Sub-token holdings are "auto-staked" — their value is realized
+            // through the AI/IDO streams, not booked separately as a stage-
+            // priced asset. Including stage-priced sub-token value double-
+            // counts and inflated ROI ~7×. Sub-token value still shown below
+            // as informational, but no longer rolled into total/ROI.
+            const totalIncome = aiRevenue + idoGains;
+            const roi  = burnCostUsd > 0 ? (totalIncome / burnCostUsd) * 100 : 0;
+            const roiX = burnCostUsd > 0 ?  totalIncome / burnCostUsd        : 0;
+            const breakdownSafe = [
+              { label: isEn ? "Sub-Tokens Yielded"      : "累积子币产出",       displayValue: `${fmt(totalSubTokens, 0)} ${isEn ? "tokens" : "枚"}`, share: 0, info: true },
+              { label: isEn ? "Sub-Token Value @ stage" : "子币持仓估值（参考）", displayValue: `$${fmt(subTokenValue, 0)}`,                            share: 0, info: true },
+              { label: isEn ? "AI Revenue (sub-stake)"  : "AI 月分红 (子币)",   displayValue: `$${fmt(aiRevenue, 0)}`,                                share: totalIncome > 0 ? aiRevenue / totalIncome : 0, info: false },
+              { label: isEn ? "IDO Gains"               : "IDO 打新收益",        displayValue: `$${fmt(idoGains, 0)}`,                                 share: totalIncome > 0 ? idoGains  / totalIncome : 0, info: false },
+            ];
+            return (
+              <div className="space-y-4">
+                <div className="p-4 sm:p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
+                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                    <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
+                      {isEn ? "Total Cash Returns (AI + IDO)" : "现金收益（AI + IDO）"}
+                    </p>
+                    <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
+                  </div>
+                  <div className="flex items-end gap-3 flex-wrap">
+                    <p className="num-shimmer text-3xl sm:text-4xl">${fmt(totalIncome, 0)}</p>
+                    <div className="flex gap-2 flex-wrap mb-1">
+                      <span className="text-xs bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full num">ROI {fmt(roi, 0)}%</span>
+                      <span className="text-xs bg-muted/40 text-foreground border border-border/40 px-2 py-0.5 rounded-full num">{fmt(roiX, 1)}×</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    {isEn
+                      ? `Burned ${burnTokens.toLocaleString()} mother (cost basis ${burnTokens.toLocaleString()} × $${launchMotherPrice} = $${fmt(burnCostUsd, 2)} @ launch price) · ${tierRate}% daily = ${fmt(dailySubYield, 0)} sub/day · ${burnDays}d window @ ${stageLabel(stage, stakeStage)}`
+                      : `销毁 ${burnTokens.toLocaleString()} 枚母币（成本基数：${burnTokens.toLocaleString()} 枚 × $${launchMotherPrice}/枚 = $${fmt(burnCostUsd, 2)} 按开盘价）· 日化 ${tierRate}% = ${fmt(dailySubYield, 0)} 子币/天 · ${burnDays} 天估值窗口 @ ${stageLabel(stage, stakeStage)}`}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-1">
+                    {isEn ? "⚠ Mother burn is permanent — principal not redeemable. Yield in sub-tokens auto-stakes for AI + IDO." : "⚠ 销毁母币本金不归还（永久通缩）。日产出子币自动入质押池享 AI 分红 + IDO 打新。"}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {breakdownSafe.map((b, i) => (
+                    <div key={i} className={`p-3 sm:p-4 rounded-xl border ${b.info ? "border-border/30 bg-card/30" : "border-border/40 bg-card/60"}`}>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{b.label}</p>
+                      <p className={`num text-base sm:text-lg mt-1 ${b.info ? "text-muted-foreground" : "text-foreground"}`}>{b.displayValue}</p>
+                      {b.share > 0 ? (
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{fmt(b.share * 100, 1)}% {isEn ? "of total" : "占总收益"}</p>
+                      ) : b.info ? (
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{isEn ? "informational · not in total" : "参考 · 不计入总收益"}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                  {isEn
+                    ? "Chain: burn N mother (永久通缩) → daily 1.0-1.5%×N sub-tokens (tier rate by burn amount) → sub-tokens auto-stake → AI monthly USDT pool 1M split by weight (your share = avg sub-stake / global) + IDO allocations averaging 50× returns. Sub-token holdings valued at selectedStage subPrice. AI engine 25-35% monthly is projection, not guaranteed; mother burn is irreversible on-chain."
+                    : "链路：销毁 N 母币（永久通缩、本金不归还）→ 永久日产 1.0-1.5%×N 子币（按销毁数量分层）→ 子币自动入质押池 → 享 AI 月分红（100万U 池按权重分，你的占比 = 平均子币质押 / 全网）+ IDO 打新（平均 50× 涨幅）。子币最终估值按所选阶段。AI 月化 25-35% 为预估、非合约保证；母币销毁链上不可逆。"}
+                </p>
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
+
+      </>)}
+      {/* end STAKING TAB */}
     </div>
   );
 }

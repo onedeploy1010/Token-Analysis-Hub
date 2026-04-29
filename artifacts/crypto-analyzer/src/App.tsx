@@ -10,9 +10,7 @@ import Home from "@/pages/home";
 import Projects from "@/pages/projects";
 import ProjectDetail from "@/pages/project-detail";
 import Tools from "@/pages/tools";
-// Per user 2026-04-29: rune-v2 is now the canonical /projects/rune.
-// The old rune.tsx is kept on disk as historical reference, but not routed.
-import RuneV2 from "@/pages/rune-v2";
+import Rune from "@/pages/rune";
 import B18 from "@/pages/b18";
 import HyperLiquid from "@/pages/hyperliquid";
 import LegendATM from "@/pages/legend-atm";
@@ -37,8 +35,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/projects" component={Projects} />
-        <Route path="/projects/rune" component={RuneV2} />
-        <Route path="/projects/rune-v2" component={RuneV2} />
+        <Route path="/projects/rune" component={Rune} />
         <Route path="/projects/b18" component={B18} />
         <Route path="/projects/hyperliquid" component={HyperLiquid} />
         <Route path="/projects/hyperliquid/:address" component={HyperLiquid} />
