@@ -437,24 +437,24 @@ export default function StrategyPage() {
       <TradingVaultBanner />
 
       <div className="px-4 space-y-3">
-        <div className="flex gap-0 bg-card border border-border rounded-lg overflow-hidden" data-testid="strategy-tabs">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`flex-1 py-2.5 text-xs font-bold text-center transition-all ${
-                activeTab === tab.id
-                  ? "text-black"
-                  : "text-muted-foreground hover:text-foreground/70"
-              }`}
-              style={activeTab === tab.id ? {
-                background: "linear-gradient(135deg, hsl(43,74%,58%), hsl(38,70%,46%))",
-              } : {}}
-              onClick={() => setActiveTab(tab.id)}
-              data-testid={`tab-${tab.id}`}
-            >
-              {t(tab.labelKey)}
-            </button>
-          ))}
+        <div className="flex gap-1.5 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d" data-testid="strategy-tabs">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                className={`flex-1 min-w-0 py-2.5 px-2 sm:px-3 rounded-lg text-[12px] font-bold tracking-wide whitespace-nowrap truncate transition-all ${
+                  isActive
+                    ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/80"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+                data-testid={`tab-${tab.id}`}
+              >
+                {t(tab.labelKey)}
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -3,62 +3,19 @@ import { useTranslation } from "react-i18next";
 import { motion, LayoutGroup } from "framer-motion";
 import { LayoutDashboard, Eye, Shield, BarChart2, User } from "lucide-react";
 
+// Each tab carries the i18n key for its main label; the matching `${id}Zh`
+// key supplies the optional CJK brand glyph row (only rendered for zh / zh-TW).
 const TABS = [
-  {
-    path: "/",
-    icon: LayoutDashboard,
-    id: "home",
-    zhLabel: "符阁",
-    enLabel: "HALL",
-    accent: "#d4a832",
-    glow: "rgba(212,168,50,0.6)",
-    pillBg: "rgba(212,168,50,0.15)",
-  },
-  {
-    path: "/trade",
-    icon: Eye,
-    id: "predict",
-    zhLabel: "符见",
-    enLabel: "SIGHT",
-    accent: "#ef4444",
-    glow: "rgba(239,68,68,0.6)",
-    pillBg: "rgba(239,68,68,0.15)",
-  },
-  {
-    path: "/vault",
-    icon: Shield,
-    id: "vault",
-    zhLabel: "符库",
-    enLabel: "VAULT",
-    accent: "#d4a832",
-    glow: "rgba(212,168,50,0.6)",
-    pillBg: "rgba(212,168,50,0.15)",
-  },
-  {
-    path: "/strategy",
-    icon: BarChart2,
-    id: "trade",
-    zhLabel: "符市",
-    enLabel: "MARKET",
-    accent: "#ef4444",
-    glow: "rgba(239,68,68,0.6)",
-    pillBg: "rgba(239,68,68,0.15)",
-  },
-  {
-    path: "/profile",
-    icon: User,
-    id: "profile",
-    zhLabel: "符身",
-    enLabel: "SELF",
-    accent: "#d4a832",
-    glow: "rgba(212,168,50,0.6)",
-    pillBg: "rgba(212,168,50,0.15)",
-  },
+  { path: "/",         icon: LayoutDashboard, id: "home",    accent: "#d4a832", glow: "rgba(212,168,50,0.6)", pillBg: "rgba(212,168,50,0.15)" },
+  { path: "/trade",    icon: Eye,             id: "predict", accent: "#ef4444", glow: "rgba(239,68,68,0.6)",  pillBg: "rgba(239,68,68,0.15)" },
+  { path: "/vault",    icon: Shield,          id: "vault",   accent: "#d4a832", glow: "rgba(212,168,50,0.6)", pillBg: "rgba(212,168,50,0.15)" },
+  { path: "/strategy", icon: BarChart2,       id: "trade",   accent: "#ef4444", glow: "rgba(239,68,68,0.6)",  pillBg: "rgba(239,68,68,0.15)" },
+  { path: "/profile",  icon: User,            id: "profile", accent: "#d4a832", glow: "rgba(212,168,50,0.6)", pillBg: "rgba(212,168,50,0.15)" },
 ];
 
 export function BottomNav() {
   const [location] = useLocation();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   // CJK locales show the Chinese brand glyph above the English code; everything
   // else collapses to just the English code so non-Chinese users don't get a
   // foreign script crammed into a small tab.
@@ -158,7 +115,7 @@ export function BottomNav() {
                         transition: "color 0.25s, text-shadow 0.25s",
                       }}
                     >
-                      {tab.zhLabel}
+                      {t(`nav.${tab.id}Zh`)}
                     </span>
                   )}
 
@@ -175,7 +132,7 @@ export function BottomNav() {
                       transition: "color 0.25s",
                     }}
                   >
-                    {tab.enLabel}
+                    {t(`nav.${tab.id}`)}
                   </span>
                 </motion.button>
               </Link>

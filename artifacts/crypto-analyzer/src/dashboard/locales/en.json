@@ -846,7 +846,34 @@
     "deepseek": "DeepSeek",
     "deepseekDesc": "Technical purist · RSI/MACD/BB",
     "llama": "Llama",
-    "llamaDesc": "Momentum chaser · Local AI model"
+    "llamaDesc": "Momentum chaser · Local AI model",
+    "banner": {
+      "title": "Total Management Vault",
+      "subtitle": "AI Quant Trading Pool · 45% of Deposits",
+      "live": "Live",
+      "monthlyReturn": "Monthly Return",
+      "monthlyReturnSub": "Floating",
+      "totalAum": "Total AUM",
+      "totalAumSub": "45% of deposits",
+      "annualEst": "Annual Est.",
+      "annualEstSub": "Compounded",
+      "status": "Status",
+      "statusValue": "Running",
+      "statusSub": "AI Quant",
+      "trendTitle": "Monthly Return Trend (20%–40%)",
+      "trendBadge": "Projected",
+      "floor": "Floor",
+      "ceiling": "Ceiling",
+      "footerFormula": "Total deposits {{total}} × 45% = Trading vault {{vault}} · Activates after node recruitment ends"
+    },
+    "calendar": {
+      "title": "AI Quant · Daily P&L Calendar",
+      "monthly": "Monthly",
+      "winRate": "Win Rate",
+      "wins": "Wins",
+      "losses": "Losses",
+      "monthTotal": "Month total"
+    }
   },
   "profile": {
     "assetsOverview": "Assets Overview",

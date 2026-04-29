@@ -65,8 +65,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function TradingVaultBanner() {
-  const { i18n } = useTranslation();
-  const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
+  const { t } = useTranslation();
 
   // Pool data sources from RUNE on-chain `rune_purchases` (via Supabase),
   // not the dead TAICLAW api-server. balance = 45% slice of total deposits.
@@ -84,31 +83,35 @@ export function TradingVaultBanner() {
   const STATS = [
     {
       icon: TrendingUp,
-      color: "#3b82f6",
-      label: isZh ? "月化收益率" : "Monthly Return",
+      colorClass: "text-blue-400",
+      bgClass: "bg-blue-500/[0.06] ring-blue-500/25",
+      label: t("strategy.banner.monthlyReturn"),
       value: <FlickerRate min={20} max={40} decimals={1} suffix="%" />,
-      sub: isZh ? "动态浮动" : "Floating",
+      sub: t("strategy.banner.monthlyReturnSub"),
     },
     {
       icon: Zap,
-      color: "#d4a832",
-      label: isZh ? "总管理资金" : "Total AUM",
+      colorClass: "text-primary",
+      bgClass: "bg-primary/[0.06] ring-primary/25",
+      label: t("strategy.banner.totalAum"),
       value: isLoading ? "—" : <CountUp target={balance} prefix="$" decimals={2} />,
-      sub: isZh ? "入金 45%" : "45% of deposits",
+      sub: t("strategy.banner.totalAumSub"),
     },
     {
       icon: Activity,
-      color: "#a855f7",
-      label: isZh ? "年化预期" : "Annual Est.",
+      colorClass: "text-purple-400",
+      bgClass: "bg-purple-500/[0.06] ring-purple-500/25",
+      label: t("strategy.banner.annualEst"),
       value: <><FlickerRate min={240} max={480} decimals={0} suffix="%" /></>,
-      sub: isZh ? "复利计算" : "Compounded",
+      sub: t("strategy.banner.annualEstSub"),
     },
     {
       icon: Shield,
-      color: "#22c55e",
-      label: isZh ? "策略状态" : "Status",
-      value: isZh ? "运行中" : "Running",
-      sub: isZh ? "AI量化交易" : "AI Quant",
+      colorClass: "text-emerald-400",
+      bgClass: "bg-emerald-500/[0.06] ring-emerald-500/25",
+      label: t("strategy.banner.status"),
+      value: t("strategy.banner.statusValue"),
+      sub: t("strategy.banner.statusSub"),
     },
   ];
 
@@ -117,40 +120,30 @@ export function TradingVaultBanner() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="mx-4 lg:mx-0 rounded-2xl overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, rgba(10,12,28,0.98) 0%, rgba(6,8,18,0.99) 100%)",
-        border: "1px solid rgba(59,130,246,0.28)",
-        boxShadow: "0 0 40px rgba(59,130,246,0.08), inset 0 1px 0 rgba(255,255,255,0.05)",
-      }}
+      className="relative mx-4 lg:mx-0 rounded-2xl overflow-hidden border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]"
     >
-      {/* Top accent line */}
-      <div className="h-[2px] w-full"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.7) 20%, rgba(212,168,50,0.6) 60%, rgba(59,130,246,0.7) 80%, transparent)" }} />
+      {/* Ambient blue glow */}
+      <div className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-blue-500/[0.18] blur-[80px]" />
+      <div className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-blue-600/[0.08] blur-[70px]" />
 
-      {/* HUD corners */}
-      {["top-2 left-2 border-t border-l", "top-2 right-2 border-t border-r",
-        "bottom-2 left-2 border-b border-l", "bottom-2 right-2 border-b border-r",
-      ].map((cls, i) => (
-        <span key={i} className={`absolute w-3 h-3 rounded-sm pointer-events-none ${cls}`}
-          style={{ borderColor: "rgba(59,130,246,0.35)" }} />
-      ))}
+      {/* Top accent line — blue→amber→blue gradient */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 via-50% to-transparent" />
+      <div className="pointer-events-none absolute inset-x-1/4 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
       <div className="relative p-4 space-y-3">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)" }}>
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500/25 to-blue-500/10 ring-1 ring-blue-500/40 shadow-[0_4px_12px_-4px_hsl(217_76%_58%/0.4)]">
               <BarChart2 className="h-4 w-4 text-blue-400" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-blue-300 leading-tight">
-                {isZh ? "总管理金库" : "Total Management Vault"}
+              <div className="text-sm font-bold leading-tight text-foreground tracking-tight">
+                {t("strategy.banner.title")}
               </div>
-              <div className="text-[9px] text-muted-foreground leading-tight">
-                {isZh ? "AI 量化交易池 · 入金 45%" : "AI Quant Trading Pool · 45% of Deposits"}
+              <div className="text-[11px] text-muted-foreground/80 leading-tight mt-0.5">
+                {t("strategy.banner.subtitle")}
               </div>
             </div>
           </div>
@@ -159,36 +152,34 @@ export function TradingVaultBanner() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-40 animate-ping" />
               <span className="relative inline-flex h-full w-full rounded-full bg-blue-400" />
             </span>
-            <span className="text-[9px] uppercase tracking-widest font-semibold text-blue-400">
-              {isZh ? "实时运行" : "Live"}
+            <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-blue-400">
+              {t("strategy.banner.live")}
             </span>
           </div>
         </div>
 
         {/* KPI grid */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {STATS.map(({ icon: Icon, color, label, value, sub }) => (
-            <div key={label} className="rounded-xl px-3 py-2.5"
-              style={{ background: `${color}0c`, border: `1px solid ${color}22` }}>
-              <Icon className="h-3.5 w-3.5 mb-1.5" style={{ color }} />
-              <div className="text-[15px] font-black tabular-nums leading-none" style={{ color }}>
+          {STATS.map(({ icon: Icon, colorClass, bgClass, label, value, sub }) => (
+            <div key={label} className={`rounded-xl px-3 py-2.5 ring-1 ${bgClass}`}>
+              <Icon className={`h-3.5 w-3.5 mb-1.5 ${colorClass}`} />
+              <div className={`text-[15px] font-black tabular-nums leading-none ${colorClass}`}>
                 {value}
               </div>
-              <div className="text-[9px] text-muted-foreground mt-1 leading-tight">{label}</div>
-              <div className="text-[8px] mt-0.5" style={{ color: `${color}99` }}>{sub}</div>
+              <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{label}</div>
+              <div className={`text-[9px] mt-0.5 opacity-75 ${colorClass}`}>{sub}</div>
             </div>
           ))}
         </div>
 
         {/* Monthly performance area chart */}
-        <div className="rounded-xl px-3 pt-3 pb-2"
-          style={{ background: "rgba(59,130,246,0.04)", border: "1px solid rgba(59,130,246,0.12)" }}>
+        <div className="rounded-xl px-3 pt-3 pb-2 bg-blue-500/[0.04] ring-1 ring-blue-500/20">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              {isZh ? "月化收益走势 (20%–40%)" : "Monthly Return Trend (20%–40%)"}
+              {t("strategy.banner.trendTitle")}
             </span>
-            <span className="text-[9px] font-semibold text-blue-400">
-              {isZh ? "模拟预测" : "Projected"}
+            <span className="text-[10px] font-semibold text-blue-400">
+              {t("strategy.banner.trendBadge")}
             </span>
           </div>
           <div style={{ height: 90 }}>
@@ -223,9 +214,9 @@ export function TradingVaultBanner() {
           </div>
 
           {/* Range labels */}
-          <div className="flex justify-between text-[8.5px] text-muted-foreground mt-1 px-1">
-            <span className="text-yellow-400/70">▼ 20% {isZh ? "区间下限" : "Floor"}</span>
-            <span className="text-blue-400/70">▲ 40% {isZh ? "区间上限" : "Ceiling"}</span>
+          <div className="flex justify-between text-[10px] text-muted-foreground mt-1 px-1">
+            <span className="text-yellow-400/80">▼ 20% {t("strategy.banner.floor")}</span>
+            <span className="text-blue-400/80">▲ 40% {t("strategy.banner.ceiling")}</span>
           </div>
         </div>
 
@@ -233,12 +224,14 @@ export function TradingVaultBanner() {
         <VaultCalendar />
 
         {/* Footer note */}
-        <div className="flex items-center gap-1.5 text-[8.5px] text-muted-foreground">
-          <RefreshCw className="h-2.5 w-2.5 shrink-0" />
-          <span>
-            {isZh
-              ? `总入金 ${fmtUsd(totalDeposits)} × 45% = 交易金库 ${fmtUsd(balance)} · 节点招募结束后正式启动`
-              : `Total deposits ${fmtUsd(totalDeposits)} × 45% = Trading vault ${fmtUsd(balance)} · Activates after node recruitment ends`}
+        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/70">
+          <RefreshCw className="h-3 w-3 shrink-0" />
+          <span className="truncate">
+            {t("strategy.banner.footerFormula", {
+              total: fmtUsd(totalDeposits),
+              vault: fmtUsd(balance),
+              defaultValue: `Total deposits ${fmtUsd(totalDeposits)} × 45% = Trading vault ${fmtUsd(balance)} · Activates after node recruitment ends`,
+            })}
           </span>
         </div>
       </div>

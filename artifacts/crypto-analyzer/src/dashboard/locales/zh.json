@@ -846,7 +846,34 @@
     "deepseek": "DeepSeek",
     "deepseekDesc": "技术纯粹派 · RSI/MACD/BB",
     "llama": "Llama",
-    "llamaDesc": "动量追踪 · 本地AI模型"
+    "llamaDesc": "动量追踪 · 本地AI模型",
+    "banner": {
+      "title": "总管理金库",
+      "subtitle": "AI 量化交易池 · 入金 45%",
+      "live": "实时运行",
+      "monthlyReturn": "月化收益率",
+      "monthlyReturnSub": "动态浮动",
+      "totalAum": "总管理资金",
+      "totalAumSub": "入金 45%",
+      "annualEst": "年化预期",
+      "annualEstSub": "复利计算",
+      "status": "策略状态",
+      "statusValue": "运行中",
+      "statusSub": "AI 量化交易",
+      "trendTitle": "月化收益走势 (20%–40%)",
+      "trendBadge": "模拟预测",
+      "floor": "区间下限",
+      "ceiling": "区间上限",
+      "footerFormula": "总入金 {{total}} × 45% = 交易金库 {{vault}} · 节点招募结束后正式启动"
+    },
+    "calendar": {
+      "title": "AI 量化 · 日收益日历",
+      "monthly": "月化",
+      "winRate": "胜率",
+      "wins": "盈利天",
+      "losses": "亏损天",
+      "monthTotal": "本月累计"
+    }
   },
   "profile": {
     "assetsOverview": "资产概览",

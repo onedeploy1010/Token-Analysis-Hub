@@ -22,7 +22,6 @@ function getCumulativeStats(timeSeed = 0) {
 
 export function VaultCalendar() {
   const { t, i18n } = useTranslation();
-  const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
   const [open, setOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [timeSeed, setTimeSeed] = useState(() => Math.floor(Date.now() / 30000));
@@ -35,15 +34,15 @@ export function VaultCalendar() {
   const calendarDays = getCalendarDays(calendarMonth, timeSeed);
   const stats = getCumulativeStats(timeSeed);
 
-  const MONTH_NAMES_ZH = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
-  const MONTH_NAMES_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const monthLabel = isZh
-    ? `${calendarMonth.getFullYear()}年 ${MONTH_NAMES_ZH[calendarMonth.getMonth()]}`
-    : `${MONTH_NAMES_EN[calendarMonth.getMonth()]} ${calendarMonth.getFullYear()}`;
-
-  const weekDays = isZh
-    ? ["日","一","二","三","四","五","六"]
-    : ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  // Localized month + weekday labels via Intl — falls back to en when the
+  // active i18n.language isn't a BCP-47 the runtime knows.
+  const monthLabel = new Intl.DateTimeFormat(i18n.language, { year: "numeric", month: "short" }).format(calendarMonth);
+  const weekDayFmt = new Intl.DateTimeFormat(i18n.language, { weekday: "short" });
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    // 1970-01-04 = Sunday, so offset i picks the right weekday name.
+    const d = new Date(Date.UTC(1970, 0, 4 + i));
+    return weekDayFmt.format(d);
+  });
 
   const activeDays = calendarDays.filter(c => c.day > 0 && c.pnl !== 0);
   const mWins   = activeDays.filter(c => c.pnl > 0).length;
@@ -65,7 +64,7 @@ export function VaultCalendar() {
         <div className="flex items-center gap-2">
           <CalendarDays className="h-3.5 w-3.5 text-amber-400/80" />
           <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/80">
-            {isZh ? "AI 量化 · 日收益日历" : "AI Quant · Daily P&L Calendar"}
+            {t("strategy.calendar.title")}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -86,10 +85,10 @@ export function VaultCalendar() {
           {hasData && (
             <div className="grid grid-cols-4 gap-1.5 text-center">
               {[
-                { label: isZh ? "月化" : "Monthly", val: `${mPnl >= 0 ? "+" : ""}${mPnl.toFixed(1)}%`, color: mPnl >= 0 ? "text-emerald-400" : "text-red-400" },
-                { label: isZh ? "胜率" : "Win Rate", val: `${mWinRate.toFixed(0)}%`, color: "text-foreground" },
-                { label: isZh ? "盈利天" : "Wins", val: String(mWins), color: "text-emerald-400" },
-                { label: isZh ? "亏损天" : "Losses", val: String(mLosses), color: "text-red-400" },
+                { label: t("strategy.calendar.monthly"), val: `${mPnl >= 0 ? "+" : ""}${mPnl.toFixed(1)}%`, color: mPnl >= 0 ? "text-emerald-400" : "text-red-400" },
+                { label: t("strategy.calendar.winRate"), val: `${mWinRate.toFixed(0)}%`, color: "text-foreground" },
+                { label: t("strategy.calendar.wins"), val: String(mWins), color: "text-emerald-400" },
+                { label: t("strategy.calendar.losses"), val: String(mLosses), color: "text-red-400" },
               ].map(({ label, val, color }) => (
                 <div key={label} className="rounded-lg py-1.5 px-1"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -148,7 +147,7 @@ export function VaultCalendar() {
           {hasData && (
             <div className="flex items-center justify-between rounded-lg px-3 py-2"
               style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <span className="text-[10px] text-muted-foreground">{isZh ? "本月累计" : "Month total"}</span>
+              <span className="text-[10px] text-muted-foreground">{t("strategy.calendar.monthTotal")}</span>
               <div className="flex items-center gap-3">
                 <span className={`text-sm font-bold tabular-nums ${mPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {mPnl >= 0 ? "+" : ""}{mPnl.toFixed(1)}%

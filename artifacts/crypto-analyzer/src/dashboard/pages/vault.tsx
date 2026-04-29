@@ -66,7 +66,7 @@ export default function Vault() {
                 onClick={() => setActiveTab(tab.key)}
                 title={t(tab.descKey)}
                 className={cn(
-                  "flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 transition-all",
+                  "flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-lg px-2 sm:px-3 py-2.5 transition-all",
                   isActive
                     ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-card/80",
@@ -74,7 +74,7 @@ export default function Vault() {
                 data-testid={`tab-vault-${tab.key}`}
               >
                 <Icon className={cn("h-3.5 w-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
-                <span className="text-[12px] font-bold tracking-wide">{t(tab.labelKey)}</span>
+                <span className="text-[12px] font-bold tracking-wide whitespace-nowrap truncate">{t(tab.labelKey)}</span>
               </button>
             );
           })}

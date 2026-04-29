@@ -72,7 +72,12 @@
     "profile": "我的",
     "market": "市場",
     "nodes": "節點",
-    "predict": "預測"
+    "predict": "預測",
+    "homeZh": "符閣",
+    "predictZh": "符見",
+    "vaultZh": "符庫",
+    "tradeZh": "符市",
+    "profileZh": "符身"
   },
   "dashboard": {
     "depthRatio": "深度比率",
@@ -719,7 +724,34 @@
     "deepseek": "DeepSeek",
     "deepseekDesc": "技術純粹派 · RSI/MACD/BB",
     "llama": "Llama",
-    "llamaDesc": "動量追蹤 · 本地AI模型"
+    "llamaDesc": "動量追蹤 · 本地AI模型",
+    "banner": {
+      "title": "總管理金庫",
+      "subtitle": "AI 量化交易池 · 入金 45%",
+      "live": "實時運行",
+      "monthlyReturn": "月化收益率",
+      "monthlyReturnSub": "動態浮動",
+      "totalAum": "總管理資金",
+      "totalAumSub": "入金 45%",
+      "annualEst": "年化預期",
+      "annualEstSub": "複利計算",
+      "status": "策略狀態",
+      "statusValue": "運行中",
+      "statusSub": "AI 量化交易",
+      "trendTitle": "月化收益走勢 (20%–40%)",
+      "trendBadge": "模擬預測",
+      "floor": "區間下限",
+      "ceiling": "區間上限",
+      "footerFormula": "總入金 {{total}} × 45% = 交易金庫 {{vault}} · 節點招募結束後正式啟動"
+    },
+    "calendar": {
+      "title": "AI 量化 · 日收益日曆",
+      "monthly": "月化",
+      "winRate": "勝率",
+      "wins": "盈利天",
+      "losses": "虧損天",
+      "monthTotal": "本月累計"
+    }
   },
   "profile": {
     "assetsOverview": "資產概覽",
