@@ -387,12 +387,14 @@ interface ModelDef {
 
 const OPENROUTER_KEY = Deno.env.get("OPENROUTER_API_KEY") || "";
 
+// All 5 models routed through OpenRouter so a single OPENROUTER_API_KEY
+// covers the lot — labels match the frontend's AI_MODEL_LABELS exactly.
 const BUILT_IN_MODELS: ModelDef[] = [
-  { type: "openai",      model: "gpt-4o",                      label: "GPT-4o",    maxTokens: 400 },
-  { type: "openrouter",  model: "deepseek/deepseek-chat",      label: "DeepSeek",  maxTokens: 400 },
-  { type: "openrouter",  model: "google/gemini-2.0-flash-001", label: "Gemini",    maxTokens: 400 },
-  { type: "openrouter",  model: "x-ai/grok-3-mini-beta",        label: "Grok",      maxTokens: 400 },
-  { type: "openrouter",  model: "qwen/qwen3-30b-a3b",          label: "Qwen",      maxTokens: 400 },
+  { type: "openrouter",  model: "openai/gpt-4o",                 label: "GPT-4o",     maxTokens: 400 },
+  { type: "openrouter",  model: "deepseek/deepseek-chat",        label: "DeepSeek",   maxTokens: 400 },
+  { type: "openrouter",  model: "meta-llama/llama-3.1-70b-instruct", label: "Llama 3.1", maxTokens: 400 },
+  { type: "openrouter",  model: "google/gemini-2.0-flash-001",   label: "Gemini",     maxTokens: 400 },
+  { type: "openrouter",  model: "x-ai/grok-3-mini-beta",         label: "Grok",       maxTokens: 400 },
 ];
 
 // Load custom strategy provider models from env (方式 B)
@@ -631,7 +633,10 @@ serve(async (req) => {
     const cfToken = Deno.env.get("CF_AI_TOKEN") || "";
     const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
 
-    if (!cfToken && !openaiKey) throw new Error("Either CF_AI_TOKEN or OPENAI_API_KEY must be set");
+    // Need *some* upstream — Cloudflare AI Gateway, OpenAI direct, or
+    // OpenRouter (which is how the 5 built-in models reach all providers
+    // via a single key in this deployment).
+    if (!cfToken && !openaiKey && !OPENROUTER_KEY) throw new Error("Set OPENROUTER_API_KEY (or CF_AI_TOKEN / OPENAI_API_KEY)");
     const gatewayBase = cfGatewayRaw
       ? cfGatewayRaw.replace(/\/(compat|openai|workers-ai)\/.*$/, "").replace(/\/$/, "")
       : "";

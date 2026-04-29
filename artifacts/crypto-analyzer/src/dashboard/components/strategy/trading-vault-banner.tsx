@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BarChart2, TrendingUp, Zap, Shield, RefreshCw, Activity } from "lucide-react";
 import {
@@ -8,19 +8,26 @@ import { useTranslation } from "react-i18next";
 import { VaultCalendar } from "./vault-calendar";
 import { usePoolStatsRune } from "@dashboard/lib/data-rune";
 
-/* ── Animated number that jitters in a range ── */
-function FlickerRate({ min, max, decimals = 1, suffix = "%" }: {
-  min: number; max: number; decimals?: number; suffix?: string;
+/* ── Stable rate display.
+ *  Picks a value within [min, max] from a deterministic 12h epoch hash so
+ *  every viewer sees the same number for the same 12-hour window — and the
+ *  number doesn't twitch every 2 seconds.
+ */
+const SLOT_MS = 12 * 60 * 60 * 1000;
+function epochSlotHash(salt: string) {
+  // Cheap deterministic hash of `${salt}:${slot}` → [0, 1).
+  const slot = Math.floor(Date.now() / SLOT_MS);
+  let h = 2166136261 >>> 0;
+  const s = `${salt}:${slot}`;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+  }
+  return (h % 100000) / 100000;
+}
+function StableRate({ min, max, decimals = 1, suffix = "%", salt }: {
+  min: number; max: number; decimals?: number; suffix?: string; salt: string;
 }) {
-  const [val, setVal] = useState((min + max) / 2);
-  const ref = useRef<ReturnType<typeof setInterval>>();
-  useEffect(() => {
-    ref.current = setInterval(() => {
-      const next = min + Math.random() * (max - min);
-      setVal(next);
-    }, 1800 + Math.random() * 1200);
-    return () => clearInterval(ref.current);
-  }, [min, max]);
+  const val = min + epochSlotHash(salt) * (max - min);
   return <>{val.toFixed(decimals)}{suffix}</>;
 }
 
@@ -43,12 +50,13 @@ function CountUp({ target, prefix = "", suffix = "", decimals = 0, duration = 10
   return <>{prefix}{val.toFixed(decimals)}{suffix}</>;
 }
 
-/* ── Simulated monthly performance data (20–40%) ── */
+/* ── Simulated monthly performance trend (3.5–6.5%) — deterministic so it
+ *  stays consistent on every reload. */
 function buildPerf() {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return months.map((m, i) => ({
     month: m,
-    rate: +(20 + Math.abs(Math.sin(i * 0.9 + 1.2)) * 20).toFixed(1),
+    rate: +(3.5 + Math.abs(Math.sin(i * 0.9 + 1.2)) * 3).toFixed(2),
   }));
 }
 const PERF_DATA = buildPerf();
@@ -86,7 +94,8 @@ export function TradingVaultBanner() {
       colorClass: "text-blue-400",
       bgClass: "bg-blue-500/[0.06] ring-blue-500/25",
       label: t("strategy.banner.monthlyReturn"),
-      value: <FlickerRate min={20} max={40} decimals={1} suffix="%" />,
+      // 4–6% monthly, deterministic per 12h slot.
+      value: <StableRate min={4} max={6} decimals={2} suffix="%" salt="monthlyReturn" />,
       sub: t("strategy.banner.monthlyReturnSub"),
     },
     {
@@ -102,7 +111,8 @@ export function TradingVaultBanner() {
       colorClass: "text-purple-400",
       bgClass: "bg-purple-500/[0.06] ring-purple-500/25",
       label: t("strategy.banner.annualEst"),
-      value: <><FlickerRate min={240} max={480} decimals={0} suffix="%" /></>,
+      // Annual ≈ ((1 + monthly)^12 - 1). With monthly 4–6% that's 60–101%.
+      value: <StableRate min={60} max={101} decimals={0} suffix="%" salt="annualEst" />,
       sub: t("strategy.banner.annualEstSub"),
     },
     {
