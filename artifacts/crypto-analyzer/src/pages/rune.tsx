@@ -2152,7 +2152,6 @@ export default function Rune() {
                   <input type="number" value={pkgUsdt} min={100} step={100}
                     onChange={(e) => setPkgUsdt(Math.max(100, Number(e.target.value)))}
                     className="w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm text-foreground" />
-                  <p className="text-[10px] text-muted-foreground/70">{isEn ? "Per-order cap $1,000 per spec" : "单单上限 $1,000（文档规定）"}</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Duration" : "套餐期限"}</Label>
