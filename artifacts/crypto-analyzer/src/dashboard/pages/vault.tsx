@@ -6,6 +6,7 @@ import { EmberBurnSection } from "@dashboard/components/vault/ember-burn-section
 import { VaultLpPool } from "@dashboard/components/vault/vault-lp-pool";
 import { VaultCharts } from "@dashboard/components/vault/vault-charts";
 import { useTranslation } from "react-i18next";
+import { PageEnter } from "@dashboard/components/page-enter";
 
 type VaultTab = "pool" | "lock" | "burn";
 
@@ -30,6 +31,7 @@ export default function Vault() {
   const [activeTab, setActiveTab] = useState<VaultTab>("pool");
 
   return (
+    <PageEnter>
     <div className="relative overflow-hidden pb-24 lg:pb-8">
       {/* Soft ambient glows — `overflow-hidden` on the wrapper clips them
           inside the viewport. Without it, the 28rem/24rem circles would
@@ -99,5 +101,6 @@ export default function Vault() {
         {activeTab === "burn" && <EmberBurnSection />}
       </div>
     </div>
+    </PageEnter>
   );
 }

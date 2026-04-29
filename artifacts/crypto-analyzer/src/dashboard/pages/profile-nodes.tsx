@@ -5,6 +5,7 @@ import { OverviewTab } from "@/pages/dashboard";
 import { Server, Coins } from "lucide-react";
 import { DashboardSubTabs } from "@dashboard/components/dashboard-sub-tabs";
 import { NodeRewardsPanel } from "@dashboard/components/nodes/node-rewards-panel";
+import { PageEnter } from "@dashboard/components/page-enter";
 
 type Sub = "overview" | "rewards";
 
@@ -34,11 +35,13 @@ export default function ProfileNodes() {
   }
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
-      <div className="mb-4">
-        <DashboardSubTabs tabs={TABS} active={sub} onChange={setSub} testIdPrefix="tab-nodes" />
+    <PageEnter>
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
+        <div className="mb-4">
+          <DashboardSubTabs tabs={TABS} active={sub} onChange={setSub} testIdPrefix="tab-nodes" />
+        </div>
+        {sub === "overview" ? <OverviewTab address={address} /> : <NodeRewardsPanel />}
       </div>
-      {sub === "overview" ? <OverviewTab address={address} /> : <NodeRewardsPanel />}
-    </div>
+    </PageEnter>
   );
 }

@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Skeleton } from "@dashboard/components/ui/skeleton";
+import { PageEnter, PageEnterStagger, PageEnterItem } from "@dashboard/components/page-enter";
 import { useActiveAccount } from "thirdweb/react";
 import {
   Copy, ChevronRight, Bell, Settings, History, GitBranch, Server, Share2,
@@ -11,6 +12,8 @@ import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { usePersonalStats } from "@/hooks/rune/use-team";
 import { buildReferralUrl } from "@/hooks/rune/use-referral-param";
+import { useUserPurchase } from "@/hooks/rune/use-node-presell";
+import { NoNodeReminder } from "@/components/rune/no-node-reminder";
 import { useNodeMembershipsRune } from "@dashboard/lib/data-rune";
 
 const MENU_ITEMS = [
@@ -50,6 +53,30 @@ function fmtUsdt(v: number) {
   return `$${v.toFixed(2)}`;
 }
 
+/** Smooth eased count-up from 0 to `target` on mount. */
+function useCountUp(target: number, duration = 900) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    let startedAt = 0;
+    const tick = (ts: number) => {
+      if (!startedAt) startedAt = ts;
+      const progress = Math.min(1, (ts - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(target * eased);
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return value;
+}
+
+function AnimUsdt({ value }: { value: number }) {
+  const v = useCountUp(value);
+  return <>{fmtUsdt(v)}</>;
+}
+
 /**
  * Profile main page. All earnings figures are USDT — RUNE token isn't
  * listed yet, so the only on-chain currency flowing today is USDT (paid
@@ -74,6 +101,23 @@ export default function ProfilePage() {
 
   const { data: stats, isLoading: statsLoading } = usePersonalStats(isConnected ? walletAddr : undefined);
   const { data: memberships = [], isLoading: nodesLoading } = useNodeMembershipsRune();
+  const { hasPurchased: chainHasPurchased, isLoading: purchaseLoading } = useUserPurchase(walletAddr);
+
+  // One-shot "no node yet" reminder — pops once when a bound user lands on
+  // /app/profile without owning a node. Wait for both signals (chain +
+  // GraphQL stats) before deciding so we don't flash open then closed.
+  const [reminderOpen, setReminderOpen] = useState(false);
+  const [reminderDismissed, setReminderDismissed] = useState(false);
+  const dbHasPurchased = !!stats?.hasPurchased;
+  const ownsNode = chainHasPurchased || dbHasPurchased || memberships.length > 0;
+  useEffect(() => {
+    if (!isConnected) return;
+    if (statsLoading || purchaseLoading) return;
+    if (reminderDismissed) return;
+    if (!ownsNode) setReminderOpen(true);
+  }, [isConnected, statsLoading, purchaseLoading, ownsNode, reminderDismissed]);
+  // Reset dismissed flag when wallet changes.
+  useEffect(() => { setReminderDismissed(false); }, [walletAddr]);
 
   // Commission rewards are stored on-chain as 18-decimal USDT (`uint256`).
   const directCommissionUsdt = useMemo(
@@ -140,6 +184,7 @@ export default function ProfilePage() {
   const shortAddr = walletAddr ? `${walletAddr.slice(0, 6)}...${walletAddr.slice(-4)}` : "";
 
   return (
+    <PageEnter>
     <div className="pb-24 lg:pb-8 lg:pt-4" data-testid="page-profile">
 
       {/* Hero header — stronger amber wash, layered glows */}
@@ -228,14 +273,13 @@ export default function ProfilePage() {
                   <Skeleton className="h-10 w-36" />
                 ) : (
                   <div
-                    className="text-[34px] leading-none font-black tabular-nums tracking-tight"
+                    className="num-shimmer text-[34px] leading-none font-black tabular-nums tracking-tight"
                     style={{
-                      color: "hsl(43 100% 70%)",
-                      textShadow: "0 0 24px hsl(38 100% 55% / 0.65), 0 1px 0 rgba(0,0,0,0.4)",
+                      filter: "drop-shadow(0 0 18px hsl(38 100% 55% / 0.45)) drop-shadow(0 1px 0 rgba(0,0,0,0.4))",
                     }}
                     data-testid="text-total-earnings"
                   >
-                    {fmtUsdt(totalEarnings)}
+                    <AnimUsdt value={totalEarnings} />
                   </div>
                 )}
                 <div className="text-[10px] text-amber-100/55 mt-2">
@@ -269,7 +313,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="text-[15px] font-black text-emerald-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(142 70% 50% / 0.4)" }}>
-                    {fmtUsdt(directCommissionUsdt)}
+                    <AnimUsdt value={directCommissionUsdt} />
                   </div>
                   <div className="text-[9px] text-emerald-300/60 mt-0.5">USDT · on-chain</div>
                 </div>
@@ -287,7 +331,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="text-[15px] font-black text-blue-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(217 80% 60% / 0.4)" }}>
-                    {fmtUsdt(teamCommissionUsdt)}
+                    <AnimUsdt value={teamCommissionUsdt} />
                   </div>
                   <div className="text-[9px] text-blue-300/60 mt-0.5">USDT · gross</div>
                 </div>
@@ -305,7 +349,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="text-[15px] font-black text-amber-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(38 95% 55% / 0.45)" }}>
-                    {fmtUsdt(nodeYieldProjectionUsdt)}
+                    <AnimUsdt value={nodeYieldProjectionUsdt} />
                   </div>
                   <div className="text-[9px] text-amber-300/60 mt-0.5">USDT · projection</div>
                 </div>
@@ -333,7 +377,10 @@ export default function ProfilePage() {
               <div className="text-[22px] font-bold text-foreground/30">--</div>
             ) : nodeCount > 0 ? (
               <>
-                <div className="text-[22px] font-black text-amber-200 tabular-nums" style={{ textShadow: "0 0 14px hsl(38 95% 55% / 0.55)" }}>
+                <div
+                  className="num-gold text-[22px] font-black tabular-nums"
+                  style={{ filter: "drop-shadow(0 0 12px hsl(38 95% 55% / 0.40))" }}
+                >
                   {nodeCount}
                   <span className="text-[12px] font-normal ml-1.5 text-amber-300/70">× {ownTierLabel}</span>
                 </div>
@@ -455,5 +502,10 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+    <NoNodeReminder
+      open={reminderOpen}
+      onClose={() => { setReminderOpen(false); setReminderDismissed(true); }}
+    />
+    </PageEnter>
   );
 }

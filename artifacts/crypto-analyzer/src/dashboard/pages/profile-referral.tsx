@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { TeamTab, RewardsTab } from "@/pages/dashboard";
 import { Users, Gift } from "lucide-react";
 import { DashboardSubTabs } from "@dashboard/components/dashboard-sub-tabs";
+import { PageEnter } from "@dashboard/components/page-enter";
 
 type Sub = "team" | "rewards";
 
@@ -32,11 +33,13 @@ export default function ProfileReferral() {
   }
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
-      <div className="mb-4">
-        <DashboardSubTabs tabs={TABS} active={sub} onChange={setSub} testIdPrefix="tab-referral" />
+    <PageEnter>
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
+        <div className="mb-4">
+          <DashboardSubTabs tabs={TABS} active={sub} onChange={setSub} testIdPrefix="tab-referral" />
+        </div>
+        {sub === "team" ? <TeamTab address={address} /> : <RewardsTab address={address} />}
       </div>
-      {sub === "team" ? <TeamTab address={address} /> : <RewardsTab address={address} />}
-    </div>
+    </PageEnter>
   );
 }
