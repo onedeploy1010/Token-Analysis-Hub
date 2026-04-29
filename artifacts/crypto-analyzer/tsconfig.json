@@ -11,7 +11,9 @@
     "moduleResolution": "bundler",
     "types": ["node", "vite/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@dashboard/*": ["./src/dashboard/*"],
+      "@dashboard-shared/*": ["./src/dashboard-shared/*"]
     }
   },
   "references": [
