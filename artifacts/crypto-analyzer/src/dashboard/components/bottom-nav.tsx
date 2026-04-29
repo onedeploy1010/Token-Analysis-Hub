@@ -3,15 +3,21 @@ import { useTranslation } from "react-i18next";
 import { motion, LayoutGroup } from "framer-motion";
 import { LayoutDashboard, Eye, Shield, BarChart2, User } from "lucide-react";
 
-// Each tab carries the i18n key for its main label; the matching `${id}Zh`
-// key supplies the optional CJK brand glyph row (only rendered for zh / zh-TW).
+// Unified amber palette — every tab uses the mainnet `--primary`
+// (hsl 38 95% 55%) so the strip reads as a single coherent surface
+// rather than alternating amber/red dots. The CJK glyph row is gated
+// behind showZh inside the component.
+const ACCENT      = "hsl(38, 95%, 60%)";
+const ACCENT_GLOW = "rgba(251, 191, 36, 0.55)";
+const PILL_BG     = "linear-gradient(135deg, rgba(251,191,36,0.22), rgba(180,90,10,0.10))";
+
 const TABS = [
-  { path: "/",         icon: LayoutDashboard, id: "home",    accent: "#d4a832", glow: "rgba(212,168,50,0.6)", pillBg: "rgba(212,168,50,0.15)" },
-  { path: "/trade",    icon: Eye,             id: "predict", accent: "#ef4444", glow: "rgba(239,68,68,0.6)",  pillBg: "rgba(239,68,68,0.15)" },
-  { path: "/vault",    icon: Shield,          id: "vault",   accent: "#d4a832", glow: "rgba(212,168,50,0.6)", pillBg: "rgba(212,168,50,0.15)" },
-  { path: "/strategy", icon: BarChart2,       id: "trade",   accent: "#ef4444", glow: "rgba(239,68,68,0.6)",  pillBg: "rgba(239,68,68,0.15)" },
-  { path: "/profile",  icon: User,            id: "profile", accent: "#d4a832", glow: "rgba(212,168,50,0.6)", pillBg: "rgba(212,168,50,0.15)" },
-];
+  { path: "/",         icon: LayoutDashboard, id: "home" },
+  { path: "/trade",    icon: Eye,             id: "predict" },
+  { path: "/vault",    icon: Shield,          id: "vault" },
+  { path: "/strategy", icon: BarChart2,       id: "trade" },
+  { path: "/profile",  icon: User,            id: "profile" },
+].map((t) => ({ ...t, accent: ACCENT, glow: ACCENT_GLOW, pillBg: PILL_BG }));
 
 export function BottomNav() {
   const [location] = useLocation();
@@ -31,20 +37,24 @@ export function BottomNav() {
         <div
           className="pointer-events-auto relative flex items-stretch justify-around mx-3 mb-2.5 w-[calc(100%-1.5rem)] max-w-md rounded-2xl overflow-hidden"
           style={{
-            background: "linear-gradient(180deg, rgba(38,28,10,0.98) 0%, rgba(28,20,8,0.99) 100%)",
-            backdropFilter: "blur(24px) saturate(1.8)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.8)",
-            border: "1px solid rgba(212,168,50,0.35)",
-            boxShadow: "0 -6px 32px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(212,168,50,0.18), inset 0 1px 0 rgba(255,255,255,0.08), 0 -2px 24px rgba(212,168,50,0.06)",
+            background: "linear-gradient(180deg, rgba(28,22,10,0.94) 0%, rgba(14,10,4,0.96) 100%)",
+            backdropFilter: "blur(28px) saturate(1.6)",
+            WebkitBackdropFilter: "blur(28px) saturate(1.6)",
+            border: "1px solid rgba(251,191,36,0.30)",
+            boxShadow:
+              "0 -8px 36px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(251,191,36,0.22), inset 0 1px 0 rgba(251,191,36,0.18), inset 0 -1px 0 rgba(0,0,0,0.50), 0 -4px 24px rgba(251,191,36,0.10)",
           }}
         >
-          {/* Top shimmer line */}
+          {/* Top shimmer line — single amber gradient, matches mainnet header */}
           <div
-            className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+            className="absolute top-0 left-0 right-0 h-[1.5px] pointer-events-none"
             style={{
-              background: "linear-gradient(90deg, transparent 0%, rgba(212,168,50,0.45) 30%, rgba(239,68,68,0.35) 70%, transparent 100%)",
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(251,191,36,0.55) 50%, transparent 100%)",
             }}
           />
+          {/* Inner top edge highlight — gives the strip a subtle bevel */}
+          <div className="absolute inset-x-3 top-[1.5px] h-px pointer-events-none bg-gradient-to-r from-transparent via-amber-300/25 to-transparent" />
 
           {TABS.map((tab) => {
             const isActive = tab.path === "/" ? location === "/" : location.startsWith(tab.path);
