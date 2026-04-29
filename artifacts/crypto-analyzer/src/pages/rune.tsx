@@ -468,20 +468,24 @@ export default function Rune() {
     return out;
   }, [monthlyActiveUsers, avgPackageUsdt]);
 
-  // Sub-token price as a function of effective TVL. Per 子母币双币结合.md
-  // PART V: P_EMBER ∝ effectiveTVL², calibrated to the doc table:
-  //   TVL 1000万U → $2  /  3000万 → $18  /  5000万 → $50  /  1亿 → $200.
-  // Below the launch threshold (TLP < 500万U) sub doesn't trade; we floor
-  // it at the $0.038 launch price once the threshold is crossed.
-  // effectiveTVL ≈ tlpUsdt / 0.35 (TLP is 35% of total deposit per §叁).
-  const SUB_LAUNCH_PRICE = 0.038;
-  const SUB_LAUNCH_TLP_USDT = 500 * 10_000;
+  // Sub-token price as a function of TLP. Calibrated piecewise:
+  //   - TLP < 500万U  : sub not launched → 0
+  //   - TLP = 500万   : launch at $0.038 (per 模型制度 §壹)
+  //   - 500万 → 1000万 : linear ramp $0.038 → $2 (smooth transition into
+  //                     the doc's quadratic regime)
+  //   - TLP ≥ 1000万   : $2 × (tlp_万 / 1000)² calibrated to doc PART V
+  //                     ($2 / $18 / $50 / $200 at 1000/3000/5000/10000万)
+  const SUB_LAUNCH_PRICE     = 0.038;
+  const SUB_LAUNCH_TLP_USDT  = 500 * 10_000;
+  const SUB_REGIME2_TLP_USDT = 1000 * 10_000;
   const subPriceAtTlp = (tlpUsdt: number): number => {
     if (tlpUsdt < SUB_LAUNCH_TLP_USDT) return 0;
-    const tvlWan = (tlpUsdt / 0.35) / 10_000;
-    // P = $2 × (TVL / 1000万)² calibrated against doc PART V
-    const price  = 2 * Math.pow(tvlWan / 1000, 2);
-    return Math.max(SUB_LAUNCH_PRICE, price);
+    if (tlpUsdt < SUB_REGIME2_TLP_USDT) {
+      const t = (tlpUsdt - SUB_LAUNCH_TLP_USDT) / (SUB_REGIME2_TLP_USDT - SUB_LAUNCH_TLP_USDT);
+      return SUB_LAUNCH_PRICE + (2 - SUB_LAUNCH_PRICE) * t;
+    }
+    const tlpWan = tlpUsdt / 10_000;
+    return 2 * Math.pow(tlpWan / 1000, 2);
   };
 
   // Sample every 10 days for chart density readable on mobile.
@@ -2553,7 +2557,9 @@ export default function Rune() {
             </div>
           </details>
 
-          {/* Computed outputs — burn-stake mother → daily sub-tokens → AI + IDO */}
+          {/* Computed outputs — burn-stake mother → sub-token value (primary).
+              IDO 打新 shown as a SEPARATE section below. AI dividend
+              dropped per user 2026-04-29 — too speculative, not core. */}
           {(() => {
             const stage = overview?.priceStages?.[stakeStage];
             if (!stage) return null;
@@ -2564,78 +2570,82 @@ export default function Rune() {
                           : burnTokens >=   1_000 ? 1.3
                           : burnTokens >=     100 ? 1.2
                           :                          1.0;
-            const dailySubYield  = burnTokens * (tierRate / 100);   // sub-tokens per day
+            const dailySubYield  = burnTokens * (tierRate / 100);
             const totalSubTokens = dailySubYield * burnDays;
-            const subTokenValue  = totalSubTokens * stage.subPrice;
-            const burnCostUsd    = burnTokens * launchMotherPrice;  // sunk cost basis
-            const months = burnDays / 30;
-            const avgSubStake = totalSubTokens / 2;
-            const aiRevenue = months > 0 && globalSubStaked > 0
-              ? aiPoolMonthly * (avgSubStake / (globalSubStaked + avgSubStake)) * months
-              : 0;
-            const idoCount = idosPerMonth * months;
+            // Sub valuation now follows the dynamic price simulation at the
+            // burn duration day, not doc-static stage.subPrice. So 30/90/180
+            // day windows reflect what the activity sliders actually project
+            // for sub price, starting from $0.038 launch upward.
+            const tlpAtBurnEnd      = tlpAt(burnDays) * 10000;          // 万 → USDT
+            const subPriceAtBurnEnd = subPriceAtTlp(tlpAtBurnEnd);
+            const subTokenValue     = totalSubTokens * subPriceAtBurnEnd;
+            const burnCostUsd       = burnTokens * launchMotherPrice;
+            // IDO 打新 — sub-stake × allocFactor × IDO count × (multiplier-1)
+            const months           = burnDays / 30;
+            const avgSubStake      = totalSubTokens / 2;
+            const idoCount         = idosPerMonth * months;
             const idoAllocPerEvent = avgSubStake * idoAllocFactor;
-            const idoGains = idoCount * idoAllocPerEvent * (idoAvgMultiplier - 1);
-            // Per doc PART V: total cash returns = AI dividend + IDO gains.
-            // Sub-token holdings are "auto-staked" — their value is realized
-            // through the AI/IDO streams, not booked separately as a stage-
-            // priced asset. Including stage-priced sub-token value double-
-            // counts and inflated ROI ~7×. Sub-token value still shown below
-            // as informational, but no longer rolled into total/ROI.
-            const totalIncome = aiRevenue + idoGains;
+            const idoGains         = idoCount * idoAllocPerEvent * (idoAvgMultiplier - 1);
+            const totalIncome = subTokenValue + idoGains;
             const roi  = burnCostUsd > 0 ? (totalIncome / burnCostUsd) * 100 : 0;
             const roiX = burnCostUsd > 0 ?  totalIncome / burnCostUsd        : 0;
-            const breakdownSafe = [
-              { label: isEn ? "Sub-Tokens Yielded"      : "累积子币产出",       displayValue: `${fmt(totalSubTokens, 0)} ${isEn ? "tokens" : "枚"}`, share: 0, info: true },
-              { label: isEn ? "Sub-Token Value @ stage" : "子币持仓估值（参考）", displayValue: `$${fmt(subTokenValue, 0)}`,                            share: 0, info: true },
-              { label: isEn ? "AI Revenue (sub-stake)"  : "AI 月分红 (子币)",   displayValue: `$${fmt(aiRevenue, 0)}`,                                share: totalIncome > 0 ? aiRevenue / totalIncome : 0, info: false },
-              { label: isEn ? "IDO Gains"               : "IDO 打新收益",        displayValue: `$${fmt(idoGains, 0)}`,                                 share: totalIncome > 0 ? idoGains  / totalIncome : 0, info: false },
-            ];
             return (
               <div className="space-y-4">
-                <div className="p-4 sm:p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
-                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                    <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
-                      {isEn ? "Total Cash Returns (AI + IDO)" : "现金收益（AI + IDO）"}
+                {/* Total — combines sub value + IDO. */}
+                <div className="p-5 sm:p-6 rounded-2xl border-2 border-primary/60 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent shadow-[0_0_40px_hsl(var(--primary)/0.35)] relative overflow-hidden">
+                  <div className="absolute -top-16 -right-12 w-48 h-48 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                      <p className="text-[12px] text-primary uppercase tracking-widest font-bold">
+                        {isEn ? "Total Estimated Returns" : "总估算收益"}
+                      </p>
+                      <span className="text-[10px] bg-primary/25 text-primary border border-primary/40 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
+                    </div>
+                    <div className="flex items-end gap-3 flex-wrap">
+                      <p className="num-shimmer text-4xl sm:text-5xl text-primary drop-shadow-[0_0_18px_hsl(var(--primary)/0.5)]">${fmt(totalIncome, 0)}</p>
+                      <div className="flex gap-2 flex-wrap mb-1.5">
+                        <span className="text-xs bg-primary/25 text-primary border border-primary/40 px-2.5 py-0.5 rounded-full num font-semibold">ROI {fmt(roi, 0)}%</span>
+                        <span className="text-xs bg-muted/40 text-foreground border border-border/40 px-2.5 py-0.5 rounded-full num">{fmt(roiX, 1)}×</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      {isEn
+                        ? `Burned ${burnTokens.toLocaleString()} mother · cost $${fmt(burnCostUsd, 2)} @ launch · ${tierRate}% daily = ${fmt(dailySubYield, 0)} sub/day · ${burnDays}d`
+                        : `销毁 ${burnTokens.toLocaleString()} 枚母币 · 成本 $${fmt(burnCostUsd, 2)} 开盘价 · 日化 ${tierRate}% = ${fmt(dailySubYield, 0)} 子币/天 · ${burnDays} 天`}
                     </p>
-                    <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
+                    <p className="text-[10px] text-muted-foreground/70 mt-1">
+                      {isEn ? "⚠ Mother burn is permanent — principal not redeemable." : "⚠ 销毁母币本金不归还（永久通缩）。"}
+                    </p>
                   </div>
-                  <div className="flex items-end gap-3 flex-wrap">
-                    <p className="num-shimmer text-3xl sm:text-4xl">${fmt(totalIncome, 0)}</p>
-                    <div className="flex gap-2 flex-wrap mb-1">
-                      <span className="text-xs bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full num">ROI {fmt(roi, 0)}%</span>
-                      <span className="text-xs bg-muted/40 text-foreground border border-border/40 px-2 py-0.5 rounded-full num">{fmt(roiX, 1)}×</span>
-                    </div>
+                </div>
+
+                {/* PART 1: Sub-token value (primary outcome of burn). */}
+                <div className="p-4 rounded-xl border border-orange-500/40 bg-orange-500/5">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <p className="text-[11px] text-orange-300 uppercase tracking-wider font-semibold">
+                      {isEn ? "Sub-Token Value (from burn)" : "子币价值（销毁产出）"}
+                    </p>
+                    <span className="text-[10px] num text-orange-300/80">{totalIncome > 0 ? fmt((subTokenValue / totalIncome) * 100, 0) : 0}%</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-2">
-                    {isEn
-                      ? `Burned ${burnTokens.toLocaleString()} mother (cost basis ${burnTokens.toLocaleString()} × $${launchMotherPrice} = $${fmt(burnCostUsd, 2)} @ launch price) · ${tierRate}% daily = ${fmt(dailySubYield, 0)} sub/day · ${burnDays}d window @ ${stageLabel(stage, stakeStage)}`
-                      : `销毁 ${burnTokens.toLocaleString()} 枚母币（成本基数：${burnTokens.toLocaleString()} 枚 × $${launchMotherPrice}/枚 = $${fmt(burnCostUsd, 2)} 按开盘价）· 日化 ${tierRate}% = ${fmt(dailySubYield, 0)} 子币/天 · ${burnDays} 天估值窗口 @ ${stageLabel(stage, stakeStage)}`}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground/70 mt-1">
-                    {isEn ? "⚠ Mother burn is permanent — principal not redeemable. Yield in sub-tokens auto-stakes for AI + IDO." : "⚠ 销毁母币本金不归还（永久通缩）。日产出子币自动入质押池享 AI 分红 + IDO 打新。"}
+                  <p className="num text-2xl text-orange-200">${fmt(subTokenValue, 0)}</p>
+                  <p className="text-[11px] text-muted-foreground/80 mt-1">
+                    {fmt(totalSubTokens, 0)} {isEn ? "sub × " : "枚 × "}${subPriceAtBurnEnd.toFixed(subPriceAtBurnEnd < 1 ? 4 : 2)} {isEn ? "(dynamic)" : "（动态）"}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {breakdownSafe.map((b, i) => (
-                    <div key={i} className={`p-3 sm:p-4 rounded-xl border ${b.info ? "border-border/30 bg-card/30" : "border-border/40 bg-card/60"}`}>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{b.label}</p>
-                      <p className={`num text-base sm:text-lg mt-1 ${b.info ? "text-muted-foreground" : "text-foreground"}`}>{b.displayValue}</p>
-                      {b.share > 0 ? (
-                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{fmt(b.share * 100, 1)}% {isEn ? "of total" : "占总收益"}</p>
-                      ) : b.info ? (
-                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{isEn ? "informational · not in total" : "参考 · 不计入总收益"}</p>
-                      ) : null}
-                    </div>
-                  ))}
+                {/* PART 2: IDO 打新 — separate section below. */}
+                <div className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <p className="text-[11px] text-emerald-300 uppercase tracking-wider font-semibold">
+                      {isEn ? "IDO Allocation Gains (打新)" : "IDO 打新收益"}
+                    </p>
+                    <span className="text-[10px] num text-emerald-300/80">{totalIncome > 0 ? fmt((idoGains / totalIncome) * 100, 0) : 0}%</span>
+                  </div>
+                  <p className="num text-2xl text-emerald-200">${fmt(idoGains, 0)}</p>
+                  <p className="text-[11px] text-muted-foreground/80 mt-1">
+                    {fmt(idoCount, 1)} {isEn ? "IDOs" : "次打新"} × ${fmt(idoAllocPerEvent, 0)} {isEn ? "alloc × " : "配额 × "}{(idoAvgMultiplier - 1).toFixed(0)}× {isEn ? "gain" : "涨幅"}
+                  </p>
                 </div>
-
-                <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
-                  {isEn
-                    ? "Chain: burn N mother (永久通缩) → daily 1.0-1.5%×N sub-tokens (tier rate by burn amount) → sub-tokens auto-stake → AI monthly USDT pool 1M split by weight (your share = avg sub-stake / global) + IDO allocations averaging 50× returns. Sub-token holdings valued at selectedStage subPrice. AI engine 25-35% monthly is projection, not guaranteed; mother burn is irreversible on-chain."
-                    : "链路：销毁 N 母币（永久通缩、本金不归还）→ 永久日产 1.0-1.5%×N 子币（按销毁数量分层）→ 子币自动入质押池 → 享 AI 月分红（100万U 池按权重分，你的占比 = 平均子币质押 / 全网）+ IDO 打新（平均 50× 涨幅）。子币最终估值按所选阶段。AI 月化 25-35% 为预估、非合约保证；母币销毁链上不可逆。"}
-                </p>
               </div>
             );
           })()}
