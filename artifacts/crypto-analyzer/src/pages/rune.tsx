@@ -292,6 +292,8 @@ export default function Rune() {
   const [durationDays, setDurationDays] = useState(180);
   const [priceStageIndex, setPriceStageIndex] = useState(3);
   const [trendScale, setTrendScale] = useState<"log" | "linear">("log");
+  // Dynamic price simulation chart — pick mother or sub view (toggle).
+  const [simTokenView, setSimTokenView] = useState<"mother" | "sub">("mother");
   const calcMutation = useCalculateRuneReturns();
   const burnCalcMutation = useCalculateRuneBurnStake();
   const [burnTokens, setBurnTokens] = useState(1000);
@@ -1264,10 +1266,12 @@ export default function Rune() {
               : `推导：${monthlyActiveUsers.toLocaleString()} 人 × $${avgPackageUsdt.toLocaleString()} = ${((monthlyActiveUsers * avgPackageUsdt)/10000).toFixed(0)}万 USDT / 月 进入 TLP。RUNE 由 AMM 兑换数学 + 0.2%/日 协议自销毁同时收缩。`}
           </div>
 
-          {/* Milestone KPI row — TLP-target-driven (when does each milestone arrive?) */}
+          {/* Milestone KPI row — shows the selected token's price at each TLP milestone. */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {priceMilestones.map(({ day, label, data }) => {
-              const reached = day < SIM_HORIZON_DAYS;
+              const reached    = day < SIM_HORIZON_DAYS;
+              const tokenPrice = simTokenView === "mother" ? (data?.price ?? 0) : (data?.subPrice ?? 0);
+              const tokenColor = simTokenView === "mother" ? "text-amber-200" : "text-orange-200";
               return (
                 <div key={label} className="p-3 rounded-xl border border-border/40 bg-card/40">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -1275,53 +1279,62 @@ export default function Rune() {
                     {reached ? (isEn ? `≈ Day ${Math.round(day)}` : `≈ 第 ${Math.round(day)} 天`)
                              : (isEn ? "Out of horizon" : "超出 18 个月窗口")}
                   </p>
-                  <p className="num text-base text-amber-200 mt-1">${(data?.price ?? 0).toFixed(data && data.price < 1 ? 4 : 2)}</p>
+                  <p className={`num text-base ${tokenColor} mt-1`}>${tokenPrice.toFixed(tokenPrice < 1 ? 4 : 2)}</p>
                   <p className="text-[10px] text-muted-foreground/60 mt-0.5 num">
-                    LP {fmt((data?.lpRune ?? 0) / 1e6, 1)}M
+                    {simTokenView === "mother"
+                      ? `LP ${fmt((data?.lpRune ?? 0) / 1e6, 1)}M`
+                      : (isEn ? "EMBER price" : "EMBER 价格")}
                   </p>
                 </div>
               );
             })}
           </div>
 
-          {/* Price curve chart — mother (amber, left axis) + sub (orange, right axis) */}
-          <div className="overflow-hidden">
+          {/* Mother / Sub toggle — switches the single line shown on the chart. */}
+          <div className="relative">
+            <div className="absolute top-0 right-0 z-10 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-background/50 p-1 text-[11px] uppercase tracking-[0.18em] backdrop-blur">
+              {(["mother", "sub"] as const).map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSimTokenView(s)}
+                  className={`rounded-full px-3 py-0.5 num tabular-nums transition-all ${
+                    simTokenView === s
+                      ? "bg-primary/25 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.4)]"
+                      : "text-muted-foreground/60 hover:text-primary/80"
+                  }`}
+                >
+                  {s === "mother" ? (isEn ? "RUNE" : "母币") : (isEn ? "EMBER" : "子币")}
+                </button>
+              ))}
+            </div>
+
             <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={priceSimulation} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+              <AreaChart data={priceSimulation} margin={{ top: 28, right: 12, left: 4, bottom: 4 }}>
                 <defs>
-                  <linearGradient id="gradPriceSim"  x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor={C.mother} stopOpacity={0.5} />
-                    <stop offset="95%" stopColor={C.mother} stopOpacity={0}   />
-                  </linearGradient>
-                  <linearGradient id="gradSubPriceSim" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor={C.sub} stopOpacity={0.45} />
-                    <stop offset="95%" stopColor={C.sub} stopOpacity={0}    />
+                  <linearGradient id="gradPriceSim" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={simTokenView === "mother" ? C.mother : C.sub} stopOpacity={0.5} />
+                    <stop offset="95%" stopColor={simTokenView === "mother" ? C.mother : C.sub} stopOpacity={0}   />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
                 <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
                   tickFormatter={(v) => `${v}d`} />
-                {/* Dual Y axes — mother and sub price magnitudes differ ~100×.
-                    Splitting them keeps both lines visible on linear scale. */}
-                <YAxis yAxisId="mother" orientation="left"
-                  tick={{ fill: C.mother, fontSize: 10 }} axisLine={false} tickLine={false}
-                  tickFormatter={(v) => v < 1 ? `$${v.toFixed(3)}` : `$${v.toFixed(2)}`} />
-                <YAxis yAxisId="sub" orientation="right"
-                  tick={{ fill: C.sub, fontSize: 10 }} axisLine={false} tickLine={false}
-                  tickFormatter={(v) => v >= 100 ? `$${v.toFixed(0)}` : v >= 1 ? `$${v.toFixed(0)}` : `$${v.toFixed(2)}`} />
+                <YAxis tick={{ fill: simTokenView === "mother" ? C.mother : C.sub, fontSize: 10 }}
+                  axisLine={false} tickLine={false}
+                  tickFormatter={(v) => v >= 100 ? `$${v.toFixed(0)}` : v >= 1 ? `$${v.toFixed(2)}` : `$${v.toFixed(3)}`} />
                 <Tooltip {...tooltipStyle}
-                  formatter={(v: number, name: string) => name === "price"
-                    ? [`$${v.toFixed(4)}`, isEn ? "RUNE Price" : "RUNE 价格"]
-                    : name === "subPrice"
-                      ? [`$${v.toFixed(v < 1 ? 4 : 2)}`, isEn ? "EMBER Price" : "EMBER 子币价格"]
-                      : [v, name]}
+                  formatter={(v: number) => [
+                    `$${v.toFixed(v < 1 ? 4 : 2)}`,
+                    simTokenView === "mother" ? (isEn ? "RUNE Price" : "RUNE 价格") : (isEn ? "EMBER Price" : "EMBER 子币价格"),
+                  ]}
                   labelFormatter={(d: number) => isEn ? `Day ${d}` : `第 ${d} 天`}
                   animationDuration={180} />
-                <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 8 }} iconType="circle" />
-                <Area yAxisId="mother" type="monotone" dataKey="price" name={isEn ? "RUNE Price" : "RUNE 价格"}
-                  stroke={C.mother} strokeWidth={2.4} fill="url(#gradPriceSim)" dot={false} animationDuration={1400} />
-                <Area yAxisId="sub" type="monotone" dataKey="subPrice" name={isEn ? "EMBER Price" : "EMBER 子币价格"}
-                  stroke={C.sub} strokeWidth={2.4} fill="url(#gradSubPriceSim)" dot={false} animationDuration={1400} animationBegin={300} />
+                <Area type="monotone"
+                  dataKey={simTokenView === "mother" ? "price" : "subPrice"}
+                  stroke={simTokenView === "mother" ? C.mother : C.sub}
+                  strokeWidth={2.4} fill="url(#gradPriceSim)" dot={false}
+                  animationDuration={1400} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
