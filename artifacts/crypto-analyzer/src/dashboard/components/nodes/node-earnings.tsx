@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@dashboard/components/ui/card";
 import { Button } from "@dashboard/components/ui/button";
 import { TrendingUp, Coins, Users, ChevronRight } from "lucide-react";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import type { NodeRewardsSummary } from "@dashboard-shared/types";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
@@ -12,7 +12,7 @@ interface NodeEarningsProps {
 
 export function NodeEarnings({ rewards }: NodeEarningsProps) {
   const { t } = useTranslation();
-  const { formatCompactMA } = useMaPrice();
+  const { formatCompactMA } = useRunePrice();
   const [, navigate] = useLocation();
   const fixedYield = Number(rewards.fixedYield || 0);
   const poolDividend = Number(rewards.poolDividend || 0);

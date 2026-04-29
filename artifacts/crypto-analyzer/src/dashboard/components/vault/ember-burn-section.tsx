@@ -11,7 +11,7 @@ import { queryClient } from "@dashboard/lib/queryClient";
 import { useToast } from "@dashboard/hooks/use-toast";
 import { apiPost } from "@dashboard/lib/api";
 import { usePayment, getPaymentStatusLabel } from "@dashboard/hooks/use-payment";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import { EMBER_BURN_CONTRACT_ADDRESS } from "@dashboard/lib/contracts";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
@@ -42,7 +42,7 @@ export function EmberBurnSection() {
   const wallet = account?.address || "";
   const { toast } = useToast();
   const payment = usePayment();
-  const { price: runePrice, usdcToMA } = useMaPrice();
+  const { price: runePrice, usdcToMA } = useRunePrice();
   const [, navigate] = useLocation();
 
   const [open, setOpen] = useState(false);

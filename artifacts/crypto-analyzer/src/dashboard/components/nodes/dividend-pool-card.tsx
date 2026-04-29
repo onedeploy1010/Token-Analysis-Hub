@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@dashboard/components/ui/card";
 import { Coins } from "lucide-react";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import type { NodePoolInfo } from "@dashboard-shared/types";
 import { useTranslation } from "react-i18next";
 
@@ -10,7 +10,7 @@ interface DividendPoolCardProps {
 
 export function DividendPoolCard({ pool }: DividendPoolCardProps) {
   const { t } = useTranslation();
-  const { formatCompactMA } = useMaPrice();
+  const { formatCompactMA } = useRunePrice();
   const balance = Number(pool.balance || 0);
 
   return (

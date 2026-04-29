@@ -3,7 +3,7 @@ import { Button } from "@dashboard/components/ui/button";
 import { Badge } from "@dashboard/components/ui/badge";
 import { Skeleton } from "@dashboard/components/ui/skeleton";
 import { useActiveAccount } from "thirdweb/react";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import { ArrowLeft, TrendingUp, Coins, WalletCards } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 export default function ProfileNodeEarningsPage() {
   const { t } = useTranslation();
   const account = useActiveAccount();
-  const { formatCompactMA, usdcToMA } = useMaPrice();
+  const { formatCompactMA, usdcToMA } = useRunePrice();
   const [, navigate] = useLocation();
   const walletAddr = account?.address || "";
   const isConnected = !!walletAddr;

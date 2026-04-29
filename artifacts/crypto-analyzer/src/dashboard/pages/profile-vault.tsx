@@ -8,7 +8,7 @@ import { Skeleton } from "@dashboard/components/ui/skeleton";
 import { Badge } from "@dashboard/components/ui/badge";
 import { Button } from "@dashboard/components/ui/button";
 import { ArrowLeft, Lock, Flame, Sparkles, Clock, TrendingUp, Zap, ChevronRight, AlertCircle } from "lucide-react";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import { cn } from "@dashboard/lib/utils";
 import { apiPost } from "@dashboard/lib/api";
 import { useToast } from "@dashboard/hooks/use-toast";
@@ -65,7 +65,7 @@ export default function ProfileVaultPage() {
   const { toast } = useToast();
   const wallet = account?.address || "";
   const isConnected = !!wallet;
-  const { price: runePrice } = useMaPrice();
+  const { price: runePrice } = useRunePrice();
   const [activeTab, setActiveTab] = useState<PosTab>("lock");
 
   const { data: lockPositions = [], isLoading: lockLoading } = useQuery<RuneLockPosition[]>({

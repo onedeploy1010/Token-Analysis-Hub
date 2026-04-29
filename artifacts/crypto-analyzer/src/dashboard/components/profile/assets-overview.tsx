@@ -3,7 +3,7 @@ import { Skeleton } from "@dashboard/components/ui/skeleton";
 import { Wallet } from "lucide-react";
 import { useActiveAccount } from "thirdweb/react";
 import { useQuery } from "@tanstack/react-query";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import type { Profile } from "@dashboard-shared/types";
 import { getProfile } from "@dashboard/lib/api";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 export function AssetsOverview() {
   const { t } = useTranslation();
   const account = useActiveAccount();
-  const { formatMA } = useMaPrice();
+  const { formatMA } = useRunePrice();
   const walletAddr = account?.address || "";
 
   const { data: profile, isLoading } = useQuery<Profile>({

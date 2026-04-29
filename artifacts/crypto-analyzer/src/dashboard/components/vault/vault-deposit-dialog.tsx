@@ -19,7 +19,7 @@ import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { prepareContractCall, waitForReceipt, getContract } from "thirdweb";
 import { useThirdwebClient } from "@dashboard/hooks/use-thirdweb";
 import { VAULT_V3_ADDRESS, USDT_ADDRESS, USDC_ADDRESS, BSC_CHAIN } from "@dashboard/lib/contracts";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import { VAULT_PLANS } from "@dashboard/lib/data";
 import { cn } from "@dashboard/lib/utils";
 import { useTranslation } from "react-i18next";
@@ -44,7 +44,7 @@ export function VaultDepositDialog({ open, onOpenChange }: VaultDepositDialogPro
       buyWithFiat: {},
     },
   });
-  const { price: maPrice, usdcToMA } = useMaPrice();
+  const { price: maPrice, usdcToMA } = useRunePrice();
 
   const [selectedPlan, setSelectedPlan] = useState<keyof typeof VAULT_PLANS>("5_DAYS");
   const [amount, setAmount] = useState("");

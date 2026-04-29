@@ -1,6 +1,6 @@
 import { Skeleton } from "@dashboard/components/ui/skeleton";
 import { useActiveAccount } from "thirdweb/react";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import { Copy, WalletCards, ChevronRight, Bell, Settings, History, GitBranch, Server, Share2, ArrowLeftRight, User, Vault, Flame, Lock, TrendingUp } from "lucide-react";
 import { useToast } from "@dashboard/hooks/use-toast";
 import { copyText } from "@dashboard/lib/copy";
@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const { t } = useTranslation();
   const account = useActiveAccount();
   const { toast } = useToast();
-  const { formatCompactMA } = useMaPrice();
+  const { formatCompactMA } = useRunePrice();
   const [, navigate] = useLocation();
   const walletAddr = account?.address || "";
   const isConnected = !!walletAddr;

@@ -22,7 +22,7 @@ import { prepareContractCall, readContract, waitForReceipt, getContract } from "
 import { useQuery } from "@tanstack/react-query";
 import { useThirdwebClient } from "@dashboard/hooks/use-thirdweb";
 import { RELEASE_ADDRESS, BSC_CHAIN } from "@dashboard/lib/contracts";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import { queryClient } from "@dashboard/lib/queryClient";
 
 import { cn } from "@dashboard/lib/utils";
@@ -114,7 +114,7 @@ export function MAReleaseDialog({ open, onOpenChange }: MAReleaseDialogProps) {
   const totalClaimable = Number(totalClaimableRaw || BigInt(0)) / 1e18;
 
   // Also read DB-based yield in USD (vault interest calculated off-chain)
-  const { price: maPrice } = useMaPrice();
+  const { price: maPrice } = useRunePrice();
   const { data: dbYieldUsd = 0 } = useQuery({
     queryKey: ["vault-db-yield-usd", account?.address],
     queryFn: async () => {

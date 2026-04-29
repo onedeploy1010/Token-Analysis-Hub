@@ -10,7 +10,7 @@ import { useThirdwebClient } from "@dashboard/hooks/use-thirdweb";
 import { getMATokenContract, getUsdtContract, MA_TOKEN_ADDRESS, RELEASE_ADDRESS, BSC_CHAIN } from "@dashboard/lib/contracts";
 import { transfer } from "thirdweb/extensions/erc20";
 import { VAULT_PLANS } from "@dashboard/lib/data";
-import { useMaPrice } from "@dashboard/hooks/use-ma-price";
+import { useRunePrice } from "@dashboard/hooks/use-rune-price";
 import { createChart, ColorType, CrosshairMode, LineStyle, type UTCTimestamp } from "lightweight-charts";
 import { ProfileNav } from "@dashboard/components/profile-nav";
 import { queryClient } from "@dashboard/lib/queryClient";
@@ -27,7 +27,7 @@ function MAPriceChart() {
   const chartRef = useRef<ReturnType<typeof createChart> | null>(null);
   const [tf, setTf] = useState<"1H" | "4H" | "1D">("1H");
   const [chartMode, setChartMode] = useState<"candle" | "area">("area");
-  const { price: livePrice } = useMaPrice();
+  const { price: livePrice } = useRunePrice();
 
   const buildData = useCallback(() => {
     const now = Math.floor(Date.now() / 1000);
@@ -258,7 +258,7 @@ function MASwap() {
     refetchInterval: 15000,
   });
 
-  const { price: maPrice } = useMaPrice();
+  const { price: maPrice } = useRunePrice();
 
   const maBalance = Number(maBalanceRaw || BigInt(0)) / 1e18;
   const swapQuota = maBalance / 2;
@@ -496,7 +496,7 @@ function MASwap() {
 
 export default function ProfileMAPage() {
   const [, navigate] = useLocation();
-  const { price } = useMaPrice();
+  const { price } = useRunePrice();
 
   return (
     <div className="min-h-screen pb-28 lg:pb-8 lg:pt-4" style={{ background: "#0a0a0a" }}>
@@ -546,7 +546,7 @@ export default function ProfileMAPage() {
 function VaultRedeemSection() {
   const { t } = useTranslation();
   const account = useActiveAccount();
-  const { price: maPrice } = useMaPrice();
+  const { price: maPrice } = useRunePrice();
   const [redeeming, setRedeeming] = useState<string | null>(null);
 
   const { data: positions = [], refetch } = useQuery({
