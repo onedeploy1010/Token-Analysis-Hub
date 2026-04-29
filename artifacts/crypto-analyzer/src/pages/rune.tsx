@@ -388,6 +388,23 @@ export default function Rune() {
   const [idoAvgMultiplier, setIdoAvgMultiplier] = useState(50);
   const [idoAllocFactor,   setIdoAllocFactor]   = useState(0.003);   // your sub-stake × this = USDT allocation per IDO. Calibrated against doc PART V: 6.27M IDO gain @ 540d/10000U → ~$4,738/IDO ÷ 1.44M avg sub-stake ≈ 0.0033.
 
+  // Auto-default the burn-stake price stage to one matching the projection
+  // window — short windows shouldn't price sub at far-future stages.
+  //   30d  → Stage 1 (TLP 700万)
+  //   90d  → Stage 2 (TLP 1750万)
+  //   180d → Stage 3 (TLP 3500万) — TLP cap day
+  //   360d → Stage 4 (~18mo extrapolation)
+  //   540d+→ Stage 5 (24mo target / peak)
+  // Fires on burnDays change; user can still manually override after.
+  useEffect(() => {
+    const next = burnDays <= 30  ? 1
+              : burnDays <= 90  ? 2
+              : burnDays <= 180 ? 3
+              : burnDays <= 360 ? 4
+              :                   5;
+    setStakeStage(next);
+  }, [burnDays]);
+
   const selectedNode         = overview?.nodes?.find(n => n.level === nodeLevel);
   const selectedStagePreview = overview?.priceStages?.[priceStageIndex];
 
@@ -707,7 +724,7 @@ export default function Rune() {
             {[
               { labelEn: "USDT APY",    i18nKey: "mr.rune.stat.apy",         end: 170.82, decimals: 2, prefix: "",  suffix: "%", highlight: true,  shimmer: true  },
               { labelEn: "TVL",         i18nKey: "mr.rune.stat.tvl",         end: 312,    decimals: 0, prefix: "$", suffix: "M", highlight: true,  shimmer: false },
-              { labelEn: "Node Tiers",  i18nKey: "mr.rune.stat.nodeTiers",   end: 4,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
+              { labelEn: "Node Tiers",  i18nKey: "mr.rune.stat.nodeTiers",   end: 5,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
               { labelEn: "Price Stages",i18nKey: "mr.rune.stat.priceStages", end: 6,      decimals: 0, prefix: "",  suffix: "",  highlight: false, shimmer: false },
             ].map(({ labelEn, i18nKey, end, decimals, prefix, suffix, highlight, shimmer }, i) => (
               <motion.div
@@ -1262,8 +1279,8 @@ export default function Rune() {
           {/* Derived inflow tag — so users see the math */}
           <div className="text-[10px] text-muted-foreground/70 text-center">
             {isEn
-              ? `Derived: ${monthlyActiveUsers.toLocaleString()} users × $${avgPackageUsdt.toLocaleString()} = $${((monthlyActiveUsers * avgPackageUsdt)/10000).toFixed(0)}万 USDT / mo into TLP. RUNE drains via AMM swap math + 0.2%/day protocol auto-burn.`
-              : `推导：${monthlyActiveUsers.toLocaleString()} 人 × $${avgPackageUsdt.toLocaleString()} = ${((monthlyActiveUsers * avgPackageUsdt)/10000).toFixed(0)}万 USDT / 月 进入 TLP。RUNE 由 AMM 兑换数学 + 0.2%/日 协议自销毁同时收缩。`}
+              ? `Derived: ${monthlyActiveUsers.toLocaleString()} users × $${avgPackageUsdt.toLocaleString()} = $${((monthlyActiveUsers * avgPackageUsdt)/10000).toFixed(1)}万 USDT / mo into TLP. RUNE drains via AMM swap math + 0.2%/day protocol auto-burn.`
+              : `推导：${monthlyActiveUsers.toLocaleString()} 人 × $${avgPackageUsdt.toLocaleString()} = ${((monthlyActiveUsers * avgPackageUsdt)/10000).toFixed(1)}万 USDT / 月 进入 TLP。RUNE 由 AMM 兑换数学 + 0.2%/日 协议自销毁同时收缩。`}
           </div>
 
           {/* Milestone KPI row — shows the selected token's price at each TLP milestone. */}
