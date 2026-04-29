@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Skeleton } from "@dashboard/components/ui/skeleton";
 import { Card, CardContent } from "@dashboard/components/ui/card";
-import { Layers, Shield, TrendingUp, RefreshCw } from "lucide-react";
+import { Layers, Shield, TrendingUp, RefreshCw, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@dashboard/lib/utils";
 import { usePoolStatsRune } from "@dashboard/lib/data-rune";
@@ -16,93 +16,98 @@ function fmtUsdt(val: string | number) {
 }
 
 /**
- * Vault page LP card. Aggregates on-chain `rune_purchases` deposits and
- * shows the 35% RUNE LP / 20% Reserve breakdown using mainnet's amber/card
- * design tokens. The 45% managed pool deliberately lives on the strategy
- * page (TradingVaultBanner), not here.
+ * Vault page LP card. Shows aggregate node-deposit totals split into the
+ * 35% RUNE LP and 20% Reserve allocations. Per-tier breakdown lives on the
+ * nodes page — vault is just the protocol-pool view.
  */
 export function VaultLpPool() {
-  const { i18n } = useTranslation();
-  const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
+  const { t } = useTranslation();
   const [view, setView] = useState<PoolView>("rune");
   const { data, isLoading } = usePoolStatsRune();
 
   const isLive = false; // Pre-launch — RUNE token not yet listed.
-  const founderTier = data?.tiers?.FOUNDER;
-  const superTier = data?.tiers?.SUPER;
+  const totalUsdt = data?.totalDepositUsdt ?? 0;
+  const totalMembers = data?.totalMembers ?? 0;
+  const totalNodes = data?.totalNodes ?? 0;
 
   const POOL_TABS = [
-    { key: "rune" as const,    icon: TrendingUp, label: "RUNE LP",                                         pct: "35%" },
-    { key: "reserve" as const, icon: Shield,     label: isZh ? "储备金库" : "Reserve",                     pct: "20%" },
+    { key: "rune" as const,    icon: TrendingUp, label: "RUNE LP",                    pct: "35%" },
+    { key: "reserve" as const, icon: Shield,     label: t("vault.lpPool.tabReserve"), pct: "20%" },
   ];
 
   return (
-    <Card className="relative mx-4 lg:mx-6 surface-3d overflow-hidden border-border/55 bg-card/60">
-      {/* Soft amber glow */}
-      <div className="pointer-events-none absolute -top-16 -right-12 h-40 w-40 rounded-full bg-amber-500/15 blur-3xl" />
-      <CardContent className="relative px-4 py-4 space-y-3">
+    <Card className="relative mx-4 lg:mx-6 overflow-hidden border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
+      {/* Layered ambient glows for depth */}
+      <div className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-amber-500/[0.18] blur-[80px]" />
+      <div className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-amber-600/[0.08] blur-[70px]" />
+
+      {/* Top accent line */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+
+      <CardContent className="relative px-5 py-5 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/15 ring-1 ring-primary/30">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary/25 to-primary/10 ring-1 ring-primary/40 shadow-[0_4px_12px_-4px_hsl(38_95%_55%/0.4)]">
               <Layers className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <div className="text-sm font-bold leading-tight text-foreground">
-                {isZh ? "底池沉淀" : "LP Pool Accumulation"}
+              <div className="text-sm font-bold leading-tight text-foreground tracking-tight">
+                {t("vault.lpPool.title")}
               </div>
-              <div className="text-[10px] text-muted-foreground leading-tight">
-                {isZh ? "节点入金 · 链上底池" : "Node Deposits · On-chain Liquidity"}
+              <div className="text-[11px] text-muted-foreground/80 leading-tight mt-0.5">
+                {t("vault.lpPool.subtitle")}
               </div>
             </div>
           </div>
           <span
             className={cn(
-              "text-[9px] uppercase tracking-[0.2em] font-semibold px-2 py-0.5 rounded-full ring-1",
+              "text-[10px] uppercase tracking-[0.18em] font-bold px-2.5 py-1 rounded-full ring-1",
               isLive
-                ? "bg-emerald-500/15 text-emerald-400 ring-emerald-500/30"
-                : "bg-primary/10 text-primary ring-primary/25",
+                ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/40"
+                : "bg-primary/10 text-primary ring-primary/30",
             )}
           >
-            {isLive ? (isZh ? "实时LP" : "Live LP") : (isZh ? "节点沉淀" : "Pre-launch")}
+            {isLive ? t("vault.lpPool.live") : t("vault.lpPool.preLaunch")}
           </span>
         </div>
 
         {/* 3-pool ratio strip */}
-        <div className="rounded-lg overflow-hidden border border-border/40">
-          <div className="flex h-2">
-            <div className="h-full" style={{ width: "35%", background: "hsl(38 95% 55% / 0.75)" }} />
-            <div className="h-full" style={{ width: "45%", background: "hsl(217 76% 58% / 0.75)" }} />
-            <div className="h-full" style={{ width: "20%", background: "hsl(173 58% 50% / 0.75)" }} />
+        <div className="rounded-xl overflow-hidden ring-1 ring-border/60 shadow-inner">
+          <div className="flex h-2.5">
+            <div className="h-full" style={{ width: "35%", background: "linear-gradient(90deg, hsl(38 95% 55%), hsl(38 95% 65%))" }} />
+            <div className="h-full" style={{ width: "45%", background: "linear-gradient(90deg, hsl(217 76% 58%), hsl(217 76% 68%))" }} />
+            <div className="h-full" style={{ width: "20%", background: "linear-gradient(90deg, hsl(173 58% 50%), hsl(173 58% 60%))" }} />
           </div>
-          <div className="flex text-[9px] font-semibold bg-card/60">
-            <div className="flex-none w-[35%] text-center py-1 text-primary">RUNE LP 35%</div>
-            <div className="flex-none w-[45%] text-center py-1 text-blue-400">{isZh ? "管理 45%" : "Managed 45%"}</div>
-            <div className="flex-none w-[20%] text-center py-1 text-teal-400">{isZh ? "储备 20%" : "Reserve 20%"}</div>
+          <div className="flex text-[10px] font-bold bg-card/80 backdrop-blur-sm">
+            <div className="flex-none w-[35%] text-center py-1.5 text-primary">{t("vault.lpPool.ratioRune")}</div>
+            <div className="flex-none w-[45%] text-center py-1.5 text-blue-400">{t("vault.lpPool.ratioManaged")}</div>
+            <div className="flex-none w-[20%] text-center py-1.5 text-teal-400">{t("vault.lpPool.ratioReserve")}</div>
           </div>
         </div>
 
         {/* View toggle */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {POOL_TABS.map((tab) => {
             const isActive = view === tab.key;
+            const activeColor = tab.key === "rune" ? "primary" : "teal";
             return (
               <button
                 key={tab.key}
                 onClick={() => setView(tab.key)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                  "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[11px] font-bold transition-all",
                   isActive
-                    ? tab.key === "rune"
-                      ? "bg-primary/15 ring-1 ring-primary/35 text-primary"
-                      : "bg-teal-500/15 ring-1 ring-teal-500/35 text-teal-400"
-                    : "bg-muted/30 ring-1 ring-border/40 text-muted-foreground hover:text-foreground",
+                    ? activeColor === "primary"
+                      ? "bg-gradient-to-br from-primary/20 to-primary/10 ring-1 ring-primary/45 text-primary shadow-[0_2px_10px_-2px_hsl(38_95%_55%/0.35)]"
+                      : "bg-gradient-to-br from-teal-500/20 to-teal-500/10 ring-1 ring-teal-500/45 text-teal-300 shadow-[0_2px_10px_-2px_hsl(173_58%_50%/0.3)]"
+                    : "bg-muted/20 ring-1 ring-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/40",
                 )}
                 data-testid={`button-vault-pool-${tab.key}`}
               >
                 <tab.icon className="h-3.5 w-3.5" />
                 {tab.label}
-                <span className="ml-0.5 opacity-70">{tab.pct}</span>
+                <span className="ml-0.5 opacity-75">{tab.pct}</span>
               </button>
             );
           })}
@@ -111,103 +116,86 @@ export function VaultLpPool() {
         {/* Pool stats */}
         {isLoading ? (
           <div className="space-y-2">
-            <Skeleton className="h-16 rounded-xl" />
-            <Skeleton className="h-12 rounded-xl" />
+            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-14 rounded-xl" />
           </div>
         ) : view === "rune" ? (
-          <div className="space-y-2">
-            {/* RUNE LP balance */}
-            <div className="rounded-xl px-4 py-3 bg-primary/[0.06] ring-1 ring-primary/20">
-              <div className="flex items-end justify-between">
-                <div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                    {isZh ? "RUNE LP 池 (35%)" : "RUNE LP Pool (35%)"}
+          <div className="space-y-3">
+            {/* RUNE LP balance — hero card */}
+            <div className="relative rounded-2xl px-5 py-4 bg-gradient-to-br from-primary/[0.12] via-primary/[0.06] to-transparent ring-1 ring-primary/30 shadow-[0_4px_20px_-6px_hsl(38_95%_55%/0.25),inset_0_1px_0_hsl(38_95%_55%/0.15)] overflow-hidden">
+              <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-primary/20 blur-2xl" />
+              <div className="relative flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[10px] text-muted-foreground/90 uppercase tracking-[0.15em] font-semibold mb-1">
+                    {t("vault.lpPool.runePoolTitle")}
                   </div>
-                  <div className="text-2xl font-bold tabular-nums text-primary">
-                    {fmtUsdt(data?.runeLp ?? 0)}
+                  <div className="text-[28px] leading-none font-bold tabular-nums text-primary drop-shadow-[0_0_18px_hsl(38_95%_55%/0.4)]">
+                    {fmtUsdt(totalUsdt * 0.35)}
                   </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">
-                    {isZh ? "节点总入金 " : "of "}
-                    {fmtUsdt(data?.totalDepositUsdt ?? 0)}
+                  <div className="text-[10px] text-muted-foreground/70 mt-1.5 flex items-center gap-1">
+                    <Wallet className="h-3 w-3" />
+                    {t("vault.lpPool.fromTotalDeposits")}{" "}
+                    <span className="text-foreground/80 font-semibold tabular-nums">{fmtUsdt(totalUsdt)}</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-muted-foreground">{isZh ? "注册会员" : "Members"}</div>
-                  <div className="text-base font-bold text-primary tabular-nums">{data?.totalMembers ?? 0}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">
-                    {data?.totalNodes ?? 0} {isZh ? "节点" : "nodes"}
+                <div className="text-right shrink-0 pl-2 border-l border-primary/15">
+                  <div className="text-[10px] text-muted-foreground/80 uppercase tracking-wider font-semibold">{t("vault.lpPool.nodes")}</div>
+                  <div className="text-xl font-bold text-primary tabular-nums leading-tight">{totalNodes}</div>
+                  <div className="text-[10px] text-muted-foreground/70 mt-0.5">
+                    {totalMembers} {t("vault.lpPool.members")}
                   </div>
                 </div>
               </div>
             </div>
-            {/* Top tier breakdown */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-xl px-3 py-2.5 bg-purple-500/[0.07] ring-1 ring-purple-500/25">
-                <div className="text-[9px] uppercase tracking-wider mb-1 text-purple-300/80">
-                  FOUNDER · $50,000
-                </div>
-                <div className="text-base font-bold text-purple-200 tabular-nums">
-                  {founderTier?.count ?? 0}
-                  <span className="text-[10px] font-normal ml-1 text-purple-300/60">{isZh ? "个" : "nodes"}</span>
-                </div>
-                <div className="text-[10px] text-muted-foreground">{fmtUsdt(founderTier?.totalUsdt ?? 0)}</div>
-              </div>
-              <div className="rounded-xl px-3 py-2.5 bg-primary/[0.06] ring-1 ring-primary/25">
-                <div className="text-[9px] uppercase tracking-wider mb-1 text-primary/80">
-                  SUPER · $10,000
-                </div>
-                <div className="text-base font-bold text-primary tabular-nums">
-                  {superTier?.count ?? 0}
-                  <span className="text-[10px] font-normal ml-1 text-primary/60">{isZh ? "个" : "nodes"}</span>
-                </div>
-                <div className="text-[10px] text-muted-foreground">{fmtUsdt(superTier?.totalUsdt ?? 0)}</div>
-              </div>
-            </div>
-            {/* Pre-launch info strip */}
+
+            {/* Pre-launch hint */}
             {!isLive && (
-              <div className="flex items-center justify-between rounded-lg px-3 py-1.5 bg-primary/[0.05] ring-1 ring-primary/15">
-                <div className="text-[10px] text-primary/80">
-                  {isZh ? "上线价 $0.028 / RUNE · 280万USDT : 1亿RUNE" : "Launch $0.028/RUNE · 2.8M USDT : 100M RUNE"}
+              <div className="flex items-center justify-between rounded-xl px-3.5 py-2 bg-primary/[0.05] ring-1 ring-primary/20">
+                <div className="text-[11px] text-primary/85 font-medium">
+                  {t("vault.lpPool.preLaunchPrice")}
                 </div>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/15 text-primary">
-                  {isZh ? "未上线" : "Pre-launch"}
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
+                  {t("vault.lpPool.preLaunch")}
                 </span>
               </div>
             )}
           </div>
         ) : (
           /* Reserve view */
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl px-3 py-3 bg-teal-500/[0.07] ring-1 ring-teal-500/25">
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                {isZh ? "储备余额" : "Reserve Balance"}
-              </div>
-              <div className="text-2xl font-bold tabular-nums text-teal-400">{fmtUsdt(data?.reserve ?? 0)}</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">
-                {isZh ? "总入金 20%" : "20% of deposits"}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="relative rounded-2xl px-4 py-3.5 bg-gradient-to-br from-teal-500/[0.12] via-teal-500/[0.06] to-transparent ring-1 ring-teal-500/30 shadow-[0_4px_18px_-6px_hsl(173_58%_50%/0.25),inset_0_1px_0_hsl(173_58%_50%/0.12)] overflow-hidden">
+              <div className="pointer-events-none absolute -top-10 -right-6 h-24 w-24 rounded-full bg-teal-500/20 blur-2xl" />
+              <div className="relative">
+                <div className="text-[10px] text-muted-foreground/90 uppercase tracking-[0.15em] font-semibold mb-1">
+                  {t("vault.lpPool.reserveBalance")}
+                </div>
+                <div className="text-[24px] leading-none font-bold tabular-nums text-teal-300 drop-shadow-[0_0_14px_hsl(173_58%_50%/0.35)]">
+                  {fmtUsdt(totalUsdt * 0.20)}
+                </div>
+                <div className="text-[10px] text-muted-foreground/70 mt-1.5">
+                  {t("vault.lpPool.reservePctOfDeposits")}
+                </div>
               </div>
             </div>
-            <div className="rounded-xl px-3 py-3 bg-muted/30 ring-1 ring-border/40">
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                {isZh ? "用途" : "Purpose"}
+            <div className="rounded-2xl px-4 py-3.5 bg-muted/15 ring-1 ring-border/50">
+              <div className="text-[10px] text-muted-foreground/90 uppercase tracking-[0.15em] font-semibold mb-1">
+                {t("vault.lpPool.reservePurpose")}
               </div>
-              <div className="text-[12px] font-semibold mt-1 leading-snug text-teal-400">
-                {isZh ? "战略储备" : "Strategic Reserve"}
+              <div className="text-[13px] font-semibold mt-1 leading-tight text-teal-300">
+                {t("vault.lpPool.reservePurposeLabel")}
               </div>
-              <div className="text-[10px] text-muted-foreground mt-1 leading-snug">
-                {isZh ? "风控 · 回购 · 生态扩张" : "Risk · Buyback · Ecosystem"}
+              <div className="text-[10px] text-muted-foreground/70 mt-1.5 leading-snug">
+                {t("vault.lpPool.reservePurposeDesc")}
               </div>
             </div>
           </div>
         )}
 
         {/* Footer note */}
-        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 pt-1">
           <RefreshCw className="h-3 w-3" />
           <span>
-            {isLive
-              ? (isZh ? "数据来自链上 LP 合约" : "Data sourced from on-chain LP contract")
-              : (isZh ? "上线后自动切换为链上LP实时数据" : "Will auto-switch to live on-chain LP data after launch")}
+            {isLive ? t("vault.lpPool.footerLive") : t("vault.lpPool.footerPreLaunch")}
           </span>
         </div>
       </CardContent>

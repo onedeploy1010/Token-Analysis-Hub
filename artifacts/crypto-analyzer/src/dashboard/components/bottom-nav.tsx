@@ -58,7 +58,11 @@ const TABS = [
 
 export function BottomNav() {
   const [location] = useLocation();
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
+  // CJK locales show the Chinese brand glyph above the English code; everything
+  // else collapses to just the English code so non-Chinese users don't get a
+  // foreign script crammed into a small tab.
+  const showZh = i18n.language === "zh" || i18n.language === "zh-TW";
 
   return (
     <nav
@@ -142,28 +146,32 @@ export function BottomNav() {
                     />
                   </motion.div>
 
-                  {/* Chinese brand name */}
-                  <span
-                    className="relative z-10 leading-none font-bold"
-                    style={{
-                      fontSize: 11,
-                      letterSpacing: "0.05em",
-                      color: isActive ? tab.accent : "rgba(255,255,255,0.72)",
-                      textShadow: isActive ? `0 0 12px ${tab.glow}` : undefined,
-                      transition: "color 0.25s, text-shadow 0.25s",
-                    }}
-                  >
-                    {tab.zhLabel}
-                  </span>
+                  {/* Chinese brand glyph — CJK locales only */}
+                  {showZh && (
+                    <span
+                      className="relative z-10 leading-none font-bold"
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: "0.05em",
+                        color: isActive ? tab.accent : "rgba(255,255,255,0.72)",
+                        textShadow: isActive ? `0 0 12px ${tab.glow}` : undefined,
+                        transition: "color 0.25s, text-shadow 0.25s",
+                      }}
+                    >
+                      {tab.zhLabel}
+                    </span>
+                  )}
 
-                  {/* English code */}
+                  {/* English code (always shown; sized up when Chinese row is hidden) */}
                   <span
                     className="relative z-10 leading-none"
                     style={{
-                      fontSize: 7.5,
+                      fontSize: showZh ? 7.5 : 10.5,
                       fontFamily: "monospace",
+                      fontWeight: showZh ? 400 : 700,
                       letterSpacing: "0.10em",
-                      color: isActive ? `${tab.accent}cc` : "rgba(255,255,255,0.38)",
+                      color: isActive ? (showZh ? `${tab.accent}cc` : tab.accent) : "rgba(255,255,255,0.6)",
+                      textShadow: !showZh && isActive ? `0 0 12px ${tab.glow}` : undefined,
                       transition: "color 0.25s",
                     }}
                   >

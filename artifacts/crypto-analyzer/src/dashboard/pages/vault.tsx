@@ -12,25 +12,21 @@ type VaultTab = "pool" | "lock" | "burn";
 const TABS: Array<{
   key: VaultTab;
   icon: React.ElementType;
-  labelZh: string;
-  labelEn: string;
-  descZh: string;
-  descEn: string;
+  labelKey: string;
+  descKey: string;
 }> = [
-  { key: "pool", icon: BarChart2, labelZh: "金库",  labelEn: "Vault", descZh: "底池沉淀 · 交易资金", descEn: "LP Pools · Trading Fund" },
-  { key: "lock", icon: Lock,      labelZh: "锁仓",  labelEn: "Lock",  descZh: "锁仓RUNE · 获得veRUNE", descEn: "Lock RUNE · Earn veRUNE" },
-  { key: "burn", icon: Flame,     labelZh: "销毁",  labelEn: "Burn",  descZh: "永久销毁 · 每日EMBER",  descEn: "Burn RUNE · Daily EMBER" },
+  { key: "pool", icon: BarChart2, labelKey: "vault.tabPool", descKey: "vault.tabPoolDesc" },
+  { key: "lock", icon: Lock,      labelKey: "vault.tabLock", descKey: "vault.tabLockDesc" },
+  { key: "burn", icon: Flame,     labelKey: "vault.tabBurn", descKey: "vault.tabBurnDesc" },
 ];
 
 /**
- * Vault page — restyled to mainnet's amber/card token language. Soft amber
- * glow blurs replace TAICLAW's HUD-corner + scan-line aesthetic; tab strip
- * and section frames use `bg-card` + `border-border` semantic tokens so the
- * theme tracks the global tokens in `src/index.css`.
+ * Vault page — restyled to mainnet's amber/card token language. All visible
+ * strings flow through `t("vault.*")` keys (en/zh/zh-TW filled; others fall
+ * back to en until backfilled).
  */
 export default function Vault() {
-  const { i18n } = useTranslation();
-  const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<VaultTab>("pool");
 
   return (
@@ -51,18 +47,16 @@ export default function Vault() {
       <div className="relative px-4 lg:px-6 pt-5 pb-4 border-b border-border/40">
         <div className="flex items-center gap-2 mb-1">
           <Shield className="h-4 w-4 text-primary" />
-          <h2 className="text-base font-bold tracking-tight text-foreground">
-            {isZh ? "符库" : "VAULT"}
-          </h2>
+          <h2 className="text-base font-bold tracking-tight text-foreground">{t("vault.pageTitle")}</h2>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {isZh ? "锁仓 · 销毁 · 底池沉淀" : "Lock · Burn · LP Accumulation"}
-        </p>
+        <p className="text-xs text-muted-foreground">{t("vault.pageSubtitle")}</p>
       </div>
 
-      {/* Tab strip */}
+      {/* Tab strip — single-row icon + label, description on hover only.
+          The previous 2-row layout overflowed on small screens and the
+          descriptions wrapped unevenly which made the tabs look misaligned. */}
       <div className="relative px-4 lg:px-6 pt-4">
-        <div className="grid grid-cols-3 gap-2 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d">
+        <div className="flex gap-1.5 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -70,28 +64,17 @@ export default function Vault() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
+                title={t(tab.descKey)}
                 className={cn(
-                  "relative flex flex-col items-start gap-1 rounded-lg px-3 py-2.5 text-left transition-all",
+                  "flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 transition-all",
                   isActive
-                    ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35"
-                    : "opacity-60 hover:opacity-90 hover:bg-card/80",
+                    ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/80",
                 )}
                 data-testid={`tab-vault-${tab.key}`}
               >
-                <div
-                  className={cn(
-                    "h-6 w-6 rounded-md flex items-center justify-center shrink-0",
-                    isActive ? "bg-primary/20 ring-1 ring-primary/40" : "bg-muted/40",
-                  )}
-                >
-                  <Icon className={cn("h-3.5 w-3.5", isActive ? "text-primary" : "text-muted-foreground")} />
-                </div>
-                <span className={cn("text-[11px] font-bold mt-0.5", isActive ? "text-primary" : "text-muted-foreground")}>
-                  {isZh ? tab.labelZh : tab.labelEn}
-                </span>
-                <p className="text-[9px] leading-snug text-muted-foreground">
-                  {isZh ? tab.descZh : tab.descEn}
-                </p>
+                <Icon className={cn("h-3.5 w-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
+                <span className="text-[12px] font-bold tracking-wide">{t(tab.labelKey)}</span>
               </button>
             );
           })}

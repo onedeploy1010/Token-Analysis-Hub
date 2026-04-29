@@ -3,7 +3,8 @@ import { Button } from "@dashboard/components/ui/button";
 import { Input } from "@dashboard/components/ui/input";
 import { Badge } from "@dashboard/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@dashboard/components/ui/dialog";
-import { Lock, Zap, Vote, TrendingUp, Star, ArrowRight, AlertCircle, Loader2, ChevronRight } from "lucide-react";
+import { Lock, Zap, Vote, TrendingUp, Star, ArrowRight, AlertCircle, Loader2, ChevronRight, Sparkles, Calculator } from "lucide-react";
+import { CollapsibleInfoCard } from "@dashboard/components/vault/collapsible-info-card";
 import { useActiveAccount } from "thirdweb/react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@dashboard/lib/queryClient";
@@ -155,9 +156,12 @@ export function RuneLockSection() {
         </button>
       )}
 
-      {/* Benefits */}
-      <div className="rounded-xl p-3 space-y-2" style={{ background: "rgba(212,168,50,0.04)", border: "1px solid rgba(212,168,50,0.10)" }}>
-        <div className="text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("vault.lock.benefitsTitle", "veRUNE Benefits")}</div>
+      {/* Benefits — collapsible */}
+      <CollapsibleInfoCard
+        title={t("vault.lock.benefitsTitle", "veRUNE Benefits")}
+        accent="primary"
+        icon={Sparkles}
+      >
         {benefits.map(({ icon: Icon, color, lk, ld, dk, dd }) => (
           <div key={lk} className="flex items-start gap-2.5">
             <div className="h-6 w-6 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${color}15`, border: `1px solid ${color}30` }}>
@@ -169,16 +173,19 @@ export function RuneLockSection() {
             </div>
           </div>
         ))}
-      </div>
+      </CollapsibleInfoCard>
 
-      {/* Formula */}
-      <div className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="text-[9px] text-muted-foreground mb-1">{t("vault.lock.formulaTitle", "veRUNE Formula")}</div>
-        <div className="font-mono text-[10px] text-muted-foreground/80">{t("vault.lock.formulaExpr", "veRUNE = RUNE × 35% × (lock days ÷ 540)")}</div>
-        <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
-          <span>{t("vault.lock.formulaNote", "Lock 540 days")} = <span style={{ color: "rgba(212,168,50,0.9)" }}>{t("vault.lock.maxWeight", "maximum veRUNE weight")}</span></span>
+      {/* Formula — collapsible */}
+      <CollapsibleInfoCard
+        title={t("vault.lock.formulaTitle", "veRUNE Formula")}
+        accent="primary"
+        icon={Calculator}
+      >
+        <div className="font-mono text-[11px] text-foreground/85">{t("vault.lock.formulaExpr", "veRUNE = RUNE × 35% × (lock days ÷ 540)")}</div>
+        <div className="text-[10px] text-muted-foreground">
+          {t("vault.lock.formulaNote", "Lock 540 days")} = <span className="text-primary font-semibold">{t("vault.lock.maxWeight", "maximum veRUNE weight")}</span>
         </div>
-      </div>
+      </CollapsibleInfoCard>
 
       {/* Period Selector */}
       <div className="grid grid-cols-5 gap-1.5">

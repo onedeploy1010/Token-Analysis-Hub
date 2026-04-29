@@ -4,6 +4,7 @@ import { Input } from "@dashboard/components/ui/input";
 import { Badge } from "@dashboard/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@dashboard/components/ui/dialog";
 import { Flame, Sparkles, Trophy, Coins, AlertCircle, Loader2, ChevronDown, ChevronUp, ArrowRight, ChevronRight } from "lucide-react";
+import { CollapsibleInfoCard } from "@dashboard/components/vault/collapsible-info-card";
 import { useActiveAccount } from "thirdweb/react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@dashboard/lib/queryClient";
@@ -161,9 +162,12 @@ export function EmberBurnSection() {
         </button>
       )}
 
-      {/* Benefits */}
-      <div className="rounded-xl p-3 space-y-2" style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.10)" }}>
-        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("vault.burn.benefitsTitle", "EMBER Staking Benefits")}</div>
+      {/* Benefits — collapsible */}
+      <CollapsibleInfoCard
+        title={t("vault.burn.benefitsTitle", "EMBER Staking Benefits")}
+        accent="red"
+        icon={Sparkles}
+      >
         {benefits.map(({ icon: Icon, color, lk, ld, dk, dd }) => (
           <div key={lk} className="flex items-start gap-2.5">
             <div className="h-6 w-6 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
@@ -175,7 +179,7 @@ export function EmberBurnSection() {
             </div>
           </div>
         ))}
-      </div>
+      </CollapsibleInfoCard>
 
       {/* Rate Tiers */}
       <button onClick={() => setShowTiers(v => !v)}

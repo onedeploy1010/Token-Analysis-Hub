@@ -80,8 +80,7 @@ const CustomTooltipGrowth = ({ active, payload, label }: any) => {
  * those server-side, and the projection charts are still illustrative.
  */
 export function VaultCharts() {
-  const { i18n } = useTranslation();
-  const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
+  const { t } = useTranslation();
   const { data } = usePoolStatsRune();
 
   const motherUsdt  = data?.runeLp ?? 0;
@@ -91,9 +90,9 @@ export function VaultCharts() {
 
   // Fixed protocol ratios: 35% / 45% / 20%
   const allocData = [
-    { name: isZh ? "RUNE LP 池" : "RUNE LP",      value: motherUsdt,  color: AMBER, pct: "35" },
-    { name: isZh ? "管理资金池" : "Managed Pool", value: tradingUsdt, color: BLUE,  pct: "45" },
-    { name: isZh ? "储备金库"   : "Reserve",       value: reserveUsdt, color: TEAL,  pct: "20" },
+    { name: t("vault.charts.runeLp"),      value: motherUsdt,  color: AMBER, pct: "35" },
+    { name: t("vault.charts.managedPool"), value: tradingUsdt, color: BLUE,  pct: "45" },
+    { name: t("vault.charts.reserve"),       value: reserveUsdt, color: TEAL,  pct: "20" },
   ];
 
   const nodeCount = data?.totalNodes ?? 0;
@@ -110,16 +109,16 @@ export function VaultCharts() {
           <BarChart2 className="h-3 w-3 text-blue-400" />
         </div>
         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          {isZh ? "协议数据" : "Protocol Analytics"}
+          {t("vault.charts.protocolAnalytics")}
         </span>
       </div>
 
       {/* KPI row */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { icon: Layers,     color: AMBER,  label: isZh ? "总入金"     : "Total Deposits", val: totalUsdt,   prefix: "$", suffix: "", dec: 0, ringClass: "ring-primary/25 bg-primary/[0.06]" },
-          { icon: Target,     color: BLUE,   label: isZh ? "管理资金池" : "Managed Pool",   val: tradingUsdt, prefix: "$", suffix: "", dec: 0, ringClass: "ring-blue-500/25 bg-blue-500/[0.06]" },
-          { icon: TrendingUp, color: PURPLE, label: isZh ? "年化预期"   : "Annual Est.",     val: 8,           prefix: "",  suffix: "%", dec: 0, ringClass: "ring-purple-500/25 bg-purple-500/[0.06]" },
+          { icon: Layers,     color: AMBER,  label: t("vault.charts.totalDeposits"), val: totalUsdt,   prefix: "$", suffix: "", dec: 0, ringClass: "ring-primary/25 bg-primary/[0.06]" },
+          { icon: Target,     color: BLUE,   label: t("vault.charts.managedPool"),   val: tradingUsdt, prefix: "$", suffix: "", dec: 0, ringClass: "ring-blue-500/25 bg-blue-500/[0.06]" },
+          { icon: TrendingUp, color: PURPLE, label: t("vault.charts.annualEst"),     val: 8,           prefix: "",  suffix: "%", dec: 0, ringClass: "ring-purple-500/25 bg-purple-500/[0.06]" },
         ].map(({ icon: Icon, color, label, val, prefix, suffix, dec, ringClass }) => (
           <motion.div
             key={label}
@@ -141,7 +140,7 @@ export function VaultCharts() {
       <Card className="surface-3d border-border/55 bg-card/60">
         <CardContent className="p-3">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-            {isZh ? "资金分配" : "Allocation"}
+            {t("vault.charts.allocation")}
           </div>
           <div className="flex items-center gap-4">
             <div style={{ width: 110, height: 110 }}>
@@ -192,10 +191,10 @@ export function VaultCharts() {
         <CardContent className="p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              {isZh ? "节点招募进度" : "Node Recruitment"}
+              {t("vault.charts.nodeRecruitment")}
             </div>
             <div className="text-[11px] font-bold tabular-nums text-primary">
-              {nodeCount} / {targetNodes} {isZh ? "节点" : "nodes"}
+              {nodeCount} / {targetNodes} {t("vault.charts.nodesUnit")}
             </div>
           </div>
           <div className="h-2.5 rounded-full overflow-hidden bg-muted/40">
@@ -208,12 +207,12 @@ export function VaultCharts() {
             />
           </div>
           <div className="flex items-center justify-between mt-1.5 text-[10px] text-muted-foreground">
-            <span>{isZh ? "上线条件：招募结束" : "Launch on full recruitment"}</span>
-            <span className="text-primary">{isZh ? "目标上线价 $0.028/RUNE" : "Target $0.028/RUNE"}</span>
+            <span>{t("vault.charts.launchOnFullRecruitment")}</span>
+            <span className="text-primary">{t("vault.charts.targetPrice")}</span>
           </div>
           <div className="mt-2 text-[10px] text-muted-foreground">
-            {isZh ? "底池比例 " : "Pool ratio "}
-            <span className="font-bold text-blue-400">{isZh ? "280万USDT : 1亿RUNE" : "2.8M USDT : 100M RUNE"}</span>
+            {t("vault.charts.poolRatioLabel") + " "}
+            <span className="font-bold text-blue-400">{t("vault.charts.poolRatioValue")}</span>
           </div>
         </CardContent>
       </Card>
@@ -222,7 +221,7 @@ export function VaultCharts() {
       <Card className="surface-3d border-border/55 bg-card/60">
         <CardContent className="p-3">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-            {isZh ? "TVL 增长预测（千USDT）" : "TVL Growth Projection (K USDT)"}
+            {t("vault.charts.tvlGrowth")}
           </div>
           <div style={{ height: 130 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -231,14 +230,14 @@ export function VaultCharts() {
                 <XAxis dataKey="month" tick={LABEL_STYLE} axisLine={false} tickLine={false} />
                 <YAxis tick={LABEL_STYLE} axisLine={false} tickLine={false} width={28} />
                 <Tooltip content={<CustomTooltipGrowth />} cursor={{ fill: "hsl(228 22% 22%)" }} />
-                <Bar dataKey="deposits" name={isZh ? "总入金" : "Deposits"} fill={AMBER} opacity={0.75} radius={[3, 3, 0, 0]} animationDuration={1000} />
-                <Bar dataKey="trading"  name={isZh ? "管理池" : "Managed"}  fill={BLUE}  opacity={0.75} radius={[3, 3, 0, 0]} animationDuration={1200} />
+                <Bar dataKey="deposits" name={t("vault.charts.tvlDeposits")} fill={AMBER} opacity={0.75} radius={[3, 3, 0, 0]} animationDuration={1000} />
+                <Bar dataKey="trading"  name={t("vault.charts.managed")}  fill={BLUE}  opacity={0.75} radius={[3, 3, 0, 0]} animationDuration={1200} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="flex items-center gap-4 mt-1 text-[10px] text-muted-foreground justify-center">
-            <span className="flex items-center gap-1"><span className="h-1.5 w-3 rounded" style={{ background: AMBER }} />{isZh ? "总入金" : "Deposits"}</span>
-            <span className="flex items-center gap-1"><span className="h-1.5 w-3 rounded" style={{ background: BLUE }} />{isZh ? "管理池 (45%)" : "Managed (45%)"}</span>
+            <span className="flex items-center gap-1"><span className="h-1.5 w-3 rounded" style={{ background: AMBER }} />{t("vault.charts.tvlDeposits")}</span>
+            <span className="flex items-center gap-1"><span className="h-1.5 w-3 rounded" style={{ background: BLUE }} />{t("vault.charts.tvlManaged")}</span>
           </div>
         </CardContent>
       </Card>
@@ -247,7 +246,7 @@ export function VaultCharts() {
       <Card className="surface-3d border-border/55 bg-card/60">
         <CardContent className="p-3">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-            {isZh ? "年化收益累计预测（8% / 月1%）" : "Annual Yield Projection (8% / 1%/mo)"}
+            {t("vault.charts.yieldProjection")}
           </div>
           <div style={{ height: 110 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -268,7 +267,7 @@ export function VaultCharts() {
                 <Area
                   type="monotone"
                   dataKey="yield"
-                  name={isZh ? "年化收益" : "Yield"}
+                  name={t("vault.charts.yieldLegend")}
                   stroke={PURPLE}
                   strokeWidth={2}
                   fill="url(#yieldGrad)"
