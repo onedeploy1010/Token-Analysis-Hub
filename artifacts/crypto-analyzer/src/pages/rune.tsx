@@ -2420,29 +2420,29 @@ export default function Rune() {
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
-          {/* Inputs — primary: burn N mother tokens (永久销毁), pick window for valuation */}
+          {/* Inputs — primary: USDT package principal (then converted to mother burn count via launch price). */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Mother tokens to burn" : "销毁母币数量"}</Label>
-              <select value={burnTokens} onChange={(e) => setBurnTokens(Number(e.target.value))}
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Package principal (USDT)" : "购买配套金额（USDT）"}</Label>
+              <select value={burnTokens * 0.028} onChange={(e) => setBurnTokens(Number(e.target.value) / 0.028)}
                 className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm">
                 {[
-                  { v: 50,      tier: "1.0%" },
-                  { v: 100,     tier: "1.2%" },
-                  { v: 500,     tier: "1.2%" },
-                  { v: 1_000,   tier: "1.3%" },
-                  { v: 5_000,   tier: "1.3%" },
-                  { v: 10_000,  tier: "1.4%" },
-                  { v: 50_000,  tier: "1.4%" },
-                  { v: 100_000, tier: "1.5%" },
-                  { v: 500_000, tier: "1.5%" },
-                  { v: 1_000_000, tier: "1.5%" },
-                ].map(({ v, tier }) => (
-                  <option key={v} value={v}>{v.toLocaleString()} {isEn ? "tokens" : "枚"} · {tier}</option>
+                  { usdt: 100,    tier: "1.2%" },
+                  { usdt: 200,    tier: "1.2%" },
+                  { usdt: 500,    tier: "1.2%" },
+                  { usdt: 1000,   tier: "1.3%" },
+                  { usdt: 2000,   tier: "1.3%" },
+                  { usdt: 5000,   tier: "1.4%" },
+                  { usdt: 10000,  tier: "1.4%" },
+                  { usdt: 30000,  tier: "1.5%" },
+                  { usdt: 50000,  tier: "1.5%" },
+                  { usdt: 100000, tier: "1.5%" },
+                ].map(({ usdt, tier }) => (
+                  <option key={usdt} value={usdt}>${usdt.toLocaleString()} → {fmt(usdt / 0.028, 0)} {isEn ? "RUNE" : "枚"} · {tier}</option>
                 ))}
               </select>
               <p className="text-[10px] text-muted-foreground/70 mt-1">
-                {isEn ? "Tier rate: <100=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%" : "阶梯：<100枚=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%"}
+                {isEn ? "USDT → buys RUNE @ $0.028 → permanently burned" : "USDT → 按开盘价 $0.028 买 RUNE → 永久销毁"}
               </p>
             </div>
             <div>
