@@ -621,11 +621,11 @@ export default function Dashboard() {
           transition={{ duration: 0.28, ease: EASE }}
         >
           {tab === "overview" ? (
-            <OverviewTab address={address} restricted={restricted} />
+            <OverviewTab address={address} />
           ) : tab === "team" ? (
-            restricted ? <RestrictedTabPanel kind="team" /> : <TeamTab address={address} />
+            <TeamTab address={address} />
           ) : (
-            restricted ? <RestrictedTabPanel kind="rewards" /> : <RewardsTab address={address} />
+            <RewardsTab address={address} />
           )}
         </motion.div>
       </AnimatePresence>
@@ -1709,7 +1709,7 @@ function BenefitCell({
   );
 }
 
-function OverviewTab({ address, restricted = false }: { address: string; restricted?: boolean }) {
+function OverviewTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { referrer, isBound, isRoot } = useReferrerOf(address);
   const { nodeId } = useUserPurchase(address);
@@ -1801,62 +1801,12 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
             rule per 2026-04-29 user direction: bind only ≠ commission.
             User must own a node to receive direct-referral payouts when
             their downline buys. */}
-        {restricted && (
-          <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/50 to-slate-700/85">
-            <CardContent className="py-6 sm:py-7 space-y-3">
-              <div className="text-center">
-                <div className="text-amber-300 font-semibold text-base">
-                  {t("mr.dash.locked.title") || "温馨提示 · 您还未购买节点"}
-                </div>
-              </div>
-              <div className="max-w-md mx-auto space-y-2 text-xs sm:text-sm">
-                <p className="text-muted-foreground/90 flex items-start gap-2">
-                  <span className="text-emerald-400 shrink-0">✓</span>
-                  <span>{t("mr.dash.locked.row1") || "您已绑定推荐关系，可以分享上方邀请链接发展下线"}</span>
-                </p>
-                <p className="text-amber-200/90 flex items-start gap-2">
-                  <span className="text-amber-400 shrink-0">⚠</span>
-                  <span>{t("mr.dash.locked.row2") || "但要拿到直推奖励，必须自己先购买节点"}</span>
-                </p>
-                <p className="text-emerald-200/90 flex items-start gap-2">
-                  <span className="text-emerald-400 shrink-0">💰</span>
-                  <span>{t("mr.dash.locked.row3") || "您持节点后，下线购买节点会按档位返佣 5%-15% 直接进入您的钱包"}</span>
-                </p>
-              </div>
-              <div className="flex justify-center pt-1">
-                <Button
-                  size="sm"
-                  onClick={() => emitOpenPurchase()}
-                  className="bg-amber-500 hover:bg-amber-400 text-black font-semibold gap-1.5"
-                >
-                  {t("mr.dash.locked.cta") || "立即购买节点"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Network-wide fundraise + 4-stage TLP unlock progress. Shown
-            to everyone so any visitor understands where the protocol
-            sits on the roadmap, not just holders. The `ownedNodeId`
-            lets the card compute the viewer's tier-specific unlock at
-            the next stage (tokens + USDT estimate). */}
-        {!restricted && <PoolProgressCard ownedNodeId={nodeId} />}
-
-        {/* Genesis (L6) earnings panel — only rendered once the viewer
-            has actually qualified (any one of: ≥3 direct 符主 L5
-            referrals, ≥5 团队 符主, or ≥30 团队 符魂). Keeps non-
-            qualified users from seeing a mostly-empty panel that
-            implies something they don't yet have. */}
-        {!restricted && <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />}
-
-        {/* Full benefits digest below the referral panel — the same set
-            of cards that used to live in a standalone Benefits tab:
-            core card, mother-token P&L, airdrop batches, per-tier
-            commission matrix, weight matrix, six streams + weight,
-            platform feature matrix. All data is sourced from the
-            member-facing node-benefits spec. */}
-        {!restricted && <BenefitsSection ownedNodeId={nodeId} />}
+        {/* Per user 2026-04-29: dashboard no longer locks bound users.
+            Everyone bound sees the same cards. The no-node-reminder
+            dialog (page-level) carries the commission-eligibility note. */}
+        <PoolProgressCard ownedNodeId={nodeId} />
+        <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />
+        <BenefitsSection ownedNodeId={nodeId} />
       </div>
     </div>
   );
