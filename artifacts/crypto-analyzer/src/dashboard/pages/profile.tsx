@@ -285,7 +285,7 @@ export default function ProfilePage() {
             {isConnected && (
               <div className="grid grid-cols-3 gap-2 mt-3">
                 <div
-                  className="rounded-2xl px-2.5 py-3 ring-1 ring-emerald-400/35"
+                  className="rounded-2xl px-2.5 py-3 ring-1 ring-emerald-400/35 transition-all duration-300 hover:ring-emerald-400/65 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(34,197,94,0.45)]"
                   style={{
                     background: "linear-gradient(160deg, rgba(34,197,94,0.16), rgba(20,80,40,0.10) 60%, rgba(0,0,0,0.20))",
                     boxShadow: "inset 0 1px 0 rgba(34,197,94,0.30), 0 4px 14px -6px rgba(34,197,94,0.30)",
@@ -303,7 +303,7 @@ export default function ProfilePage() {
                   <div className="text-[9px] text-emerald-300/60 mt-0.5">USDT · on-chain</div>
                 </div>
                 <div
-                  className="rounded-2xl px-2.5 py-3 ring-1 ring-blue-400/35"
+                  className="rounded-2xl px-2.5 py-3 ring-1 ring-blue-400/35 transition-all duration-300 hover:ring-blue-400/65 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(59,130,246,0.45)]"
                   style={{
                     background: "linear-gradient(160deg, rgba(59,130,246,0.16), rgba(20,40,80,0.10) 60%, rgba(0,0,0,0.20))",
                     boxShadow: "inset 0 1px 0 rgba(59,130,246,0.30), 0 4px 14px -6px rgba(59,130,246,0.30)",
@@ -321,7 +321,7 @@ export default function ProfilePage() {
                   <div className="text-[9px] text-blue-300/60 mt-0.5">USDT · gross</div>
                 </div>
                 <div
-                  className="rounded-2xl px-2.5 py-3 ring-1 ring-amber-400/40"
+                  className="rounded-2xl px-2.5 py-3 ring-1 ring-amber-400/40 transition-all duration-300 hover:ring-amber-400/70 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(251,191,36,0.50)]"
                   style={{
                     background: "linear-gradient(160deg, rgba(251,191,36,0.18), rgba(120,80,10,0.10) 60%, rgba(0,0,0,0.20))",
                     boxShadow: "inset 0 1px 0 rgba(251,191,36,0.32), 0 4px 14px -6px rgba(251,191,36,0.32)",

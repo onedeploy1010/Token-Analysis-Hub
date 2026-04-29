@@ -263,13 +263,25 @@ export function TradingVaultBanner() {
           })}
         </div>
 
-        {/* Monthly performance area chart */}
-        <div className="rounded-xl px-3 pt-3 pb-2 bg-blue-500/[0.04] ring-1 ring-blue-500/20">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+        {/* Monthly performance area chart — premium-tinted card to match
+            the banner shell. Inset glow + corner accents echo the outer
+            HUD frame so this reads as part of the same instrument panel. */}
+        <div
+          className="relative rounded-2xl px-3.5 pt-3 pb-2 overflow-hidden ring-1 ring-blue-400/25"
+          style={{
+            background:
+              "linear-gradient(160deg, rgba(59,130,246,0.10), rgba(20,40,80,0.04) 60%, rgba(0,0,0,0.30))",
+            boxShadow:
+              "inset 0 1px 0 rgba(96,165,250,0.20), inset 0 -1px 0 rgba(0,0,0,0.30), 0 4px 18px -8px rgba(59,130,246,0.30)",
+          }}
+        >
+          <div className="pointer-events-none absolute -top-10 -right-6 h-24 w-24 rounded-full bg-blue-500/[0.20] blur-2xl" />
+          <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/45 to-transparent" />
+          <div className="relative flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black text-blue-200/85 uppercase tracking-[0.18em]">
               {t("strategy.banner.trendTitle")}
             </span>
-            <span className="text-[10px] font-semibold text-blue-400">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/15 ring-1 ring-blue-400/35 text-blue-200">
               {t("strategy.banner.trendBadge")}
             </span>
           </div>

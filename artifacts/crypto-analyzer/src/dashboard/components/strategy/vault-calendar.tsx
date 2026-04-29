@@ -52,28 +52,37 @@ export function VaultCalendar() {
   const hasData  = mWins + mLosses > 0;
 
   return (
-    <div className="rounded-xl overflow-hidden"
-      style={{ border: "1px solid rgba(212,168,50,0.15)", background: "rgba(212,168,50,0.03)" }}>
+    <div
+      className="relative rounded-2xl overflow-hidden ring-1 ring-amber-400/30"
+      style={{
+        background:
+          "linear-gradient(160deg, rgba(251,191,36,0.10), rgba(80,50,10,0.04) 60%, rgba(0,0,0,0.30))",
+        boxShadow:
+          "inset 0 1px 0 rgba(251,191,36,0.22), inset 0 -1px 0 rgba(0,0,0,0.30), 0 4px 18px -8px rgba(251,191,36,0.30)",
+      }}
+    >
+      <div className="pointer-events-none absolute -top-10 -right-6 h-24 w-24 rounded-full bg-amber-400/[0.18] blur-2xl" />
+      <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" />
 
       {/* Toggle header */}
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-3 py-2.5 transition-colors hover:bg-white/5"
+        className="relative w-full flex items-center justify-between px-3.5 py-2.5 transition-colors hover:bg-amber-500/[0.06]"
         data-testid="button-vault-calendar-toggle"
       >
         <div className="flex items-center gap-2">
-          <CalendarDays className="h-3.5 w-3.5 text-amber-400/80" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/80">
+          <CalendarDays className="h-4 w-4 text-amber-300" />
+          <span className="text-[10px] font-black text-amber-200/85 uppercase tracking-[0.18em]">
             {t("strategy.calendar.title")}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {hasData && (
-            <span className={`text-[10px] font-bold tabular-nums ${mPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            <span className={`text-[11px] font-black tabular-nums px-2 py-0.5 rounded-full ring-1 ${mPnl >= 0 ? "text-emerald-300 bg-emerald-500/15 ring-emerald-500/35" : "text-red-300 bg-red-500/15 ring-red-500/35"}`}>
               {mPnl >= 0 ? "+" : ""}{mPnl.toFixed(1)}%
             </span>
           )}
-          <span className="text-muted-foreground text-[10px]">{open ? "▲" : "▼"}</span>
+          <span className="text-amber-200/60 text-[10px]">{open ? "▲" : "▼"}</span>
         </div>
       </button>
 
