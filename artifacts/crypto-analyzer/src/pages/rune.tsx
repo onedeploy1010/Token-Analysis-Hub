@@ -2149,9 +2149,12 @@ export default function Rune() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Principal (USDT)" : "本金 (USDT)"}</Label>
-                  <input type="number" value={pkgUsdt} min={100} step={100}
-                    onChange={(e) => setPkgUsdt(Math.max(100, Number(e.target.value)))}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm text-foreground" />
+                  <select value={pkgUsdt} onChange={(e) => setPkgUsdt(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm text-foreground">
+                    {[100, 200, 500, 1000, 2000, 5000, 10000].map(v => (
+                      <option key={v} value={v}>${v.toLocaleString()}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Duration" : "套餐期限"}</Label>
@@ -2386,8 +2389,23 @@ export default function Rune() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
               <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{isEn ? "Mother tokens to burn" : "销毁母币数量"}</Label>
-              <input type="number" value={burnTokens} min={1} onChange={(e) => setBurnTokens(Math.max(1, Number(e.target.value)))}
-                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
+              <select value={burnTokens} onChange={(e) => setBurnTokens(Number(e.target.value))}
+                className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm">
+                {[
+                  { v: 50,      tier: "1.0%" },
+                  { v: 100,     tier: "1.2%" },
+                  { v: 500,     tier: "1.2%" },
+                  { v: 1_000,   tier: "1.3%" },
+                  { v: 5_000,   tier: "1.3%" },
+                  { v: 10_000,  tier: "1.4%" },
+                  { v: 50_000,  tier: "1.4%" },
+                  { v: 100_000, tier: "1.5%" },
+                  { v: 500_000, tier: "1.5%" },
+                  { v: 1_000_000, tier: "1.5%" },
+                ].map(({ v, tier }) => (
+                  <option key={v} value={v}>{v.toLocaleString()} {isEn ? "tokens" : "枚"} · {tier}</option>
+                ))}
+              </select>
               <p className="text-[10px] text-muted-foreground/70 mt-1">
                 {isEn ? "Tier rate: <100=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%" : "阶梯：<100枚=1.0% / 100+=1.2% / 1k+=1.3% / 10k+=1.4% / 100k+=1.5%"}
               </p>
@@ -2421,32 +2439,52 @@ export default function Rune() {
             <summary className="cursor-pointer text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors">
               {isEn ? "Assumptions (advanced)" : "假设参数 (高级)"} ▾
             </summary>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-              <div>
-                <Label className="text-[11px] text-muted-foreground">{isEn ? "Global sub-stake (tokens)" : "全网子币质押 (枚)"}</Label>
-                <input type="number" value={globalSubStaked} min={1} onChange={(e) => setGlobalSubStaked(Math.max(1, Number(e.target.value)))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-              </div>
-              <div>
-                <Label className="text-[11px] text-muted-foreground">{isEn ? "AI pool / month (USDT)" : "AI 月度池 (USDT)"}</Label>
-                <input type="number" value={aiPoolMonthly} min={0} onChange={(e) => setAiPoolMonthly(Math.max(0, Number(e.target.value)))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-              </div>
-              <div>
-                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDOs / month" : "每月 IDO 次数"}</Label>
-                <input type="number" step="0.5" value={idosPerMonth} min={0} onChange={(e) => setIdosPerMonth(Math.max(0, Number(e.target.value)))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-              </div>
-              <div>
-                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDO avg multiplier" : "IDO 平均涨幅"}</Label>
-                <input type="number" value={idoAvgMultiplier} min={1} onChange={(e) => setIdoAvgMultiplier(Math.max(1, Number(e.target.value)))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-              </div>
-              <div>
-                <Label className="text-[11px] text-muted-foreground">{isEn ? "IDO alloc factor (USDT/sub)" : "IDO 配额系数 (U/枚)"}</Label>
-                <input type="number" step="0.0001" value={idoAllocFactor} min={0} onChange={(e) => setIdoAllocFactor(Math.max(0, Number(e.target.value)))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num text-sm" />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+              {[
+                {
+                  label: isEn ? "Global sub-stake (tokens)" : "全网子币质押 (枚)",
+                  value: globalSubStaked, setter: setGlobalSubStaked,
+                  min: 10_000, max: 5_000_000, step: 10_000,
+                  display: globalSubStaked.toLocaleString(),
+                },
+                {
+                  label: isEn ? "AI pool / month (USDT)" : "AI 月度池 (USDT)",
+                  value: aiPoolMonthly, setter: setAiPoolMonthly,
+                  min: 100_000, max: 5_000_000, step: 100_000,
+                  display: `$${aiPoolMonthly.toLocaleString()}`,
+                },
+                {
+                  label: isEn ? "IDOs / month" : "每月 IDO 次数",
+                  value: idosPerMonth, setter: setIdosPerMonth,
+                  min: 0.5, max: 3, step: 0.5,
+                  display: `${idosPerMonth}×`,
+                },
+                {
+                  label: isEn ? "IDO avg multiplier" : "IDO 平均涨幅",
+                  value: idoAvgMultiplier, setter: setIdoAvgMultiplier,
+                  min: 10, max: 100, step: 5,
+                  display: `${idoAvgMultiplier}×`,
+                },
+                {
+                  label: isEn ? "IDO alloc factor (USDT/sub)" : "IDO 配额系数 (U/枚)",
+                  value: idoAllocFactor, setter: setIdoAllocFactor,
+                  min: 0.001, max: 0.01, step: 0.0005,
+                  display: idoAllocFactor.toFixed(4),
+                },
+              ].map(({ label, value, setter, min, max, step, display }) => (
+                <div key={label} className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</Label>
+                    <span className="num text-xs text-primary">{display}</span>
+                  </div>
+                  <Slider value={[value]} min={min} max={max} step={step}
+                    onValueChange={(v) => setter(v[0] ?? value)} className="py-1" />
+                  <div className="flex justify-between text-[9px] text-muted-foreground/60">
+                    <span>{typeof min === "number" && min < 1 ? min : min.toLocaleString()}</span>
+                    <span>{typeof max === "number" && max < 1 ? max : max.toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </details>
 
