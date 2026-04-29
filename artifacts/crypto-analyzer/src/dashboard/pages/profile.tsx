@@ -10,6 +10,7 @@ import { copyText } from "@dashboard/lib/copy";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { usePersonalStats } from "@/hooks/rune/use-team";
+import { buildReferralUrl } from "@/hooks/rune/use-referral-param";
 import { useNodeMembershipsRune } from "@dashboard/lib/data-rune";
 
 const MENU_ITEMS = [
@@ -118,10 +119,10 @@ export default function ProfilePage() {
   // component explicit so users can tell what's settled vs projected.
   const totalEarnings = directCommissionUsdt + nodeYieldProjectionUsdt;
 
-  const referralLink = useMemo(() => {
-    if (!walletAddr || typeof window === "undefined") return "";
-    return `${window.location.origin}/r/${walletAddr}`;
-  }, [walletAddr]);
+  // Match mainnet's referral URL format — `useReferralParam` reads
+  // `?ref=` (and `?referrer=`) from the query string, so the link must
+  // be built the same way. `buildReferralUrl` is the canonical helper.
+  const referralLink = useMemo(() => buildReferralUrl(walletAddr), [walletAddr]);
 
   const copyToClipboard = async (text: string) => {
     await copyText(text);

@@ -36,7 +36,7 @@ export function RuneOnboarding() {
   const { disconnect } = useDisconnect();
   const { isDemoMode } = useDemoStore();
   const address = account?.address;
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
 
   const refFromUrl = useReferralParam(address);
   const { referrer, isBound, refetch: refetchReferrer } = useReferrerOf(address);
@@ -58,6 +58,17 @@ export function RuneOnboarding() {
     setBindDismissed(false);
     setBuyDismissed(false);
   }, [address]);
+
+  // When the wallet disconnects, kick the user out of the dashboard back
+  // to the marketing home so the disconnected state isn't visible inside
+  // a member-only surface. Demo mode is exempt (it bypasses real auth).
+  useEffect(() => {
+    if (isDemoMode) return;
+    if (address) return;
+    if (location === "/app" || location.startsWith("/app/")) {
+      navigate("/");
+    }
+  }, [address, location, isDemoMode, navigate]);
 
   // Re-open signal from outside (card clicks, nav clicks).
   // Optionally carries a specific nodeId to pre-select in the modal.
