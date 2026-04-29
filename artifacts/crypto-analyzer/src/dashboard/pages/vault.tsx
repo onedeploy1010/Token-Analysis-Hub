@@ -52,11 +52,12 @@ export default function Vault() {
         <p className="text-xs text-muted-foreground">{t("vault.pageSubtitle")}</p>
       </div>
 
-      {/* Tab strip — single-row icon + label, description on hover only.
-          The previous 2-row layout overflowed on small screens and the
-          descriptions wrapped unevenly which made the tabs look misaligned. */}
+      {/* Tab strip — `grid-cols-3` keeps every cell at exactly 1/3 width
+          (independent of label length) so longer translations don't push
+          neighbours sideways on a 360px viewport. Icon hides under sm to
+          give the label more room on small phones. */}
       <div className="relative px-4 lg:px-6 pt-4">
-        <div className="flex gap-1.5 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d">
+        <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -66,14 +67,14 @@ export default function Vault() {
                 onClick={() => setActiveTab(tab.key)}
                 title={t(tab.descKey)}
                 className={cn(
-                  "flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-lg px-2 sm:px-3 py-2.5 transition-all",
+                  "min-w-0 inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 transition-all",
                   isActive
                     ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-card/80",
                 )}
                 data-testid={`tab-vault-${tab.key}`}
               >
-                <Icon className={cn("h-3.5 w-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
+                <Icon className={cn("hidden sm:block h-3.5 w-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
                 <span className="text-[12px] font-bold tracking-wide whitespace-nowrap truncate">{t(tab.labelKey)}</span>
               </button>
             );

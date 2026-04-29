@@ -44,7 +44,7 @@ export function DesktopSidebar() {
   const isProfile = location === "/profile" || location.startsWith("/profile/");
 
   return (
-    <aside className="hidden lg:flex flex-col w-[220px] xl:w-[260px] shrink-0 sticky top-[53px] h-[calc(100vh-53px)] border-r border-border/30 bg-background/50">
+    <aside className="hidden lg:flex flex-col w-[220px] xl:w-[260px] shrink-0 sticky top-[72px] h-[calc(100vh-72px)] border-r border-border/30 bg-background/50">
       {isProfile ? (
         <>
           {/* Back to main nav */}

@@ -73,19 +73,77 @@ function AnimatedRuneLogo({ size = 36 }: { size?: number }) {
   );
 }
 
+/**
+ * Wordmark — masked gradient + shimmer, lifted from mainnet AppLayout to keep
+ * the brand mark identical between marketing and dashboard surfaces.
+ */
+function WordmarkRune({ height = 30 }: { height?: number }) {
+  const maskStyle = {
+    WebkitMaskImage: "url(/rune-wordmark.png)",
+    maskImage: "url(/rune-wordmark.png)",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+  } as React.CSSProperties;
+  return (
+    <div className="relative select-none" style={{ height, aspectRatio: "4 / 1" }} aria-label="RUNE">
+      <img src="/rune-wordmark.png" alt="" className="block opacity-0 pointer-events-none" style={{ height, width: "auto" }} draggable={false} />
+      <div
+        className="absolute inset-0"
+        style={{ ...maskStyle, background: "linear-gradient(180deg, #fde68a 0%, #f59e0b 55%, #b45309 100%)" }}
+      />
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          ...maskStyle,
+          background: "linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.85) 50%, transparent 70%)",
+          backgroundSize: "250% 100%",
+          mixBlendMode: "screen",
+        }}
+        animate={{ backgroundPosition: ["180% 0%", "-80% 0%"] }}
+        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.4 }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Dashboard header — sized to match mainnet AppLayout (h-72px, logo 52px
+ * desktop / 36px mobile, wallet button shrunken to h-9 on mobile via the
+ * same `[&_button]:!h-9` cascade selector mainnet uses).
+ */
 function ShellHeader() {
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between px-4 lg:px-8 h-[53px] border-b border-border/40 bg-background/90 backdrop-blur-xl">
-      <Link href="/" className="flex items-center cursor-pointer shrink-0 gap-2">
-        <AnimatedRuneLogo size={32} />
-        <span className="font-display font-bold leading-tight flex-col hidden sm:flex">
-          <span className="text-foreground text-xs lg:text-sm tracking-[0.2em]">RUNE</span>
-          <span className="text-primary text-[0.55rem] lg:text-[0.6rem] tracking-[0.35em]">PROTOCOL</span>
-        </span>
-      </Link>
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <WalletConnectButton />
-        <LangSwitcher />
+    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/90 backdrop-blur-md shadow-sm">
+      <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-2 md:pr-6 gap-4 md:gap-8">
+        <Link href="/" className="flex items-center gap-2 group min-w-0 shrink md:shrink-0 cursor-pointer">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="shrink-0"
+          >
+            <span className="hidden md:inline-flex"><AnimatedRuneLogo size={52} /></span>
+            <span className="inline-flex md:hidden"><AnimatedRuneLogo size={36} /></span>
+          </motion.div>
+          <WordmarkRune />
+        </Link>
+
+        {/* Desktop: full-size wallet button + language toggle */}
+        <div className="hidden md:flex items-center h-[72px] gap-3 ml-auto">
+          <LangSwitcher />
+          <WalletConnectButton />
+        </div>
+
+        {/* Mobile: shrunken wallet button cluster */}
+        <div className="flex md:hidden items-center gap-1.5 shrink-0">
+          <div className="[&_button]:!h-9 [&_button]:!px-2.5 [&_button]:!text-[11px] [&_button]:!rounded-lg [&_button]:!min-w-0 [&_button_img]:!w-3.5 [&_button_img]:!h-3.5">
+            <WalletConnectButton />
+          </div>
+          <LangSwitcher />
+        </div>
       </div>
     </header>
   );
