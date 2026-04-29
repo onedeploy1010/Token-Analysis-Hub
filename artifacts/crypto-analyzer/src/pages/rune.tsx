@@ -449,15 +449,32 @@ export default function Rune() {
     return out;
   }, [monthlyActiveUsers, avgPackageUsdt]);
 
-  // Sample every 10 days for chart density that's readable on mobile.
+  // Sub-token price as a function of effective TVL. Per 子母币双币结合.md
+  // PART V: P_EMBER ∝ effectiveTVL², calibrated to the doc table:
+  //   TVL 1000万U → $2  /  3000万 → $18  /  5000万 → $50  /  1亿 → $200.
+  // Below the launch threshold (TLP < 500万U) sub doesn't trade; we floor
+  // it at the $0.038 launch price once the threshold is crossed.
+  // effectiveTVL ≈ tlpUsdt / 0.35 (TLP is 35% of total deposit per §叁).
+  const SUB_LAUNCH_PRICE = 0.038;
+  const SUB_LAUNCH_TLP_USDT = 500 * 10_000;
+  const subPriceAtTlp = (tlpUsdt: number): number => {
+    if (tlpUsdt < SUB_LAUNCH_TLP_USDT) return 0;
+    const tvlWan = (tlpUsdt / 0.35) / 10_000;
+    // P = $2 × (TVL / 1000万)² calibrated against doc PART V
+    const price  = 2 * Math.pow(tvlWan / 1000, 2);
+    return Math.max(SUB_LAUNCH_PRICE, price);
+  };
+
+  // Sample every 10 days for chart density readable on mobile.
   const priceSimulation = useMemo(() =>
     fullSimulation
       .filter((_, i) => i % 10 === 0)
       .map(s => ({
-        day:   s.day,
-        tlp:   s.tlpUsdt / 10000,                // 万 USDT
+        day:    s.day,
+        tlp:    s.tlpUsdt / 10000,                                   // 万 USDT
         lpRune: Math.round(s.lpRune),
-        price: s.lpRune > 0 ? Math.round((s.tlpUsdt / s.lpRune) * 1e6) / 1e6 : 0,
+        price:  s.lpRune > 0 ? Math.round((s.tlpUsdt / s.lpRune) * 1e6) / 1e6 : 0,
+        subPrice: Math.round(subPriceAtTlp(s.tlpUsdt) * 1e4) / 1e4,
       })),
     [fullSimulation]);
 
@@ -483,11 +500,12 @@ export default function Rune() {
       { tlpTarget: 1750, label: "TLP 1750万"  },
       { tlpTarget: 3500, label: "TLP 3500万"  },
     ].map(({ tlpTarget, label }) => {
-      const day    = dayWhenTlpReaches(tlpTarget);
-      const lpRune = lpRuneAt(day);
-      const tlp    = tlpAt(day);
-      const price  = lpRune > 0 ? (tlp * 10000) / lpRune : 0;
-      return { day, label, data: { tlp, lpRune: Math.round(lpRune), price } };
+      const day      = dayWhenTlpReaches(tlpTarget);
+      const lpRune   = lpRuneAt(day);
+      const tlp      = tlpAt(day);
+      const price    = lpRune > 0 ? (tlp * 10000) / lpRune : 0;
+      const subPrice = subPriceAtTlp(tlp * 10000);
+      return { day, label, data: { tlp, lpRune: Math.round(lpRune), price, subPrice } };
     });
   }, [fullSimulation]);
 
@@ -1201,7 +1219,7 @@ export default function Rune() {
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
             <TrendingUp className="h-4 w-4 text-amber-400 shrink-0" />
-            <span className="break-keep">{isEn ? "Dynamic RUNE Price Simulation" : "动态 RUNE 价格模拟"}</span>
+            <span className="break-keep">{isEn ? "Dynamic RUNE + EMBER Price Simulation" : "动态母币 + 子币价格模拟"}</span>
             <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
           </CardTitle>
           <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
@@ -1266,7 +1284,7 @@ export default function Rune() {
             })}
           </div>
 
-          {/* Price curve chart */}
+          {/* Price curve chart — mother (amber, left axis) + sub (orange, right axis) */}
           <div className="overflow-hidden">
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={priceSimulation} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
@@ -1275,18 +1293,35 @@ export default function Rune() {
                     <stop offset="5%"  stopColor={C.mother} stopOpacity={0.5} />
                     <stop offset="95%" stopColor={C.mother} stopOpacity={0}   />
                   </linearGradient>
+                  <linearGradient id="gradSubPriceSim" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={C.sub} stopOpacity={0.45} />
+                    <stop offset="95%" stopColor={C.sub} stopOpacity={0}    />
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
                 <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
                   tickFormatter={(v) => `${v}d`} />
-                <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false}
+                {/* Dual Y axes — mother and sub price magnitudes differ ~100×.
+                    Splitting them keeps both lines visible on linear scale. */}
+                <YAxis yAxisId="mother" orientation="left"
+                  tick={{ fill: C.mother, fontSize: 10 }} axisLine={false} tickLine={false}
                   tickFormatter={(v) => v < 1 ? `$${v.toFixed(3)}` : `$${v.toFixed(2)}`} />
+                <YAxis yAxisId="sub" orientation="right"
+                  tick={{ fill: C.sub, fontSize: 10 }} axisLine={false} tickLine={false}
+                  tickFormatter={(v) => v >= 100 ? `$${v.toFixed(0)}` : v >= 1 ? `$${v.toFixed(0)}` : `$${v.toFixed(2)}`} />
                 <Tooltip {...tooltipStyle}
-                  formatter={(v: number, name: string) => name === "price" ? [`$${v.toFixed(4)}`, isEn ? "RUNE Price" : "RUNE 价格"] : [v, name]}
+                  formatter={(v: number, name: string) => name === "price"
+                    ? [`$${v.toFixed(4)}`, isEn ? "RUNE Price" : "RUNE 价格"]
+                    : name === "subPrice"
+                      ? [`$${v.toFixed(v < 1 ? 4 : 2)}`, isEn ? "EMBER Price" : "EMBER 子币价格"]
+                      : [v, name]}
                   labelFormatter={(d: number) => isEn ? `Day ${d}` : `第 ${d} 天`}
                   animationDuration={180} />
-                <Area type="monotone" dataKey="price" stroke={C.mother} strokeWidth={2.4}
-                  fill="url(#gradPriceSim)" dot={false} animationDuration={1400} />
+                <Legend wrapperStyle={{ fontSize: 11, color: C.muted, paddingTop: 8 }} iconType="circle" />
+                <Area yAxisId="mother" type="monotone" dataKey="price" name={isEn ? "RUNE Price" : "RUNE 价格"}
+                  stroke={C.mother} strokeWidth={2.4} fill="url(#gradPriceSim)" dot={false} animationDuration={1400} />
+                <Area yAxisId="sub" type="monotone" dataKey="subPrice" name={isEn ? "EMBER Price" : "EMBER 子币价格"}
+                  stroke={C.sub} strokeWidth={2.4} fill="url(#gradSubPriceSim)" dot={false} animationDuration={1400} animationBegin={300} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -2120,17 +2155,18 @@ export default function Rune() {
         const effDailyPct = baseRate * (1 + bracket.bonus);                 // % per day (post-bonus)
         const dailyYieldU = pkgUsdt * (effDailyPct / 100);                  // USDT/day total yield
         const totalYieldU = dailyYieldU * pkgDays;                          // total over period
-        const staticUsdt  = totalYieldU * 0.65;                             // 65% USDT direct
-        // Per user 2026-04-29: the 35% dynamic portion isn't fully spent
-        // on sub-token. It's split LP-style — half buys sub, half stays
-        // USDT, both injected into the sub LP pool together.
+        const staticUsdt  = totalYieldU * 0.65;                             // 65% USDT to user
+        // Per user 2026-04-29 (corrected): the 35% dynamic portion is
+        // injected into the LP pool — half buys sub, half is USDT — so it
+        // is NOT user revenue. It supports protocol liquidity / price.
+        // Tracked here only for transparency (shown as "injected into pool"
+        // info, not counted in totalValue / ROI).
         const dynamicTotal    = totalYieldU * 0.35;
-        const dynamicSubBuy   = dynamicTotal * 0.5;                         // 17.5% buys sub
-        const dynamicUsdtSide = dynamicTotal * 0.5;                         // 17.5% USDT into pool
-        const subTokens       = dynamicSubBuy / PKG_SUB_LAUNCH_PRICE;       // sub bought at launch
-        const subValue        = subTokens * subPriceAtEnd;                  // valued at end-of-package stage
-        const dynamicValue    = subValue + dynamicUsdtSide;                 // user's claim on the 35% portion
-        const totalValue      = staticUsdt + dynamicValue;
+        const dynamicSubBuy   = dynamicTotal * 0.5;                         // 17.5% buys sub → pool
+        const dynamicUsdtSide = dynamicTotal * 0.5;                         // 17.5% USDT      → pool
+        const subTokens       = dynamicSubBuy / PKG_SUB_LAUNCH_PRICE;       // sub-tokens bought at launch
+        const subValue        = subTokens * subPriceAtEnd;                  // their value at stage end (informational)
+        const totalValue      = staticUsdt;
         const roi         = pkgUsdt > 0 ? (totalValue / pkgUsdt) * 100 : 0;
         const roiX        = pkgUsdt > 0 ?  totalValue / pkgUsdt        : 0;
         return (
@@ -2143,8 +2179,8 @@ export default function Rune() {
               </CardTitle>
               <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                 {isEn
-                  ? "30/90d no bonus, 180d +10%, 360d +20%, 540d +30%. Daily yield splits 65% USDT direct + 35% auto-buys sub-token (bought at $0.038 launch, valued at the stage matching the package duration)."
-                  : "30/90 天无加成；180 天 +10%；360 天 +20%；540 天 +30%。日化收益 65% USDT 直发 + 35% 自动买子币（按 $0.038 开盘价买入，按对应天数阶段价估值）。"}
+                  ? "30/90d no bonus, 180d +10%, 360d +20%, 540d +30%. Daily yield: 65% USDT direct + 35% pool injection."
+                  : "30/90 天无加成；180 天 +10%；360 天 +20%；540 天 +30%。日化 65% USDT 直发 + 35% 底池注入。"}
               </p>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -2188,9 +2224,7 @@ export default function Rune() {
               <div className="p-4 sm:p-5 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent shadow-[0_0_24px_hsl(var(--primary)/0.12)]">
                 <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                   <p className="text-[11px] text-primary uppercase tracking-widest font-semibold">
-                    {isEn
-                      ? `Total Book Value @ ${stageLabel(stageData ?? { motherPrice: 0, subPrice: PKG_SUB_LAUNCH_PRICE, multiplier: 1, label: `Stage ${stageForDuration}`, labelCn: `阶段 ${stageForDuration}`, trigger: "" }, stageForDuration)}`
-                      : `总账面价值 · ${stageLabel(stageData ?? { motherPrice: 0, subPrice: PKG_SUB_LAUNCH_PRICE, multiplier: 1, label: `Stage ${stageForDuration}`, labelCn: `阶段 ${stageForDuration}`, trigger: "" }, stageForDuration)}`}
+                    {isEn ? "User Cash Income (65% Static USDT)" : "用户实得收益（65% 静态 USDT）"}
                   </p>
                   <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">{isEn ? "Estimated" : "预估"}</span>
                 </div>
@@ -2220,22 +2254,13 @@ export default function Rune() {
                     ${fmt(dailyYieldU * 0.65, 2)}{isEn ? "/day" : "/日"} × {pkgDays}{isEn ? "d" : "天"}
                   </p>
                 </div>
-                <div className="p-4 rounded-xl border border-border/40 bg-card/60">
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{isEn ? "Dynamic LP Inject (35%)" : "动态注入底池（35%）"}</p>
-                  <p className="num text-lg text-foreground">${fmt(dynamicValue, 2)}</p>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 space-y-0.5">
-                    <p>
-                      <span className="text-orange-300/80">17.5% {isEn ? "buys sub" : "买子币"}：</span>
-                      {fmt(subTokens, 0)} {isEn ? "枚 × " : "枚 × "}${stageData?.subPrice ?? PKG_SUB_LAUNCH_PRICE} = ${fmt(subValue, 2)}
-                    </p>
-                    <p>
-                      <span className="text-emerald-300/80">17.5% {isEn ? "USDT side" : "USDT 边"}：</span>
-                      ${fmt(dynamicUsdtSide, 2)}
-                    </p>
+                <div className="p-4 rounded-xl border border-dashed border-border/30 bg-card/20">
+                  <p className="text-[11px] text-muted-foreground/80 uppercase tracking-wider mb-1">{isEn ? "Pool Injection (35%)" : "底池注入（35%）"}</p>
+                  <p className="num text-base text-muted-foreground/80">${fmt(dynamicTotal, 2)}</p>
+                  <div className="text-[11px] text-muted-foreground/70 mt-1 space-y-0.5">
+                    <p>{fmt(subTokens, 0)} {isEn ? "sub × " : "枚子币 × "}${PKG_SUB_LAUNCH_PRICE} = ${fmt(dynamicSubBuy, 2)}</p>
+                    <p>${fmt(dynamicUsdtSide, 2)} USDT</p>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/70 mt-1">
-                    {isEn ? "Half buys sub at launch, half USDT — both injected into the LP together" : "一半买子币 + 一半 USDT，一起入底池"}
-                  </p>
                 </div>
               </div>
 
