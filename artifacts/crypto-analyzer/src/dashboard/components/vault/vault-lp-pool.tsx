@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Skeleton } from "@dashboard/components/ui/skeleton";
+import { Card, CardContent } from "@dashboard/components/ui/card";
 import { Layers, Shield, TrendingUp, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@dashboard/lib/utils";
@@ -14,158 +15,126 @@ function fmtUsdt(val: string | number) {
   return `$${n.toFixed(2)}`;
 }
 
-const AMBER  = "rgba(212,168,50,0.9)";
-const GREEN  = "rgba(34,197,94,0.9)";
-const BLUE   = "rgba(59,130,246,0.9)";
-
 /**
- * Vault page LP pool card. Aggregates on-chain `rune_purchases` deposits and
- * renders the 35% RUNE LP / 20% Reserve breakdown. The 45% managed/trading
- * pool deliberately lives on `/app/market`, not here.
+ * Vault page LP card. Aggregates on-chain `rune_purchases` deposits and
+ * shows the 35% RUNE LP / 20% Reserve breakdown using mainnet's amber/card
+ * design tokens. The 45% managed pool deliberately lives on the strategy
+ * page (TradingVaultBanner), not here.
  */
 export function VaultLpPool() {
   const { i18n } = useTranslation();
   const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
   const [view, setView] = useState<PoolView>("rune");
-
   const { data, isLoading } = usePoolStatsRune();
 
-  const isLive = false; // RUNE token not yet listed; deposits accumulate as pre-launch sediment.
-  const accent = view === "rune" ? AMBER : GREEN;
-
-  const POOL_TABS = [
-    { key: "rune" as const, icon: TrendingUp, labelZh: "RUNE LP", labelEn: "RUNE LP", accent: AMBER, pct: "35%" },
-    { key: "reserve" as const, icon: Shield,    labelZh: "储备金库", labelEn: "Reserve",   accent: GREEN, pct: "20%" },
-  ];
-
-  // Top 2 tiers worth showing in the breakdown — FOUNDER ($50K) and SUPER ($10K)
-  // are the two highest-impact tiers. Lower tiers fold into the totals row.
+  const isLive = false; // Pre-launch — RUNE token not yet listed.
   const founderTier = data?.tiers?.FOUNDER;
   const superTier = data?.tiers?.SUPER;
 
+  const POOL_TABS = [
+    { key: "rune" as const,    icon: TrendingUp, label: "RUNE LP",                                         pct: "35%" },
+    { key: "reserve" as const, icon: Shield,     label: isZh ? "储备金库" : "Reserve",                     pct: "20%" },
+  ];
+
   return (
-    <div
-      className="relative mx-4 lg:mx-6 rounded-xl overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, rgba(14,14,22,0.95), rgba(10,10,16,0.98))",
-        border: `1px solid ${accent}28`,
-        boxShadow: `0 0 32px ${accent}10`,
-        transition: "border-color 0.3s, box-shadow 0.3s",
-      }}
-    >
-      {/* Top accent line */}
-      <div className="absolute left-0 right-0 top-0 h-[1.5px] pointer-events-none"
-        style={{ background: `linear-gradient(90deg, transparent 0%, ${accent} 30%, ${accent} 70%, transparent 100%)`, opacity: 0.7 }} />
-
-      {/* HUD corners */}
-      {["top-1.5 left-1.5 border-t border-l rounded-tl", "top-1.5 right-1.5 border-t border-r rounded-tr",
-        "bottom-1.5 left-1.5 border-b border-l rounded-bl", "bottom-1.5 right-1.5 border-b border-r rounded-br",
-      ].map((cls, i) => (
-        <span key={i} className={`absolute w-2.5 h-2.5 pointer-events-none ${cls}`} style={{ borderColor: accent, opacity: 0.5 }} />
-      ))}
-
-      {/* Scan line */}
-      <div className="absolute inset-y-0 -left-full w-1/2 pointer-events-none animate-scan-pool"
-        style={{ background: "linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255,255,255,0.018) 50%, transparent 60%, transparent 100%)" }} />
-
-      <style>{`
-        @keyframes scanPool { from { transform: translateX(0%); } to { transform: translateX(400%); } }
-        .animate-scan-pool { animation: scanPool 9s linear infinite; }
-        @keyframes breathe { 0%,100% { opacity:0.45; transform:scale(1); } 50% { opacity:0; transform:scale(2.5); } }
-        .dot-breathe { animation: breathe 2.2s ease-in-out infinite; }
-      `}</style>
-
-      <div className="relative z-10 px-4 py-3 space-y-3">
-
+    <Card className="relative mx-4 lg:mx-6 surface-3d overflow-hidden border-border/55 bg-card/60">
+      {/* Soft amber glow */}
+      <div className="pointer-events-none absolute -top-16 -right-12 h-40 w-40 rounded-full bg-amber-500/15 blur-3xl" />
+      <CardContent className="relative px-4 py-4 space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md flex items-center justify-center shrink-0"
-              style={{ background: `${accent}18`, border: `1px solid ${accent}30` }}>
-              <Layers className="h-3.5 w-3.5" style={{ color: accent }} />
+            <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/15 ring-1 ring-primary/30">
+              <Layers className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <div className="text-[11px] font-bold leading-tight" style={{ color: accent }}>
+              <div className="text-sm font-bold leading-tight text-foreground">
                 {isZh ? "底池沉淀" : "LP Pool Accumulation"}
               </div>
-              <div className="text-[9px] text-muted-foreground leading-tight">
+              <div className="text-[10px] text-muted-foreground leading-tight">
                 {isZh ? "节点入金 · 链上底池" : "Node Deposits · On-chain Liquidity"}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="dot-breathe absolute inline-flex h-full w-full rounded-full"
-                style={{ background: isLive ? "rgb(34,197,94)" : accent }} />
-              <span className="relative inline-flex h-full w-full rounded-full"
-                style={{ background: isLive ? "rgb(34,197,94)" : accent }} />
-            </span>
-            <span className="text-[9px] uppercase tracking-[0.2em] font-semibold"
-              style={{ color: isLive ? "rgb(34,197,94)" : accent }}>
-              {isLive ? (isZh ? "实时LP" : "Live LP") : (isZh ? "节点沉淀" : "Pre-launch")}
-            </span>
-          </div>
+          <span
+            className={cn(
+              "text-[9px] uppercase tracking-[0.2em] font-semibold px-2 py-0.5 rounded-full ring-1",
+              isLive
+                ? "bg-emerald-500/15 text-emerald-400 ring-emerald-500/30"
+                : "bg-primary/10 text-primary ring-primary/25",
+            )}
+          >
+            {isLive ? (isZh ? "实时LP" : "Live LP") : (isZh ? "节点沉淀" : "Pre-launch")}
+          </span>
         </div>
 
         {/* 3-pool ratio strip */}
-        <div className="rounded-lg overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="rounded-lg overflow-hidden border border-border/40">
           <div className="flex h-2">
-            <div className="h-full transition-all duration-700" style={{ width: "35%", background: AMBER, opacity: 0.75 }} />
-            <div className="h-full transition-all duration-700" style={{ width: "45%", background: BLUE, opacity: 0.75 }} />
-            <div className="h-full transition-all duration-700" style={{ width: "20%", background: GREEN, opacity: 0.75 }} />
+            <div className="h-full" style={{ width: "35%", background: "hsl(38 95% 55% / 0.75)" }} />
+            <div className="h-full" style={{ width: "45%", background: "hsl(217 76% 58% / 0.75)" }} />
+            <div className="h-full" style={{ width: "20%", background: "hsl(173 58% 50% / 0.75)" }} />
           </div>
-          <div className="flex text-[8.5px] font-semibold">
-            <div className="flex-none w-[35%] text-center py-1" style={{ color: AMBER }}>{isZh ? "RUNE LP 35%" : "RUNE LP 35%"}</div>
-            <div className="flex-none w-[45%] text-center py-1" style={{ color: BLUE }}>{isZh ? "管理资金 45%" : "Managed 45%"}</div>
-            <div className="flex-none w-[20%] text-center py-1" style={{ color: GREEN }}>{isZh ? "储备 20%" : "Reserve 20%"}</div>
+          <div className="flex text-[9px] font-semibold bg-card/60">
+            <div className="flex-none w-[35%] text-center py-1 text-primary">RUNE LP 35%</div>
+            <div className="flex-none w-[45%] text-center py-1 text-blue-400">{isZh ? "管理 45%" : "Managed 45%"}</div>
+            <div className="flex-none w-[20%] text-center py-1 text-teal-400">{isZh ? "储备 20%" : "Reserve 20%"}</div>
           </div>
         </div>
 
-        {/* Toggle: RUNE LP / Reserve Vault */}
+        {/* View toggle */}
         <div className="flex gap-1.5">
-          {POOL_TABS.map(tab => (
-            <button key={tab.key} onClick={() => setView(tab.key)}
-              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all",
-                view === tab.key ? "opacity-100" : "opacity-45 hover:opacity-65")}
-              style={view === tab.key
-                ? { background: `${tab.accent}18`, border: `1px solid ${tab.accent}35`, color: tab.accent }
-                : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.5)" }}
-              data-testid={`button-vault-pool-${tab.key}`}>
-              <tab.icon className="h-3 w-3" />
-              {isZh ? tab.labelZh : tab.labelEn}
-              <span className="ml-0.5 opacity-60">{tab.pct}</span>
-            </button>
-          ))}
+          {POOL_TABS.map((tab) => {
+            const isActive = view === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setView(tab.key)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                  isActive
+                    ? tab.key === "rune"
+                      ? "bg-primary/15 ring-1 ring-primary/35 text-primary"
+                      : "bg-teal-500/15 ring-1 ring-teal-500/35 text-teal-400"
+                    : "bg-muted/30 ring-1 ring-border/40 text-muted-foreground hover:text-foreground",
+                )}
+                data-testid={`button-vault-pool-${tab.key}`}
+              >
+                <tab.icon className="h-3.5 w-3.5" />
+                {tab.label}
+                <span className="ml-0.5 opacity-70">{tab.pct}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Pool stats */}
         {isLoading ? (
           <div className="space-y-2">
-            <Skeleton className="h-14 rounded-xl" />
-            <Skeleton className="h-10 rounded-xl" />
+            <Skeleton className="h-16 rounded-xl" />
+            <Skeleton className="h-12 rounded-xl" />
           </div>
         ) : view === "rune" ? (
           <div className="space-y-2">
-            {/* RUNE LP allocation (35% of total deposits) */}
-            <div className="rounded-xl px-3 py-2.5" style={{ background: `${AMBER}08`, border: `1px solid ${AMBER}18` }}>
+            {/* RUNE LP balance */}
+            <div className="rounded-xl px-4 py-3 bg-primary/[0.06] ring-1 ring-primary/20">
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">
                     {isZh ? "RUNE LP 池 (35%)" : "RUNE LP Pool (35%)"}
                   </div>
-                  <div className="text-xl font-bold tabular-nums" style={{ color: AMBER }}>
+                  <div className="text-2xl font-bold tabular-nums text-primary">
                     {fmtUsdt(data?.runeLp ?? 0)}
                   </div>
-                  <div className="text-[9px] text-muted-foreground mt-0.5">
-                    {isZh ? "节点总入金 " : "of "}{fmtUsdt(data?.totalDepositUsdt ?? 0)}
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                    {isZh ? "节点总入金 " : "of "}
+                    {fmtUsdt(data?.totalDepositUsdt ?? 0)}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[9px] text-muted-foreground">{isZh ? "注册会员" : "Members"}</div>
-                  <div className="text-base font-bold" style={{ color: AMBER }}>
-                    {data?.totalMembers ?? 0}
-                  </div>
-                  <div className="text-[9px] text-muted-foreground mt-0.5">
+                  <div className="text-[10px] text-muted-foreground">{isZh ? "注册会员" : "Members"}</div>
+                  <div className="text-base font-bold text-primary tabular-nums">{data?.totalMembers ?? 0}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
                     {data?.totalNodes ?? 0} {isZh ? "节点" : "nodes"}
                   </div>
                 </div>
@@ -173,83 +142,75 @@ export function VaultLpPool() {
             </div>
             {/* Top tier breakdown */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-xl px-3 py-2" style={{ background: "rgba(168,85,247,0.07)", border: "1px solid rgba(168,85,247,0.2)" }}>
-                <div className="text-[8.5px] text-purple-400/70 uppercase tracking-wider mb-1">
-                  {isZh ? "FOUNDER · $50,000" : "Founder · $50,000"}
+              <div className="rounded-xl px-3 py-2.5 bg-purple-500/[0.07] ring-1 ring-purple-500/25">
+                <div className="text-[9px] uppercase tracking-wider mb-1 text-purple-300/80">
+                  FOUNDER · $50,000
                 </div>
-                <div className="text-base font-bold text-purple-300">
+                <div className="text-base font-bold text-purple-200 tabular-nums">
                   {founderTier?.count ?? 0}
-                  <span className="text-[9px] font-normal text-purple-400/60 ml-1">{isZh ? "个" : "nodes"}</span>
+                  <span className="text-[10px] font-normal ml-1 text-purple-300/60">{isZh ? "个" : "nodes"}</span>
                 </div>
-                <div className="text-[9px] text-muted-foreground">
-                  {fmtUsdt(founderTier?.totalUsdt ?? 0)}
-                </div>
+                <div className="text-[10px] text-muted-foreground">{fmtUsdt(founderTier?.totalUsdt ?? 0)}</div>
               </div>
-              <div className="rounded-xl px-3 py-2" style={{ background: `${AMBER}06`, border: `1px solid ${AMBER}20` }}>
-                <div className="text-[8.5px] uppercase tracking-wider mb-1" style={{ color: `${AMBER}80` }}>
-                  {isZh ? "SUPER · $10,000" : "Super · $10,000"}
+              <div className="rounded-xl px-3 py-2.5 bg-primary/[0.06] ring-1 ring-primary/25">
+                <div className="text-[9px] uppercase tracking-wider mb-1 text-primary/80">
+                  SUPER · $10,000
                 </div>
-                <div className="text-base font-bold" style={{ color: AMBER }}>
+                <div className="text-base font-bold text-primary tabular-nums">
                   {superTier?.count ?? 0}
-                  <span className="text-[9px] font-normal ml-1" style={{ color: `${AMBER}60` }}>{isZh ? "个" : "nodes"}</span>
+                  <span className="text-[10px] font-normal ml-1 text-primary/60">{isZh ? "个" : "nodes"}</span>
                 </div>
-                <div className="text-[9px] text-muted-foreground">
-                  {fmtUsdt(superTier?.totalUsdt ?? 0)}
-                </div>
+                <div className="text-[10px] text-muted-foreground">{fmtUsdt(superTier?.totalUsdt ?? 0)}</div>
               </div>
             </div>
-            {/* Pre-launch RUNE info strip */}
+            {/* Pre-launch info strip */}
             {!isLive && (
-              <div className="flex items-center justify-between rounded-lg px-3 py-1.5"
-                style={{ background: "rgba(212,168,50,0.06)", border: "1px solid rgba(212,168,50,0.14)" }}>
-                <div className="text-[9px]" style={{ color: "rgba(212,168,50,0.7)" }}>
+              <div className="flex items-center justify-between rounded-lg px-3 py-1.5 bg-primary/[0.05] ring-1 ring-primary/15">
+                <div className="text-[10px] text-primary/80">
                   {isZh ? "上线价 $0.028 / RUNE · 280万USDT : 1亿RUNE" : "Launch $0.028/RUNE · 2.8M USDT : 100M RUNE"}
                 </div>
-                <div className="text-[9px] font-bold px-1.5 py-0.5 rounded"
-                  style={{ background: "rgba(212,168,50,0.12)", color: "rgba(212,168,50,0.9)" }}>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/15 text-primary">
                   {isZh ? "未上线" : "Pre-launch"}
-                </div>
+                </span>
               </div>
             )}
           </div>
         ) : (
-          /* Reserve Pool view */
+          /* Reserve view */
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl px-3 py-2.5" style={{ background: `${GREEN}08`, border: `1px solid ${GREEN}18` }}>
-              <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1">
+            <div className="rounded-xl px-3 py-3 bg-teal-500/[0.07] ring-1 ring-teal-500/25">
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
                 {isZh ? "储备余额" : "Reserve Balance"}
               </div>
-              <div className="text-xl font-bold tabular-nums" style={{ color: GREEN }}>
-                {fmtUsdt(data?.reserve ?? 0)}
-              </div>
-              <div className="text-[9px] text-muted-foreground mt-0.5">
+              <div className="text-2xl font-bold tabular-nums text-teal-400">{fmtUsdt(data?.reserve ?? 0)}</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">
                 {isZh ? "总入金 20%" : "20% of deposits"}
               </div>
             </div>
-            <div className="rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1">
+            <div className="rounded-xl px-3 py-3 bg-muted/30 ring-1 ring-border/40">
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
                 {isZh ? "用途" : "Purpose"}
               </div>
-              <div className="text-[11px] font-semibold mt-1 leading-snug" style={{ color: GREEN }}>
+              <div className="text-[12px] font-semibold mt-1 leading-snug text-teal-400">
                 {isZh ? "战略储备" : "Strategic Reserve"}
               </div>
-              <div className="text-[9px] text-muted-foreground mt-1 leading-snug">
+              <div className="text-[10px] text-muted-foreground mt-1 leading-snug">
                 {isZh ? "风控 · 回购 · 生态扩张" : "Risk · Buyback · Ecosystem"}
               </div>
             </div>
           </div>
         )}
 
-        {/* Bottom note */}
-        <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
-          <RefreshCw className="h-2.5 w-2.5" />
+        {/* Footer note */}
+        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <RefreshCw className="h-3 w-3" />
           <span>
             {isLive
               ? (isZh ? "数据来自链上 LP 合约" : "Data sourced from on-chain LP contract")
               : (isZh ? "上线后自动切换为链上LP实时数据" : "Will auto-switch to live on-chain LP data after launch")}
           </span>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

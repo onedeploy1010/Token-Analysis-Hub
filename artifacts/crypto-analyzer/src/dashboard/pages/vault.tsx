@@ -16,49 +16,29 @@ const TABS: Array<{
   labelEn: string;
   descZh: string;
   descEn: string;
-  accent: string;
-  gradient: string;
 }> = [
-  {
-    key: "pool",
-    icon: BarChart2,
-    labelZh: "金库",
-    labelEn: "Vault",
-    descZh: "底池沉淀 · 交易资金",
-    descEn: "LP Pools · Trading Fund",
-    accent: "rgba(59,130,246,0.9)",
-    gradient: "linear-gradient(135deg, rgba(59,130,246,0.18), rgba(37,99,235,0.08))",
-  },
-  {
-    key: "lock",
-    icon: Lock,
-    labelZh: "锁仓",
-    labelEn: "Lock",
-    descZh: "锁仓RUNE · 获得veRUNE",
-    descEn: "Lock RUNE · Earn veRUNE",
-    accent: "rgba(212,168,50,0.9)",
-    gradient: "linear-gradient(135deg, rgba(212,168,50,0.18), rgba(180,130,30,0.08))",
-  },
-  {
-    key: "burn",
-    icon: Flame,
-    labelZh: "销毁",
-    labelEn: "Burn",
-    descZh: "永久销毁 · 每日EMBER",
-    descEn: "Burn RUNE · Daily EMBER",
-    accent: "rgba(239,68,68,0.9)",
-    gradient: "linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.05))",
-  },
+  { key: "pool", icon: BarChart2, labelZh: "金库",  labelEn: "Vault", descZh: "底池沉淀 · 交易资金", descEn: "LP Pools · Trading Fund" },
+  { key: "lock", icon: Lock,      labelZh: "锁仓",  labelEn: "Lock",  descZh: "锁仓RUNE · 获得veRUNE", descEn: "Lock RUNE · Earn veRUNE" },
+  { key: "burn", icon: Flame,     labelZh: "销毁",  labelEn: "Burn",  descZh: "永久销毁 · 每日EMBER",  descEn: "Burn RUNE · Daily EMBER" },
 ];
 
+/**
+ * Vault page — restyled to mainnet's amber/card token language. Soft amber
+ * glow blurs replace TAICLAW's HUD-corner + scan-line aesthetic; tab strip
+ * and section frames use `bg-card` + `border-border` semantic tokens so the
+ * theme tracks the global tokens in `src/index.css`.
+ */
 export default function Vault() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isZh = i18n.language === "zh" || i18n.language === "zh-TW";
   const [activeTab, setActiveTab] = useState<VaultTab>("pool");
-  const active = TABS.find(tab => tab.key === activeTab) || TABS[0];
 
   return (
-    <div className="pb-24 lg:pb-8">
+    <div className="relative pb-24 lg:pb-8">
+      {/* Soft ambient glows — mainnet visual signature */}
+      <div className="pointer-events-none absolute -top-20 left-[10%] h-[28rem] w-[28rem] rounded-full bg-amber-500/[0.04] blur-[120px]" />
+      <div className="pointer-events-none absolute top-[40%] right-[8%] h-[24rem] w-[24rem] rounded-full bg-amber-500/[0.025] blur-[100px]" />
+
       <style>{`
         @keyframes vaultFadeIn {
           from { opacity: 0; transform: translateY(6px); }
@@ -67,23 +47,23 @@ export default function Vault() {
         .vault-fade { animation: vaultFadeIn 0.22s ease-out both; }
       `}</style>
 
-      {/* ── Page Header ── */}
-      <div className="px-4 lg:px-6 pt-4 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-        <div className="flex items-center gap-2 mb-0.5">
-          <Shield className="h-4 w-4" style={{ color: "rgba(212,168,50,0.7)" }} />
-          <h2 className="text-base font-bold tracking-tight">
+      {/* Page header */}
+      <div className="relative px-4 lg:px-6 pt-5 pb-4 border-b border-border/40">
+        <div className="flex items-center gap-2 mb-1">
+          <Shield className="h-4 w-4 text-primary" />
+          <h2 className="text-base font-bold tracking-tight text-foreground">
             {isZh ? "符库" : "VAULT"}
           </h2>
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {isZh ? "锁仓 · 销毁 · 底池沉淀" : "Lock · Burn · LP Accumulation"}
         </p>
       </div>
 
-      {/* ── 3 Sub-tabs ── */}
-      <div className="px-4 lg:px-6 pt-4 pb-1">
-        <div className="grid grid-cols-3 gap-2">
-          {TABS.map(tab => {
+      {/* Tab strip */}
+      <div className="relative px-4 lg:px-6 pt-4">
+        <div className="grid grid-cols-3 gap-2 rounded-xl border border-border/55 bg-card/60 p-1 surface-3d">
+          {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
             return (
@@ -91,37 +71,25 @@ export default function Vault() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={cn(
-                  "relative flex flex-col items-start gap-1 rounded-xl p-3 text-left transition-all",
-                  isActive ? "" : "opacity-50 hover:opacity-75"
+                  "relative flex flex-col items-start gap-1 rounded-lg px-3 py-2.5 text-left transition-all",
+                  isActive
+                    ? "bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 ring-1 ring-amber-500/35"
+                    : "opacity-60 hover:opacity-90 hover:bg-card/80",
                 )}
-                style={isActive ? {
-                  background: tab.gradient,
-                  border: `1px solid ${tab.accent}35`,
-                } : {
-                  background: "rgba(255,255,255,0.025)",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                }}
                 data-testid={`tab-vault-${tab.key}`}
               >
-                {/* Active indicator bar */}
-                {isActive && (
-                  <span className="absolute top-0 left-4 right-4 h-[1.5px] rounded-full"
-                    style={{ background: tab.accent, opacity: 0.8 }} />
-                )}
                 <div
-                  className="h-6 w-6 rounded-md flex items-center justify-center shrink-0"
-                  style={isActive
-                    ? { background: `${tab.accent}20`, border: `1px solid ${tab.accent}35` }
-                    : { background: "rgba(255,255,255,0.06)" }}
+                  className={cn(
+                    "h-6 w-6 rounded-md flex items-center justify-center shrink-0",
+                    isActive ? "bg-primary/20 ring-1 ring-primary/40" : "bg-muted/40",
+                  )}
                 >
-                  <Icon className="h-3.5 w-3.5"
-                    style={{ color: isActive ? tab.accent : "rgba(255,255,255,0.35)" }} />
+                  <Icon className={cn("h-3.5 w-3.5", isActive ? "text-primary" : "text-muted-foreground")} />
                 </div>
-                <span className="text-[11px] font-bold mt-1"
-                  style={{ color: isActive ? tab.accent : "rgba(255,255,255,0.45)" }}>
+                <span className={cn("text-[11px] font-bold mt-0.5", isActive ? "text-primary" : "text-muted-foreground")}>
                   {isZh ? tab.labelZh : tab.labelEn}
                 </span>
-                <p className="text-[8.5px] text-muted-foreground leading-snug">
+                <p className="text-[9px] leading-snug text-muted-foreground">
                   {isZh ? tab.descZh : tab.descEn}
                 </p>
               </button>
@@ -130,11 +98,7 @@ export default function Vault() {
         </div>
       </div>
 
-      {/* ── Divider ── */}
-      <div className="mx-4 lg:mx-6 mt-3 mb-0"
-        style={{ borderTop: `1px solid ${active.accent}20` }} />
-
-      {/* ── Tab Content ── */}
+      {/* Content */}
       <div key={activeTab} className="vault-fade pt-4 space-y-4">
         {activeTab === "pool" && (
           <div className="space-y-4 pb-4">
