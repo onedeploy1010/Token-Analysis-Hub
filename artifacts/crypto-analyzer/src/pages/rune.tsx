@@ -4,6 +4,7 @@ import CountUp from "react-countup";
 import {
   useGetRuneOverview,
   useCalculateRuneReturns,
+  useCalculateRuneBurnStake,
   RuneCalculatorInputNodeLevel,
 } from "@rune/api-client-react";
 import {
@@ -269,12 +270,21 @@ export default function Rune() {
    * every other locale gets nameEn. */
   const nodeName = (n: { nameCn: string; nameEn: string }) => (isZh ? n.nameCn : n.nameEn);
 
-  const [nodeLevel, setNodeLevel]   = useState<RuneCalculatorInputNodeLevel>(RuneCalculatorInputNodeLevel.pioneer);
+  // Default to `initial` — the smallest tier. The earlier `pioneer` value
+  // refers to the legacy 4-tier schema; the current 5-tier enum (initial/
+  // mid/advanced/super/founder) doesn't include it, so reading `.pioneer`
+  // at runtime returned undefined → the calculator silently POSTed
+  // `nodeLevel: undefined` and got a 400 from the server.
+  const [nodeLevel, setNodeLevel]   = useState<RuneCalculatorInputNodeLevel>(RuneCalculatorInputNodeLevel.initial);
   const [seats,     setSeats]       = useState(1);
   const [durationDays, setDurationDays] = useState(180);
   const [priceStageIndex, setPriceStageIndex] = useState(3);
   const [trendScale, setTrendScale] = useState<"log" | "linear">("log");
   const calcMutation = useCalculateRuneReturns();
+  const burnCalcMutation = useCalculateRuneBurnStake();
+  const [burnTokens, setBurnTokens] = useState(1000);
+  const [burnDays, setBurnDays] = useState(360);
+  const [burnPanelOpen, setBurnPanelOpen] = useState(false);
 
   const selectedNode         = overview?.nodes?.find(n => n.level === nodeLevel);
   const selectedStagePreview = overview?.priceStages?.[priceStageIndex];
@@ -333,11 +343,13 @@ export default function Rune() {
 
   const resultPieData = calcMutation.data ? [
     { name: isEn ? "Mother Token Value" : t("mr.rune.kpi.motherValue"),  value: calcMutation.data.motherTokenValue  },
-    { name: isEn ? "Mother Token Airdrop"  : t("mr.rune.kpi.airdropValue"), value: calcMutation.data.airdropTokenValue },
-    { name: isEn ? "USDT Income"        : t("mr.rune.kpi.usdtIncome"),   value: calcMutation.data.totalUsdtIncome   },
+    { name: isEn ? "Mother Airdrop"     : t("mr.rune.kpi.airdropValue"), value: calcMutation.data.airdropTokenValue },
+    { name: isEn ? "Sub-Token (35% dyn)" : "子币 (动态35%)",            value: calcMutation.data.subTokenValue ?? 0 },
+    { name: isEn ? "USDT Income (65% static)" : t("mr.rune.kpi.usdtIncome"), value: calcMutation.data.totalUsdtIncome },
   ] : [];
 
-  const RESULT_COLORS = [C.mother, C.sub, C.usdt];
+  // mother (gold) / mother-airdrop (gold variant) / sub-token (orange) / USDT (green-blue)
+  const RESULT_COLORS = [C.mother, "#fbbf24", C.sub, C.usdt];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -1043,8 +1055,18 @@ export default function Rune() {
                   {/* KPI cards */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="col-span-2 md:col-span-3 p-5 rounded-xl border border-green-700/40 bg-gradient-to-br from-green-950/50 to-transparent shadow-[0_0_24px_hsl(142,70%,45%,0.1)]">
-                      <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold mb-1">
-                        {bi("mr.rune.kpi.totalAssets", "Total Assets")}
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-[11px] text-green-400 uppercase tracking-widest font-semibold">
+                          {bi("mr.rune.kpi.totalAssets", "Total Returns")}
+                        </p>
+                        <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">
+                          {isEn ? "Estimated" : "预估"}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/70 mb-2">
+                        {isEn
+                          ? "Returns only — principal is redeemable after the breakeven window (≈128d static)."
+                          : "仅含收益。本金达到回本周期（静态约 128 天）后可赎回。"}
                       </p>
                       <div className="flex items-end gap-4 flex-wrap">
                         <p className="num-shimmer text-4xl">${fmt(calcMutation.data.totalAssets)}</p>
@@ -1052,6 +1074,12 @@ export default function Rune() {
                           <span className="text-sm bg-green-900/50 text-green-300 border border-green-700/40 px-2.5 py-0.5 rounded-full num num-sm">ROI {fmt(calcMutation.data.roi)}%</span>
                           <span className="text-sm bg-blue-900/50 text-blue-300 border border-blue-700/40 px-2.5 py-0.5 rounded-full num num-sm">{fmt(calcMutation.data.roiMultiplier)}× {isEn ? "Principal" : t("mr.rune.kpi.principalMultiple")}</span>
                         </div>
+                      </div>
+                      {/* Yield range strip — explicitly shows low/high bands so users see this is a band, not a guarantee */}
+                      <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <span className="num text-amber-300/80">${fmt(calcMutation.data.totalAssetsLow ?? 0)}</span>
+                        <span className="opacity-60">— {isEn ? "monthly 15% (conservative)" : "月化 15% 保守"} ↔ {isEn ? "35% (optimistic)" : "35% 乐观"} —</span>
+                        <span className="num text-emerald-300/80">${fmt(calcMutation.data.totalAssetsHigh ?? 0)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {overview?.priceStages?.[priceStageIndex] ? stageLabel(overview.priceStages[priceStageIndex], priceStageIndex) : ""} {isEn ? "stage" : t("mr.rune.kpi.stage")} · {isEn ? "investment" : t("mr.rune.kpi.invest")} <span className="num">${fmt(calcMutation.data.investment)}</span>
@@ -1068,10 +1096,20 @@ export default function Rune() {
                       <p className="text-[11px] text-muted-foreground mt-0.5"><span className="num">{calcMutation.data.airdropTokens.toLocaleString()}</span> {isEn ? "tokens" : t("mr.rune.kpi.tokensUnit")}</p>
                     </div>
                     <div className="p-4 rounded-xl border border-green-800/30 bg-green-950/20">
-                      <p className="text-[11px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "USDT Income" : t("mr.rune.kpi.usdtIncome")}</p>
+                      <p className="text-[11px] text-green-400 uppercase tracking-wider mb-1">{isEn ? "Static USDT (65%)" : "静态 USDT (65%)"}</p>
                       <p className="num text-lg text-green-300">${fmt(calcMutation.data.totalUsdtIncome)}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
                         <span className="num">${fmt(calcMutation.data.dailyUsdt)}</span>{isEn ? "/day" : t("mr.rune.kpi.perDay")} × <span className="num">{calcMutation.data.durationDays}</span>{isEn ? "d" : t("mr.rune.kpi.daysUnit")}
+                      </p>
+                    </div>
+                    {/* Dynamic 35% — auto-purchased into sub-token at the day's price */}
+                    <div className="p-4 rounded-xl border border-rose-800/30 bg-rose-950/20">
+                      <p className="text-[11px] text-rose-300 uppercase tracking-wider mb-1">
+                        {isEn ? "Sub-Token (35% dyn)" : "动态 子币 (35%)"}
+                      </p>
+                      <p className="num text-lg text-rose-200">${fmt(calcMutation.data.subTokenValue ?? 0)}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <span className="num">{fmt(calcMutation.data.subTokenAccumulated ?? 0)}</span> {isEn ? "tokens accumulated" : "枚累计"}
                       </p>
                     </div>
                   </div>
@@ -1184,8 +1222,8 @@ export default function Rune() {
                             <XAxis dataKey="label" tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false} />
                             <YAxis tick={{ fill: C.muted, fontSize: 9 }} axisLine={false} tickLine={false}
                               tickFormatter={v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${(v/1e3).toFixed(0)}K`} />
-                            <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")]} animationDuration={180} />
-                            <Bar dataKey="totalAssets" name={isEn ? "Total Assets" : t("mr.rune.kpi.totalAssets")} radius={[6,6,0,0]} maxBarSize={40}
+                            <Tooltip {...tooltipStyle} formatter={(v: number) => [`$${fmt(v,0)}`, isEn ? "Total Returns" : t("mr.rune.kpi.totalAssets")]} animationDuration={180} />
+                            <Bar dataKey="totalAssets" name={isEn ? "Total Returns" : t("mr.rune.kpi.totalAssets")} radius={[6,6,0,0]} maxBarSize={40}
                               animationDuration={1100} animationBegin={250}>
                               {(overview.priceStages ?? []).map((_, i) => (
                                 <Cell key={i}
@@ -1389,6 +1427,92 @@ export default function Rune() {
           </div>
         </div>
       </motion.div>
+
+      {/* ── Burn-Stake (auxiliary) panel ──
+          Per `核心机制.md` §壹: burn N mother tokens → permanent daily yield
+          1.0%-1.5% × N in mother tokens. Tier rate increases with N.
+          UI deliberately collapsed by default — keeps the primary
+          (node-purchase) calculator above visually unchanged. */}
+      <Card className="surface-3d border-amber-700/30 bg-gradient-to-br from-slate-900/70 to-slate-950/80">
+        <CardHeader className="cursor-pointer select-none" onClick={() => setBurnPanelOpen(o => !o)}>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Flame className="h-4 w-4 text-amber-400" />
+              {isEn ? "Burn-Stake Mother Token (Permanent Yield)" : "母币销毁质押 · 永久日化产出"}
+              <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">{isEn ? "Estimated" : "预估"}</span>
+            </CardTitle>
+            <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${burnPanelOpen ? "rotate-90" : ""}`} />
+          </div>
+          {!burnPanelOpen && (
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {isEn
+                ? "Burn N mother tokens → daily 1.0–1.5% yield, paid in mother tokens, permanent. Click to open calculator."
+                : "销毁 N 枚母币 → 每日 1.0%-1.5% 母币产出，永久。点击展开计算器。"}
+            </p>
+          )}
+        </CardHeader>
+        {burnPanelOpen && (
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-[11px] text-muted-foreground uppercase tracking-wider">{isEn ? "Mother tokens to burn" : "销毁母币数量"}</Label>
+                <input
+                  type="number" value={burnTokens} min={1}
+                  onChange={(e) => setBurnTokens(Math.max(1, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num"
+                />
+                <p className="text-[10px] text-muted-foreground/70 mt-1">
+                  {isEn ? "Tiers: <100=1.0% · 100+=1.2% · 1k+=1.3% · 10k+=1.4% · 100k+=1.5% daily" : "阶梯：<100枚=1.0%·100+=1.2%·1k+=1.3%·10k+=1.4%·100k+=1.5% 每日"}
+                </p>
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground uppercase tracking-wider">{isEn ? "Projection days" : "预测周期 (天)"}</Label>
+                <input
+                  type="number" value={burnDays} min={1}
+                  onChange={(e) => setBurnDays(Math.max(1, Number(e.target.value)))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-background/60 border border-border/40 num"
+                />
+                <p className="text-[10px] text-muted-foreground/70 mt-1">{isEn ? "Yield is permanent on-chain — pick a window for valuation" : "链上永久收益，仅用于估值窗口选择"}</p>
+              </div>
+              <div className="flex items-end">
+                <Button
+                  className="w-full"
+                  disabled={burnCalcMutation.isPending}
+                  onClick={() => burnCalcMutation.mutate({ data: { motherTokensBurned: burnTokens, durationDays: burnDays, priceStageIndex } })}
+                >
+                  {burnCalcMutation.isPending ? "…" : (isEn ? "Calculate" : "计算预估")}
+                </Button>
+              </div>
+            </div>
+            {burnCalcMutation.data && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg border border-amber-700/30 bg-amber-950/20">
+                  <p className="text-[10px] text-amber-300 uppercase tracking-wider">{isEn ? "Daily Rate" : "日化收益率"}</p>
+                  <p className="num text-base text-amber-200 mt-0.5">{burnCalcMutation.data.dailyRatePct}%</p>
+                </div>
+                <div className="p-3 rounded-lg border border-border/40 bg-card/40">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isEn ? "Total Yield" : "周期产出"}</p>
+                  <p className="num text-base mt-0.5">{fmt(burnCalcMutation.data.totalYieldTokens, 0)} {isEn ? "tokens" : "枚"}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-emerald-700/30 bg-emerald-950/20">
+                  <p className="text-[10px] text-emerald-300 uppercase tracking-wider">{isEn ? "Yield Value" : "产出市值"}</p>
+                  <p className="num text-base text-emerald-200 mt-0.5">${fmt(burnCalcMutation.data.totalYieldValue)}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-fuchsia-700/30 bg-fuchsia-950/20">
+                  <p className="text-[10px] text-fuchsia-300 uppercase tracking-wider">ROI</p>
+                  <p className="num text-base text-fuchsia-200 mt-0.5">{fmt(burnCalcMutation.data.roiMultiplier)}×</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{fmt(burnCalcMutation.data.roi)}% {isEn ? "vs launch cost" : "对开盘价"}</p>
+                </div>
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground/60 leading-snug">
+              {isEn
+                ? "Estimated. Burn-stake is permanent on-chain (principal not returned). Yield rate is keyed off burn amount; AI engine projections (15-35% monthly) are not contractually guaranteed."
+                : "预估。销毁质押在链上永久（本金不归还）。日化收益率按销毁量分层；AI 引擎月化区间 15-35% 为预估，非合约保证。"}
+            </p>
+          </CardContent>
+        )}
+      </Card>
     </div>
   );
 }

@@ -314,7 +314,7 @@ const ja: Dict = {
   "mr.rune.input.targetStage": "目標価格ステージ",
   "mr.rune.btn.simulate": "シミュレーション開始",
   "mr.rune.btn.simulating": "計算中…",
-  "mr.rune.kpi.totalAssets": "総資産",
+  "mr.rune.kpi.totalAssets": "総収益",
   "mr.rune.kpi.principalMultiple": "元本",
   "mr.rune.kpi.stage": "ステージ",
   "mr.rune.kpi.invest": "投資",

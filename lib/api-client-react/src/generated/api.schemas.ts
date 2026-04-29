@@ -120,11 +120,25 @@ export interface RuneNodeDefinition {
   seats: number;
   seatsRemaining: number;
   privatePrice: number;
+  /** Estimated daily STATIC USDT income (65% of daily yield).
+Per `核心权益.md` the AI quant engine has projected monthly
+yield 25-35% of which 65% is paid as USDT. Treat as estimate.
+ */
   dailyUsdt: number;
   weight: number;
   airdropTotal: number;
   airdropPerSeat: number;
   motherTokensPerSeat: number;
+  /** Low end of estimated monthly yield range (e.g. 15 = 15%/month). */
+  monthlyYieldRangePctLow: number;
+  /** High end of estimated monthly yield range (e.g. 35 = 35%/month). */
+  monthlyYieldRangePctHigh: number;
+  /** Estimated daily static USDT (≈ 65% of total daily yield). */
+  estimatedDailyStaticU: number;
+  /** Estimated daily dynamic value (≈ 35%) auto-purchased into sub-token. */
+  estimatedDailyDynamicU: number;
+  /** Estimated combined daily yield in U (static + dynamic). */
+  estimatedDailyTotalU: number;
 }
 
 export interface RunePriceStage {
@@ -176,10 +190,11 @@ export type RuneCalculatorInputNodeLevel =
   (typeof RuneCalculatorInputNodeLevel)[keyof typeof RuneCalculatorInputNodeLevel];
 
 export const RuneCalculatorInputNodeLevel = {
-  pioneer: "pioneer",
-  builder: "builder",
-  guardian: "guardian",
-  strategic: "strategic",
+  initial: "initial",
+  mid: "mid",
+  advanced: "advanced",
+  super: "super",
+  founder: "founder",
 } as const;
 
 export interface RuneCalculatorInput {
@@ -188,6 +203,18 @@ export interface RuneCalculatorInput {
   durationDays: number;
   priceStageIndex: number;
 }
+
+/**
+ * Indicates yield numbers are estimates, not contractual guarantees.
+ */
+export type RuneCalculatorResultEstimateMode =
+  (typeof RuneCalculatorResultEstimateMode)[keyof typeof RuneCalculatorResultEstimateMode];
+
+export const RuneCalculatorResultEstimateMode = {
+  low: "low",
+  midpoint: "midpoint",
+  high: "high",
+} as const;
 
 export type RuneCalculatorResultBreakdownItem = {
   label?: string;
@@ -200,8 +227,10 @@ export interface RuneCalculatorResult {
   privatePrice: number;
   motherTokens: number;
   airdropTokens: number;
+  /** Estimated daily STATIC USDT (preserved for backward compat). */
   dailyUsdt: number;
   durationDays: number;
+  /** Estimated total static USDT over the period. */
   totalUsdtIncome: number;
   selectedStage: RunePriceStage;
   motherTokenValue: number;
@@ -209,7 +238,68 @@ export interface RuneCalculatorResult {
   totalAssets: number;
   roi: number;
   roiMultiplier: number;
+  /** Indicates yield numbers are estimates, not contractual guarantees. */
+  estimateMode: RuneCalculatorResultEstimateMode;
+  /** Estimated sub-token tokens accumulated over the period (35% dynamic auto-purchased at selectedStage subPrice). */
+  subTokenAccumulated: number;
+  /** USD-equivalent value of subTokenAccumulated at selectedStage. */
+  subTokenValue: number;
+  /** ROI band — total assets at low end of yield range (15%/month). */
+  totalAssetsLow: number;
+  /** ROI band — total assets at high end of yield range (35%/month). */
+  totalAssetsHigh: number;
+  roiLow: number;
+  roiHigh: number;
   breakdown: RuneCalculatorResultBreakdownItem[];
+}
+
+/**
+ * Burn-stake mother-token investment path (per 核心机制.md §壹). User
+burns N mother tokens to receive permanent daily yield 1.0%-1.5% × N
+in mother tokens. The yield rate tier is keyed off N (more burned →
+higher rate); see backend tier table.
+
+ */
+export interface RuneBurnStakeInput {
+  /** Number of mother tokens burned (input is whole-token count, not USD). */
+  motherTokensBurned: number;
+  durationDays: number;
+  /** Price stage index (0-5) used to value the yielded mother tokens. */
+  priceStageIndex: number;
+}
+
+export type RuneBurnStakeResultEstimateMode =
+  (typeof RuneBurnStakeResultEstimateMode)[keyof typeof RuneBurnStakeResultEstimateMode];
+
+export const RuneBurnStakeResultEstimateMode = {
+  low: "low",
+  midpoint: "midpoint",
+  high: "high",
+} as const;
+
+export type RuneBurnStakeResultBreakdownItem = {
+  label?: string;
+  labelCn?: string;
+  value?: string;
+};
+
+export interface RuneBurnStakeResult {
+  motherTokensBurned: number;
+  /** Effective daily yield rate (e.g. 1.5 = 1.5% per day). */
+  dailyRatePct: number;
+  /** Daily yield in mother tokens (= motherTokensBurned × dailyRatePct / 100). */
+  dailyYieldTokens: number;
+  durationDays: number;
+  totalYieldTokens: number;
+  selectedStage: RunePriceStage;
+  /** USD-equivalent of totalYieldTokens at selectedStage.motherPrice. */
+  totalYieldValue: number;
+  /** USD-equivalent of motherTokensBurned at the launch price (sunk cost basis). */
+  burnedValueAtLaunch: number;
+  roi: number;
+  roiMultiplier: number;
+  estimateMode: RuneBurnStakeResultEstimateMode;
+  breakdown: RuneBurnStakeResultBreakdownItem[];
 }
 
 export type ListProjectsParams = {

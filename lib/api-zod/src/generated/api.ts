@@ -189,11 +189,36 @@ export const GetRuneOverviewResponse = zod.object({
       seats: zod.number(),
       seatsRemaining: zod.number(),
       privatePrice: zod.number(),
-      dailyUsdt: zod.number(),
+      dailyUsdt: zod
+        .number()
+        .describe(
+          "Estimated daily STATIC USDT income (65% of daily yield).\nPer `核心权益.md` the AI quant engine has projected monthly\nyield 25-35% of which 65% is paid as USDT. Treat as estimate.\n",
+        ),
       weight: zod.number(),
       airdropTotal: zod.number(),
       airdropPerSeat: zod.number(),
       motherTokensPerSeat: zod.number(),
+      monthlyYieldRangePctLow: zod
+        .number()
+        .describe(
+          "Low end of estimated monthly yield range (e.g. 15 = 15%\/month).",
+        ),
+      monthlyYieldRangePctHigh: zod
+        .number()
+        .describe(
+          "High end of estimated monthly yield range (e.g. 35 = 35%\/month).",
+        ),
+      estimatedDailyStaticU: zod
+        .number()
+        .describe("Estimated daily static USDT (≈ 65% of total daily yield)."),
+      estimatedDailyDynamicU: zod
+        .number()
+        .describe(
+          "Estimated daily dynamic value (≈ 35%) auto-purchased into sub-token.",
+        ),
+      estimatedDailyTotalU: zod
+        .number()
+        .describe("Estimated combined daily yield in U (static + dynamic)."),
     }),
   ),
 });
@@ -213,9 +238,13 @@ export const CalculateRuneReturnsResponse = zod.object({
   privatePrice: zod.number(),
   motherTokens: zod.number(),
   airdropTokens: zod.number(),
-  dailyUsdt: zod.number(),
+  dailyUsdt: zod
+    .number()
+    .describe("Estimated daily STATIC USDT (preserved for backward compat)."),
   durationDays: zod.number(),
-  totalUsdtIncome: zod.number(),
+  totalUsdtIncome: zod
+    .number()
+    .describe("Estimated total static USDT over the period."),
   selectedStage: zod.object({
     index: zod.number(),
     label: zod.string(),
@@ -230,6 +259,95 @@ export const CalculateRuneReturnsResponse = zod.object({
   totalAssets: zod.number(),
   roi: zod.number(),
   roiMultiplier: zod.number(),
+  estimateMode: zod
+    .enum(["low", "midpoint", "high"])
+    .describe(
+      "Indicates yield numbers are estimates, not contractual guarantees.",
+    ),
+  subTokenAccumulated: zod
+    .number()
+    .describe(
+      "Estimated sub-token tokens accumulated over the period (35% dynamic auto-purchased at selectedStage subPrice).",
+    ),
+  subTokenValue: zod
+    .number()
+    .describe("USD-equivalent value of subTokenAccumulated at selectedStage."),
+  totalAssetsLow: zod
+    .number()
+    .describe(
+      "ROI band — total assets at low end of yield range (15%\/month).",
+    ),
+  totalAssetsHigh: zod
+    .number()
+    .describe(
+      "ROI band — total assets at high end of yield range (35%\/month).",
+    ),
+  roiLow: zod.number(),
+  roiHigh: zod.number(),
+  breakdown: zod.array(
+    zod.object({
+      label: zod.string().optional(),
+      labelCn: zod.string().optional(),
+      value: zod.string().optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary Calculate burn-stake mother-token investment returns
+ */
+export const CalculateRuneBurnStakeBody = zod
+  .object({
+    motherTokensBurned: zod
+      .number()
+      .describe(
+        "Number of mother tokens burned (input is whole-token count, not USD).",
+      ),
+    durationDays: zod.number(),
+    priceStageIndex: zod
+      .number()
+      .describe(
+        "Price stage index (0-5) used to value the yielded mother tokens.",
+      ),
+  })
+  .describe(
+    "Burn-stake mother-token investment path (per 核心机制.md §壹). User\nburns N mother tokens to receive permanent daily yield 1.0%-1.5% × N\nin mother tokens. The yield rate tier is keyed off N (more burned →\nhigher rate); see backend tier table.\n",
+  );
+
+export const CalculateRuneBurnStakeResponse = zod.object({
+  motherTokensBurned: zod.number(),
+  dailyRatePct: zod
+    .number()
+    .describe("Effective daily yield rate (e.g. 1.5 = 1.5% per day)."),
+  dailyYieldTokens: zod
+    .number()
+    .describe(
+      "Daily yield in mother tokens (= motherTokensBurned × dailyRatePct \/ 100).",
+    ),
+  durationDays: zod.number(),
+  totalYieldTokens: zod.number(),
+  selectedStage: zod.object({
+    index: zod.number(),
+    label: zod.string(),
+    labelCn: zod.string(),
+    trigger: zod.string(),
+    motherPrice: zod.number(),
+    subPrice: zod.number(),
+    multiplier: zod.number(),
+  }),
+  totalYieldValue: zod
+    .number()
+    .describe(
+      "USD-equivalent of totalYieldTokens at selectedStage.motherPrice.",
+    ),
+  burnedValueAtLaunch: zod
+    .number()
+    .describe(
+      "USD-equivalent of motherTokensBurned at the launch price (sunk cost basis).",
+    ),
+  roi: zod.number(),
+  roiMultiplier: zod.number(),
+  estimateMode: zod.enum(["low", "midpoint", "high"]),
   breakdown: zod.array(
     zod.object({
       label: zod.string().optional(),

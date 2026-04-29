@@ -178,6 +178,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/RuneCalculatorResult"
 
+  /rune/burn-stake-calculator:
+    post:
+      operationId: calculateRuneBurnStake
+      tags: [rune]
+      summary: Calculate burn-stake mother-token investment returns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuneBurnStakeInput"
+      responses:
+        "200":
+          description: Burn-stake calculation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuneBurnStakeResult"
+
 components:
   schemas:
     HealthStatus:
@@ -405,6 +424,10 @@ components:
         privatePrice:
           type: number
         dailyUsdt:
+          description: |
+            Estimated daily STATIC USDT income (65% of daily yield).
+            Per `核心权益.md` the AI quant engine has projected monthly
+            yield 25-35% of which 65% is paid as USDT. Treat as estimate.
           type: number
         weight:
           type: number
@@ -413,6 +436,21 @@ components:
         airdropPerSeat:
           type: integer
         motherTokensPerSeat:
+          type: number
+        monthlyYieldRangePctLow:
+          description: Low end of estimated monthly yield range (e.g. 15 = 15%/month).
+          type: number
+        monthlyYieldRangePctHigh:
+          description: High end of estimated monthly yield range (e.g. 35 = 35%/month).
+          type: number
+        estimatedDailyStaticU:
+          description: Estimated daily static USDT (≈ 65% of total daily yield).
+          type: number
+        estimatedDailyDynamicU:
+          description: Estimated daily dynamic value (≈ 35%) auto-purchased into sub-token.
+          type: number
+        estimatedDailyTotalU:
+          description: Estimated combined daily yield in U (static + dynamic).
           type: number
       required:
         - level
@@ -427,6 +465,11 @@ components:
         - airdropTotal
         - airdropPerSeat
         - motherTokensPerSeat
+        - monthlyYieldRangePctLow
+        - monthlyYieldRangePctHigh
+        - estimatedDailyStaticU
+        - estimatedDailyDynamicU
+        - estimatedDailyTotalU
 
     RunePriceStage:
       type: object
@@ -548,10 +591,12 @@ components:
         airdropTokens:
           type: integer
         dailyUsdt:
+          description: Estimated daily STATIC USDT (preserved for backward compat).
           type: number
         durationDays:
           type: integer
         totalUsdtIncome:
+          description: Estimated total static USDT over the period.
           type: number
         selectedStage:
           $ref: "#/components/schemas/RunePriceStage"
@@ -564,6 +609,26 @@ components:
         roi:
           type: number
         roiMultiplier:
+          type: number
+        estimateMode:
+          description: Indicates yield numbers are estimates, not contractual guarantees.
+          type: string
+          enum: [low, midpoint, high]
+        subTokenAccumulated:
+          description: Estimated sub-token tokens accumulated over the period (35% dynamic auto-purchased at selectedStage subPrice).
+          type: number
+        subTokenValue:
+          description: USD-equivalent value of subTokenAccumulated at selectedStage.
+          type: number
+        totalAssetsLow:
+          description: ROI band — total assets at low end of yield range (15%/month).
+          type: number
+        totalAssetsHigh:
+          description: ROI band — total assets at high end of yield range (35%/month).
+          type: number
+        roiLow:
+          type: number
+        roiHigh:
           type: number
         breakdown:
           type: array
@@ -590,4 +655,87 @@ components:
         - totalAssets
         - roi
         - roiMultiplier
+        - estimateMode
+        - subTokenAccumulated
+        - subTokenValue
+        - totalAssetsLow
+        - totalAssetsHigh
+        - roiLow
+        - roiHigh
+        - breakdown
+
+    RuneBurnStakeInput:
+      type: object
+      description: |
+        Burn-stake mother-token investment path (per 核心机制.md §壹). User
+        burns N mother tokens to receive permanent daily yield 1.0%-1.5% × N
+        in mother tokens. The yield rate tier is keyed off N (more burned →
+        higher rate); see backend tier table.
+      properties:
+        motherTokensBurned:
+          description: Number of mother tokens burned (input is whole-token count, not USD).
+          type: number
+        durationDays:
+          type: integer
+        priceStageIndex:
+          description: Price stage index (0-5) used to value the yielded mother tokens.
+          type: integer
+      required:
+        - motherTokensBurned
+        - durationDays
+        - priceStageIndex
+
+    RuneBurnStakeResult:
+      type: object
+      properties:
+        motherTokensBurned:
+          type: number
+        dailyRatePct:
+          description: Effective daily yield rate (e.g. 1.5 = 1.5% per day).
+          type: number
+        dailyYieldTokens:
+          description: Daily yield in mother tokens (= motherTokensBurned × dailyRatePct / 100).
+          type: number
+        durationDays:
+          type: integer
+        totalYieldTokens:
+          type: number
+        selectedStage:
+          $ref: "#/components/schemas/RunePriceStage"
+        totalYieldValue:
+          description: USD-equivalent of totalYieldTokens at selectedStage.motherPrice.
+          type: number
+        burnedValueAtLaunch:
+          description: USD-equivalent of motherTokensBurned at the launch price (sunk cost basis).
+          type: number
+        roi:
+          type: number
+        roiMultiplier:
+          type: number
+        estimateMode:
+          type: string
+          enum: [low, midpoint, high]
+        breakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              labelCn:
+                type: string
+              value:
+                type: string
+      required:
+        - motherTokensBurned
+        - dailyRatePct
+        - dailyYieldTokens
+        - durationDays
+        - totalYieldTokens
+        - selectedStage
+        - totalYieldValue
+        - burnedValueAtLaunch
+        - roi
+        - roiMultiplier
+        - estimateMode
         - breakdown
