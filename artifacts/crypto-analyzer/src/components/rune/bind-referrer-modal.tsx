@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSendTransaction, useActiveAccount } from "thirdweb/react";
 import { prepareContractCall, readContract } from "thirdweb";
-import { communityContract, nodePresellContract, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
+import { communityContract, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
 import { UserPlus, Loader2, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/language-context";
@@ -61,13 +61,10 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
   const isRoot = isHex && resolved === COMMUNITY_ROOT.toLowerCase();
   const isSelf = account && resolved === account.address.toLowerCase();
 
-  // Debounced on-chain pre-check (2 conditions, both must pass):
-  //   1. `referrerOf(ref) != 0` — the proposed referrer is in the community
-  //      (mirrors the contract's "Referrer not invited" revert).
-  //   2. `getUserPurchaseData(ref).amount > 0` — the proposed referrer has
-  //      actually purchased a node. The on-chain contract enforces this
-  //      since 2026-04-28; checking client-side surfaces the rejection
-  //      before the user pays gas. ROOT is exempt from both checks.
+  // Debounced on-chain pre-check — only verifies the proposed referrer is
+  // already in the community (`referrerOf(ref) != 0`). The "upline must
+  // own a node" check was removed 2026-04-29 per user direction; if the
+  // contract still enforces it the failure surfaces at tx time.
   useEffect(() => {
     if (!isHex || isSelf) { setPreCheck({ state: "idle" }); return; }
     if (isRoot)           { setPreCheck({ state: "ok", label: t("mr.bind.okValidated") }); return; }
@@ -83,22 +80,6 @@ export function BindReferrerModal({ open, onClose, initialReferrer, onBound }: P
 
         if (upstreamOfRef.toLowerCase() === ZERO) {
           setPreCheck({ state: "reject", reason: t("mr.bind.rejectNotMember") });
-          return;
-        }
-
-        const purchase = (await readContract({
-          contract: nodePresellContract,
-          method: "function getUserPurchaseData(address) view returns (address, uint256, uint256, uint256)",
-          params: [resolved as `0x${string}`],
-        })) as readonly [string, bigint, bigint, bigint];
-        const purchasedAmount = purchase[1];
-        if (purchasedAmount === 0n) {
-          setPreCheck({
-            state: "reject",
-            reason: t("mr.bind.rejectUplineNoNode") === "mr.bind.rejectUplineNoNode"
-              ? "上级地址尚未购买节点，无法作为推荐人"
-              : t("mr.bind.rejectUplineNoNode"),
-          });
           return;
         }
 
