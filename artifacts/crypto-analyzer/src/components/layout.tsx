@@ -194,19 +194,15 @@ function Navbar() {
     ? [...NAV_ITEMS, { href: "/dashboard", label: "DASHBOARD", key: "dashboard", icon: LayoutDashboard }]
     : NAV_ITEMS;
 
-  /** Dashboard requires an on-chain node purchase (re-instated 2026-04-28).
-   *  Clicking it without a purchase falls back to /recruit and pops the
-   *  buy modal — matches the contract-side rule that referrers must hold
-   *  a node, so there's no useful intermediate "dashboard with referral
-   *  link only" state to allow. */
-  function handleNavClick(e: React.MouseEvent, key: string) {
-    if (key === "dashboard" && !hasPurchased) {
-      e.preventDefault();
-      setMenuOpen(false);
-      navigate("/recruit");
-      emitOpenPurchase();
-    }
+  /** Dashboard is now SOFT-gated (2026-04-29 revert): bound-but-unpurchased
+   *  users can see their binding + referral link inside dashboard, with a
+   *  persistent CTA to buy a node. Nav clicks are no longer intercepted —
+   *  the user reaches the page and the restricted view explains what's
+   *  locked behind a purchase. */
+  function handleNavClick(_e: React.MouseEvent, _key: string) {
+    // intentional no-op; kept as a hook in case we re-introduce gating later.
   }
+  void hasPurchased;
 
   return (
     <>

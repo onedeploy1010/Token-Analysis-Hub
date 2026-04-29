@@ -13,18 +13,19 @@ import type { NodeId } from "@/lib/thirdweb/contracts";
 /**
  * Sole piece of onboarding glue. Mounted once in App.tsx.
  *
- * Flow (per user 2026-04-27):
+ * Flow (revised 2026-04-29):
  *   1. Wallet connects → read `referrerOf` and `getUserPurchaseData`.
  *   2. Not bound → BindReferrerModal opens. The user can either bind
  *      (success → step 3) or close the modal (X / Escape / outside-click
  *      → wallet disconnects → UI returns to the unauthenticated state).
  *      Pre-fills the input from `?ref=` if present.
- *   3. Bound + not purchased → pop PurchaseNodeModal. User may close
- *      it ("Later") and STAY on /recruit. Dashboard is a hard gate —
- *      clicking it bounces back to /recruit and re-opens the buy modal
- *      (the contract-side rule that referrers must hold a node makes
- *      a "browse-only dashboard" state useless).
- *   4. Already purchased → navigate straight to /dashboard.
+ *   3. Bound (purchased OR not) → navigate to /dashboard. The dashboard
+ *      itself surfaces the referral relationship + invite link to every
+ *      bound user; an unpurchased user gets a NoNodeReminder popup there
+ *      explaining commission eligibility still requires owning a node,
+ *      with a CTA that fires `emitOpenPurchase`.
+ *   4. PurchaseNodeModal stays mounted to listen for the explicit open
+ *      signal from card CTAs / dashboard reminder / nav buttons.
  *
  * Each decision re-checks on-chain state after every tx so reloads
  * mid-flow land the user on the correct step.
@@ -81,21 +82,16 @@ export function RuneOnboarding() {
       return;
     }
 
-    // Already bought — skip modals, go straight to dashboard.
-    if (hasPurchased) {
+    // Bound (purchased OR not) — proceed to /dashboard. The dashboard
+    // itself shows the restricted view + persistent buy-node CTA when
+    // hasPurchased is false. Per 2026-04-29 user direction, we no longer
+    // hard-gate the dashboard on a purchase; the restricted view explains
+    // that referral commission requires owning a node.
+    if (isBound) {
       navigate("/dashboard");
       return;
     }
-
-    // Bound but not yet purchased — pop the node picker. Closing it
-    // ("Later") leaves the user on /recruit; they can still click the
-    // Dashboard nav to enter the dashboard's restricted view.
-    if (!buyDismissed) {
-      setBindOpen(false);
-      setBuyOpen(true);
-      return;
-    }
-  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, buyDismissed, navigate]);
+  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate]);
 
   return (
     <>
@@ -112,7 +108,9 @@ export function RuneOnboarding() {
         onBound={async () => {
           setBindOpen(false);
           await refetchReferrer();
-          // Effect will flip buyOpen on the next render once isBound flips true.
+          // Effect will navigate to /dashboard on the next render once
+          // isBound flips true; the dashboard's NoNodeReminder takes over
+          // from there for unpurchased users.
         }}
       />
       <PurchaseNodeModal

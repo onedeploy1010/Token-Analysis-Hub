@@ -21,6 +21,7 @@ import { useReferrerOf } from "@/hooks/rune/use-community";
 import { useUserPurchase, useNodeConfigs, type NodeConfig } from "@/hooks/rune/use-node-presell";
 import { useGetRuneOverview } from "@rune/api-client-react";
 import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
+import { NoNodeReminder } from "@/components/rune/no-node-reminder";
 import { useTeam, usePersonalStats, useRewards, type ReferrerRow, type RewardRow, type PersonalStats } from "@/hooks/rune/use-team";
 import { NODE_META, type NodeId, COMMUNITY_ROOT } from "@/lib/thirdweb/contracts";
 import { runeChain } from "@/lib/thirdweb/chains";
@@ -288,21 +289,36 @@ export default function Dashboard() {
   const hasPurchased   = isDemoMode || chainHasPurchased || dbHasPurchased || previewNodeId !== undefined;
   const ownedNodeId    = chainNodeId ?? (dbNodeId ?? previewNodeId);
 
-  // Hard purchase gate (re-instated 2026-04-28): dashboard requires both
-  // a connected wallet AND an on-chain node purchase. Bound-but-unpurchased
-  // users get bounced to /recruit with the buy modal triggered. Matches the
-  // contract-side rule that referrer must have purchased — no halfway state.
+  // Soft gate (2026-04-29 revert): bound-but-unpurchased users CAN enter
+  // the dashboard. They get a restricted view with a persistent reminder
+  // popup explaining that referral commission requires owning a node.
+  // Only an unconnected wallet bounces back to /recruit.
   useEffect(() => {
     if (isDemoMode) return;
     if (!address) { navigate("/recruit"); return; }
-    if (previewNodeId !== undefined) return;
-    if (!purchaseLoading && !statsLoading && !hasPurchased) {
-      navigate("/recruit");
-      emitOpenPurchase();
-    }
-  }, [address, isDemoMode, hasPurchased, purchaseLoading, statsLoading, previewNodeId, navigate]);
+  }, [address, isDemoMode, navigate]);
 
-  if (!isDemoMode && (!address || !hasPurchased)) return null;
+  if (!isDemoMode && !address) return null;
+
+  // Restricted = bound (we got here, so they're connected) but no node yet.
+  // Drives the OverviewTab's locked CTA, the Team/Rewards tab gates, and
+  // the auto-popping NoNodeReminder dialog below.
+  const restricted = !isDemoMode && !hasPurchased && previewNodeId === undefined;
+
+  // One-shot reminder for the bound-but-unpurchased state. Wait for both
+  // chain and DB signals before deciding so we don't flash the dialog open
+  // and immediately closed when `hasPurchased` flips true. `dismissed`
+  // resets when address or hasPurchased changes (purchase completion or
+  // wallet switch closes the loop without manual dismissal).
+  const [reminderOpen, setReminderOpen]           = useState(false);
+  const [reminderDismissed, setReminderDismissed] = useState(false);
+  useEffect(() => { setReminderDismissed(false); }, [address, hasPurchased]);
+  useEffect(() => {
+    if (!restricted) { setReminderOpen(false); return; }
+    if (purchaseLoading || statsLoading) return;
+    if (reminderDismissed) return;
+    setReminderOpen(true);
+  }, [restricted, purchaseLoading, statsLoading, reminderDismissed]);
 
   const meta = ownedNodeId ? NODE_META[ownedNodeId as NodeId] : null;
   const theme = ownedNodeId ? HERO_THEME[ownedNodeId as NodeId] : HERO_THEME[101];
@@ -605,15 +621,54 @@ export default function Dashboard() {
           transition={{ duration: 0.28, ease: EASE }}
         >
           {tab === "overview" ? (
-            <OverviewTab address={address} />
+            <OverviewTab address={address} restricted={restricted} />
           ) : tab === "team" ? (
-            <TeamTab address={address} />
+            restricted ? <RestrictedTabPanel kind="team" /> : <TeamTab address={address} />
           ) : (
-            <RewardsTab address={address} />
+            restricted ? <RestrictedTabPanel kind="rewards" /> : <RewardsTab address={address} />
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Bound-but-unpurchased: friendly nag dialog. Auto-opens once after
+          on-chain + DB signals settle; dismissable, won't reappear unless
+          the user reconnects or finishes a purchase. */}
+      <NoNodeReminder open={reminderOpen} onClose={() => { setReminderOpen(false); setReminderDismissed(true); }} />
     </div>
+  );
+}
+
+/** Replaces Team / Rewards tab content for unpurchased users. Re-uses the
+ *  amber locked-card visuals from the OverviewTab so the gate feels
+ *  consistent across tabs. The CTA fires `emitOpenPurchase()` which the
+ *  RuneOnboarding listener catches to open PurchaseNodeModal. */
+function RestrictedTabPanel({ kind }: { kind: "team" | "rewards" }) {
+  const { t } = useLanguage();
+  const tx = (key: string, fallback: string) => {
+    const v = t(key);
+    return v === key ? fallback : v;
+  };
+  const title = kind === "team"
+    ? tx("mr.dash.locked.team.title", "购买节点后查看团队")
+    : tx("mr.dash.locked.rewards.title", "购买节点后查看返佣");
+  const desc = kind === "team"
+    ? tx("mr.dash.locked.team.desc", "节点上线即可看到下线层级、伞下出资和团队等级分布。")
+    : tx("mr.dash.locked.rewards.desc", "持有节点后，邀请链接每一笔成交都会即时返佣到你的钱包，并在此查询明细。");
+  return (
+    <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/40 to-slate-700/85">
+      <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
+      <CardContent className="py-12 text-center space-y-3 relative z-10">
+        <div className="text-amber-300 font-semibold text-base">{title}</div>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">{desc}</p>
+        <Button
+          size="sm"
+          onClick={() => emitOpenPurchase()}
+          className="mt-1 bg-amber-500 hover:bg-amber-400 text-black font-semibold"
+        >
+          {tx("mr.dash.locked.cta", "立即购买节点")}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1742,26 +1797,41 @@ function OverviewTab({ address, restricted = false }: { address: string; restric
           </Card>
         </motion.div>
 
-        {/* Restricted (bound but not purchased) — replace the rich
-            overview content with a single buy-to-unlock CTA. The
-            referral card above stays so unpurchased members can still
-            recruit while they decide on a tier. */}
+        {/* Restricted (bound but not purchased) — explains the commission
+            rule per 2026-04-29 user direction: bind only ≠ commission.
+            User must own a node to receive direct-referral payouts when
+            their downline buys. */}
         {restricted && (
           <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/50 to-slate-700/85">
-            <CardContent className="py-8 text-center space-y-3">
-              <div className="text-amber-300 font-semibold text-base">
-                {t("mr.dash.locked.title") || "购买节点解锁完整面板"}
+            <CardContent className="py-6 sm:py-7 space-y-3">
+              <div className="text-center">
+                <div className="text-amber-300 font-semibold text-base">
+                  {t("mr.dash.locked.title") || "温馨提示 · 您还未购买节点"}
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                {t("mr.dash.locked.desc") || "你已绑定推荐关系，可分享上方邀请链接。购买任意节点后将解锁团队、奖励与个人统计。"}
-              </p>
-              <Button
-                size="sm"
-                onClick={() => emitOpenPurchase()}
-                className="bg-amber-500 hover:bg-amber-400 text-black font-semibold gap-1.5"
-              >
-                {t("mr.dash.locked.cta") || "立即购买节点"}
-              </Button>
+              <div className="max-w-md mx-auto space-y-2 text-xs sm:text-sm">
+                <p className="text-muted-foreground/90 flex items-start gap-2">
+                  <span className="text-emerald-400 shrink-0">✓</span>
+                  <span>{t("mr.dash.locked.row1") || "您已绑定推荐关系，可以分享上方邀请链接发展下线"}</span>
+                </p>
+                <p className="text-amber-200/90 flex items-start gap-2">
+                  <span className="text-amber-400 shrink-0">⚠</span>
+                  <span>{t("mr.dash.locked.row2") || "但要拿到直推奖励，必须自己先购买节点"}</span>
+                </p>
+                <p className="text-emerald-200/90 flex items-start gap-2">
+                  <span className="text-emerald-400 shrink-0">💰</span>
+                  <span>{t("mr.dash.locked.row3") || "您持节点后，下线购买节点会按档位返佣 5%-15% 直接进入您的钱包"}</span>
+                </p>
+              </div>
+              <div className="flex justify-center pt-1">
+                <Button
+                  size="sm"
+                  onClick={() => emitOpenPurchase()}
+                  className="bg-amber-500 hover:bg-amber-400 text-black font-semibold gap-1.5"
+                >
+                  {t("mr.dash.locked.cta") || "立即购买节点"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
