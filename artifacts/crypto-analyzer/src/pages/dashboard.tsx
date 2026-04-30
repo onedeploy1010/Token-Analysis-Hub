@@ -644,16 +644,12 @@ export default function Dashboard() {
  *  RuneOnboarding listener catches to open PurchaseNodeModal. */
 function RestrictedTabPanel({ kind }: { kind: "team" | "rewards" }) {
   const { t } = useLanguage();
-  const tx = (key: string, fallback: string) => {
-    const v = t(key);
-    return v === key ? fallback : v;
-  };
   const title = kind === "team"
-    ? tx("mr.dash.locked.team.title", "购买节点后查看团队")
-    : tx("mr.dash.locked.rewards.title", "购买节点后查看返佣");
+    ? t("mr.dash.locked.team.title")
+    : t("mr.dash.locked.rewards.title");
   const desc = kind === "team"
-    ? tx("mr.dash.locked.team.desc", "节点上线即可看到下线层级、伞下出资和团队等级分布。")
-    : tx("mr.dash.locked.rewards.desc", "持有节点后，邀请链接每一笔成交都会即时返佣到你的钱包，并在此查询明细。");
+    ? t("mr.dash.locked.team.desc")
+    : t("mr.dash.locked.rewards.desc");
   return (
     <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/40 to-slate-700/85">
       <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
@@ -665,7 +661,7 @@ function RestrictedTabPanel({ kind }: { kind: "team" | "rewards" }) {
           onClick={() => emitOpenPurchase()}
           className="mt-1 bg-amber-500 hover:bg-amber-400 text-black font-semibold"
         >
-          {tx("mr.dash.locked.cta", "立即购买节点")}
+          {t("mr.dash.locked.cta")}
         </Button>
       </CardContent>
     </Card>
@@ -1806,21 +1802,21 @@ export function OverviewTab({ address, restricted = false }: { address: string; 
             <CardContent className="py-6 sm:py-7 space-y-3">
               <div className="text-center">
                 <div className="text-amber-300 font-semibold text-base">
-                  {t("mr.dash.locked.title") || "温馨提示 · 您还未购买节点"}
+                  {t("mr.dash.locked.title")}
                 </div>
               </div>
               <div className="max-w-md mx-auto space-y-2 text-xs sm:text-sm">
                 <p className="text-muted-foreground/90 flex items-start gap-2">
                   <span className="text-emerald-400 shrink-0">✓</span>
-                  <span>{t("mr.dash.locked.row1") || "您已绑定推荐关系，可以分享上方邀请链接发展下线"}</span>
+                  <span>{t("mr.dash.locked.row1")}</span>
                 </p>
                 <p className="text-amber-200/90 flex items-start gap-2">
                   <span className="text-amber-400 shrink-0">⚠</span>
-                  <span>{t("mr.dash.locked.row2") || "但要拿到直推奖励，必须自己先购买节点"}</span>
+                  <span>{t("mr.dash.locked.row2")}</span>
                 </p>
                 <p className="text-emerald-200/90 flex items-start gap-2">
                   <span className="text-emerald-400 shrink-0">💰</span>
-                  <span>{t("mr.dash.locked.row3") || "您持节点后，下线购买节点会按档位返佣 5%-15% 直接进入您的钱包"}</span>
+                  <span>{t("mr.dash.locked.row3")}</span>
                 </p>
               </div>
               <div className="flex justify-center pt-1">
@@ -1829,7 +1825,7 @@ export function OverviewTab({ address, restricted = false }: { address: string; 
                   onClick={() => emitOpenPurchase()}
                   className="bg-amber-500 hover:bg-amber-400 text-black font-semibold gap-1.5"
                 >
-                  {t("mr.dash.locked.cta") || "立即购买节点"}
+                  {t("mr.dash.locked.cta")}
                 </Button>
               </div>
             </CardContent>
@@ -2296,7 +2292,7 @@ function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
     const cursor = new Date(start);
     while (cursor <= end || buckets.length < 6) {
       const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-      buckets.push({ key, label: `${cursor.getMonth() + 1}月`, count: 0, amount: 0 });
+      buckets.push({ key, label: `${cursor.getMonth() + 1}${t("mr.dash.chart.monthSuffix")}`, count: 0, amount: 0 });
       cursor.setMonth(cursor.getMonth() + 1);
       if (buckets.length >= 18) break;
     }
