@@ -346,66 +346,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* My nodes summary + RUNE/EMBER pre-launch placeholder cells */}
-        <div className="grid grid-cols-2 gap-2">
-          <div
-            className="rounded-2xl px-4 py-3.5 ring-1 ring-amber-400/45 surface-3d"
-            style={{
-              background: "linear-gradient(160deg, rgba(251,191,36,0.16), rgba(120,80,10,0.08) 60%, rgba(8,5,2,0.30))",
-              boxShadow: "inset 0 1px 0 rgba(251,191,36,0.28), 0 6px 20px -8px rgba(251,191,36,0.28)",
-            }}
-          >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Server className="h-3.5 w-3.5 text-amber-300" />
-              <span className="text-[10px] text-amber-200/85 font-bold uppercase tracking-wider">
-                {t("profile.myNodes", "My Nodes")}
-              </span>
-            </div>
-            {!isConnected || statsLoading ? (
-              <div className="text-[22px] font-bold text-foreground/30">--</div>
-            ) : nodeCount > 0 ? (
-              <>
-                <div
-                  className="num-gold text-[22px] font-black tabular-nums"
-                  style={{ filter: "drop-shadow(0 0 12px hsl(38 95% 55% / 0.40))" }}
-                >
-                  {nodeCount}
-                  <span className="text-[12px] font-normal ml-1.5 text-amber-300/70">× {ownTierLabel}</span>
-                </div>
-                <div className="text-[10px] text-amber-100/65 mt-1">
-                  {fmtUsdt(investedUsdt)} {t("profile.invested", "invested")}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-[22px] font-black text-foreground/35">0</div>
-                <div className="text-[10px] text-foreground/50 mt-1">
-                  {t("profile.noNodeYet", "No nodes yet")}
-                </div>
-              </>
-            )}
-          </div>
-          <div
-            className="rounded-2xl px-4 py-3.5 ring-1 ring-purple-400/30 surface-3d"
-            style={{
-              background: "linear-gradient(160deg, rgba(168,85,247,0.10), rgba(50,30,80,0.06) 60%, rgba(8,5,2,0.30))",
-              boxShadow: "inset 0 1px 0 rgba(168,85,247,0.20), 0 6px 20px -8px rgba(168,85,247,0.18)",
-            }}
-          >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Lock className="h-3.5 w-3.5 text-purple-300" />
-              <span className="text-[10px] text-purple-200/80 font-bold uppercase tracking-wider">
-                RUNE / EMBER
-              </span>
-            </div>
-            <div className="text-[22px] font-black text-foreground/30">--</div>
-            <div className="text-[10px] text-purple-200/60 mt-1 flex items-center gap-1">
-              <Flame className="h-2.5 w-2.5" />
-              {t("profile.preLaunch", "Pre-launch")}
-            </div>
-          </div>
-        </div>
-
         {/* Invite link card — same elevated treatment so it reads as a peer
             of the hero rather than a flat list item. */}
         {isConnected && referralLink && (
