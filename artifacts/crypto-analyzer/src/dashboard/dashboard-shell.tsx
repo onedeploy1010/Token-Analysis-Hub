@@ -21,6 +21,7 @@ const ProfileVault    = lazy(() => import("@dashboard/pages/profile-vault"));
 const ProfileSettings = lazy(() => import("@dashboard/pages/profile-settings"));
 const ProfileTransactions = lazy(() => import("@dashboard/pages/profile-transactions"));
 const ProfileNotifications = lazy(() => import("@dashboard/pages/profile-notifications"));
+const ProfileSwap = lazy(() => import("@dashboard/pages/profile-swap"));
 
 /**
  * AnimatedRuneLogo — same animated halo + dual rotating arcs as mainnet's
@@ -167,6 +168,7 @@ function DashboardRoutes() {
         <Route path="/profile/settings" component={ProfileSettings} />
         <Route path="/profile/transactions" component={ProfileTransactions} />
         <Route path="/profile/notifications" component={ProfileNotifications} />
+        <Route path="/profile/swap" component={ProfileSwap} />
       </Switch>
     </Suspense>
   );
