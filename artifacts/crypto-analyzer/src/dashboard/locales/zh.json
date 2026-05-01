@@ -873,7 +873,9 @@
       "wins": "盈利天",
       "losses": "亏损天",
       "monthTotal": "本月累计"
-    }
+    },
+    "followStrategyClosed": "即将开放",
+    "followStrategyClosedDesc": "跟单功能将在协议正式上线后开放，敬请期待。"
   },
   "profile": {
     "assetsOverview": "资产概览",

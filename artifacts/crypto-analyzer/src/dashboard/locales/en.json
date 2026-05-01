@@ -873,7 +873,9 @@
       "wins": "Wins",
       "losses": "Losses",
       "monthTotal": "Month total"
-    }
+    },
+    "followStrategyClosed": "Coming soon",
+    "followStrategyClosedDesc": "Copy-trading will open after the protocol launch."
   },
   "profile": {
     "assetsOverview": "Assets Overview",

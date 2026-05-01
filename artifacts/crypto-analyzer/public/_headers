@@ -1,13 +1,20 @@
 # Cloudflare Pages — response headers.
-# Long-cache built assets, keep HTML short-lived so new deploys propagate fast.
+#
+# Strategy: hashed asset chunks are content-addressed (Vite stamps a
+# build-hash into every filename under /assets/), so they're safe to
+# cache for a year. EVERYTHING ELSE — including the root `/` and any
+# SPA route like `/app/profile` that serves index.html via the
+# `/*  /index.html  200` rewrite in _redirects — must be revalidated
+# every visit, otherwise users keep loading a stale index.html that
+# references chunk filenames a fresh deploy has already replaced
+# (which 404s back to index.html with text/html and tanks every
+# dynamic import).
 
 /*
+  Cache-Control: public, max-age=0, must-revalidate
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
-
-/*.html
-  Cache-Control: public, max-age=0, must-revalidate

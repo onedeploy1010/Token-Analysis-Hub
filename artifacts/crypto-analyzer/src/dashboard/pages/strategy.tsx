@@ -78,6 +78,18 @@ interface TradeSignal { id: string; asset: string; direction: string; confidence
 
 function StrategyListTab({ walletAddr, onFollowStrategy }: { walletAddr: string; onFollowStrategy: (strategyType: string) => void }) {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  // Follow-strategy CTA is intentionally disabled until copy-trading is
+  // ready — clicking surfaces a "coming soon" toast instead of routing to
+  // the unfinished /copyconfig tab. Toast keys live under
+  // `strategy.followStrategyClosed*` in every locale.
+  const showComingSoon = () => {
+    toast({
+      title: t("strategy.followStrategyClosed", "Coming soon"),
+      description: t("strategy.followStrategyClosedDesc", "Copy-trading will open after the protocol launch."),
+    });
+  };
+  void onFollowStrategy; // kept for future re-enable; prop preserved for API compat.
 
   const { data: allTrades = [], isLoading } = useQuery<PaperTrade[]>({
     queryKey: ["strategy-trades"],
@@ -204,8 +216,8 @@ function StrategyListTab({ walletAddr, onFollowStrategy }: { walletAddr: string;
 
                 {/* Follow Button — always at bottom */}
                 <button
-                  onClick={() => onFollowStrategy(strat.key)}
-                  className="w-full mt-2 flex items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-bold transition-all active:scale-[0.98]"
+                  onClick={showComingSoon}
+                  className="w-full mt-2 flex items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-bold transition-all active:scale-[0.98] opacity-80"
                   style={{ background: `linear-gradient(135deg, ${strat.color}22, ${strat.color}10)`, border: `1px solid ${strat.color}35`, color: strat.color }}
                 >
                   {t("aiLab.followStrategy")}

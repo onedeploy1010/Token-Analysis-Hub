@@ -746,7 +746,9 @@
       "wins": "Ngày thắng",
       "losses": "Ngày thua",
       "monthTotal": "Tổng tháng"
-    }
+    },
+    "followStrategyClosed": "Sắp ra mắt",
+    "followStrategyClosedDesc": "Copy-trading sẽ mở sau khi giao thức chính thức ra mắt."
   },
   "profile": {
     "assetsOverview": "Tổng quan tài sản",

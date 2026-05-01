@@ -751,7 +751,9 @@
       "wins": "盈利天",
       "losses": "虧損天",
       "monthTotal": "本月累計"
-    }
+    },
+    "followStrategyClosed": "即將開放",
+    "followStrategyClosedDesc": "跟單功能將在協議正式上線後開放，敬請期待。"
   },
   "profile": {
     "assetsOverview": "資產概覽",

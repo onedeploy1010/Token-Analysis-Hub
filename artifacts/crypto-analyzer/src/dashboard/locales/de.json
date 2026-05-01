@@ -746,7 +746,9 @@
       "wins": "Gewinntage",
       "losses": "Verlusttage",
       "monthTotal": "Monats-Total"
-    }
+    },
+    "followStrategyClosed": "Demnächst verfügbar",
+    "followStrategyClosedDesc": "Copy-Trading wird nach dem offiziellen Protokoll-Launch geöffnet."
   },
   "profile": {
     "assetsOverview": "Vermögensübersicht",

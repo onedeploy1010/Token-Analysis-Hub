@@ -746,7 +746,9 @@
       "wins": "أيام مربحة",
       "losses": "أيام خاسرة",
       "monthTotal": "إجمالي الشهر"
-    }
+    },
+    "followStrategyClosed": "قريبًا",
+    "followStrategyClosedDesc": "سيتم فتح التداول النسخي بعد الإطلاق الرسمي للبروتوكول."
   },
   "profile": {
     "assetsOverview": "نظرة عامة على الأصول",

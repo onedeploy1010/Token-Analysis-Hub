@@ -746,7 +746,9 @@
       "wins": "勝ち日",
       "losses": "負け日",
       "monthTotal": "今月累計"
-    }
+    },
+    "followStrategyClosed": "近日公開",
+    "followStrategyClosedDesc": "コピー取引はプロトコル正式リリース後に公開予定です。"
   },
   "profile": {
     "assetsOverview": "資産概要",

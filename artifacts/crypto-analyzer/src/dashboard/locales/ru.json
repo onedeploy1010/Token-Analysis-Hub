@@ -746,7 +746,9 @@
       "wins": "Прибыльные дни",
       "losses": "Убыточные дни",
       "monthTotal": "Итого за месяц"
-    }
+    },
+    "followStrategyClosed": "Скоро будет",
+    "followStrategyClosedDesc": "Копи-трейдинг откроется после официального запуска протокола."
   },
   "profile": {
     "assetsOverview": "Обзор Активов",

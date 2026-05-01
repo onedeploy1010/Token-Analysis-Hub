@@ -746,7 +746,9 @@
       "wins": "Dias positivos",
       "losses": "Dias negativos",
       "monthTotal": "Total do mês"
-    }
+    },
+    "followStrategyClosed": "Em breve",
+    "followStrategyClosedDesc": "O copy-trading será aberto após o lançamento oficial do protocolo."
   },
   "profile": {
     "assetsOverview": "Visão Geral dos Ativos",

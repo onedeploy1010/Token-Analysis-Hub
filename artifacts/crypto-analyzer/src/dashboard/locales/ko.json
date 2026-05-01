@@ -746,7 +746,9 @@
       "wins": "이긴 날",
       "losses": "진 날",
       "monthTotal": "이번 달 누계"
-    }
+    },
+    "followStrategyClosed": "출시 예정",
+    "followStrategyClosedDesc": "카피 트레이딩은 프로토콜 정식 출시 후 공개됩니다."
   },
   "profile": {
     "assetsOverview": "자산 개요",
