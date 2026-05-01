@@ -231,9 +231,7 @@ export default function ProfilePage() {
 
       <div className="px-4 lg:px-6 pt-3 space-y-3">
 
-        {/* Cumulative earnings hero — strong amber gradient, multi-layer glow,
-            inner highlight for floating-tile depth (matches mainnet's
-            surface-3d-tinted dashboard cards). */}
+        {/* ── 总收益 = 质押收益 + 推广收益（pre-launch 占位，质押开放后写入实数）── */}
         <div
           className="surface-3d relative overflow-hidden rounded-3xl border-2 border-amber-500/45 p-4"
           style={{
@@ -248,30 +246,23 @@ export default function ProfilePage() {
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
                   <TrendingUp className="h-3.5 w-3.5 text-amber-300" />
                   <span className="text-[11px] text-amber-200/85 font-bold uppercase tracking-[0.18em]">
-                    {t("profile.totalEarnings", "Cumulative Earnings")}
+                    {t("profile.totalEarnings", "Total Earnings")}
                   </span>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 ring-1 ring-emerald-500/45 text-emerald-300">
-                    USDT
-                  </span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 ring-1 ring-emerald-500/45 text-emerald-300">USDT</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-500/20 ring-1 ring-orange-500/45 text-orange-300">EMBER</span>
                 </div>
-                {!isConnected || statsLoading ? (
-                  <Skeleton className="h-10 w-36" />
-                ) : (
-                  <div
-                    className="num-shimmer text-[34px] leading-none font-black tabular-nums tracking-tight"
-                    style={{
-                      filter: "drop-shadow(0 0 18px hsl(38 100% 55% / 0.45)) drop-shadow(0 1px 0 rgba(0,0,0,0.4))",
-                    }}
-                    data-testid="text-total-earnings"
-                  >
-                    <AnimUsdt value={totalEarnings} />
-                  </div>
-                )}
+                <div
+                  className="num-shimmer text-[30px] leading-none font-black tabular-nums tracking-tight"
+                  style={{ filter: "drop-shadow(0 0 18px hsl(38 100% 55% / 0.45)) drop-shadow(0 1px 0 rgba(0,0,0,0.4))" }}
+                  data-testid="text-total-earnings"
+                >
+                  $0.00
+                </div>
                 <div className="text-[10px] text-amber-100/55 mt-2">
-                  {t("profile.earningsSource", "Direct referral commission paid on-chain · USDT")}
+                  {t("profile.totalEarningsSource", "Staking + V-level referral · pre-launch")}
                 </div>
               </div>
               <div
@@ -285,64 +276,119 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {isConnected && (
-              <div className="grid grid-cols-3 gap-2 mt-3">
-                <div
-                  className="rounded-2xl px-2.5 py-3 ring-1 ring-emerald-400/35 transition-all duration-300 hover:ring-emerald-400/65 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(34,197,94,0.45)]"
-                  style={{
-                    background: "linear-gradient(160deg, rgba(34,197,94,0.16), rgba(20,80,40,0.10) 60%, rgba(0,0,0,0.20))",
-                    boxShadow: "inset 0 1px 0 rgba(34,197,94,0.30), 0 4px 14px -6px rgba(34,197,94,0.30)",
-                  }}
-                >
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <Gift className="h-3 w-3 text-emerald-300" />
-                    <span className="text-[9px] uppercase tracking-wider text-emerald-200/85 font-bold">
-                      {t("profile.directCommission", "Direct")}
-                    </span>
-                  </div>
-                  <div className="text-[15px] font-black text-emerald-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(142 70% 50% / 0.4)" }}>
-                    <AnimUsdt value={directCommissionUsdt} />
-                  </div>
-                  <div className="text-[9px] text-emerald-300/60 mt-0.5">USDT · on-chain</div>
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              {/* 质押收益（USDT + EMBER） */}
+              <div
+                className="rounded-2xl px-3 py-3 ring-1 ring-emerald-400/35 transition-all duration-300 hover:ring-emerald-400/65 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(34,197,94,0.45)]"
+                style={{
+                  background: "linear-gradient(160deg, rgba(34,197,94,0.16), rgba(20,80,40,0.10) 60%, rgba(0,0,0,0.20))",
+                  boxShadow: "inset 0 1px 0 rgba(34,197,94,0.30), 0 4px 14px -6px rgba(34,197,94,0.30)",
+                }}
+              >
+                <div className="flex items-center gap-1 mb-1.5">
+                  <Coins className="h-3 w-3 text-emerald-300" />
+                  <span className="text-[10px] uppercase tracking-wider text-emerald-200/85 font-bold">
+                    {t("profile.stakingYield", "Staking")}
+                  </span>
+                  <span className="text-[8px] font-bold px-1 py-px rounded bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40 ml-auto">
+                    {t("profile.preLaunch", "Pre-launch")}
+                  </span>
                 </div>
-                <div
-                  className="rounded-2xl px-2.5 py-3 ring-1 ring-blue-400/35 transition-all duration-300 hover:ring-blue-400/65 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(59,130,246,0.45)]"
-                  style={{
-                    background: "linear-gradient(160deg, rgba(59,130,246,0.16), rgba(20,40,80,0.10) 60%, rgba(0,0,0,0.20))",
-                    boxShadow: "inset 0 1px 0 rgba(59,130,246,0.30), 0 4px 14px -6px rgba(59,130,246,0.30)",
-                  }}
-                >
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <GitBranch className="h-3 w-3 text-blue-300" />
-                    <span className="text-[9px] uppercase tracking-wider text-blue-200/85 font-bold">
-                      {t("profile.teamVolume", "Team")}
-                    </span>
-                  </div>
-                  <div className="text-[15px] font-black text-blue-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(217 80% 60% / 0.4)" }}>
-                    <AnimUsdt value={teamCommissionUsdt} />
-                  </div>
-                  <div className="text-[9px] text-blue-300/60 mt-0.5">USDT · gross</div>
-                </div>
-                <div
-                  className="rounded-2xl px-2.5 py-3 ring-1 ring-amber-400/40 transition-all duration-300 hover:ring-amber-400/70 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(251,191,36,0.50)]"
-                  style={{
-                    background: "linear-gradient(160deg, rgba(251,191,36,0.18), rgba(120,80,10,0.10) 60%, rgba(0,0,0,0.20))",
-                    boxShadow: "inset 0 1px 0 rgba(251,191,36,0.32), 0 4px 14px -6px rgba(251,191,36,0.32)",
-                  }}
-                >
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <Coins className="h-3 w-3 text-amber-300" />
-                    <span className="text-[9px] uppercase tracking-wider text-amber-200/85 font-bold">
-                      {t("profile.investedKpi", "Invested")}
-                    </span>
-                  </div>
-                  <div className="text-[15px] font-black text-amber-200 tabular-nums" style={{ textShadow: "0 0 10px hsl(38 95% 55% / 0.45)" }}>
-                    <AnimUsdt value={investedUsdt} />
-                  </div>
-                  <div className="text-[9px] text-amber-300/60 mt-0.5">USDT · my node</div>
-                </div>
+                <div className="text-[16px] font-black text-emerald-200 tabular-nums leading-tight">$0.00</div>
+                <div className="text-[10px] text-emerald-300/70 mt-0.5">+ 0 EMBER</div>
+                <div className="text-[9px] text-emerald-300/55 mt-0.5">USDT 65% / EMBER 35%</div>
               </div>
-            )}
+              {/* 推广收益（V-level EMBER） */}
+              <div
+                className="rounded-2xl px-3 py-3 ring-1 ring-orange-400/40 transition-all duration-300 hover:ring-orange-400/70 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(251,146,60,0.45)]"
+                style={{
+                  background: "linear-gradient(160deg, rgba(251,146,60,0.16), rgba(120,60,10,0.10) 60%, rgba(0,0,0,0.20))",
+                  boxShadow: "inset 0 1px 0 rgba(251,146,60,0.30), 0 4px 14px -6px rgba(251,146,60,0.30)",
+                }}
+              >
+                <div className="flex items-center gap-1 mb-1.5">
+                  <GitBranch className="h-3 w-3 text-orange-300" />
+                  <span className="text-[10px] uppercase tracking-wider text-orange-200/85 font-bold">
+                    {t("profile.referralYield", "Referral")}
+                  </span>
+                  <span className="text-[8px] font-bold px-1 py-px rounded bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40 ml-auto">
+                    V-level
+                  </span>
+                </div>
+                <div className="text-[16px] font-black text-orange-200 tabular-nums leading-tight">0 EMBER</div>
+                <div className="text-[10px] text-orange-300/70 mt-0.5">{t("profile.directRate", "Direct")} 5% · {t("profile.teamRate", "Team")} 4-29%</div>
+                <div className="text-[9px] text-orange-300/55 mt-0.5">USD-valued EMBER</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 节点业绩（独立段）— 节点推广奖励 USDT 链上实付 + 节点空投 RUNE 占位 ── */}
+        <div
+          className="surface-3d relative overflow-hidden rounded-3xl border border-amber-500/35 p-4 mt-3"
+          style={{
+            background: "linear-gradient(135deg, rgba(40,30,8,0.75), rgba(20,15,8,0.90) 60%, rgba(10,8,4,0.95))",
+            boxShadow:
+              "inset 0 1px 0 rgba(251,191,36,0.20), inset 0 -1px 0 rgba(0,0,0,0.25), 0 8px 24px -10px rgba(251,191,36,0.20), 0 18px 40px -16px rgba(0,0,0,0.50)",
+          }}
+        >
+          <div className="pointer-events-none absolute -top-16 -right-8 h-44 w-44 rounded-full bg-amber-400/[0.18] blur-[70px]" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5">
+                <Server className="h-3.5 w-3.5 text-amber-300" />
+                <span className="text-[11px] text-amber-200/85 font-bold uppercase tracking-[0.18em]">
+                  {t("profile.nodePerformance", "Node Performance")}
+                </span>
+              </div>
+              {ownTierLabel && (
+                <span className="text-[10px] font-black tabular-nums tracking-wide px-2 py-0.5 rounded-full ring-1" style={{ color: ownTierColor, borderColor: ownTierColor + "33", background: ownTierColor + "12", textShadow: `0 0 10px ${ownTierColor}` }}>
+                  {ownTierLabel}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {/* 节点推广奖励 USDT — real on-chain directCommission */}
+              <div
+                className="rounded-2xl px-3 py-3 ring-1 ring-emerald-400/40 transition-all duration-300 hover:ring-emerald-400/70 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(34,197,94,0.45)]"
+                style={{
+                  background: "linear-gradient(160deg, rgba(34,197,94,0.18), rgba(20,80,40,0.10) 60%, rgba(0,0,0,0.20))",
+                  boxShadow: "inset 0 1px 0 rgba(34,197,94,0.32), 0 4px 14px -6px rgba(34,197,94,0.32)",
+                }}
+              >
+                <div className="flex items-center gap-1 mb-1.5">
+                  <Gift className="h-3 w-3 text-emerald-300" />
+                  <span className="text-[10px] uppercase tracking-wider text-emerald-200/85 font-bold">
+                    {t("profile.nodeReferralReward", "Node Referral")}
+                  </span>
+                  <span className="text-[8px] font-bold px-1 py-px rounded bg-emerald-500/25 text-emerald-200 ring-1 ring-emerald-500/45 ml-auto">on-chain</span>
+                </div>
+                <div className="num-gold text-[18px] font-black tabular-nums leading-tight" style={{ filter: "drop-shadow(0 0 10px hsl(142 70% 50% / 0.45))" }}>
+                  <AnimUsdt value={directCommissionUsdt} />
+                </div>
+                <div className="text-[9px] text-emerald-300/65 mt-0.5">USDT · {t("profile.nodeReferralSub", "5-15% per tier")}</div>
+              </div>
+              {/* 节点空投 RUNE — pre-launch placeholder */}
+              <div
+                className="rounded-2xl px-3 py-3 ring-1 ring-amber-400/40 transition-all duration-300 hover:ring-amber-400/70 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(251,191,36,0.45)]"
+                style={{
+                  background: "linear-gradient(160deg, rgba(251,191,36,0.16), rgba(120,80,10,0.10) 60%, rgba(0,0,0,0.20))",
+                  boxShadow: "inset 0 1px 0 rgba(251,191,36,0.30), 0 4px 14px -6px rgba(251,191,36,0.30)",
+                }}
+              >
+                <div className="flex items-center gap-1 mb-1.5">
+                  <Coins className="h-3 w-3 text-amber-300" />
+                  <span className="text-[10px] uppercase tracking-wider text-amber-200/85 font-bold">
+                    {t("profile.nodeAirdrop", "Node Airdrop")}
+                  </span>
+                  <span className="text-[8px] font-bold px-1 py-px rounded bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40 ml-auto">
+                    {t("profile.preLaunch", "Pre-launch")}
+                  </span>
+                </div>
+                <div className="text-[18px] font-black text-amber-200 tabular-nums leading-tight">0 RUNE</div>
+                <div className="text-[9px] text-amber-300/65 mt-0.5">{t("profile.nodeAirdropSub", "4-stage unlock by pool TVL")}</div>
+              </div>
+            </div>
           </div>
         </div>
 
