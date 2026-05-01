@@ -343,7 +343,9 @@
       "tvlDeposits": "總入金",
       "tvlManaged": "管理池 (45%)",
       "yieldProjection": "年化收益累計預測（8% / 月1%）",
-      "yieldLegend": "年化收益"
+      "yieldLegend": "年化收益",
+      "fundraiseTarget": "募資目標",
+      "lpInjectTarget": "LP 注入目標"
     }
   },
   "deposit": {

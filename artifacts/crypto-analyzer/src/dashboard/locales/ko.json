@@ -338,7 +338,9 @@
       "tvlDeposits": "입금",
       "tvlManaged": "관리 (45%)",
       "yieldProjection": "연 수익률 예측 (8% / 월 1%)",
-      "yieldLegend": "수익률"
+      "yieldLegend": "수익률",
+      "fundraiseTarget": "모금 목표",
+      "lpInjectTarget": "LP 주입 목표"
     }
   },
   "deposit": {

@@ -338,7 +338,9 @@
       "tvlDeposits": "Depósitos",
       "tvlManaged": "Gerenciado (45%)",
       "yieldProjection": "Projeção de rendimento (8% / 1%/mês)",
-      "yieldLegend": "Rendimento"
+      "yieldLegend": "Rendimento",
+      "fundraiseTarget": "Meta de captação",
+      "lpInjectTarget": "Meta de injeção LP"
     }
   },
   "deposit": {

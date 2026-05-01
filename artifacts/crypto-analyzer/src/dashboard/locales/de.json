@@ -338,7 +338,9 @@
       "tvlDeposits": "Einlagen",
       "tvlManaged": "Verwaltet (45%)",
       "yieldProjection": "Renditeprognose (8% / 1%/Monat)",
-      "yieldLegend": "Rendite"
+      "yieldLegend": "Rendite",
+      "fundraiseTarget": "Sammelziel",
+      "lpInjectTarget": "LP-Einspeiseziel"
     }
   },
   "deposit": {

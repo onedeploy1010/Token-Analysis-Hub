@@ -338,7 +338,9 @@
       "tvlDeposits": "Депозиты",
       "tvlManaged": "Управляемый (45%)",
       "yieldProjection": "Прогноз доходности (8% / 1%/мес.)",
-      "yieldLegend": "Доходность"
+      "yieldLegend": "Доходность",
+      "fundraiseTarget": "Цель сбора",
+      "lpInjectTarget": "Цель пополнения LP"
     }
   },
   "deposit": {

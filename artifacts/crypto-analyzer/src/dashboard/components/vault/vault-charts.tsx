@@ -95,9 +95,18 @@ export function VaultCharts() {
     { name: t("vault.charts.reserve"),       value: reserveUsdt, color: TEAL,  pct: "20" },
   ];
 
-  const nodeCount = data?.totalNodes ?? 0;
-  const targetNodes = 100;
-  const nodeProgress = Math.min((nodeCount / targetNodes) * 100, 100);
+  // Recruitment progress is measured in **USDT raised**, not node count.
+  // Spec (节点招募计划 §五.1):
+  //   • Total node-presale fundraise target: 8,000,000 USDT (gross sales)
+  //   • Of that, 35% = 2,800,000 USDT injects into the RUNE LP底池
+  // Show both: raisedUsdt against the 8M overall target, with the 2.8M
+  // LP threshold called out as the qualifying milestone.
+  const TOTAL_FUNDRAISE_TARGET_USDT = 8_000_000;
+  const LP_TARGET_USDT = 2_800_000;
+  const raisedUsdt = data?.totalDepositUsdt ?? 0;
+  const lpDepositedUsdt = data?.runeLp ?? 0; // already 35% of raised
+  const nodeProgress = Math.min((raisedUsdt / TOTAL_FUNDRAISE_TARGET_USDT) * 100, 100);
+  const lpProgress = Math.min((lpDepositedUsdt / LP_TARGET_USDT) * 100, 100);
 
   const LABEL_STYLE = { fontSize: 10, fill: "hsl(215 28% 65%)" };
 
@@ -186,33 +195,59 @@ export function VaultCharts() {
         </CardContent>
       </Card>
 
-      {/* Node recruitment progress */}
+      {/* Node recruitment progress — 2.8M LP target (35% of fundraise) +
+          8M overall fundraise target (节点招募计划 spec). */}
       <Card className="surface-3d border-primary/30 bg-primary/[0.04]">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between mb-2">
+        <CardContent className="p-3 space-y-3">
+          <div className="flex items-center justify-between">
             <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
               {t("vault.charts.nodeRecruitment")}
             </div>
             <div className="text-[11px] font-bold tabular-nums text-primary">
-              {nodeCount} / {targetNodes} {t("vault.charts.nodesUnit")}
+              {fmtUsdt(raisedUsdt)} / {fmtUsdt(TOTAL_FUNDRAISE_TARGET_USDT)}
             </div>
           </div>
-          <div className="h-2.5 rounded-full overflow-hidden bg-muted/40">
-            <motion.div
-              className="h-full rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${nodeProgress}%` }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
-              style={{ background: `linear-gradient(90deg, ${AMBER}99, ${AMBER})`, boxShadow: `0 0 8px ${AMBER}60` }}
-            />
+          {/* Overall fundraise bar (8M USDT, 100% of node sales) */}
+          <div>
+            <div className="h-2.5 rounded-full overflow-hidden bg-muted/40">
+              <motion.div
+                className="h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${nodeProgress}%` }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                style={{ background: `linear-gradient(90deg, ${AMBER}99, ${AMBER})`, boxShadow: `0 0 8px ${AMBER}60` }}
+              />
+            </div>
+            <div className="mt-1 flex items-center justify-between text-[10px]">
+              <span className="text-muted-foreground">
+                {t("vault.charts.fundraiseTarget", "Fundraise target")} · 8M USDT
+              </span>
+              <span className="text-primary tabular-nums">{nodeProgress.toFixed(1)}%</span>
+            </div>
           </div>
-          <div className="flex items-center justify-between mt-1.5 text-[10px] text-muted-foreground">
+          {/* LP-side milestone (2.8M USDT = 35% of fundraise → into RUNE LP) */}
+          <div>
+            <div className="h-2 rounded-full overflow-hidden bg-muted/40">
+              <motion.div
+                className="h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${lpProgress}%` }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: 0.15 }}
+                style={{ background: `linear-gradient(90deg, ${BLUE}99, ${BLUE})`, boxShadow: `0 0 8px ${BLUE}60` }}
+              />
+            </div>
+            <div className="mt-1 flex items-center justify-between text-[10px]">
+              <span className="text-muted-foreground">
+                {t("vault.charts.lpInjectTarget", "LP inject target")} · 2.8M USDT
+              </span>
+              <span className="text-blue-400 tabular-nums">
+                {fmtUsdt(lpDepositedUsdt)} ({lpProgress.toFixed(1)}%)
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
             <span>{t("vault.charts.launchOnFullRecruitment")}</span>
             <span className="text-primary">{t("vault.charts.targetPrice")}</span>
-          </div>
-          <div className="mt-2 text-[10px] text-muted-foreground">
-            {t("vault.charts.poolRatioLabel") + " "}
-            <span className="font-bold text-blue-400">{t("vault.charts.poolRatioValue")}</span>
           </div>
         </CardContent>
       </Card>

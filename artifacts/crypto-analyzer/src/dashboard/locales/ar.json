@@ -338,7 +338,9 @@
       "tvlDeposits": "الإيداعات",
       "tvlManaged": "مُدار (45%)",
       "yieldProjection": "توقع العائد السنوي (8% / 1%/شهر)",
-      "yieldLegend": "العائد"
+      "yieldLegend": "العائد",
+      "fundraiseTarget": "هدف التجميع",
+      "lpInjectTarget": "هدف ضخ LP"
     }
   },
   "deposit": {

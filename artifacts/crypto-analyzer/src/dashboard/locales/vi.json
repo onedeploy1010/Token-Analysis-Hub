@@ -338,7 +338,9 @@
       "tvlDeposits": "Tiền gửi",
       "tvlManaged": "Quản lý (45%)",
       "yieldProjection": "Dự báo lợi nhuận (8% / 1%/tháng)",
-      "yieldLegend": "Lợi nhuận"
+      "yieldLegend": "Lợi nhuận",
+      "fundraiseTarget": "Mục tiêu huy động",
+      "lpInjectTarget": "Mục tiêu bơm LP"
     }
   },
   "deposit": {
