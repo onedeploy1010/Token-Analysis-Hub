@@ -336,8 +336,8 @@
     "dydxVault": "dYdX Vault",
     "flexible": "Flexible · No Lock",
     "daily": "Daily",
-    "pageTitle": "VAULT",
-    "pageSubtitle": "Lock · Burn · LP Accumulation",
+    "pageTitle": "RUNE POOL",
+    "pageSubtitle": "Fundraise · Launch · Flywheel",
     "tabLock": "Lock",
     "tabLockDesc": "Lock RUNE · Earn veRUNE",
     "tabBurn": "Burn",
@@ -396,8 +396,8 @@
       "notReadyTitle": "Coming soon",
       "notReadyDesc": "EMBER burn-staking will open after the protocol launch."
     },
-    "tabPool": "Vault",
-    "tabPoolDesc": "LP Pools · Trading Fund",
+    "tabPool": "RUNE Pool",
+    "tabPoolDesc": "Fundraise → Launch → Flywheel",
     "lpPool": {
       "title": "LP Pool Accumulation",
       "subtitle": "Node Deposits · On-chain Liquidity",

@@ -4,7 +4,7 @@ import { cn } from "@dashboard/lib/utils";
 import { RuneLockSection } from "@dashboard/components/vault/rune-lock-section";
 import { EmberBurnSection } from "@dashboard/components/vault/ember-burn-section";
 import { VaultLpPool } from "@dashboard/components/vault/vault-lp-pool";
-import { VaultCharts } from "@dashboard/components/vault/vault-charts";
+import { VaultCharts, VaultRecruitment } from "@dashboard/components/vault/vault-charts";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { PageEnter, SubTabSwitch } from "@dashboard/components/page-enter";
@@ -152,6 +152,10 @@ export default function Vault() {
         <SubTabSwitch tabKey={activeTab}>
           {activeTab === "pool" && (
             <div className="space-y-4 pb-4">
+              {/* Recruitment + LP target progress pinned to the top of the
+                  pool tab so users see where the launch trigger stands
+                  before scrolling into pool-composition details. */}
+              <VaultRecruitment />
               <VaultLpPool />
               <VaultCharts />
             </div>
