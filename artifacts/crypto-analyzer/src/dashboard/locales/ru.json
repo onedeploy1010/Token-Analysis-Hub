@@ -733,7 +733,7 @@
       "status": "Статус",
       "statusValue": "Активно",
       "statusSub": "AI-квант",
-      "trendTitle": "Месячный тренд (20%–40%)",
+      "trendTitle": "Тренд месячной доходности (20%–45%)",
       "trendBadge": "Прогноз",
       "floor": "Минимум",
       "ceiling": "Максимум",
@@ -833,7 +833,7 @@
     "nodesTitle": "Членство Узлов",
     "totalNodes": "Всего Узлов",
     "activeNodes": "Активные Узлы",
-    "totalEarnings": "Накопленный доход",
+    "totalEarnings": "Общий доход",
     "dividendPool": "Дивидендный Пул",
     "poolBalance": "Баланс Пула",
     "fullPayment": "Полная Оплата",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "Хронология депозитов",
       "cumulative": "Накопл.",
       "disclaimer": "Дневная доходность — прогноз на основе ставки уровня; реальные расчёты активируются после запуска."
-    }
+    },
+    "totalEarningsSource": "Стейкинг + V-уровень рефералов · до запуска",
+    "stakingYield": "Доход от стейкинга",
+    "referralYield": "Доход от рефералов",
+    "directRate": "Прямой",
+    "teamRate": "Команда",
+    "nodePerformance": "Производительность узла",
+    "nodeReferralReward": "Комиссия узла",
+    "nodeReferralSub": "5-15% по уровню",
+    "nodeAirdrop": "Аирдроп узла",
+    "nodeAirdropSub": "4 этапа разблокировки по TVL"
   },
   "market": {
     "marketAnalysis": "Анализ Рынка",

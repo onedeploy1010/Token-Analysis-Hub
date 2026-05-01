@@ -6,6 +6,7 @@ import {
 } from "recharts";
 import { useTranslation } from "react-i18next";
 import { VaultCalendar } from "./vault-calendar";
+import { getLastMonthMonthlyReturn } from "./strategy-header";
 import { usePoolStatsRune } from "@dashboard/lib/data-rune";
 
 /* ── Stable rate display.
@@ -50,13 +51,13 @@ function CountUp({ target, prefix = "", suffix = "", decimals = 0, duration = 10
   return <>{prefix}{val.toFixed(decimals)}{suffix}</>;
 }
 
-/* ── Simulated monthly performance trend (3.5–6.5%) — deterministic so it
- *  stays consistent on every reload. */
+/* ── Simulated monthly performance trend (20–45%) — deterministic so it
+ *  stays consistent on every reload and matches the spec's monthly band. */
 function buildPerf() {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return months.map((m, i) => ({
     month: m,
-    rate: +(3.5 + Math.abs(Math.sin(i * 0.9 + 1.2)) * 3).toFixed(2),
+    rate: +(20 + Math.abs(Math.sin(i * 0.9 + 1.2)) * 25).toFixed(1),
   }));
 }
 const PERF_DATA = buildPerf();
@@ -88,14 +89,18 @@ export function TradingVaultBanner() {
     return `$${v.toFixed(2)}`;
   };
 
+  // Last completed month's actual P&L total (sourced from the same
+  // deterministic generator that drives the daily-P&L calendar below,
+  // so the banner number always equals the calendar's last-month sum).
+  const lastMonthPct = getLastMonthMonthlyReturn();
+
   const STATS = [
     {
       icon: TrendingUp,
       colorClass: "text-blue-400",
       bgClass: "bg-blue-500/[0.06] ring-blue-500/25",
       label: t("strategy.banner.monthlyReturn"),
-      // 4–6% monthly, deterministic per 12h slot.
-      value: <StableRate min={4} max={6} decimals={2} suffix="%" salt="monthlyReturn" />,
+      value: `${lastMonthPct >= 0 ? "+" : ""}${lastMonthPct.toFixed(1)}%`,
       sub: t("strategy.banner.monthlyReturnSub"),
     },
     {
@@ -111,8 +116,9 @@ export function TradingVaultBanner() {
       colorClass: "text-purple-400",
       bgClass: "bg-purple-500/[0.06] ring-purple-500/25",
       label: t("strategy.banner.annualEst"),
-      // Annual ≈ ((1 + monthly)^12 - 1). With monthly 4–6% that's 60–101%.
-      value: <StableRate min={60} max={101} decimals={0} suffix="%" salt="annualEst" />,
+      // Annual ≈ last-month-pct × 12 (linear) so it reads coherent with
+      // the headline monthly figure — with monthly 20-45% that's 240-540%.
+      value: `${(lastMonthPct * 12).toFixed(0)}%`,
       sub: t("strategy.banner.annualEstSub"),
     },
     {
@@ -319,7 +325,7 @@ export function TradingVaultBanner() {
           {/* Range labels */}
           <div className="flex justify-between text-[10px] text-muted-foreground mt-1 px-1">
             <span className="text-yellow-400/80">▼ 20% {t("strategy.banner.floor")}</span>
-            <span className="text-blue-400/80">▲ 40% {t("strategy.banner.ceiling")}</span>
+            <span className="text-blue-400/80">▲ 45% {t("strategy.banner.ceiling")}</span>
           </div>
         </div>
 

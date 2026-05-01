@@ -733,7 +733,7 @@
       "status": "상태",
       "statusValue": "운영 중",
       "statusSub": "AI 퀀트",
-      "trendTitle": "월 수익률 추세 (20%–40%)",
+      "trendTitle": "월 수익률 추세 (20%–45%)",
       "trendBadge": "예측",
       "floor": "하한",
       "ceiling": "상한",
@@ -833,7 +833,7 @@
     "nodesTitle": "노드 회원",
     "totalNodes": "총 노드 수",
     "activeNodes": "활성 노드",
-    "totalEarnings": "누적 수익",
+    "totalEarnings": "총 수익",
     "dividendPool": "배당 풀",
     "poolBalance": "풀 잔액",
     "fullPayment": "전액 결제",
@@ -1097,7 +1097,7 @@
     "myNodes": "내 노드",
     "invested": "투자",
     "noNodeYet": "노드 미구매",
-    "preLaunch": "상장 전",
+    "preLaunch": "출시 전",
     "team": "팀",
     "nodeRewards": {
       "title": "보상",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "입금 타임라인",
       "cumulative": "누적",
       "disclaimer": "일일 수익률은 티어 비율 기반 예측; 상장 후 실제 정산이 가동됩니다."
-    }
+    },
+    "totalEarningsSource": "스테이킹 + V급 추천（출시 예정）",
+    "stakingYield": "스테이킹 수익",
+    "referralYield": "추천 수익",
+    "directRate": "직접",
+    "teamRate": "팀",
+    "nodePerformance": "노드 성과",
+    "nodeReferralReward": "노드 추천 보상",
+    "nodeReferralSub": "등급별 5-15%",
+    "nodeAirdrop": "노드 에어드랍",
+    "nodeAirdropSub": "풀 TVL 4단계 해제"
   },
   "market": {
     "marketAnalysis": "시장 분석",

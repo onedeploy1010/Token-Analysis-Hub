@@ -733,7 +733,7 @@
       "status": "Status",
       "statusValue": "Em execução",
       "statusSub": "IA quantitativa",
-      "trendTitle": "Tendência mensal (20%–40%)",
+      "trendTitle": "Tendência de retorno mensal (20%–45%)",
       "trendBadge": "Projetado",
       "floor": "Mínimo",
       "ceiling": "Máximo",
@@ -833,7 +833,7 @@
     "nodesTitle": "Associações de Nó",
     "totalNodes": "Total de Nós",
     "activeNodes": "Nós Ativos",
-    "totalEarnings": "Ganhos acumulados",
+    "totalEarnings": "Ganhos Totais",
     "dividendPool": "Pool de Dividendos",
     "poolBalance": "Saldo do Pool",
     "fullPayment": "Pagamento Integral",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "Linha do tempo de depósitos",
       "cumulative": "Acumulado",
       "disclaimer": "O rendimento diário é uma projeção baseada no tier; as liquidações ativam após o lançamento."
-    }
+    },
+    "totalEarningsSource": "Staking + indicação V-nível · pré-lançamento",
+    "stakingYield": "Rendimento Staking",
+    "referralYield": "Rendimento Indicação",
+    "directRate": "Direto",
+    "teamRate": "Equipe",
+    "nodePerformance": "Desempenho do Nó",
+    "nodeReferralReward": "Comissão do Nó",
+    "nodeReferralSub": "5-15% por camada",
+    "nodeAirdrop": "Airdrop do Nó",
+    "nodeAirdropSub": "Desbloqueio em 4 etapas por TVL"
   },
   "market": {
     "marketAnalysis": "Análise de Mercado",

@@ -860,7 +860,7 @@
       "status": "Status",
       "statusValue": "Running",
       "statusSub": "AI Quant",
-      "trendTitle": "Monthly Return Trend (20%–40%)",
+      "trendTitle": "Monthly Return Trend (20%–45%)",
       "trendBadge": "Projected",
       "floor": "Floor",
       "ceiling": "Ceiling",
@@ -1213,7 +1213,18 @@
     "vipTrialActivated": "VIP Trial Activated",
     "vipTrialDesc": "7-day free VIP copy trading enabled",
     "runeToken": "RUNE Token",
-    "runeTokenDesc": "View RUNE token balance and operations"
+    "runeTokenDesc": "View RUNE token balance and operations",
+    "totalEarningsSource": "Staking + V-level referral · pre-launch",
+    "stakingYield": "Staking",
+    "referralYield": "Referral",
+    "directRate": "Direct",
+    "teamRate": "Team",
+    "preLaunch": "Pre-launch",
+    "nodePerformance": "Node Performance",
+    "nodeReferralReward": "Node Referral",
+    "nodeReferralSub": "5-15% per tier",
+    "nodeAirdrop": "Node Airdrop",
+    "nodeAirdropSub": "4-stage unlock by pool TVL"
   },
   "market": {
     "marketAnalysis": "Market Analysis",

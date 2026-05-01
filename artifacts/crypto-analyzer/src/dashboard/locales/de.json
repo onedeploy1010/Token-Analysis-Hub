@@ -733,7 +733,7 @@
       "status": "Status",
       "statusValue": "Aktiv",
       "statusSub": "AI-Quant",
-      "trendTitle": "Monatlicher Trend (20%–40%)",
+      "trendTitle": "Monatliche Rendite-Trend (20%–45%)",
       "trendBadge": "Prognose",
       "floor": "Untergrenze",
       "ceiling": "Obergrenze",
@@ -833,7 +833,7 @@
     "nodesTitle": "Knoten-Mitgliedschaften",
     "totalNodes": "Gesamtknoten",
     "activeNodes": "Aktive Knoten",
-    "totalEarnings": "Kumulative Einnahmen",
+    "totalEarnings": "Gesamteinnahmen",
     "dividendPool": "Dividendenpool",
     "poolBalance": "Pool-Guthaben",
     "fullPayment": "Vollzahlung",
@@ -1097,7 +1097,7 @@
     "myNodes": "Meine Nodes",
     "invested": "investiert",
     "noNodeYet": "Noch keine Nodes",
-    "preLaunch": "Vor dem Launch",
+    "preLaunch": "Vor-Launch",
     "team": "Team",
     "nodeRewards": {
       "title": "Belohnungen",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "Einlagen-Zeitleiste",
       "cumulative": "Kumulativ",
       "disclaimer": "Die tägliche Rendite ist eine Prognose basierend auf dem Tier-Satz; Auszahlungen aktivieren nach dem Launch."
-    }
+    },
+    "totalEarningsSource": "Staking + V-Stufen-Empfehlung · Vor-Launch",
+    "stakingYield": "Staking-Rendite",
+    "referralYield": "Empfehlungsertrag",
+    "directRate": "Direkt",
+    "teamRate": "Team",
+    "nodePerformance": "Node-Performance",
+    "nodeReferralReward": "Node-Provision",
+    "nodeReferralSub": "5-15% pro Stufe",
+    "nodeAirdrop": "Node-Airdrop",
+    "nodeAirdropSub": "4-stufige Freigabe nach Pool-TVL"
   },
   "market": {
     "marketAnalysis": "Marktanalyse",

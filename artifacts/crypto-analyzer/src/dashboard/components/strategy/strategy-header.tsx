@@ -38,10 +38,17 @@ export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
     return days;
   }
 
+  // Per-month seed (deterministic across re-renders so the calendar values
+  // for any historical month are stable for every viewer).
   const monthSeed = year * 100 + (month + 1);
   const monthRng = ((Math.sin(monthSeed * 4729 + 17389) % 1) + 1) % 1;
-  const targetMonthly = 28 + monthRng * 17;
+  // Target monthly aggregate 20%-45% (latest spec, was 28-45%).
+  const targetMonthly = 20 + monthRng * 25;
 
+  // Per-day raw P&L. Win range 0-4% (赢多), loss range -2%-0% (亏少).
+  // Win rate 70-90% — winThreshold sampled per-month 0.10-0.30 then
+  // jittered tighter for very recent days so today doesn't always win.
+  const baseWinThreshold = 0.10 + monthRng * 0.20; // 10%-30% threshold → 70%-90% wins
   const rawPnls: number[] = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
@@ -51,23 +58,25 @@ export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
     // Recent 5 days fluctuate with timeSeed; older days are stable
     const tf = daysAgo <= 5 ? timeSeed * (d + 3) : 0;
     const seed = year * 10000 + (month + 1) * 100 + d + tf;
-    const rng = ((Math.sin(seed * 9301 + 49297) % 1) + 1) % 1;
+    const rng  = ((Math.sin(seed * 9301 + 49297) % 1) + 1) % 1;
     const rng2 = ((Math.sin(seed * 7919 + 31337) % 1) + 1) % 1;
     const rng3 = ((Math.sin(seed * 6271 + 15731) % 1) + 1) % 1;
-    const winThreshold = daysAgo > 7 ? 0.30 : 0.25 + (rng3 * 0.1);
+    // Slight per-day wobble around the month's base threshold.
+    const winThreshold = Math.max(0.05, Math.min(0.35, baseWinThreshold + (rng3 - 0.5) * 0.06));
     const isWin = rng > winThreshold;
     let pnl: number;
     if (isWin) {
-      pnl = 0.8 + rng2 * 2.4;
-      if (daysAgo <= 3) pnl *= (0.9 + rng3 * 0.4);
+      // Win: 0% to +4%, biased toward middle via two-rng blend.
+      pnl = (rng2 * 0.6 + rng3 * 0.4) * 4;
     } else {
-      pnl = -(0.3 + rng3 * 1.7);
-      if (daysAgo <= 3) pnl *= (0.8 + rng2 * 0.3);
+      // Loss: -2% to 0%, slightly clustered near -1%.
+      pnl = -((rng2 * 0.6 + rng3 * 0.4) * 2);
     }
     const dow = date.getDay();
-    if (dow === 0 || dow === 6) pnl *= 0.4;
+    if (dow === 0 || dow === 6) pnl *= 0.6;
 
-    // Today fluctuates with hour progress
+    // Today fluctuates with hour progress so the running total
+    // ramps up through the day instead of jumping at 00:00.
     if (date.toDateString() === now.toDateString()) {
       const hourProgress = (now.getHours() * 60 + now.getMinutes()) / 1440;
       const jitter = ((Math.sin(timeSeed * 1337) % 1) + 1) % 1;
@@ -77,14 +86,39 @@ export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
     rawPnls.push(pnl);
   }
 
-  const rawTotal = rawPnls.reduce((s, v) => s + v, 0);
-  const scale = rawTotal > 0 ? targetMonthly / rawTotal : 1;
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const scaled = rawPnls[d - 1] * scale;
-    days.push({ day: d, pnl: Math.round(scaled * 100) / 100 });
+  // Scale raw values so the **complete** month sums to the target.
+  // For partial months (current month before EOM), keep raw values
+  // unscaled so today's running total reads naturally.
+  const monthIsComplete = new Date(year, month + 1, 1) <= now;
+  if (monthIsComplete) {
+    const rawTotal = rawPnls.reduce((s, v) => s + v, 0);
+    const scale = rawTotal > 0 ? targetMonthly / rawTotal : 1;
+    for (let d = 1; d <= daysInMonth; d++) {
+      // Clamp scaled win to [0, 4]% and loss to [-2, 0]% so per-day
+      // values stay in the spec range even after target-monthly scaling.
+      let scaled = rawPnls[d - 1] * scale;
+      if (scaled > 4)  scaled = 4;
+      if (scaled < -2) scaled = -2;
+      days.push({ day: d, pnl: Math.round(scaled * 100) / 100 });
+    }
+  } else {
+    for (let d = 1; d <= daysInMonth; d++) {
+      days.push({ day: d, pnl: Math.round(rawPnls[d - 1] * 100) / 100 });
+    }
   }
   return days;
+}
+
+/**
+ * Last completed month's total P&L — used for the strategy banner's
+ * "Monthly Return" KPI, so on May 1 it shows April's final number,
+ * not May 1's running total.
+ */
+export function getLastMonthMonthlyReturn(timeSeed = 0): number {
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const days = getCalendarDays(lastMonth, timeSeed);
+  return days.reduce((s, c) => s + (c.pnl || 0), 0);
 }
 
 function getCumulativeStats(timeSeed = 0) {

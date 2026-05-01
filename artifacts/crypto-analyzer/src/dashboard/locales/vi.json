@@ -733,7 +733,7 @@
       "status": "Trạng thái",
       "statusValue": "Đang chạy",
       "statusSub": "AI Quant",
-      "trendTitle": "Xu hướng tháng (20%–40%)",
+      "trendTitle": "Xu hướng lợi nhuận tháng (20%–45%)",
       "trendBadge": "Dự báo",
       "floor": "Tối thiểu",
       "ceiling": "Tối đa",
@@ -833,7 +833,7 @@
     "nodesTitle": "Thành viên nút",
     "totalNodes": "Tổng nút",
     "activeNodes": "Nút hoạt động",
-    "totalEarnings": "Thu nhập tích lũy",
+    "totalEarnings": "Tổng thu nhập",
     "dividendPool": "Quỹ cổ tức",
     "poolBalance": "Số dư quỹ",
     "fullPayment": "Thanh toán đầy đủ",
@@ -1097,7 +1097,7 @@
     "myNodes": "Nút của tôi",
     "invested": "đã đầu tư",
     "noNodeYet": "Chưa có nút",
-    "preLaunch": "Trước khi ra mắt",
+    "preLaunch": "Trước ra mắt",
     "team": "đội",
     "nodeRewards": {
       "title": "Phần thưởng",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "Dòng thời gian tiền gửi",
       "cumulative": "Lũy kế",
       "disclaimer": "Lợi nhuận hàng ngày là dự báo dựa trên tỷ lệ cấp; thanh toán thực tế kích hoạt sau khi ra mắt."
-    }
+    },
+    "totalEarningsSource": "Staking + giới thiệu V-cấp · trước ra mắt",
+    "stakingYield": "Lợi nhuận Staking",
+    "referralYield": "Lợi nhuận giới thiệu",
+    "directRate": "Trực tiếp",
+    "teamRate": "Đội",
+    "nodePerformance": "Hiệu suất nút",
+    "nodeReferralReward": "Hoa hồng nút",
+    "nodeReferralSub": "5-15% theo cấp",
+    "nodeAirdrop": "Airdrop nút",
+    "nodeAirdropSub": "4 giai đoạn mở khóa theo TVL"
   },
   "market": {
     "marketAnalysis": "Phân tích thị trường",

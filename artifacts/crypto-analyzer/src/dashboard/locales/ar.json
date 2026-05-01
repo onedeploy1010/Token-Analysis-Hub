@@ -733,7 +733,7 @@
       "status": "الحالة",
       "statusValue": "قيد التشغيل",
       "statusSub": "AI كمي",
-      "trendTitle": "اتجاه شهري (20%–40%)",
+      "trendTitle": "اتجاه العائد الشهري (20%–45%)",
       "trendBadge": "متوقع",
       "floor": "الحد الأدنى",
       "ceiling": "الحد الأعلى",
@@ -833,7 +833,7 @@
     "nodesTitle": "عضويات العقد",
     "totalNodes": "إجمالي العقد",
     "activeNodes": "العقد النشطة",
-    "totalEarnings": "الأرباح التراكمية",
+    "totalEarnings": "إجمالي الأرباح",
     "dividendPool": "مجمع الأرباح",
     "poolBalance": "رصيد المجمع",
     "fullPayment": "الدفع الكامل",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "الجدول الزمني للإيداعات",
       "cumulative": "تراكمي",
       "disclaimer": "العائد اليومي توقع بناءً على معدل المستوى; التسويات تنشط بعد الإطلاق."
-    }
+    },
+    "totalEarningsSource": "الرهن + إحالة المستوى V · قبل الإطلاق",
+    "stakingYield": "عائد الرهن",
+    "referralYield": "عائد الإحالة",
+    "directRate": "مباشر",
+    "teamRate": "الفريق",
+    "nodePerformance": "أداء العقدة",
+    "nodeReferralReward": "عمولة العقدة",
+    "nodeReferralSub": "5-15% حسب المستوى",
+    "nodeAirdrop": "إيردروب العقدة",
+    "nodeAirdropSub": "4 مراحل فتح بحسب TVL"
   },
   "market": {
     "marketAnalysis": "تحليل السوق",

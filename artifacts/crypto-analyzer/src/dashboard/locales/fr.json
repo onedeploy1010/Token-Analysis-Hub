@@ -733,7 +733,7 @@
       "status": "Statut",
       "statusValue": "En cours",
       "statusSub": "IA quantitative",
-      "trendTitle": "Tendance mensuelle (20%–40%)",
+      "trendTitle": "Tendance de rendement mensuel (20%–45%)",
       "trendBadge": "Projeté",
       "floor": "Plancher",
       "ceiling": "Plafond",
@@ -833,7 +833,7 @@
     "nodesTitle": "Adhésions Nœud",
     "totalNodes": "Total des Nœuds",
     "activeNodes": "Nœuds Actifs",
-    "totalEarnings": "Gains cumulés",
+    "totalEarnings": "Gains totaux",
     "dividendPool": "Pool de Dividendes",
     "poolBalance": "Solde du Pool",
     "fullPayment": "Paiement Complet",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "Chronologie des dépôts",
       "cumulative": "Cumulé",
       "disclaimer": "Le rendement quotidien est une projection basée sur le taux par tier; les règlements activent après le lancement."
-    }
+    },
+    "totalEarningsSource": "Staking + parrainage V-niveau · pré-lancement",
+    "stakingYield": "Rendement Staking",
+    "referralYield": "Rendement Parrainage",
+    "directRate": "Direct",
+    "teamRate": "Équipe",
+    "nodePerformance": "Performance du nœud",
+    "nodeReferralReward": "Commission de Nœud",
+    "nodeReferralSub": "5-15% par palier",
+    "nodeAirdrop": "Airdrop de Nœud",
+    "nodeAirdropSub": "Déverrouillage en 4 étapes selon TVL"
   },
   "market": {
     "marketAnalysis": "Analyse de Marché",

@@ -860,7 +860,7 @@
       "status": "策略状态",
       "statusValue": "运行中",
       "statusSub": "AI 量化交易",
-      "trendTitle": "月化收益走势 (20%–40%)",
+      "trendTitle": "月化收益走势 (20%–45%)",
       "trendBadge": "模拟预测",
       "floor": "区间下限",
       "ceiling": "区间上限",
@@ -1227,7 +1227,18 @@
     "upgradeVip": "升级VIP",
     "vipActivateFailed": "VIP 激活失败",
     "vipTrialActivated": "VIP 试用已激活",
-    "vipTrialDesc": "7天免费 VIP 跟单体验已开启"
+    "vipTrialDesc": "7天免费 VIP 跟单体验已开启",
+    "totalEarningsSource": "质押 + V 级推广（即将开放）",
+    "stakingYield": "质押收益",
+    "referralYield": "推广收益",
+    "directRate": "直推",
+    "teamRate": "团队",
+    "preLaunch": "未上线",
+    "nodePerformance": "节点业绩",
+    "nodeReferralReward": "节点推广奖励",
+    "nodeReferralSub": "5-15% 按等级",
+    "nodeAirdrop": "节点空投",
+    "nodeAirdropSub": "底池 TVL 4 阶段解锁"
   },
   "market": {
     "marketAnalysis": "市场分析",

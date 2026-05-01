@@ -738,7 +738,7 @@
       "status": "策略狀態",
       "statusValue": "運行中",
       "statusSub": "AI 量化交易",
-      "trendTitle": "月化收益走勢 (20%–40%)",
+      "trendTitle": "月化收益走勢 (20%–45%)",
       "trendBadge": "模擬預測",
       "floor": "區間下限",
       "ceiling": "區間上限",
@@ -1089,7 +1089,18 @@
     "sameRank": "同級獎勵",
     "override": "越級獎勵",
     "runeToken": "RUNE 代幣",
-    "runeTokenDesc": "查看 RUNE 代幣餘額和操作"
+    "runeTokenDesc": "查看 RUNE 代幣餘額和操作",
+    "totalEarningsSource": "質押 + V 級推廣（即將開放）",
+    "stakingYield": "質押收益",
+    "referralYield": "推廣收益",
+    "directRate": "直推",
+    "teamRate": "團隊",
+    "preLaunch": "未上線",
+    "nodePerformance": "節點業績",
+    "nodeReferralReward": "節點推廣獎勵",
+    "nodeReferralSub": "5-15% 按等級",
+    "nodeAirdrop": "節點空投",
+    "nodeAirdropSub": "底池 TVL 4 階段解鎖"
   },
   "market": {
     "marketAnalysis": "市場分析",

@@ -733,7 +733,7 @@
       "status": "状態",
       "statusValue": "稼働中",
       "statusSub": "AI 量化",
-      "trendTitle": "月率推移 (20%–40%)",
+      "trendTitle": "月利推移 (20%–45%)",
       "trendBadge": "予測",
       "floor": "下限",
       "ceiling": "上限",
@@ -833,7 +833,7 @@
     "nodesTitle": "ノード会員",
     "totalNodes": "総ノード数",
     "activeNodes": "アクティブノード",
-    "totalEarnings": "累計収益",
+    "totalEarnings": "総収益",
     "dividendPool": "配当プール",
     "poolBalance": "プール残高",
     "fullPayment": "一括払い",
@@ -1097,7 +1097,7 @@
     "myNodes": "マイノード",
     "invested": "投資",
     "noNodeYet": "ノード未購入",
-    "preLaunch": "上場前",
+    "preLaunch": "未公開",
     "team": "チーム",
     "nodeRewards": {
       "title": "報酬",
@@ -1110,7 +1110,17 @@
       "depositTimeline": "入金タイムライン",
       "cumulative": "累計",
       "disclaimer": "日次利回りはティアレートに基づく予測; 上場後に実際の決済が稼働します。"
-    }
+    },
+    "totalEarningsSource": "ステーキング + Vランク紹介（近日公開）",
+    "stakingYield": "ステーキング収益",
+    "referralYield": "紹介収益",
+    "directRate": "直接",
+    "teamRate": "チーム",
+    "nodePerformance": "ノード成績",
+    "nodeReferralReward": "ノード紹介報酬",
+    "nodeReferralSub": "ティア毎 5-15%",
+    "nodeAirdrop": "ノードエアドロップ",
+    "nodeAirdropSub": "プール TVL 4 段階解放"
   },
   "market": {
     "marketAnalysis": "市場分析",
