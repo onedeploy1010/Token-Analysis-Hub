@@ -52,16 +52,19 @@ function asDate(v: string | number): Date {
   return new Date(asNum(v) * 1000);
 }
 
-/** Constant-time HMAC compare. */
+/** Constant-time string compare for token / HMAC verification. */
+function constantTimeEq(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/** HMAC sha256 verification (path used if QN HMAC body-signing is enabled). */
 function verifyHmac(rawBody: string, signature: string | null, secret: string): boolean {
   if (!signature) return false;
   const computed = createHmac("sha256", secret).update(rawBody).digest("hex");
-  if (computed.length !== signature.length) return false;
-  let diff = 0;
-  for (let i = 0; i < computed.length; i++) {
-    diff |= computed.charCodeAt(i) ^ signature.charCodeAt(i);
-  }
-  return diff === 0;
+  return constantTimeEq(computed, signature);
 }
 
 serve(async (req) => {
@@ -75,10 +78,57 @@ serve(async (req) => {
   }
 
   const rawBody = await req.text();
-  // QuickNode sends signature as `x-qn-signature` (hex sha256 HMAC of body).
-  const sig = req.headers.get("x-qn-signature");
-  if (!verifyHmac(rawBody, sig, secret)) {
-    return new Response("invalid signature", { status: 401 });
+
+  // QuickNode "Test connection" sends `{"message":"PING"}` with NO auth
+  // headers — short-circuit so the dashboard test passes. Real event
+  // deliveries (filter output) carry the actual security token / HMAC sig
+  // and continue to the auth check below.
+  if (rawBody.trim() === '{"message": "PING"}' || rawBody.trim() === '{"message":"PING"}') {
+    return new Response(JSON.stringify({ ok: true, ping: true }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  // QuickNode supports two auth modes; we accept either:
+  //   1. Security Token (default, auto-generated as `qnsec_…`) — sent in
+  //      one of: `Authorization: Bearer <token>`, `x-qn-security-token`,
+  //      or `x-qn-token` depending on dashboard config.
+  //   2. HMAC body signing (opt-in) — sent in `x-qn-signature`.
+  // Whichever mode the Stream is configured for, the secret env var holds
+  // the matching value (the qnsec_… token, or the HMAC secret string).
+  const auth = req.headers.get("authorization") ?? "";
+  const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
+  const tokenHeader =
+    bearer ||
+    req.headers.get("x-qn-security-token") ||
+    req.headers.get("x-qn-token") ||
+    "";
+  const hmacHeader = req.headers.get("x-qn-signature");
+
+  const tokenOk = tokenHeader && constantTimeEq(tokenHeader, secret);
+  const hmacOk  = hmacHeader && verifyHmac(rawBody, hmacHeader, secret);
+
+  if (!tokenOk && !hmacOk) {
+    // Debug echo: list all received header names + a redacted preview of
+    // the auth-related ones, so we can tell which header QuickNode is
+    // actually using when the test connection 401s. Drops back to opaque
+    // "invalid auth" once we know the right header name.
+    const headerNames = Array.from(req.headers.keys()).sort();
+    const dbg = {
+      error: "invalid auth",
+      receivedHeaders: headerNames,
+      authPreview: auth.slice(0, 20),
+      bearerPresent: !!bearer,
+      tokenHeaderLen: tokenHeader.length,
+      hmacHeaderPresent: !!hmacHeader,
+      bodyPreview: rawBody.slice(0, 120),
+    };
+    console.warn("[qn-webhook] auth-fail debug", dbg);
+    return new Response(JSON.stringify(dbg, null, 2), {
+      status: 401,
+      headers: { "content-type": "application/json" },
+    });
   }
 
   let payload: IncomingLog[] | { data?: IncomingLog[] };

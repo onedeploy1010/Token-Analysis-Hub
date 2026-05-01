@@ -11,8 +11,9 @@
   "_dataset_note": "QuickNode UI may label this as 'Logs' — what we want is the receipt-shaped payload (each entry has status + nested logs). The downstream filter is written for that shape.",
 
   "start": {
-    "block": 94392255,
-    "_note": "Community contract deploy block on BSC mainnet. Matches `chain.ts` startBlock so we don't re-scan empty pre-deploy history."
+    "block": "latest",
+    "_note": "Use chain head — DB is already fully populated by the existing Railway indexer (44 purchases + 176 referrers indexed up to block 95683876 as of 2026-05-01). Setting start to deploy block (94392255) would replay ~1.3M blocks for zero benefit (Edge Function dedups via unique index). Replay only if DB needs reseeding from scratch.",
+    "_alternative_if_replay_needed": 94392255
   },
 
   "batch": {
@@ -40,12 +41,11 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "hmac": {
-      "enabled": true,
-      "header_name": "x-qn-signature",
-      "algorithm": "sha256",
-      "secret": "52cd98c8656e8d7a0896770276aa6eaae93d79377445b0bd03a58292926ecdd6",
-      "_secret_note": "Set as `QUICKNODE_WEBHOOK_SECRET` in the mainnet Supabase project. Already done — verify with `supabase secrets list --project-ref mefjuecwawmjfmeofnck`."
+    "auth": {
+      "mode": "security_token",
+      "_note": "QuickNode auto-generates a `qnsec_…` token shown in the destination form. It's sent as `Authorization: Bearer <token>` header. The Edge Function verifies the bearer against `QUICKNODE_WEBHOOK_SECRET`.",
+      "security_token": "qnsec_NzI2ZmE2NjAtNTM3Yy00ZWU0LWFkNTYtZmNhNDQyZWZiNjlk",
+      "_secret_synced": "Already pushed: `supabase secrets set QUICKNODE_WEBHOOK_SECRET=qnsec_… --project-ref mefjuecwawmjfmeofnck`. Edge Function verifies with constant-time compare against this env value."
     },
     "max_retry": 3,
     "retry_interval_sec": 5,

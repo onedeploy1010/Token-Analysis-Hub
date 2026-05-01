@@ -11,8 +11,9 @@
   "_dataset_note": "Same as mainnet — UI may say 'Logs' but we want receipt-shaped payload (status + nested logs).",
 
   "start": {
-    "block": 103250000,
-    "_note": "Matches `chain.ts` testnet startBlock — public BSC testnet RPCs only retain ~50-100k blocks of history, anchor inside that window."
+    "block": "latest",
+    "_note": "Use chain head — testnet DB already populated by Railway indexer. Replay from earliest only if DB needs reseeding (and even then, public BSC testnet RPCs only retain ~50-100k blocks).",
+    "_alternative_if_replay_needed": 103250000
   },
 
   "batch": {
@@ -40,16 +41,15 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "hmac": {
-      "enabled": true,
-      "header_name": "x-qn-signature",
-      "algorithm": "sha256",
-      "secret": "d5db3c6ab64e4d5a60e0b0be44f2987a418607d4b3d0aa1fe22f5fe910349740",
-      "_secret_note": "Set as `QUICKNODE_WEBHOOK_SECRET` in the testnet Supabase preview branch. Already done — verify with `supabase secrets list --project-ref tqexhkajljyecsacmyyy`."
+    "auth": {
+      "mode": "security_token",
+      "_note": "QuickNode auto-generates a `qnsec_…` token shown in the destination form. It's sent as `Authorization: Bearer <token>` header. The Edge Function verifies the bearer against `QUICKNODE_WEBHOOK_SECRET`.",
+      "security_token": "qnsec_NDE0NjA5YTQtZDI2Yi00ZmJhLTlhMDQtZGQyMjE2ZDFkYzZm",
+      "_secret_synced": "Already pushed: `supabase secrets set QUICKNODE_WEBHOOK_SECRET=qnsec_… --project-ref tqexhkajljyecsacmyyy`. Edge Function verifies with constant-time compare against this env value."
     },
     "max_retry": 3,
     "retry_interval_sec": 5,
-    "timeout_sec": 10
+    "timeout_sec": 30
   },
 
   "_verify_steps": [
