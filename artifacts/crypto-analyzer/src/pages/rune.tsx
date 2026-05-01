@@ -1416,12 +1416,13 @@ export default function Rune() {
           { idx: 2, tlp: 1750, qep: 2250, trp: 1000, tvl: 5000 },
           { idx: 3, tlp: 3500, qep: 4500, trp: 2000, tvl: 10000 },
         ];
-        // Trading-dividend rates per 节点招募计划.md §权益3 (no made-up
-        // constants; values lifted directly from the doc).
-        const MOTHER_BUY_TAX  = 0.02;  // 母币买入滑点 2%
-        const MOTHER_SELL_TAX = 0.05;  // 母币卖出盈利税 5%
-        const SUB_BUY_TAX     = 0.02;  // 子币买入滑点 2%
-        const SUB_SELL_TAX    = 0.03;  // 子币卖出盈利税 3%
+        // Trading-dividend rates per RUNE_全面技术说明文档.md §四.3
+        // (上一版用了 节点招募计划.md 的旧 2%/3% 数字，与全面技术说明
+        // 5%/5% 不一致 — 以全面技术说明文档为准, 2026-05-01 更正).
+        const MOTHER_BUY_TAX  = 0.05;  // 母币买入滑点 5% (2%节点 + 3%社区)
+        const MOTHER_SELL_TAX = 0.05;  // 母币卖出滑点 5% (2%社区 + 3%销毁)
+        const SUB_BUY_TAX     = 0.05;  // 子币买入滑点 5% (2%节点 + 3%社区)
+        const SUB_SELL_TAX    = 0.05;  // 子币卖出滑点 5% (4%销毁 + 1%社区)
         // "母币每天燃烧 0.2% 的 1%" / "子币每天燃烧 0.1% 的 2%"
         const MOTHER_BURN_DAILY = 0.002;
         const MOTHER_BURN_NODE  = 0.01;

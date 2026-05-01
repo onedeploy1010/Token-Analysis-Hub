@@ -32,7 +32,15 @@ if (!url || !anonKey) {
 }
 
 export const supabase: SupabaseClient = createClient(url, anonKey, {
-  auth: { persistSession: false },
+  // Persist Supabase Auth session in localStorage so a hard refresh keeps
+  // the admin signed in (matches the previous JWT-in-localStorage UX).
+  // Auto-refresh handles 1-hour token expiry without forcing re-login.
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    storageKey: "rune-admin-supabase-auth",
+    detectSessionInUrl: false,
+  },
 });
 
 /** Resolve the active chainId from build-time env. Mainnet = 56, testnet = 97.

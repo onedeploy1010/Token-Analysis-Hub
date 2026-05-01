@@ -4,6 +4,7 @@ import { Input } from "@dashboard/components/ui/input";
 import { Badge } from "@dashboard/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@dashboard/components/ui/dialog";
 import { Flame, Sparkles, Trophy, Coins, AlertCircle, Loader2, ChevronDown, ChevronUp, ArrowRight, ChevronRight } from "lucide-react";
+import { NotReadyDialog } from "./not-ready-dialog";
 import { CollapsibleInfoCard } from "@dashboard/components/vault/collapsible-info-card";
 import { useActiveAccount } from "thirdweb/react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -90,14 +91,11 @@ export function EmberBurnSection() {
     },
   });
 
-  const handleBurn = () => {
-    const usdt = parseFloat(usdtAmount);
-    if (!wallet) { toast({ title: t("vault.burn.validationWallet", "Connect wallet first"), variant: "destructive" }); return; }
-    if (isNaN(usdt) || usdt < 10) { toast({ title: t("vault.burn.validationAmount", "Minimum 10 USDT"), variant: "destructive" }); return; }
-    if (!confirmed) { toast({ title: t("vault.burn.validationConfirm", "Please confirm the irreversible action"), variant: "destructive" }); return; }
-    const rune = usdcToMA(usdt);
-    burnMutation.mutate({ walletAddress: wallet, usdtAmount: usdt, runeAmount: rune });
-  };
+  // 暂未开放 — burn-stake 合约还没上线。UI 只看不动, 用 Dialog 弹窗
+  // 比 toast 醒目。链上 ready 后把 onClick 还原为 burnMutation.mutate(...)
+  // 即恢复。
+  const [notReadyOpen, setNotReadyOpen] = useState(false);
+  const handleBurn = () => { setNotReadyOpen(true); };
 
   const usdtNum = parseFloat(usdtAmount) || 0;
   const runeEquiv = usdcToMA(usdtNum);
@@ -298,6 +296,12 @@ export function EmberBurnSection() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <NotReadyDialog
+        open={notReadyOpen}
+        onClose={() => { setNotReadyOpen(false); setOpen(false); }}
+        feature={t("vault.burn.runeBurn", "RUNE 销毁")}
+      />
     </div>
   );
 }

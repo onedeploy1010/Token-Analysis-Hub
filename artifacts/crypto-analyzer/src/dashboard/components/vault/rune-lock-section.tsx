@@ -4,6 +4,7 @@ import { Input } from "@dashboard/components/ui/input";
 import { Badge } from "@dashboard/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@dashboard/components/ui/dialog";
 import { Lock, Zap, Vote, TrendingUp, Star, ArrowRight, AlertCircle, Loader2, ChevronRight, Sparkles, Calculator } from "lucide-react";
+import { NotReadyDialog } from "./not-ready-dialog";
 import { CollapsibleInfoCard } from "@dashboard/components/vault/collapsible-info-card";
 import { useActiveAccount } from "thirdweb/react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -85,13 +86,11 @@ export function RuneLockSection() {
     },
   });
 
-  const handleLock = () => {
-    const usdt = parseFloat(usdtAmount);
-    if (!wallet) { toast({ title: t("vault.lock.validationWallet", "Connect wallet first"), variant: "destructive" }); return; }
-    if (isNaN(usdt) || usdt < 10) { toast({ title: t("vault.lock.validationAmount", "Minimum 10 USDT"), variant: "destructive" }); return; }
-    const rune = usdcToMA(usdt);
-    lockMutation.mutate({ walletAddress: wallet, usdtAmount: usdt, runeAmount: rune, lockDays: selectedDays });
-  };
+  // 暂未开放 — 上一版用 toast 不够明显, 用户反馈想要弹窗。改为
+  // <NotReadyDialog/>。链上 vault 合约 ready 后把 onClick 还原为
+  // 真正的 handleLock + 删 setNotReadyOpen 即可恢复。
+  const [notReadyOpen, setNotReadyOpen] = useState(false);
+  const handleLock = () => { setNotReadyOpen(true); };
 
   const usdtNum = parseFloat(usdtAmount) || 0;
   const runeEquiv = usdcToMA(usdtNum);
@@ -279,6 +278,12 @@ export function RuneLockSection() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <NotReadyDialog
+        open={notReadyOpen}
+        onClose={() => { setNotReadyOpen(false); setOpen(false); }}
+        feature={t("vault.lock.runeLock", "RUNE 质押")}
+      />
     </div>
   );
 }

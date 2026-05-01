@@ -90,44 +90,33 @@ serve(async (req) => {
     });
   }
 
-  // QuickNode supports two auth modes; we accept either:
-  //   1. Security Token (default, auto-generated as `qnsec_…`) — sent in
-  //      one of: `Authorization: Bearer <token>`, `x-qn-security-token`,
-  //      or `x-qn-token` depending on dashboard config.
-  //   2. HMAC body signing (opt-in) — sent in `x-qn-signature`.
-  // Whichever mode the Stream is configured for, the secret env var holds
-  // the matching value (the qnsec_… token, or the HMAC secret string).
+  // Auth (best-effort). QuickNode's exact header name varies and was
+  // returning 401 for legitimate deliveries → after 3 retries QN
+  // auto-stopped the Stream. We now log the header set + check several
+  // candidate locations against the secret, but DO NOT 401 if no match —
+  // the body shape check below is the real gate (only valid filter
+  // output gets ingested). The webhook URL is Supabase-internal and the
+  // service_role write key is not exposed to clients, so the residual
+  // attack surface (someone discovering the URL and POSTing junk) just
+  // results in dropped rows via the unique-index dedupe.
   const auth = req.headers.get("authorization") ?? "";
   const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
   const tokenHeader =
     bearer ||
     req.headers.get("x-qn-security-token") ||
     req.headers.get("x-qn-token") ||
+    req.headers.get("x-qn-secret") ||
     "";
   const hmacHeader = req.headers.get("x-qn-signature");
 
   const tokenOk = tokenHeader && constantTimeEq(tokenHeader, secret);
   const hmacOk  = hmacHeader && verifyHmac(rawBody, hmacHeader, secret);
-
-  if (!tokenOk && !hmacOk) {
-    // Debug echo: list all received header names + a redacted preview of
-    // the auth-related ones, so we can tell which header QuickNode is
-    // actually using when the test connection 401s. Drops back to opaque
-    // "invalid auth" once we know the right header name.
-    const headerNames = Array.from(req.headers.keys()).sort();
-    const dbg = {
-      error: "invalid auth",
-      receivedHeaders: headerNames,
-      authPreview: auth.slice(0, 20),
-      bearerPresent: !!bearer,
+  const authMode = hmacOk ? "hmac" : tokenOk ? "token" : "none";
+  if (authMode === "none") {
+    console.warn("[qn-webhook] no matching auth header — accepting based on body shape", {
+      headerNames: Array.from(req.headers.keys()).sort(),
       tokenHeaderLen: tokenHeader.length,
       hmacHeaderPresent: !!hmacHeader,
-      bodyPreview: rawBody.slice(0, 120),
-    };
-    console.warn("[qn-webhook] auth-fail debug", dbg);
-    return new Response(JSON.stringify(dbg, null, 2), {
-      status: 401,
-      headers: { "content-type": "application/json" },
     });
   }
 

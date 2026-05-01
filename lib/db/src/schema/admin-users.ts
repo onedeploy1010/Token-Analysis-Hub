@@ -1,28 +1,36 @@
-import { pgTable, serial, text, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, jsonb, uuid, uniqueIndex } from "drizzle-orm/pg-core";
 
 /**
- * Admin user with role + per-action permissions.
+ * Admin user — profile + role + per-action permissions, joined to a
+ * Supabase Auth user via `user_id`.
  *
+ * - `userId`      — FK to `auth.users.id`. Authentication (password compare,
+ *                   session, JWT) is fully delegated to Supabase Auth; this
+ *                   table only adds role + permissions metadata.
  * - `role`        — coarse bucket: 'superadmin' | 'admin' | 'support'.
- *                   Used for sidebar branding and bulk gating; fine-grained
- *                   gates use `permissions`.
  * - `permissions` — explicit allowlist of dotted action keys, e.g.
- *                   ['members.read', 'members.write', 'contracts.read',
- *                   'contracts.write', 'rewards.read', 'system.write'].
- *                   Empty array = no extra permissions beyond role baseline.
- *                   Superadmin bypasses this list (sees / writes everything).
+ *                   ['members.read', 'members.write', 'contracts.write', ...].
+ *                   Superadmin bypasses this list.
+ * - `username` / `passwordHash` — DEPRECATED, kept nullable for the legacy
+ *                   `/api/admin/login` fallback; safe to drop after the
+ *                   Supabase-Auth login path proves stable in production.
  *
- * Server (`requireAdmin` + new `requirePermission`) validates against
- * permissions; client (`useAdminAuth.hasPermission(key)`) gates UI.
+ * Auth chain: client `supabase.auth.signInWithPassword()` →
+ *             session JWT (Supabase-issued) →
+ *             RLS reads `auth.uid()` to scope queries to this row.
  */
 export const adminUsersTable = pgTable("admin_users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
+  userId: uuid("user_id"),                     // FK to auth.users(id) — added in migration; nullable until backfilled
+  username: text("username"),                  // legacy, see deprecation note above
+  passwordHash: text("password_hash"),         // legacy
   role: text("role").notNull().default("admin"),
   permissions: jsonb("permissions").notNull().default([]),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  uniqueIndex("admin_users_user_id_uq").on(t.userId),
+  uniqueIndex("admin_users_username_uq").on(t.username),
+]);
 
 export type AdminUser = typeof adminUsersTable.$inferSelect;
 export type InsertAdminUser = typeof adminUsersTable.$inferInsert;

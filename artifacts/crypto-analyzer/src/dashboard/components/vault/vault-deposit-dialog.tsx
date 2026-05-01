@@ -46,7 +46,7 @@ export function VaultDepositDialog({ open, onOpenChange }: VaultDepositDialogPro
   });
   const { price: maPrice, usdcToMA } = useRunePrice();
 
-  const [selectedPlan, setSelectedPlan] = useState<keyof typeof VAULT_PLANS>("5_DAYS");
+  const [selectedPlan, setSelectedPlan] = useState<keyof typeof VAULT_PLANS>("30_DAYS");
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<"select" | "depositing" | "success">("select");
 
@@ -58,6 +58,14 @@ export function VaultDepositDialog({ open, onOpenChange }: VaultDepositDialogPro
   const totalYieldMA = dailyInterestMA * plan.days;
 
   const handleDeposit = async () => {
+    // 暂未开放 — 套餐合约 (Vault V3) 还没上线 RUNE+。UI 保留只看不动。
+    // 将来上线后, 把这个早返回去掉即可恢复。
+    toast({
+      title: t("common.notReady.title", "暂未开放"),
+      description: t("common.notReady.desc", "套餐入金功能即将上线，敬请期待。"),
+    });
+    return;
+    // eslint-disable-next-line no-unreachable
     if (!account || !client || usdtAmount < (plan as any).minAmount) {
       toast({ title: t("deposit.inputError", "输入错误"), description: t("deposit.minDeposit", "最低存入 ${{min}} USDT", { min: plan.minAmount }), variant: "destructive" });
       return;

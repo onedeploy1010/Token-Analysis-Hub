@@ -22,11 +22,23 @@ export const PREDICTION_GRID_CONFIG = {
   directionThreshold: 0.5,
 };
 
+/**
+ * RUNE+ 套餐矩阵 — 与 RUNE_全面技术说明文档.md §二.2 对齐 (2026-05-01 更正,
+ * 上一版用的是旧 TAICLAW 5/45/90/180 天结构, 与 RUNE 规范的 30/90/180/360/540
+ * 天完全不一致).
+ *
+ * 规范每档给的是 daily 区间 (例如 30 天 0.3%-0.5%)；这里取**区间上限**作为
+ * 展示用 dailyRate, 上链/结算路径如果将来开启需以合约实际为准.
+ *
+ * `bonusPct` 反映规范中 180/360/540 天的 +10/+20/+30% 加成 (基础日化 × 加成).
+ * `apr` 是 (dailyRate × (1 + bonusPct/100)) × 365, 仅作 UI 展示, 不参与计算.
+ */
 export const VAULT_PLANS = {
-  "5_DAYS":   { days: 5,   dailyRate: 0.005, label: "5天",   apr: "182.5%", minAmount: 50, platformFee: 0.10, planIndex: 0 },
-  "45_DAYS":  { days: 45,  dailyRate: 0.007, label: "45天",  apr: "255.5%", minAmount: 50, platformFee: 0.10, planIndex: 1 },
-  "90_DAYS":  { days: 90,  dailyRate: 0.009, label: "90天",  apr: "328.5%", minAmount: 50, platformFee: 0.10, planIndex: 2 },
-  "180_DAYS": { days: 180, dailyRate: 0.012, label: "180天", apr: "438%",   minAmount: 50, platformFee: 0.10, planIndex: 3 },
+  "30_DAYS":  { days: 30,  dailyRate: 0.005, baseMin: 0.003, baseMax: 0.005, bonusPct: 0,  label: "30天",  apr: "182.5%", minAmount: 50, dailyCapUsdt: 200_000, platformFee: 0.10, planIndex: 0 },
+  "90_DAYS":  { days: 90,  dailyRate: 0.007, baseMin: 0.005, baseMax: 0.007, bonusPct: 0,  label: "90天",  apr: "255.5%", minAmount: 50, dailyCapUsdt: 300_000, platformFee: 0.10, planIndex: 1 },
+  "180_DAYS": { days: 180, dailyRate: 0.009, baseMin: 0.005, baseMax: 0.009, bonusPct: 10, label: "180天", apr: "361.4%", minAmount: 50, dailyCapUsdt: null,    platformFee: 0.10, planIndex: 2 },
+  "360_DAYS": { days: 360, dailyRate: 0.009, baseMin: 0.005, baseMax: 0.009, bonusPct: 20, label: "360天", apr: "394.2%", minAmount: 50, dailyCapUsdt: null,    platformFee: 0.10, planIndex: 3 },
+  "540_DAYS": { days: 540, dailyRate: 0.009, baseMin: 0.005, baseMax: 0.009, bonusPct: 30, label: "540天", apr: "427.05%", minAmount: 50, dailyCapUsdt: null,   platformFee: 0.10, planIndex: 4 },
 } as const;
 
 

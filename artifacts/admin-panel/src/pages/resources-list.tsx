@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useAdminAuth } from "@/contexts/admin-auth";
-import { apiFetch } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Plus, Trash2, Pencil, Eye, EyeOff, FileText, Download } from "lucide-react";
 
 type Resource = {
@@ -32,17 +32,37 @@ export default function ResourcesList() {
   const [filterCat, setFilterCat] = useState("");
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  const load = () => {
+  const load = async () => {
     if (!user) return;
     setLoading(true);
-    apiFetch("/admin/resources", user.token)
-      .then(r => r.json())
-      .then(data => setResources(Array.isArray(data) ? data : []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const { data, error } = await supabase
+      .from("resources")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) {
+      console.error(error);
+      setResources([]);
+    } else {
+      // Drizzle camelCase → DB snake_case mapping for the columns the UI reads.
+      setResources((data ?? []).map((r: any) => ({
+        id: r.id,
+        language: r.language,
+        category: r.category,
+        title: r.title,
+        description: r.description,
+        fileUrl: r.file_url,
+        fileType: r.file_type,
+        fileSize: r.file_size,
+        sortOrder: r.sort_order,
+        visible: r.visible,
+        previewImageUrl: r.preview_image_url,
+        createdAt: r.created_at,
+      })));
+    }
+    setLoading(false);
   };
 
-  useEffect(load, [user]);
+  useEffect(() => { void load(); }, [user]);
 
   const allCats = [...new Set(resources.map(r => r.category))].sort();
   const filtered = resources.filter(r =>
@@ -52,19 +72,16 @@ export default function ResourcesList() {
 
   async function toggleVisible(r: Resource) {
     if (!user) return;
-    await apiFetch(`/admin/resources/${r.id}`, user.token, {
-      method: "PUT",
-      body: JSON.stringify({ visible: !r.visible }),
-    });
-    load();
+    await supabase.from("resources").update({ visible: !r.visible }).eq("id", r.id);
+    void load();
   }
 
   async function deleteResource(id: number) {
     if (!user || !confirm("确认删除？")) return;
     setDeleting(id);
-    await apiFetch(`/admin/resources/${id}`, user.token, { method: "DELETE" });
+    await supabase.from("resources").delete().eq("id", id);
     setDeleting(null);
-    load();
+    void load();
   }
 
   return (

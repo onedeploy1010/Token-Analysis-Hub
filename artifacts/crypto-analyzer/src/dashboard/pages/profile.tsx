@@ -16,9 +16,12 @@ import { useUserPurchase } from "@/hooks/rune/use-node-presell";
 import { NoNodeReminder } from "@/components/rune/no-node-reminder";
 import { useNodeMembershipsRune } from "@dashboard/lib/data-rune";
 
+// MENU_ITEMS deliberately omits the "Referral & Team" entry — it lives
+// above as a prominent top-level CTA button (see ~line 440), so showing
+// it again here would just duplicate. Re-add only if the prominent CTA
+// is removed.
 const MENU_ITEMS = [
   { labelKey: "profile.myNodesLabel",      icon: Server,         path: "/profile/nodes",        descKey: "profile.nodeManagementDesc" },
-  { labelKey: "profile.referralTeam",      icon: GitBranch,      path: "/profile/referral",     descKey: "profile.referralTeamDesc" },
   { labelKey: "profile.myVaultPositions",  icon: Vault,          path: "/profile/vault",        descKey: "profile.myVaultPositionsDesc" },
   { labelKey: "profile.swap",              icon: ArrowLeftRight, path: "/profile/swap",         descKey: "profile.swapDesc" },
   { labelKey: "profile.transactionHistory", icon: History,       path: "/profile/transactions", descKey: "profile.transactionHistoryDesc" },
@@ -438,23 +441,52 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* 突出的"团队推荐"主入口 — 上一版用细描边小卡片，与下方 menu
+                视觉权重一致, 用户反馈不够显眼。改为金色渐变 + 双层 ring +
+                外发光阴影 + 大尺寸 icon, 与下方普通菜单形成明显层级差。 */}
             <button
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ring-1 ring-primary/25 bg-primary/[0.04] hover:ring-primary/45 hover:bg-primary/[0.08]"
+              className="group relative w-full flex items-center gap-3.5 px-4 py-4 rounded-2xl text-left overflow-hidden
+                         bg-gradient-to-br from-primary/[0.18] via-primary/[0.08] to-primary/[0.02]
+                         ring-1 ring-primary/45
+                         shadow-[0_0_0_1px_hsl(38_95%_55%/0.10)_inset,0_8px_24px_-8px_hsl(38_95%_55%/0.45),0_18px_36px_-18px_hsl(38_95%_55%/0.35)]
+                         hover:from-primary/[0.28] hover:via-primary/[0.14] hover:ring-primary/65
+                         active:scale-[0.985] transition-all"
               onClick={() => navigate("/profile/referral")}
               data-testid="menu-referral"
             >
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 bg-primary/15 ring-1 ring-primary/30">
-                <GitBranch className="h-3.5 w-3.5 text-primary" />
+              {/* 顶部金色高光 + 右上角光晕 */}
+              <span aria-hidden className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent pointer-events-none" />
+              <span aria-hidden className="absolute -top-12 -right-8 w-32 h-32 rounded-full bg-primary/12 blur-2xl pointer-events-none" />
+
+              <div className="relative h-11 w-11 rounded-xl flex items-center justify-center shrink-0
+                              bg-gradient-to-br from-primary/40 to-primary/15
+                              ring-1 ring-primary/55 shadow-[0_0_18px_-4px_hsl(38_95%_55%/0.55)]
+                              transition-all group-hover:scale-105 group-hover:shadow-[0_0_24px_-2px_hsl(38_95%_55%/0.75)]">
+                <GitBranch className="h-5 w-5 text-primary drop-shadow-[0_0_8px_hsl(38_95%_55%/0.8)]" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[12px] font-semibold text-foreground">
-                  {t("profile.referralTeam", "Referral & Team")}
+
+              <div className="relative flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[14px] font-bold text-foreground tracking-wide">
+                    {t("profile.referralTeam", "Referral & Team")}
+                  </span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/40">
+                    HOT
+                  </span>
                 </div>
-                <div className="text-[10px] text-muted-foreground/80">
-                  {stats ? `${stats.directCount} ${t("profile.direct", "direct")} · ${stats.totalDownstreamCount} ${t("profile.team", "team")}` : "—"}
+                <div className="text-[11px] text-foreground/65 mt-0.5 tabular-nums">
+                  {stats ? (
+                    <>
+                      <span className="text-primary font-semibold">{stats.directCount}</span>
+                      <span className="text-muted-foreground/60"> {t("profile.direct", "direct")} · </span>
+                      <span className="text-primary font-semibold">{stats.totalDownstreamCount}</span>
+                      <span className="text-muted-foreground/60"> {t("profile.team", "team")}</span>
+                    </>
+                  ) : "—"}
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+
+              <ChevronRight className="relative h-5 w-5 text-primary shrink-0 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         )}

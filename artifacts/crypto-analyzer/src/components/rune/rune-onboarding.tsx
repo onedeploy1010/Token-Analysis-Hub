@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useActiveAccount, useActiveWallet, useDisconnect } from "thirdweb/react";
+import { useActiveAccount } from "thirdweb/react";
 import { useLocation } from "wouter";
 import { BindReferrerModal } from "./bind-referrer-modal";
 import { PurchaseNodeModal } from "./purchase-node-modal";
@@ -32,8 +32,6 @@ import type { NodeId } from "@/lib/thirdweb/contracts";
  */
 export function RuneOnboarding() {
   const account = useActiveAccount();
-  const wallet = useActiveWallet();
-  const { disconnect } = useDisconnect();
   const { isDemoMode } = useDemoStore();
   const address = account?.address;
   const [location, navigate] = useLocation();
@@ -109,12 +107,17 @@ export function RuneOnboarding() {
       <BindReferrerModal
         open={bindOpen}
         initialReferrer={refFromUrl}
-        // Closing without binding rolls the wallet back to disconnected —
-        // there's nothing useful a connected-but-unbound wallet can do here.
+        // Closing the bind modal just dismisses it for this session.
+        // Auto-disconnecting on close (the previous behaviour, 2026-04-27)
+        // created a re-bind/disconnect loop when the wallet was on the
+        // wrong chain — `referrerOf` reads zero on the chain the site
+        // queries, modal pops, user closes, wallet disconnects, user
+        // reconnects, repeat. Now closing leaves the wallet connected;
+        // the user stays on /recruit (no dashboard access) and can
+        // either switch network manually or re-trigger bind.
         onClose={() => {
           setBindDismissed(true);
           setBindOpen(false);
-          if (wallet) disconnect(wallet);
         }}
         onBound={async () => {
           setBindOpen(false);
