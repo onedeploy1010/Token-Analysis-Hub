@@ -1,0 +1,60 @@
+{
+  "_doc": "RUNE BSC Testnet QuickNode Stream config. Either copy fields manually into the QuickNode console UI, or POST this body (after base64-encoding `filter.code`) to https://api.quicknode.com/streams/rest/v1/streams with header `x-api-key: <your QuickNode API key>`.",
+  "_version": "1.0.0",
+  "_updated": "2026-05-01",
+
+  "name": "rune-testnet-events",
+  "description": "RUNE Community.EventAddReferrer + NodePresell.EventNodePresell on BSC testnet (chainId 97). Ships filtered logs to the testnet preview-branch Supabase Edge Function.",
+
+  "network": "bsc-testnet",
+  "dataset": "receipts",
+  "_dataset_note": "Same as mainnet — UI may say 'Logs' but we want receipt-shaped payload (status + nested logs).",
+
+  "start": {
+    "block": 103250000,
+    "_note": "Matches `chain.ts` testnet startBlock — public BSC testnet RPCs only retain ~50-100k blocks of history, anchor inside that window."
+  },
+
+  "batch": {
+    "blocks_per_message": 1,
+    "_note": "Single block per message — same low-latency choice as mainnet."
+  },
+
+  "compression": "none",
+  "reorg_handling": "enabled",
+
+  "filter": {
+    "language": "javascript",
+    "_note": "Differences vs mainnet: CHAIN_ID = 97, two contract addresses are testnet's. Topic hashes are identical (event signatures don't change between deployments).",
+    "code": "function main(stream) {\n  const CHAIN_ID = 97;\n  const COMMUNITY    = \"0x42a06ac2208e9f8e25673ba0f6c44bc56fd2aa62\";\n  const NODE_PRESELL = \"0x6a30f26338742670637f47dfc04600b4d1ef1e9a\";\n  const TOPIC_REFERRER = \"0x157b268685d829d4f87954a5cdff3fa1ff418e739340bfa3a2018f95702ab8ae\";\n  const TOPIC_PRESELL  = \"0xdd5bb7eb1e6147197d4e5df191bab7769c7da72136a330645918bbd80d4d4737\";\n\n  const out = [];\n  for (const entry of stream.data) {\n    const receipts = Array.isArray(entry) ? entry : Object.values(entry);\n    for (const r of receipts) {\n      if (!r || r.status !== \"0x1\") continue;\n      const logs = r.logs || [];\n      for (const log of logs) {\n        const addr = (log.address || \"\").toLowerCase();\n        if (addr !== COMMUNITY && addr !== NODE_PRESELL) continue;\n        const topic0 = (log.topics && log.topics[0] || \"\").toLowerCase();\n        if (topic0 !== TOPIC_REFERRER && topic0 !== TOPIC_PRESELL) continue;\n        out.push({\n          chainId: CHAIN_ID,\n          blockNumber: log.blockNumber,\n          blockTimestamp: log.blockTimestamp,\n          txHash: log.transactionHash,\n          logIndex: log.logIndex,\n          address: addr,\n          topics: log.topics,\n          data: log.data,\n        });\n      }\n    }\n  }\n  return out.length > 0 ? out : null;\n}\n"
+  },
+
+  "destination": {
+    "type": "webhook",
+    "url": "https://tqexhkajljyecsacmyyy.supabase.co/functions/v1/quicknode-stream-webhook",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "hmac": {
+      "enabled": true,
+      "header_name": "x-qn-signature",
+      "algorithm": "sha256",
+      "secret": "d5db3c6ab64e4d5a60e0b0be44f2987a418607d4b3d0aa1fe22f5fe910349740",
+      "_secret_note": "Set as `QUICKNODE_WEBHOOK_SECRET` in the testnet Supabase preview branch. Already done — verify with `supabase secrets list --project-ref tqexhkajljyecsacmyyy`."
+    },
+    "max_retry": 3,
+    "retry_interval_sec": 5,
+    "timeout_sec": 10
+  },
+
+  "_verify_steps": [
+    "1. Save Stream → status should turn Active within ~30s.",
+    "2. QuickNode console → Stream → 'Logs' tab: 200 + `{\"ok\":true,...}` per delivery. Empty blocks → no delivery.",
+    "3. Verify in DB: `psql 'postgresql://postgres:one2317888!!@db.tqexhkajljyecsacmyyy.supabase.co:5432/postgres' -c \"SELECT count(*) FROM rune_referrers WHERE chain_id=97\"`.",
+    "4. If 401: secret mismatch in HMAC field.",
+    "5. If 500: `supabase functions logs quicknode-stream-webhook --project-ref tqexhkajljyecsacmyyy --tail`."
+  ],
+
+  "_separation_note": "DO NOT cross-wire — testnet Stream MUST point at testnet Supabase URL; mainnet Stream MUST point at mainnet URL. Otherwise testnet events land in mainnet DB (or vice-versa) and corrupt analytics."
+}
