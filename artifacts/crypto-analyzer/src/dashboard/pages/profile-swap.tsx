@@ -7,15 +7,43 @@ import { thirdwebClient } from "@/lib/thirdweb/client";
 import { PageEnter } from "@dashboard/components/page-enter";
 
 /**
+ * Map our i18n.language tag to thirdweb's `LocaleId` enum so the
+ * connect-wallet sub-modal renders in the user's language. The swap
+ * widget body itself isn't directly localizable in this thirdweb
+ * version — page chrome (title + back button) carries the i18n.
+ */
+type ThirdwebLocale =
+  | "en_US" | "zh_CN" | "ja_JP" | "ko_KR" | "es_ES" | "fr_FR"
+  | "de_DE" | "ru_RU" | "pt_BR" | "vi_VN" | "tl_PH";
+
+function pickThirdwebLocale(lang: string): ThirdwebLocale {
+  const l = lang.toLowerCase();
+  if (l.startsWith("zh")) return "zh_CN";
+  if (l.startsWith("ja")) return "ja_JP";
+  if (l.startsWith("ko")) return "ko_KR";
+  if (l.startsWith("es")) return "es_ES";
+  if (l.startsWith("fr")) return "fr_FR";
+  if (l.startsWith("de")) return "de_DE";
+  if (l.startsWith("ru")) return "ru_RU";
+  if (l.startsWith("pt")) return "pt_BR";
+  if (l.startsWith("vi")) return "vi_VN";
+  return "en_US"; // ar / th / unknown → en
+}
+
+/**
  * Token swap page — thirdweb's `SwapWidget` (the dedicated swap UI).
  * Defaults to whichever chain `runeChain` resolves to at build time
  * (bsc_mainnet on main bundle, bsc_testnet on testnet bundle); the
  * widget handles connect state, quote, slippage and approval txs on
- * its own. We just wrap it in the page chrome and amber-tinted card.
+ * its own. We just wrap it in the page chrome + amber-tinted card.
+ *
+ * thirdweb branding intentionally hidden via `showThirdwebBranding=false`.
+ * Connect-modal locale routed through to match the active i18n language.
  */
 export default function ProfileSwapPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [, navigate] = useLocation();
+  const tdwLocale = pickThirdwebLocale(i18n.language);
 
   return (
     <PageEnter>
@@ -49,6 +77,10 @@ export default function ProfileSwapPage() {
               client={thirdwebClient}
               chain={runeChain}
               theme="dark"
+              showThirdwebBranding={false}
+              connectOptions={{
+                connectModal: { locale: tdwLocale },
+              }}
             />
           </div>
         </div>
