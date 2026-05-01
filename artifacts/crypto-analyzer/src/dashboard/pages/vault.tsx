@@ -96,9 +96,19 @@ export default function Vault() {
               </p>
             </div>
           </div>
-          {/* 查看分析 — links to mainnet RUNE project analytics page */}
+          {/* 查看分析 — links to mainnet RUNE project analytics page.
+              Opens in a NEW TAB intentionally:
+                1) Keeps the user's place on /app/vault (no lost scroll/tab
+                   selection when they come back).
+                2) Defence-in-depth against any global onboarding effect
+                   firing on the freshly-mounted /projects/rune page and
+                   stealing navigation back to /app/profile (the original
+                   bug the user reported). The new-tab boot is fully
+                   isolated from the dashboard's mounted state. */}
           <a
             href="/projects/rune"
+            target="_blank"
+            rel="noopener noreferrer"
             className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-[1.03] active:scale-95"
             style={{
               background: "linear-gradient(135deg, rgba(96,165,250,0.20), rgba(59,130,246,0.10))",
