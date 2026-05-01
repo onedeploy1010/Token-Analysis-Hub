@@ -91,11 +91,16 @@ export function EmberBurnSection() {
     },
   });
 
-  // 暂未开放 — burn-stake 合约还没上线。UI 只看不动, 用 Dialog 弹窗
-  // 比 toast 醒目。链上 ready 后把 onClick 还原为 burnMutation.mutate(...)
-  // 即恢复。
+  // 暂未开放 — burn-stake 合约还没上线。改用 toast 替代之前的弹窗。
+  // 链上 ready 后把 onClick 还原为 burnMutation.mutate(...) 即可恢复。
   const [notReadyOpen, setNotReadyOpen] = useState(false);
-  const handleBurn = () => { setNotReadyOpen(true); };
+  void notReadyOpen;
+  const handleBurn = () => {
+    toast({
+      title: t("vault.burnNotReadyTitle", "Coming soon"),
+      description: t("vault.burnNotReadyDesc", "EMBER burn-staking will open after the protocol launch."),
+    });
+  };
 
   const usdtNum = parseFloat(usdtAmount) || 0;
   const runeEquiv = usdcToMA(usdtNum);

@@ -251,7 +251,9 @@
       "successDesc": "RUNE locked. veRUNE benefits are now active.",
       "error": "Lock Failed",
       "validationWallet": "Connect wallet first",
-      "validationAmount": "Minimum 10 USDT"
+      "validationAmount": "Minimum 10 USDT",
+      "notReadyTitle": "Coming soon",
+      "notReadyDesc": "RUNE locking will open after the protocol launch."
     },
     "remaining": "Remaining",
     "action": "Action",
@@ -390,7 +392,9 @@
       "claimError": "Claim Failed",
       "validationWallet": "Connect wallet first",
       "validationAmount": "Minimum 10 USDT",
-      "validationConfirm": "Please confirm the irreversible action"
+      "validationConfirm": "Please confirm the irreversible action",
+      "notReadyTitle": "Coming soon",
+      "notReadyDesc": "EMBER burn-staking will open after the protocol launch."
     },
     "tabPool": "Vault",
     "tabPoolDesc": "LP Pools · Trading Fund",
@@ -439,7 +443,11 @@
       "fundraiseTarget": "Fundraise target",
       "lpInjectTarget": "LP inject target"
     },
-    "viewAnalysis": "View Analysis"
+    "viewAnalysis": "View Analysis",
+    "lockNotReadyTitle": "Coming soon",
+    "lockNotReadyDesc": "RUNE locking will open after the protocol launch.",
+    "burnNotReadyTitle": "Coming soon",
+    "burnNotReadyDesc": "EMBER burn-staking will open after the protocol launch."
   },
   "deposit": {
     "inputError": "Input Error",

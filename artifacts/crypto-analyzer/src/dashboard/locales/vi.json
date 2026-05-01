@@ -342,7 +342,11 @@
       "fundraiseTarget": "Mục tiêu huy động",
       "lpInjectTarget": "Mục tiêu bơm LP"
     },
-    "viewAnalysis": "Xem phân tích"
+    "viewAnalysis": "Xem phân tích",
+    "lockNotReadyTitle": "Sắp ra mắt",
+    "lockNotReadyDesc": "Khóa RUNE sẽ mở sau khi giao thức chính thức ra mắt.",
+    "burnNotReadyTitle": "Sắp ra mắt",
+    "burnNotReadyDesc": "Đốt-staking EMBER sẽ mở sau khi giao thức chính thức ra mắt."
   },
   "deposit": {
     "inputError": "Lỗi Nhập Liệu",

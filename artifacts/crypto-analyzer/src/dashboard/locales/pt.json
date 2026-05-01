@@ -342,7 +342,11 @@
       "fundraiseTarget": "Meta de captação",
       "lpInjectTarget": "Meta de injeção LP"
     },
-    "viewAnalysis": "Ver análise"
+    "viewAnalysis": "Ver análise",
+    "lockNotReadyTitle": "Em breve",
+    "lockNotReadyDesc": "O bloqueio de RUNE será aberto após o lançamento oficial do protocolo.",
+    "burnNotReadyTitle": "Em breve",
+    "burnNotReadyDesc": "O burn-staking de EMBER será aberto após o lançamento oficial do protocolo."
   },
   "deposit": {
     "inputError": "Erro de Entrada",

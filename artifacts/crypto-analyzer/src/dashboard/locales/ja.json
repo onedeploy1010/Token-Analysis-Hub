@@ -342,7 +342,11 @@
       "fundraiseTarget": "募集目標",
       "lpInjectTarget": "LP 注入目標"
     },
-    "viewAnalysis": "分析を見る"
+    "viewAnalysis": "分析を見る",
+    "lockNotReadyTitle": "近日公開",
+    "lockNotReadyDesc": "RUNE のロックはプロトコル正式リリース後に公開予定です。",
+    "burnNotReadyTitle": "近日公開",
+    "burnNotReadyDesc": "EMBER のバーンステーキングはプロトコル正式リリース後に公開予定です。"
   },
   "deposit": {
     "inputError": "入力エラー",

@@ -86,11 +86,18 @@ export function RuneLockSection() {
     },
   });
 
-  // 暂未开放 — 上一版用 toast 不够明显, 用户反馈想要弹窗。改为
-  // <NotReadyDialog/>。链上 vault 合约 ready 后把 onClick 还原为
-  // 真正的 handleLock + 删 setNotReadyOpen 即可恢复。
+  // 暂未开放 — 改用 toast（用户反馈：lock-section 入口要简洁不弹窗）。
+  // notReadyOpen state 保留用作 NotReadyDialog 兼容（dialog mounted at
+  // bottom of file referenced by ref). 链上 vault 合约 ready 后把
+  // onClick 改回真实的 handleLock 即可恢复。
   const [notReadyOpen, setNotReadyOpen] = useState(false);
-  const handleLock = () => { setNotReadyOpen(true); };
+  void notReadyOpen;
+  const handleLock = () => {
+    toast({
+      title: t("vault.lockNotReadyTitle", "Coming soon"),
+      description: t("vault.lockNotReadyDesc", "RUNE locking will open after the protocol launch."),
+    });
+  };
 
   const usdtNum = parseFloat(usdtAmount) || 0;
   const runeEquiv = usdcToMA(usdtNum);

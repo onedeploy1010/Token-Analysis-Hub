@@ -342,7 +342,11 @@
       "fundraiseTarget": "Цель сбора",
       "lpInjectTarget": "Цель пополнения LP"
     },
-    "viewAnalysis": "Анализ"
+    "viewAnalysis": "Анализ",
+    "lockNotReadyTitle": "Скоро будет",
+    "lockNotReadyDesc": "Блокировка RUNE откроется после официального запуска протокола.",
+    "burnNotReadyTitle": "Скоро будет",
+    "burnNotReadyDesc": "Сжигание-стейкинг EMBER откроется после официального запуска протокола."
   },
   "deposit": {
     "inputError": "Ошибка Ввода",

@@ -342,7 +342,11 @@
       "fundraiseTarget": "Sammelziel",
       "lpInjectTarget": "LP-Einspeiseziel"
     },
-    "viewAnalysis": "Analyse ansehen"
+    "viewAnalysis": "Analyse ansehen",
+    "lockNotReadyTitle": "Demnächst verfügbar",
+    "lockNotReadyDesc": "RUNE-Sperren wird nach dem offiziellen Protokoll-Launch geöffnet.",
+    "burnNotReadyTitle": "Demnächst verfügbar",
+    "burnNotReadyDesc": "EMBER-Burn-Staking wird nach dem offiziellen Protokoll-Launch geöffnet."
   },
   "deposit": {
     "inputError": "Eingabefehler",

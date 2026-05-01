@@ -342,7 +342,11 @@
       "fundraiseTarget": "모금 목표",
       "lpInjectTarget": "LP 주입 목표"
     },
-    "viewAnalysis": "분석 보기"
+    "viewAnalysis": "분석 보기",
+    "lockNotReadyTitle": "출시 예정",
+    "lockNotReadyDesc": "RUNE 잠금은 프로토콜 정식 출시 후 공개됩니다.",
+    "burnNotReadyTitle": "출시 예정",
+    "burnNotReadyDesc": "EMBER 소각 스테이킹은 프로토콜 정식 출시 후 공개됩니다."
   },
   "deposit": {
     "inputError": "입력 오류",

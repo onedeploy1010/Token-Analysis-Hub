@@ -251,7 +251,9 @@
       "successDesc": "RUNE 已锁仓，veRUNE 权益即刻生效。",
       "error": "锁仓失败",
       "validationWallet": "请先连接钱包",
-      "validationAmount": "最低 10 USDT"
+      "validationAmount": "最低 10 USDT",
+      "notReadyTitle": "即将开放",
+      "notReadyDesc": "RUNE 锁仓功能将在协议正式上线后开放。"
     },
     "remaining": "剩余",
     "action": "操作",
@@ -390,7 +392,9 @@
       "claimError": "领取失败",
       "validationWallet": "请先连接钱包",
       "validationAmount": "最低 10 USDT",
-      "validationConfirm": "请确认不可逆操作"
+      "validationConfirm": "请确认不可逆操作",
+      "notReadyTitle": "即将开放",
+      "notReadyDesc": "EMBER 销毁质押将在协议正式上线后开放。"
     },
     "tabPool": "金库",
     "tabPoolDesc": "底池沉淀 · 交易资金",
@@ -439,7 +443,11 @@
       "fundraiseTarget": "募资目标",
       "lpInjectTarget": "LP 注入目标"
     },
-    "viewAnalysis": "查看分析"
+    "viewAnalysis": "查看分析",
+    "lockNotReadyTitle": "即将开放",
+    "lockNotReadyDesc": "RUNE 锁仓功能将在协议正式上线后开放。",
+    "burnNotReadyTitle": "即将开放",
+    "burnNotReadyDesc": "EMBER 销毁质押将在协议正式上线后开放。"
   },
   "deposit": {
     "inputError": "输入错误",

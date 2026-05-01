@@ -342,7 +342,11 @@
       "fundraiseTarget": "Objectif de levée",
       "lpInjectTarget": "Objectif d'injection LP"
     },
-    "viewAnalysis": "Voir l'analyse"
+    "viewAnalysis": "Voir l'analyse",
+    "lockNotReadyTitle": "Bientôt disponible",
+    "lockNotReadyDesc": "Le verrouillage RUNE sera ouvert après le lancement officiel du protocole.",
+    "burnNotReadyTitle": "Bientôt disponible",
+    "burnNotReadyDesc": "Le burn-staking EMBER sera ouvert après le lancement officiel du protocole."
   },
   "deposit": {
     "inputError": "Erreur de Saisie",

@@ -342,7 +342,11 @@
       "fundraiseTarget": "هدف التجميع",
       "lpInjectTarget": "هدف ضخ LP"
     },
-    "viewAnalysis": "عرض التحليل"
+    "viewAnalysis": "عرض التحليل",
+    "lockNotReadyTitle": "قريبًا",
+    "lockNotReadyDesc": "سيتم فتح قفل RUNE بعد الإطلاق الرسمي للبروتوكول.",
+    "burnNotReadyTitle": "قريبًا",
+    "burnNotReadyDesc": "سيتم فتح حرق-رهن EMBER بعد الإطلاق الرسمي للبروتوكول."
   },
   "deposit": {
     "inputError": "خطأ في الإدخال",
