@@ -22,6 +22,10 @@
 
   "compression": "none",
   "reorg_handling": "enabled",
+  "latest_block_delay": 3,
+  "_latest_block_delay_note": "Match the existing api-server indexer's CONFIRMATIONS = 3n. BSC ~3s blocks → ~9s extra latency in exchange for catching most reorgs at delivery time before they pollute the DB.",
+  "restream_on_reorg": true,
+  "_restream_on_reorg_note": "Belt-and-suspenders. Edge Function uses `ignoreDuplicates: true` on the unique index (chain_id, tx_hash, log_index) so re-deliveries are dropped silently — enabling this is free correctness.",
 
   "filter": {
     "language": "javascript",

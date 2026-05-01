@@ -22,6 +22,10 @@
 
   "compression": "none",
   "reorg_handling": "enabled",
+  "latest_block_delay": 3,
+  "_latest_block_delay_note": "Same as mainnet — 3-block delay matches api-server indexer CONFIRMATIONS, ~9s extra latency for reorg safety.",
+  "restream_on_reorg": true,
+  "_restream_on_reorg_note": "Same as mainnet — safe to enable, dupes ignored by upsert.",
 
   "filter": {
     "language": "javascript",
