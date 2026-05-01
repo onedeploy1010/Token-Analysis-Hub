@@ -22,10 +22,20 @@ export function resolveRuneChainKey(): RuneChainKey {
  * publicnode.com and nodereal.io are both free, rate-limit-generous, and
  * track the chain head near real-time for BSC.
  */
+/* RPC URLs are env-overridable so a single deploy can swap to a paid
+ * provider (Ankr / QuickNode HTTPS) without rebuilding. The default
+ * picks a public RPC that has empirically held up under our load.
+ *
+ * publicnode.com sometimes drops connections under sustained polling
+ * (`ERR_CONNECTION_CLOSED` from BSC traders' regions); when that
+ * happens, set VITE_BSC_TESTNET_RPC=https://bsc-testnet.bnbchain.org or
+ * a QuickNode endpoint to recover.
+ */
 export const bscMainnet: Chain = defineChain({
   id: 56,
   name: "BNB Smart Chain",
-  rpc: "https://bsc-dataseed.binance.org",
+  rpc: (import.meta.env.VITE_BSC_MAINNET_RPC as string | undefined)
+    ?? "https://bsc-dataseed.binance.org",
   nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
   blockExplorers: [{ name: "BscScan", url: "https://bscscan.com", apiUrl: "https://api.bscscan.com/api" }],
 });
@@ -33,7 +43,10 @@ export const bscMainnet: Chain = defineChain({
 export const bscTestnetReliable: Chain = defineChain({
   id: 97,
   name: "BNB Smart Chain Testnet",
-  rpc: "https://bsc-testnet.publicnode.com",
+  // BSC's official `bsc-testnet.bnbchain.org` is more stable than the
+  // publicnode mirror that's been throwing ERR_CONNECTION_CLOSED.
+  rpc: (import.meta.env.VITE_BSC_TESTNET_RPC as string | undefined)
+    ?? "https://bsc-testnet.bnbchain.org",
   nativeCurrency: { name: "tBNB", symbol: "tBNB", decimals: 18 },
   blockExplorers: [{ name: "BscScan", url: "https://testnet.bscscan.com", apiUrl: "https://api-testnet.bscscan.com/api" }],
   testnet: true,

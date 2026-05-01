@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useActiveAccount, useActiveWallet, useDisconnect } from "thirdweb/react";
+import { useActiveAccount } from "thirdweb/react";
 import { useLocation } from "wouter";
 import { BindReferrerModal } from "./bind-referrer-modal";
 import { PurchaseNodeModal } from "./purchase-node-modal";
@@ -32,11 +32,9 @@ import type { NodeId } from "@/lib/thirdweb/contracts";
  */
 export function RuneOnboarding() {
   const account = useActiveAccount();
-  const wallet = useActiveWallet();
-  const { disconnect } = useDisconnect();
   const { isDemoMode } = useDemoStore();
   const address = account?.address;
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
 
   const refFromUrl = useReferralParam(address);
   const { referrer, isBound, refetch: refetchReferrer } = useReferrerOf(address);
@@ -58,6 +56,17 @@ export function RuneOnboarding() {
     setBindDismissed(false);
     setBuyDismissed(false);
   }, [address]);
+
+  // When the wallet disconnects, kick the user out of the dashboard back
+  // to the marketing home so the disconnected state isn't visible inside
+  // a member-only surface. Demo mode is exempt (it bypasses real auth).
+  useEffect(() => {
+    if (isDemoMode) return;
+    if (address) return;
+    if (location === "/app" || location.startsWith("/app/")) {
+      navigate("/");
+    }
+  }, [address, location, isDemoMode, navigate]);
 
   // Re-open signal from outside (card clicks, nav clicks).
   // Optionally carries a specific nodeId to pre-select in the modal.
@@ -88,7 +97,7 @@ export function RuneOnboarding() {
     // hard-gate the dashboard on a purchase; the restricted view explains
     // that referral commission requires owning a node.
     if (isBound) {
-      navigate("/dashboard");
+      navigate("/app/profile");
       return;
     }
   }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate]);
@@ -98,12 +107,17 @@ export function RuneOnboarding() {
       <BindReferrerModal
         open={bindOpen}
         initialReferrer={refFromUrl}
-        // Closing without binding rolls the wallet back to disconnected —
-        // there's nothing useful a connected-but-unbound wallet can do here.
+        // Closing the bind modal just dismisses it for this session.
+        // Auto-disconnecting on close (the previous behaviour, 2026-04-27)
+        // created a re-bind/disconnect loop when the wallet was on the
+        // wrong chain — `referrerOf` reads zero on the chain the site
+        // queries, modal pops, user closes, wallet disconnects, user
+        // reconnects, repeat. Now closing leaves the wallet connected;
+        // the user stays on /recruit (no dashboard access) and can
+        // either switch network manually or re-trigger bind.
         onClose={() => {
           setBindDismissed(true);
           setBindOpen(false);
-          if (wallet) disconnect(wallet);
         }}
         onBound={async () => {
           setBindOpen(false);
@@ -126,7 +140,7 @@ export function RuneOnboarding() {
           setBuyOpen(false);
           setPreSelectedNodeId(undefined);
           await refetchPurchase();
-          navigate("/dashboard");
+          navigate("/app/profile");
         }}
       />
     </>

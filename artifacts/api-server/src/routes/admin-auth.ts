@@ -30,7 +30,14 @@ router.post("/admin/login", async (req, res) => {
       return;
     }
     const token = signAdminToken({ adminId: user.id, username: user.username });
-    res.json({ token, username: user.username });
+    // Return role + permissions so the admin-panel can gate sidebar / UI
+    // client-side. Server-side enforcement (added in a later patch) still
+    // re-reads the row in `requirePermission` so a tampered client can't
+    // escalate. Cast to any for the role/permissions columns until the
+    // shared @rune/db is rebuilt with the new schema fields.
+    const role = (user as any).role ?? "admin";
+    const permissions = ((user as any).permissions ?? []) as string[];
+    res.json({ token, username: user.username, role, permissions });
   } catch (err) {
     console.error("[admin/login]", err);
     res.status(500).json({ error: "Server error" });

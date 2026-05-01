@@ -1,8 +1,20 @@
 import { useState, useEffect, FormEvent, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { useAdminAuth } from "@/contexts/admin-auth";
-import { apiFetch, uploadFile } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Upload, X, FileText, Image } from "lucide-react";
+
+/** Upload to Supabase Storage `resources` bucket; returns the public URL.
+ *  Bucket must be created upfront with public read enabled. */
+async function uploadToStorage(file: File): Promise<string> {
+  const path = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+  const { error } = await supabase.storage
+    .from("resources")
+    .upload(path, file, { cacheControl: "3600", upsert: false });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from("resources").getPublicUrl(path);
+  return data.publicUrl;
+}
 
 const LANGUAGES = [
   { value: "zh", label: "简体中文" },
@@ -38,22 +50,25 @@ export default function ResourceForm() {
 
   useEffect(() => {
     if (!isEdit || !user) return;
-    apiFetch("/admin/resources", user.token)
-      .then(r => r.json())
-      .then((data: typeof form & { id: number }[]) => {
-        const r = data.find((x) => x.id === Number(params.id));
-        if (r) {
-          setForm({
-            language: r.language, category: r.category, title: r.title,
-            description: r.description || "", fileUrl: r.fileUrl, fileType: r.fileType,
-            fileSize: r.fileSize || "", sortOrder: r.sortOrder, visible: r.visible,
-            previewImageUrl: r.previewImageUrl || "",
-          });
-          if (r.previewImageUrl) setImgPreview(r.previewImageUrl);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    void (async () => {
+      const { data, error } = await supabase
+        .from("resources")
+        .select("*")
+        .eq("id", Number(params.id))
+        .maybeSingle();
+      if (error) { console.error(error); setLoading(false); return; }
+      if (data) {
+        const r: any = data;
+        setForm({
+          language: r.language, category: r.category, title: r.title,
+          description: r.description || "", fileUrl: r.file_url, fileType: r.file_type,
+          fileSize: r.file_size || "", sortOrder: r.sort_order, visible: r.visible,
+          previewImageUrl: r.preview_image_url || "",
+        });
+        if (r.preview_image_url) setImgPreview(r.preview_image_url);
+      }
+      setLoading(false);
+    })();
   }, [isEdit, params.id, user]);
 
   function handleDocChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -81,26 +96,27 @@ export default function ResourceForm() {
       let fileUrl = form.fileUrl;
       let previewImageUrl = form.previewImageUrl;
 
-      if (docFile) {
-        const up = await uploadFile(docFile, user.token);
-        fileUrl = up.fileUrl;
-      }
-      if (imgFile) {
-        const up = await uploadFile(imgFile, user.token);
-        previewImageUrl = up.fileUrl;
-      }
+      if (docFile)  fileUrl         = await uploadToStorage(docFile);
+      if (imgFile)  previewImageUrl = await uploadToStorage(imgFile);
 
-      const body = { ...form, fileUrl, previewImageUrl };
+      // Map form (camelCase) → DB (snake_case) on the way out.
+      const row = {
+        language: form.language,
+        category: form.category,
+        title: form.title,
+        description: form.description,
+        file_url: fileUrl,
+        file_type: form.fileType,
+        file_size: form.fileSize,
+        sort_order: form.sortOrder,
+        visible: form.visible,
+        preview_image_url: previewImageUrl,
+      };
 
-      if (isEdit) {
-        await apiFetch(`/admin/resources/${params.id}`, user.token, {
-          method: "PUT", body: JSON.stringify(body),
-        });
-      } else {
-        await apiFetch("/admin/resources", user.token, {
-          method: "POST", body: JSON.stringify(body),
-        });
-      }
+      const { error: dbErr } = isEdit
+        ? await supabase.from("resources").update(row).eq("id", Number(params.id))
+        : await supabase.from("resources").insert(row);
+      if (dbErr) throw new Error(dbErr.message);
       navigate("/resources");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "保存失败");

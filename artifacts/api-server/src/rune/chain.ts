@@ -1,5 +1,5 @@
 import { bsc, bscTestnet } from "viem/chains";
-import { createPublicClient, http, type PublicClient } from "viem";
+import { createPublicClient, http, webSocket, type PublicClient } from "viem";
 
 /**
  * Per-chain RUNE contract deployments and the block the contracts first
@@ -13,6 +13,10 @@ import { createPublicClient, http, type PublicClient } from "viem";
 export interface RuneChainConfig {
   chainId: 56 | 97;
   rpcUrl: string;
+  /** WebSocket endpoint for real-time event subscriptions (eth_subscribe).
+   *  Indexer uses this for live tail; http rpcUrl handles cold-start
+   *  backfill + reconnect catch-up. */
+  wssUrl: string;
   usdt: `0x${string}`;
   community: `0x${string}`;
   nodePresell: `0x${string}`;
@@ -25,6 +29,10 @@ export interface RuneChainConfig {
 const bscMainnetConfig: RuneChainConfig = {
   chainId: 56,
   rpcUrl: process.env.RUNE_RPC_URL_MAINNET ?? "https://bsc-dataseed.binance.org",
+  // wss:// endpoint for the WebSocket-backed subscription path. Public BSC
+  // ws endpoints stay open under sustained load; if it drops, the indexer
+  // falls back to a 5-min http catch-up poll until the socket reconnects.
+  wssUrl: process.env.RUNE_WSS_URL_MAINNET ?? "wss://bsc-rpc.publicnode.com",
   usdt: "0x55d398326f99059fF775485246999027B3197955",
   community: (process.env.RUNE_COMMUNITY_MAINNET ?? "0xe6f1d4B5ea4B5a025e1E45C9E3d83F31201B6C9c") as `0x${string}`,
   nodePresell: (process.env.RUNE_NODE_PRESELL_MAINNET ?? "0xF32747E7c120BB6333Ac83F25192c089e8d9b62E") as `0x${string}`,
@@ -42,6 +50,7 @@ const bscTestnetConfig: RuneChainConfig = {
   // the indexer. publicnode.com handles the workload cleanly; operators can
   // still point at a paid provider (Ankr/QuickNode) via RUNE_RPC_URL_TESTNET.
   rpcUrl: process.env.RUNE_RPC_URL_TESTNET ?? "https://bsc-testnet.publicnode.com",
+  wssUrl: process.env.RUNE_WSS_URL_TESTNET ?? "wss://bsc-testnet-rpc.publicnode.com",
   usdt: "0xa87cC1e59598CD0C33bBe38746a81279BFfea0B8",
   community: "0x42a06ac2208E9F8e25673BA0F6c44bc56fD2aa62",
   nodePresell: "0x6a30f26338742670637f47dfC04600B4d1eF1E9a",
@@ -69,4 +78,20 @@ export const runeChainConfig = resolveRuneChain();
 export const runePublicClient: PublicClient = createPublicClient({
   chain: runeChainConfig.chain,
   transport: http(runeChainConfig.rpcUrl),
+});
+
+/**
+ * WSS-backed client for `watchEvent` subscriptions. Kept separate from the
+ * http client because viem's `watchEvent` will silently fall back to
+ * `getLogs` polling on an http transport — defeating the whole point of
+ * switching off polling. Use this client for the real-time tail.
+ */
+export const runeWssClient: PublicClient = createPublicClient({
+  chain: runeChainConfig.chain,
+  transport: webSocket(runeChainConfig.wssUrl, {
+    // Keep the connection warm; the public BSC ws nodes are sticky but a
+    // few minutes of silence can trip a load balancer somewhere upstream.
+    keepAlive: true,
+    reconnect: true,
+  }),
 });

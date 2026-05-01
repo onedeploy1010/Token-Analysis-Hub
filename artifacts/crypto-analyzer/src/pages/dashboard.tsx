@@ -644,16 +644,12 @@ export default function Dashboard() {
  *  RuneOnboarding listener catches to open PurchaseNodeModal. */
 function RestrictedTabPanel({ kind }: { kind: "team" | "rewards" }) {
   const { t } = useLanguage();
-  const tx = (key: string, fallback: string) => {
-    const v = t(key);
-    return v === key ? fallback : v;
-  };
   const title = kind === "team"
-    ? tx("mr.dash.locked.team.title", "购买节点后查看团队")
-    : tx("mr.dash.locked.rewards.title", "购买节点后查看返佣");
+    ? t("mr.dash.locked.team.title")
+    : t("mr.dash.locked.rewards.title");
   const desc = kind === "team"
-    ? tx("mr.dash.locked.team.desc", "节点上线即可看到下线层级、伞下出资和团队等级分布。")
-    : tx("mr.dash.locked.rewards.desc", "持有节点后，邀请链接每一笔成交都会即时返佣到你的钱包，并在此查询明细。");
+    ? t("mr.dash.locked.team.desc")
+    : t("mr.dash.locked.rewards.desc");
   return (
     <Card className="surface-3d relative overflow-hidden border-amber-500/55 bg-gradient-to-br from-amber-900/40 to-slate-700/85">
       <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
@@ -665,7 +661,7 @@ function RestrictedTabPanel({ kind }: { kind: "team" | "rewards" }) {
           onClick={() => emitOpenPurchase()}
           className="mt-1 bg-amber-500 hover:bg-amber-400 text-black font-semibold"
         >
-          {tx("mr.dash.locked.cta", "立即购买节点")}
+          {t("mr.dash.locked.cta")}
         </Button>
       </CardContent>
     </Card>
@@ -1709,7 +1705,7 @@ function BenefitCell({
   );
 }
 
-function OverviewTab({ address }: { address: string }) {
+export function OverviewTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { referrer, isBound, isRoot } = useReferrerOf(address);
   const { nodeId } = useUserPurchase(address);
@@ -1807,6 +1803,7 @@ function OverviewTab({ address }: { address: string }) {
         <PoolProgressCard ownedNodeId={nodeId} />
         <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />
         <BenefitsSection ownedNodeId={nodeId} />
+
       </div>
     </div>
   );
@@ -1823,7 +1820,7 @@ function OverviewTab({ address }: { address: string }) {
    jump back up. The root (you) is always the first segment, even when
    you've descended many levels, so it's trivial to reset.
 ──────────────────────────────────────────────────────────────────────────── */
-function TeamTab({ address }: { address: string }) {
+export function TeamTab({ address }: { address: string }) {
   const { t } = useLanguage();
   // The referral chain: path[0] is always the connected wallet (root),
   // path[path.length-1] is the wallet currently being inspected. Drilling
@@ -2039,7 +2036,7 @@ function TeamRow({ row, onDrill }: { row: ReferrerRow; onDrill: () => void }) {
 /* ─────────────────────────────────────────────────────────────────────────
    Rewards tab — per-payout detail of direct-commission USDT earned
 ──────────────────────────────────────────────────────────────────────────── */
-function RewardsTab({ address }: { address: string }) {
+export function RewardsTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { data: stats } = usePersonalStats(address);
   const { data: rewards, isLoading } = useRewards(address);
@@ -2246,7 +2243,7 @@ function MonthlyRewardChart({ rewards }: { rewards: RewardRow[] }) {
     const cursor = new Date(start);
     while (cursor <= end || buckets.length < 6) {
       const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-      buckets.push({ key, label: `${cursor.getMonth() + 1}月`, count: 0, amount: 0 });
+      buckets.push({ key, label: `${cursor.getMonth() + 1}${t("mr.dash.chart.monthSuffix")}`, count: 0, amount: 0 });
       cursor.setMonth(cursor.getMonth() + 1);
       if (buckets.length >= 18) break;
     }

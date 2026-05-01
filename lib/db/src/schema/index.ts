@@ -5,3 +5,4 @@ export * from "./rune-referrers";
 export * from "./rune-purchases";
 export * from "./rune-indexer-state";
 export * from "./rune-members";
+export * from "./system-config";
