@@ -341,7 +341,8 @@
       "yieldLegend": "Lợi nhuận",
       "fundraiseTarget": "Mục tiêu huy động",
       "lpInjectTarget": "Mục tiêu bơm LP"
-    }
+    },
+    "viewAnalysis": "Xem phân tích"
   },
   "deposit": {
     "inputError": "Lỗi Nhập Liệu",

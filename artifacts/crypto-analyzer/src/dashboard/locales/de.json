@@ -341,7 +341,8 @@
       "yieldLegend": "Rendite",
       "fundraiseTarget": "Sammelziel",
       "lpInjectTarget": "LP-Einspeiseziel"
-    }
+    },
+    "viewAnalysis": "Analyse ansehen"
   },
   "deposit": {
     "inputError": "Eingabefehler",

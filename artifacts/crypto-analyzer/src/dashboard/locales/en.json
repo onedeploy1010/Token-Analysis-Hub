@@ -438,7 +438,8 @@
       "yieldLegend": "Yield",
       "fundraiseTarget": "Fundraise target",
       "lpInjectTarget": "LP inject target"
-    }
+    },
+    "viewAnalysis": "View Analysis"
   },
   "deposit": {
     "inputError": "Input Error",

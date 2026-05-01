@@ -341,7 +341,8 @@
       "yieldLegend": "Доходность",
       "fundraiseTarget": "Цель сбора",
       "lpInjectTarget": "Цель пополнения LP"
-    }
+    },
+    "viewAnalysis": "Анализ"
   },
   "deposit": {
     "inputError": "Ошибка Ввода",

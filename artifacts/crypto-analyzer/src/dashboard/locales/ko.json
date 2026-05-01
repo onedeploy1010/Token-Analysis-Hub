@@ -341,7 +341,8 @@
       "yieldLegend": "수익률",
       "fundraiseTarget": "모금 목표",
       "lpInjectTarget": "LP 주입 목표"
-    }
+    },
+    "viewAnalysis": "분석 보기"
   },
   "deposit": {
     "inputError": "입력 오류",

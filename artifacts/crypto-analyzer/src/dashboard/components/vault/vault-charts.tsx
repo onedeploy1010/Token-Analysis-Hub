@@ -16,6 +16,12 @@ const BLUE   = "hsl(217 76% 58%)";       // chart-3
 const TEAL   = "hsl(173 58% 50%)";       // reserve
 const PURPLE = "hsl(266 60% 65%)";       // accent for yield curve
 
+function fmtUsdt(v: number) {
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
+  if (v >= 1_000)     return `$${(v / 1_000).toFixed(2)}K`;
+  return `$${v.toFixed(2)}`;
+}
+
 function useCountUp(target: number, duration = 1200) {
   const [val, setVal] = useState(0);
   useEffect(() => {

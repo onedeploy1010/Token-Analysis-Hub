@@ -341,7 +341,8 @@
       "yieldLegend": "Rendimento",
       "fundraiseTarget": "Meta de captação",
       "lpInjectTarget": "Meta de injeção LP"
-    }
+    },
+    "viewAnalysis": "Ver análise"
   },
   "deposit": {
     "inputError": "Erro de Entrada",

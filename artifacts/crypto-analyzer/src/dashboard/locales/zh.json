@@ -438,7 +438,8 @@
       "yieldLegend": "年化收益",
       "fundraiseTarget": "募资目标",
       "lpInjectTarget": "LP 注入目标"
-    }
+    },
+    "viewAnalysis": "查看分析"
   },
   "deposit": {
     "inputError": "输入错误",

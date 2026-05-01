@@ -341,7 +341,8 @@
       "yieldLegend": "利回り",
       "fundraiseTarget": "募集目標",
       "lpInjectTarget": "LP 注入目標"
-    }
+    },
+    "viewAnalysis": "分析を見る"
   },
   "deposit": {
     "inputError": "入力エラー",

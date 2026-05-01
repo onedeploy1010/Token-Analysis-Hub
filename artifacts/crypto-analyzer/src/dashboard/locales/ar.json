@@ -341,7 +341,8 @@
       "yieldLegend": "العائد",
       "fundraiseTarget": "هدف التجميع",
       "lpInjectTarget": "هدف ضخ LP"
-    }
+    },
+    "viewAnalysis": "عرض التحليل"
   },
   "deposit": {
     "inputError": "خطأ في الإدخال",

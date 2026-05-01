@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Lock, Flame, Shield, BarChart2 } from "lucide-react";
+import { Lock, Flame, Shield, BarChart2, LineChart, ExternalLink } from "lucide-react";
 import { cn } from "@dashboard/lib/utils";
 import { RuneLockSection } from "@dashboard/components/vault/rune-lock-section";
 import { EmberBurnSection } from "@dashboard/components/vault/ember-burn-section";
 import { VaultLpPool } from "@dashboard/components/vault/vault-lp-pool";
 import { VaultCharts } from "@dashboard/components/vault/vault-charts";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { PageEnter, SubTabSwitch } from "@dashboard/components/page-enter";
 
 type VaultTab = "pool" | "lock" | "burn";
@@ -33,28 +34,85 @@ export default function Vault() {
   return (
     <PageEnter>
     <div className="relative overflow-hidden pb-24 lg:pb-8">
-      {/* Soft ambient glows — `overflow-hidden` on the wrapper clips them
-          inside the viewport. Without it, the 28rem/24rem circles would
-          push the page width past 360px on phones, creating a horizontal
-          scrollbar that visually drifts the tab strip off-centre. */}
-      <div className="pointer-events-none absolute -top-20 left-[10%] h-[28rem] w-[28rem] rounded-full bg-amber-500/[0.04] blur-[120px]" />
-      <div className="pointer-events-none absolute top-[40%] right-[8%] h-[24rem] w-[24rem] rounded-full bg-amber-500/[0.025] blur-[100px]" />
+      {/* Brighter, layered ambient glows for the new "premium reactor" feel.
+          overflow-hidden on the wrapper clips them inside the viewport. */}
+      <div className="pointer-events-none absolute -top-24 left-[8%] h-[30rem] w-[30rem] rounded-full bg-amber-500/[0.10] blur-[120px]" />
+      <div className="pointer-events-none absolute top-[28%] right-[6%] h-[26rem] w-[26rem] rounded-full bg-amber-400/[0.07] blur-[100px]" />
+      <div className="pointer-events-none absolute top-[60%] left-[18%] h-[22rem] w-[22rem] rounded-full bg-orange-500/[0.05] blur-[110px]" />
+
+      {/* Animated diagonal scan-line for "tech" texture */}
+      <motion.div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(115deg, transparent 0%, transparent 38%, rgba(251,191,36,0.05) 50%, transparent 62%, transparent 100%)",
+          backgroundSize: "250% 100%",
+          mixBlendMode: "screen",
+        }}
+        animate={{ backgroundPosition: ["180% 0%", "-80% 0%"] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+      />
 
       <style>{`
-        @keyframes vaultFadeIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes vaultFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .vault-fade { animation: vaultFadeIn 0.22s ease-out both; }
+        @keyframes vaultPulseLine { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
       `}</style>
 
-      {/* Page header */}
-      <div className="relative px-4 lg:px-6 pt-5 pb-4 border-b border-border/40">
-        <div className="flex items-center gap-2 mb-1">
-          <Shield className="h-4 w-4 text-primary" />
-          <h2 className="text-base font-bold tracking-tight text-foreground">{t("vault.pageTitle")}</h2>
+      {/* Page header — premium reactor strip */}
+      <div className="relative px-4 lg:px-6 pt-5 pb-4">
+        {/* Top + bottom edge accent lines */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/85 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-[12%] top-[1.5px] h-px bg-gradient-to-r from-transparent via-amber-200/45 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-500/35 to-transparent" style={{ animation: "vaultPulseLine 3.4s ease-in-out infinite" }} />
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            {/* Reactor-style icon container */}
+            <div
+              className="h-9 w-9 rounded-xl flex items-center justify-center ring-2 ring-amber-400/55"
+              style={{
+                background: "linear-gradient(135deg, rgba(251,191,36,0.32), rgba(180,90,10,0.18))",
+                boxShadow: "0 4px 16px hsl(38 95% 55% / 0.45), inset 0 1px 0 rgba(255,255,255,0.20)",
+              }}
+            >
+              <Shield className="h-4 w-4 text-amber-200" strokeWidth={2.4} />
+            </div>
+            <div>
+              <h2
+                className="text-[18px] font-black leading-tight tracking-[0.02em]"
+                style={{
+                  background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fbbf24 65%, #d97706 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.5))",
+                }}
+              >
+                {t("vault.pageTitle")}
+              </h2>
+              <p className="text-[10px] text-amber-200/65 mt-0.5 tracking-wide">
+                {t("vault.pageSubtitle")}
+              </p>
+            </div>
+          </div>
+          {/* 查看分析 — links to mainnet RUNE project analytics page */}
+          <a
+            href="/projects/rune"
+            className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-[1.03] active:scale-95"
+            style={{
+              background: "linear-gradient(135deg, rgba(96,165,250,0.20), rgba(59,130,246,0.10))",
+              border: "1px solid rgba(96,165,250,0.45)",
+              color: "rgb(147,197,253)",
+              boxShadow: "0 0 16px rgba(59,130,246,0.30), inset 0 1px 0 rgba(255,255,255,0.10)",
+            }}
+            data-testid="link-view-analysis"
+          >
+            <LineChart className="h-3 w-3" />
+            <span className="tracking-wide">{t("vault.viewAnalysis", "View Analysis")}</span>
+            <ExternalLink className="h-2.5 w-2.5 opacity-70 transition-transform group-hover:translate-x-0.5" />
+          </a>
         </div>
-        <p className="text-xs text-muted-foreground">{t("vault.pageSubtitle")}</p>
       </div>
 
       {/* Tab strip — every button declares the same `border` on both states
