@@ -1,33 +1,42 @@
 import { db, runeReferrersTable, runePurchasesTable, runeMembersTable } from "@rune/db";
 import { logger } from "../lib/logger";
-import { runeChainConfig, runePublicClient } from "../rune/chain";
+import { runeChainConfig, runePublicClient, runeWssClient } from "../rune/chain";
 import { eventAddReferrer, eventNodePresell } from "../rune/abis";
 import { getCursor, setCursor, type RuneContract } from "./cursor";
+import type { Log } from "viem";
 
-/** Tunables — polling cadence and batch size. BSC public RPCs cap
- * `eth_getLogs` at ~5000 blocks per call, so we stay well under. */
-const POLL_INTERVAL_MS = 15_000;
+/**
+ * Indexer hybrid model (revised 2026-05-01):
+ *   1. **Cold-start backfill** via http `getLogs` — pages from the persisted
+ *      cursor to chain head in chunks of MAX_BLOCK_RANGE.
+ *   2. **Real-time tail** via WSS `watchEvent` — events arrive within a block
+ *      of confirmation, no polling cadence.
+ *   3. **Safety-net catch-up** via http poll every SAFETY_POLL_MS — picks up
+ *      anything the WSS missed (transient socket disconnect, reconnect gap).
+ *
+ * Why hybrid: WSS subscriptions are great when the socket is healthy but
+ * silently miss events across reconnects; http catch-up makes the system
+ * self-healing without making the operator babysit the socket.
+ */
 const MAX_BLOCK_RANGE = 2_000n;
-/** Safety buffer — ignore the last N blocks so we don't ingest a block
- * that reorgs out. BSC is fast-finality so 3 is enough for our use case. */
+/** Safety buffer — ignore the last N blocks so a reorg can't ingest a log
+ *  that gets dropped. BSC fast-finality means 3 is plenty. */
 const CONFIRMATIONS = 3n;
+/** Catch-up poll cadence. Long enough that we're not paying RPC cost
+ *  during normal WSS operation, short enough that a stalled subscription
+ *  becomes visible within minutes. */
+const SAFETY_POLL_MS = 5 * 60_000;
 
-/** Lowercase an address for consistent keys. */
 const lc = (a: string) => a.toLowerCase();
 
-async function ingestAddReferrer(toBlock: bigint, fromBlock: bigint) {
-  const logs = await runePublicClient.getLogs({
-    address: runeChainConfig.community,
-    event: eventAddReferrer,
-    fromBlock,
-    toBlock,
-  });
-
+/** Insert a batch of EventAddReferrer logs into rune_referrers + rune_members.
+ *  Idempotent on the (chain_id, tx_hash, log_index) unique key — safe to call
+ *  with logs the WSS subscription already delivered, with logs from the
+ *  catch-up poll, and with logs from a manual backfill, in any order. */
+async function ingestReferrerLogs(logs: ReadonlyArray<Log<bigint, number, false, typeof eventAddReferrer>>) {
   if (logs.length === 0) return;
 
-  // Fetch block timestamps in parallel — viem caches per-call so this is
-  // cheap even for 100 logs across a handful of blocks.
-  const uniqueBlocks = Array.from(new Set(logs.map((l) => l.blockNumber)));
+  const uniqueBlocks = Array.from(new Set(logs.map((l) => l.blockNumber!)));
   const blockMap = new Map<bigint, Date>();
   await Promise.all(
     uniqueBlocks.map(async (bn) => {
@@ -43,11 +52,10 @@ async function ingestAddReferrer(toBlock: bigint, fromBlock: bigint) {
       referrer: lc(l.args.referrer as string),
       chainId: runeChainConfig.chainId,
       blockNumber: Number(l.blockNumber),
-      txHash: l.transactionHash,
-      logIndex: l.logIndex,
-      boundAt: blockMap.get(l.blockNumber)!,
+      txHash: l.transactionHash!,
+      logIndex: l.logIndex!,
+      boundAt: blockMap.get(l.blockNumber!)!,
     }));
-
   if (rows.length === 0) return;
 
   await db
@@ -55,23 +63,17 @@ async function ingestAddReferrer(toBlock: bigint, fromBlock: bigint) {
     .values(rows)
     .onConflictDoNothing({ target: [runeReferrersTable.chainId, runeReferrersTable.txHash, runeReferrersTable.logIndex] });
 
-  // Mirror into rune_members so "list all registered members" stays a single
-  // table read. PK is (user, chainId) so re-indexing is idempotent.
   await db
     .insert(runeMembersTable)
     .values(rows.map((r) => ({ user: r.user, chainId: r.chainId, boundAt: r.boundAt })))
     .onConflictDoNothing({ target: [runeMembersTable.user, runeMembersTable.chainId] });
 
-  logger.info({ count: rows.length, from: String(fromBlock), to: String(toBlock) }, "[rune-indexer] AddReferrer batch");
+  logger.info({ count: rows.length, source: "ingest" }, "[rune-indexer] AddReferrer batch");
 }
 
-async function ingestNodePresell(toBlock: bigint, fromBlock: bigint) {
-  const logs = await runePublicClient.getLogs({
-    address: runeChainConfig.nodePresell,
-    event: eventNodePresell,
-    fromBlock,
-    toBlock,
-  });
+/** Insert a batch of EventNodePresell logs into rune_purchases. Same
+ *  idempotency story as ingestReferrerLogs. */
+async function ingestPresellLogs(logs: ReadonlyArray<Log<bigint, number, false, typeof eventNodePresell>>) {
   if (logs.length === 0) return;
 
   const rows = logs
@@ -80,15 +82,13 @@ async function ingestNodePresell(toBlock: bigint, fromBlock: bigint) {
       user: lc(l.args.user as string),
       nodeId: Number(l.args.nodeId as bigint),
       payToken: lc(l.args.payToken as string),
-      // Keep full 18-decimal precision as a decimal string in a numeric column.
       amount: String(l.args.amount as bigint),
       paidAt: new Date(Number(l.args.time as bigint) * 1000),
       chainId: runeChainConfig.chainId,
       blockNumber: Number(l.blockNumber),
-      txHash: l.transactionHash,
-      logIndex: l.logIndex,
+      txHash: l.transactionHash!,
+      logIndex: l.logIndex!,
     }));
-
   if (rows.length === 0) return;
 
   await db
@@ -96,19 +96,17 @@ async function ingestNodePresell(toBlock: bigint, fromBlock: bigint) {
     .values(rows)
     .onConflictDoNothing({ target: [runePurchasesTable.chainId, runePurchasesTable.txHash, runePurchasesTable.logIndex] });
 
-  logger.info({ count: rows.length, from: String(fromBlock), to: String(toBlock) }, "[rune-indexer] NodePresell batch");
+  logger.info({ count: rows.length, source: "ingest" }, "[rune-indexer] NodePresell batch");
 }
 
+/** Cold-start / safety-net catch-up — pulls historical logs in chunks
+ *  via http and persists the cursor after each successful chunk so a crash
+ *  can resume mid-scan. */
 async function scanContract(contract: RuneContract, head: bigint) {
   const startDefault = runeChainConfig.startBlock[contract];
   const persisted = await getCursor(runeChainConfig.chainId, contract);
-  // The configured startBlock is a floor: if we bump it forward (e.g. after
-  // new contracts deploy and we want to skip ancient empty history), a
-  // stale cursor stored from an earlier run shouldn't drag the scan back
-  // into those empty blocks. Take the MAX of the two.
   let cursor = persisted !== null && persisted > startDefault ? persisted : startDefault;
 
-  // Cap the scan at `head - CONFIRMATIONS` so we don't ingest unconfirmed blocks.
   const safeHead = head > CONFIRMATIONS ? head - CONFIRMATIONS : 0n;
   if (cursor >= safeHead) return;
 
@@ -117,29 +115,87 @@ async function scanContract(contract: RuneContract, head: bigint) {
     const fromBlock = cursor === 0n ? 0n : cursor + 1n;
     try {
       if (contract === "community") {
-        await ingestAddReferrer(nextTo, fromBlock);
+        const logs = await runePublicClient.getLogs({
+          address: runeChainConfig.community,
+          event: eventAddReferrer,
+          fromBlock,
+          toBlock: nextTo,
+        });
+        await ingestReferrerLogs(logs as any);
       } else {
-        await ingestNodePresell(nextTo, fromBlock);
+        const logs = await runePublicClient.getLogs({
+          address: runeChainConfig.nodePresell,
+          event: eventNodePresell,
+          fromBlock,
+          toBlock: nextTo,
+        });
+        await ingestPresellLogs(logs as any);
       }
       await setCursor(runeChainConfig.chainId, contract, nextTo);
       cursor = nextTo;
     } catch (err) {
       logger.error({ err, contract, from: String(fromBlock), to: String(nextTo) }, "[rune-indexer] scan batch failed");
-      // Back off and retry on the next tick rather than spinning.
-      return;
+      return; // Back off; the next safety-net tick will retry.
     }
   }
 }
 
-/**
- * Spawn the RUNE indexer loop. Runs in the same process as the API so
- * operational surface stays minimal — matches the `startHyperliquidCron`
- * pattern already in use.
- *
- * Safe to call unconditionally: if any RUNE address is the zero address
- * (e.g. mainnet contracts not yet deployed) we log and bail.
- */
-export function startRuneIndexer() {
+/** Open the live WSS subscriptions. Returns the two unwatch functions so
+ *  the caller can shut down cleanly on SIGTERM. Errors inside the watcher
+ *  are logged and the watcher rebuilt — viem's `webSocket` transport with
+ *  `reconnect: true` already handles socket drops, but we wrap once more
+ *  here to surface anything that escapes that. */
+function startSubscriptions(): () => void {
+  const unwatchers: Array<() => void> = [];
+
+  const subscribe = () => {
+    try {
+      unwatchers.push(
+        runeWssClient.watchEvent({
+          address: runeChainConfig.community,
+          event: eventAddReferrer,
+          onLogs: (logs) => {
+            ingestReferrerLogs(logs as any).catch((err) =>
+              logger.error({ err }, "[rune-indexer] WSS AddReferrer ingest failed"),
+            );
+          },
+          onError: (err) => {
+            logger.warn({ err }, "[rune-indexer] WSS AddReferrer subscription error — reconnecting");
+            // viem's webSocket transport reconnects internally; the next
+            // watchEvent emission will resume. The safety-net poll catches
+            // any gap.
+          },
+        }),
+      );
+
+      unwatchers.push(
+        runeWssClient.watchEvent({
+          address: runeChainConfig.nodePresell,
+          event: eventNodePresell,
+          onLogs: (logs) => {
+            ingestPresellLogs(logs as any).catch((err) =>
+              logger.error({ err }, "[rune-indexer] WSS NodePresell ingest failed"),
+            );
+          },
+          onError: (err) => {
+            logger.warn({ err }, "[rune-indexer] WSS NodePresell subscription error — reconnecting");
+          },
+        }),
+      );
+
+      logger.info({ chainId: runeChainConfig.chainId, wss: runeChainConfig.wssUrl }, "[rune-indexer] WSS subscriptions live");
+    } catch (err) {
+      logger.error({ err }, "[rune-indexer] failed to open WSS subscriptions — falling back to safety-net poll only");
+    }
+  };
+
+  subscribe();
+  return () => unwatchers.forEach((fn) => { try { fn(); } catch { /* ignore */ } });
+}
+
+/** Spawn the RUNE indexer. Cold-start http backfill → open WSS tail → run
+ *  a 5-min safety-net poll. Safe to call once from app boot. */
+export function startRuneIndexer(): void {
   const { community, nodePresell, chainId } = runeChainConfig;
   const zero = "0x0000000000000000000000000000000000000000";
   if (community.toLowerCase() === zero || nodePresell.toLowerCase() === zero) {
@@ -147,6 +203,24 @@ export function startRuneIndexer() {
     return;
   }
 
+  // 1. Initial backfill (blocks the WSS subscription so we don't double-
+  //    insert across the boundary — once cursor catches up, WSS takes over).
+  void (async () => {
+    try {
+      const head = await runePublicClient.getBlockNumber();
+      await scanContract("community", head);
+      await scanContract("nodePresell", head);
+      logger.info({ chainId, head: String(head) }, "[rune-indexer] cold-start backfill complete");
+    } catch (err) {
+      logger.error({ err }, "[rune-indexer] cold-start backfill failed");
+    } finally {
+      // 2. Open WSS tail regardless — even if backfill failed, we want
+      //    real-time events flowing while the operator investigates.
+      startSubscriptions();
+    }
+  })();
+
+  // 3. Safety-net poll — closes any gap WSS might leave on reconnect.
   let running = false;
   const tick = async () => {
     if (running) return;
@@ -156,14 +230,12 @@ export function startRuneIndexer() {
       await scanContract("community", head);
       await scanContract("nodePresell", head);
     } catch (err) {
-      logger.error({ err }, "[rune-indexer] tick failed");
+      logger.error({ err }, "[rune-indexer] safety-net poll failed");
     } finally {
       running = false;
     }
   };
+  setInterval(tick, SAFETY_POLL_MS);
 
-  // Kick an initial sync immediately, then schedule.
-  void tick();
-  setInterval(tick, POLL_INTERVAL_MS);
-  logger.info({ chainId, intervalMs: POLL_INTERVAL_MS }, "[rune-indexer] started");
+  logger.info({ chainId, safetyPollMs: SAFETY_POLL_MS }, "[rune-indexer] started (WSS + safety-net poll)");
 }
