@@ -1,0 +1,8 @@
+# Cloudflare Pages — proxy /api/* to the testnet api-server (Railway).
+# Without this rule the SPA fallback below would catch login POSTs and
+# return index.html, breaking auth with a JSON parse error.
+/api/*    https://runeapi-server-production.up.railway.app/api/:splat    200
+
+# SPA fallback — every other route serves index.html so wouter routes
+# resolve client-side.
+/*        /index.html    200

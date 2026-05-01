@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 
 const ALLOWED_HOSTS = [
   "abc.rune-ai.xyz",
+  "rune-admin.pages.dev",
 ];
 
 const DEV_HOST_PATTERNS = [
@@ -10,6 +11,7 @@ const DEV_HOST_PATTERNS = [
   /\.replit\.app$/i,
   /^localhost$/i,
   /^127\.0\.0\.1$/,
+  /\.rune-admin\.pages\.dev$/i, // Cloudflare per-deploy hashed previews
 ];
 
 function isAllowedHost(host: string) {
