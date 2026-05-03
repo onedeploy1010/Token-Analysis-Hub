@@ -2,7 +2,8 @@ import { ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { SwapWidget } from "thirdweb/react";
-import { runeChain } from "@/lib/thirdweb/chains";
+import { runeChain, runeChainKey } from "@/lib/thirdweb/chains";
+import { getRuneAddresses } from "@/lib/thirdweb/addresses";
 import { thirdwebClient } from "@/lib/thirdweb/client";
 import { PageEnter } from "@dashboard/components/page-enter";
 
@@ -44,6 +45,11 @@ export default function ProfileSwapPage() {
   const { t, i18n } = useTranslation();
   const [, navigate] = useLocation();
   const tdwLocale = pickThirdwebLocale(i18n.language);
+  // Pre-fill both sides on BSC so the widget doesn't probe Ethereum (chain 1)
+  // RPC for cross-chain quotes — that probe was 401-ing because the thirdweb
+  // client ID isn't whitelisted for chain 1 in the dashboard.
+  const { usdt } = getRuneAddresses(runeChainKey);
+  const bscChainId = runeChain.id;
 
   return (
     <PageEnter>
@@ -75,9 +81,12 @@ export default function ProfileSwapPage() {
           >
             <SwapWidget
               client={thirdwebClient}
-              chain={runeChain}
               theme="dark"
               showThirdwebBranding={false}
+              prefill={{
+                sellToken: { chainId: bscChainId },
+                buyToken: { chainId: bscChainId, tokenAddress: usdt },
+              }}
               connectOptions={{
                 connectModal: { locale: tdwLocale },
               }}

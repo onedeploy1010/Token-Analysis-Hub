@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AdminAuthProvider, RequireAdmin } from "@/contexts/admin-auth";
 import AdminLayout from "@/components/admin-layout";
+import { MemberDetailProvider, MemberDetailHost } from "@/components/member-detail";
 import HostGate from "@/components/host-gate";
 import LoginPage from "@/pages/login";
 import ResourcesList from "@/pages/resources-list";
@@ -17,6 +18,8 @@ import NodesPage from "@/pages/admin/nodes";
 import RewardsPage from "@/pages/admin/rewards";
 import ContractsPage from "@/pages/admin/contracts";
 import SystemHealthPage from "@/pages/admin/system-health";
+import AdminRolesPage from "@/pages/admin/admin-roles";
+import TagsPage from "@/pages/admin/tags";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 30_000 } },
@@ -25,6 +28,7 @@ const queryClient = new QueryClient({
 function AdminRoutes() {
   return (
     <RequireAdmin>
+      <MemberDetailProvider>
       <AdminLayout>
         <Switch>
           <Route path="/dashboard" component={DashboardPage} />
@@ -35,6 +39,8 @@ function AdminRoutes() {
           <Route path="/rewards" component={RewardsPage} />
           <Route path="/contracts" component={ContractsPage} />
           <Route path="/system-health" component={SystemHealthPage} />
+          <Route path="/admin-roles" component={AdminRolesPage} />
+          <Route path="/tags" component={TagsPage} />
           <Route path="/resources/new" component={ResourceForm} />
           <Route path="/resources/:id/edit" component={ResourceForm} />
           <Route path="/resources" component={ResourcesList} />
@@ -43,6 +49,8 @@ function AdminRoutes() {
           </Route>
         </Switch>
       </AdminLayout>
+      <MemberDetailHost />
+      </MemberDetailProvider>
     </RequireAdmin>
   );
 }

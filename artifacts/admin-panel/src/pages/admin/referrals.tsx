@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "./page-shell";
 import { supabase, adminChainId, w } from "@/lib/supabase";
-import { Loader2, Users, ChevronRight, ChevronDown, ArrowUp, Search } from "lucide-react";
+import { AddressButton } from "@/components/member-detail";
+import { TagChipsForAddress } from "@/components/tags/tag-chip";
+import { Loader2, Users, ChevronRight, ChevronDown, ArrowUp, Search, Crosshair } from "lucide-react";
 
 /**
  * Referrals page — drill-down tree built from rune_referrers.
@@ -120,18 +122,26 @@ export default function ReferralsPage() {
 
       {/* Upline breadcrumb */}
       {uplineTrail.length > 1 && (
-        <div className="flex items-center gap-1 flex-wrap text-[11px] text-muted-foreground mb-3 p-2 rounded-lg border border-border/40 bg-card/30">
-          <ArrowUp className="h-3 w-3" />
-          <span className="mr-1">上溯路径:</span>
+        <div className="flex items-start gap-1 flex-wrap text-[11px] text-muted-foreground mb-3 p-2 rounded-lg border border-border/40 bg-card/30">
+          <ArrowUp className="h-3 w-3 mt-1 shrink-0" />
+          <span className="mr-1 mt-0.5">上溯路径:</span>
           {uplineTrail.map((addr, i) => (
-            <span key={addr} className="flex items-center gap-1">
-              <button
-                onClick={() => { setRoot(addr); setExpanded(new Set([addr])); }}
-                className={`font-mono px-1.5 py-0.5 rounded hover:bg-muted/40 ${addr === root ? "text-primary font-semibold" : ""}`}
-              >
-                {addr === ROOT ? "ROOT" : `${addr.slice(0, 6)}…${addr.slice(-4)}`}
-              </button>
-              {i < uplineTrail.length - 1 && <ChevronRight className="h-3 w-3 opacity-40" />}
+            <span key={addr} className="flex items-center gap-1 break-all">
+              {addr === ROOT ? (
+                <span className="text-amber-300 font-semibold">ROOT</span>
+              ) : (
+                <span className={`inline-flex items-center gap-1 ${addr === root ? "ring-1 ring-primary/40 rounded px-1" : ""}`}>
+                  <AddressButton addr={addr} hideExplorer />
+                  <button
+                    onClick={() => { setRoot(addr); setExpanded(new Set([addr])); }}
+                    className="p-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-primary"
+                    title="聚焦此地址子树"
+                  >
+                    <Crosshair className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {i < uplineTrail.length - 1 && <ChevronRight className="h-3 w-3 opacity-40 shrink-0" />}
             </span>
           ))}
         </div>
@@ -184,25 +194,33 @@ function TreeNode({ address, depth, childrenOf, expanded, onToggle, onFocus }: T
   return (
     <div>
       <div
-        className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-muted/30"
+        className="flex items-start gap-2 py-1.5 px-2 rounded hover:bg-muted/30 flex-wrap"
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
         <button
           onClick={() => hasKids && onToggle(address)}
-          className={`p-0.5 rounded ${hasKids ? "text-muted-foreground hover:text-foreground" : "opacity-30 cursor-default"}`}
+          className={`p-0.5 rounded mt-0.5 shrink-0 ${hasKids ? "text-muted-foreground hover:text-foreground" : "opacity-30 cursor-default"}`}
         >
           {hasKids ? (isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />) : <span className="inline-block w-3.5" />}
         </button>
-        <Users className={`h-3.5 w-3.5 ${isRoot ? "text-amber-400" : "text-muted-foreground"}`} />
-        <button
-          onClick={() => onFocus(address)}
-          className={`font-mono text-[12px] hover:text-primary transition-colors ${isRoot ? "text-amber-300 font-semibold" : "text-foreground/85"}`}
-          title={address}
-        >
-          {isRoot ? "ROOT" : `${address.slice(0, 12)}…${address.slice(-8)}`}
-        </button>
+        <Users className={`h-3.5 w-3.5 mt-1 shrink-0 ${isRoot ? "text-amber-400" : "text-muted-foreground"}`} />
+        {isRoot ? (
+          <span className="text-amber-300 font-semibold text-[12px] mt-0.5">ROOT</span>
+        ) : (
+          <span className="inline-flex items-center gap-1 max-w-full">
+            <AddressButton addr={address} hideExplorer />
+            <button
+              onClick={() => onFocus(address)}
+              className="p-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-primary shrink-0"
+              title="聚焦此地址子树"
+            >
+              <ChevronRight className="h-3 w-3" />
+            </button>
+          </span>
+        )}
+        <TagChipsForAddress address={address} compact />
         {hasKids && (
-          <span className="text-[10px] text-muted-foreground ml-1">{kids.length} 直推</span>
+          <span className="text-[10px] text-muted-foreground ml-1 mt-0.5 shrink-0">{kids.length} 直推</span>
         )}
       </div>
       {isOpen && kids.map((k) => (

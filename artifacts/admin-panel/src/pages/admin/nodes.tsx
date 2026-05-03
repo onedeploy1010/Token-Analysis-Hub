@@ -3,6 +3,8 @@ import { PageShell } from "./page-shell";
 import { StatsCard } from "@/components/stats-card";
 import { MobileDataCard } from "@/components/mobile-card";
 import { supabase, adminChainId, fmtUsdt18 } from "@/lib/supabase";
+import { AddressButton, TxHashLink } from "@/components/member-detail";
+import { TagChipsForAddress } from "@/components/tags/tag-chip";
 import { Loader2, Server } from "lucide-react";
 
 /**
@@ -136,14 +138,17 @@ export default function NodesPage() {
               </thead>
               <tbody>
                 {filtered.slice(0, 100).map((r) => (
-                  <tr key={`${r.txHash}-${r.user}`} className="border-t border-border/40 hover:bg-muted/20">
-                    <td className="px-4 py-2.5 font-mono text-xs">{r.user.slice(0, 12)}…{r.user.slice(-8)}</td>
+                  <tr key={`${r.txHash}-${r.user}`} className="border-t border-border/40 hover:bg-muted/20 align-top">
+                    <td className="px-4 py-2.5 space-y-1">
+                      <AddressButton addr={r.user} />
+                      <TagChipsForAddress address={r.user} compact />
+                    </td>
                     <td className="px-4 py-2.5">
                       <span className="text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">{r.nodeId}</span>
                     </td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmtUsdt18(r.amount, 0)}</td>
-                    <td className="px-4 py-2.5 text-xs text-muted-foreground">{new Date(r.paidAt).toLocaleString("sv")}</td>
-                    <td className="px-4 py-2.5 font-mono text-[10px] text-muted-foreground">{r.txHash.slice(0, 10)}…{r.txHash.slice(-6)}</td>
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground whitespace-nowrap">{new Date(r.paidAt).toLocaleString("sv")}</td>
+                    <td className="px-4 py-2.5"><TxHashLink hash={r.txHash} /></td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
@@ -164,19 +169,20 @@ export default function NodesPage() {
               <MobileDataCard
                 key={`${r.txHash}-${r.user}`}
                 header={
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[12px] text-foreground/85 truncate">
-                      {r.user.slice(0, 10)}…{r.user.slice(-6)}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
-                      {r.nodeId}
-                    </span>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <AddressButton addr={r.user} />
+                      <span className="text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                        {r.nodeId}
+                      </span>
+                    </div>
+                    <TagChipsForAddress address={r.user} compact />
                   </div>
                 }
                 fields={[
                   { label: "USDT", value: fmtUsdt18(r.amount, 0) },
                   { label: "时间", value: new Date(r.paidAt).toLocaleDateString("sv") },
-                  { label: "tx", value: `${r.txHash.slice(0, 8)}…${r.txHash.slice(-6)}`, mono: true },
+                  { label: "tx",   value: <TxHashLink hash={r.txHash} /> },
                 ]}
               />
             ))}

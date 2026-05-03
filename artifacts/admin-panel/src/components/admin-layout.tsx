@@ -11,6 +11,8 @@ import {
   FileCode2,
   HeartPulse,
   FileText,
+  ShieldCheck,
+  Tag,
   LogOut,
   Menu,
   X,
@@ -30,7 +32,9 @@ const NAV: Array<{ href: string; label: string; sub: string; icon: typeof Layout
   { href: "/nodes",         label: "节点管理", sub: "Nodes",         icon: Server },
   { href: "/rewards",       label: "奖励管理", sub: "Rewards",       icon: Gift },
   { href: "/contracts",     label: "合约管理", sub: "Contracts",     icon: FileCode2 },
-  { href: "/system-health", label: "环境检查", sub: "System Health", icon: HeartPulse },
+  { href: "/system-health", label: "环境管理", sub: "System Health", icon: HeartPulse },
+  { href: "/admin-roles",   label: "权限管理", sub: "Permissions",   icon: ShieldCheck },
+  { href: "/tags",          label: "标签管理", sub: "Tags",          icon: Tag },
   { href: "/resources",     label: "资料管理", sub: "Resources",     icon: FileText },
 ];
 
