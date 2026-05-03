@@ -81,3 +81,40 @@
   * { @apply border-border; }
   body { @apply font-sans antialiased bg-background text-foreground; }
 }
+
+@layer components {
+  /* Card with soft inset highlight + outer glow — used to give filter
+     bars and KPI tiles a subtle "lifted" look without saturating the
+     panel with too much gold. */
+  .surface-3d {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+      0 1px 0 rgba(255, 255, 255, 0.02),
+      0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Brighter variant for the page-header reactor strip / hero KPI tiles. */
+  .surface-3d-amber {
+    box-shadow:
+      inset 0 1px 0 rgba(251, 191, 36, 0.12),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(251, 191, 36, 0.18),
+      0 8px 24px -10px rgba(251, 191, 36, 0.18),
+      0 18px 40px -20px rgba(0, 0, 0, 0.65);
+  }
+
+  /* Mobile-friendly tap target — applied to icon-only buttons to keep
+     them ≥40×40 px without bloating the visual size. */
+  .tap-target {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Prevent horizontal overflow from sticky-toolbar negative margins on
+   narrow screens. */
+html, body { overflow-x: hidden; }

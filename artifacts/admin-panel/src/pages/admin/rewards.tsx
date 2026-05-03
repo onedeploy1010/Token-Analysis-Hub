@@ -7,6 +7,12 @@ import { AddressButton } from "@/components/member-detail";
 import { TagChipsForAddress } from "@/components/tags/tag-chip";
 import { TagFilter, useTagAddressFilter } from "@/components/tags/tag-filter";
 import {
+  useRowSelection, SelectCell, SelectAllCell,
+  SortHeader, type SortState, compareBy,
+  DateRangeFilter, EMPTY_RANGE, isInRange, type DateRange,
+  BulkToolbar, type CsvColumn,
+} from "@/components/list-toolkit";
+import {
   Loader2, Gift, Coins, Users, Search, Trophy, Network, Megaphone,
   Wallet,
 } from "lucide-react";
@@ -54,44 +60,55 @@ export default function RewardsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    void (async () => {
-      try {
-        const [p, r, vr] = await Promise.all([
-          supabase
-            .from("rune_purchases")
-            .select("user, node_id, amount::text, paid_at, tx_hash")
-            .eq("chain_id", adminChainId)
-            .order("paid_at", { ascending: false })
-            .limit(5000),
-          supabase
-            .from("rune_referrers")
-            .select("user, referrer")
-            .eq("chain_id", adminChainId),
-          supabase
-            .from("system_config")
-            .select("value")
-            .eq("namespace", "rune")
-            .eq("key", "v_level_rules")
-            .maybeSingle(),
-        ]);
-        if (p.error) throw new Error(p.error.message);
-        if (r.error) throw new Error(r.error.message);
-        setPurchases((p.data ?? []).map((row: any) => ({
+    let active = true;
+    const setErr = (m: string) => { if (active) setError((cur) => cur ?? m); };
+
+    // Three independent fetches — referrer-of map alone is enough for
+    // 布道 tab; node-direct + V tabs depend on additional slices that
+    // arrive separately. Each tab below renders its own placeholder
+    // until its specific dependency is ready.
+    void supabase
+      .from("rune_purchases")
+      .select("user, node_id, amount::text, paid_at, tx_hash")
+      .eq("chain_id", adminChainId)
+      .order("paid_at", { ascending: false })
+      .limit(5000)
+      .then((r) => {
+        if (r.error) { setErr(r.error.message); return; }
+        if (!active) return;
+        setPurchases((r.data ?? []).map((row: any) => ({
           user: row.user, nodeId: row.node_id, amountRaw: row.amount,
           paidAt: row.paid_at, txHash: row.tx_hash,
         })));
+      });
+
+    void supabase
+      .from("rune_referrers")
+      .select("user, referrer")
+      .eq("chain_id", adminChainId)
+      .then((r) => {
+        if (r.error) { setErr(r.error.message); return; }
+        if (!active) return;
         const refMap = new Map<string, string>();
         for (const row of r.data ?? []) refMap.set((row as any).user, (row as any).referrer);
         setReferrerOf(refMap);
-        const vv = vr.data?.value;
-        setVRules(Array.isArray(vv) ? vv : []);
-      } catch (e: any) {
-        setError(e?.message ?? "加载失败");
-      }
-    })();
-  }, []);
+      });
 
-  const isLoading = !purchases || !referrerOf;
+    void supabase
+      .from("system_config")
+      .select("value")
+      .eq("namespace", "rune")
+      .eq("key", "v_level_rules")
+      .maybeSingle()
+      .then((r) => {
+        if (r.error && r.error.code !== "PGRST116") { setErr(r.error.message); return; }
+        if (!active) return;
+        const vv = r.data?.value;
+        setVRules(Array.isArray(vv) ? vv : []);
+      });
+
+    return () => { active = false; };
+  }, []);
 
   return (
     <PageShell
@@ -107,19 +124,23 @@ export default function RewardsPage() {
       <Tabs tab={tab} onChange={setTab} />
 
       <div className="mt-4">
-        {isLoading ? (
-          <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
-            <Loader2 className="h-4 w-4 animate-spin" /> 加载中…
-          </div>
-        ) : (
-          <>
-            {tab === "node-direct"  && <NodeDirectTab purchases={purchases!} referrerOf={referrerOf!} />}
-            {tab === "stake-direct" && <StakeDirectTab />}
-            {tab === "v-team"       && <VTeamTab rules={vRules ?? []} />}
-            {tab === "evangelist"   && <EvangelistTab referrerOf={referrerOf!} />}
-            {tab === "holding"      && <HoldingTab />}
-          </>
+        {tab === "node-direct" && (
+          purchases && referrerOf
+            ? <NodeDirectTab purchases={purchases} referrerOf={referrerOf} />
+            : <SkeletonRows count={6} hint="计算节点直推奖励中…" />
         )}
+        {tab === "stake-direct" && <StakeDirectTab />}
+        {tab === "v-team" && (
+          vRules == null
+            ? <SkeletonRows count={9} hint="加载 V 级规则中…" />
+            : <VTeamTab rules={vRules} />
+        )}
+        {tab === "evangelist" && (
+          referrerOf
+            ? <EvangelistTab referrerOf={referrerOf} />
+            : <SkeletonRows count={6} hint="构建组织树中…" />
+        )}
+        {tab === "holding" && <HoldingTab />}
       </div>
     </PageShell>
   );
@@ -163,11 +184,16 @@ function Tabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
 
 /* ───────── 节点直推 ───────── */
 
+type NodeDirectSortKey = "referrer" | "buyersCount" | "totalInflow" | "totalReward" | "lastPaidAt";
+
 function NodeDirectTab({
   purchases, referrerOf,
 }: { purchases: PurchaseRow[]; referrerOf: Map<string, string> }) {
   const [search, setSearch] = useState("");
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange>(EMPTY_RANGE);
+  const [sort, setSort] = useState<SortState<NodeDirectSortKey>>({ key: "totalReward", dir: "desc" });
+  const sel = useRowSelection();
   const tagPredicate = useTagAddressFilter(tagFilter);
 
   const stats = useMemo<ReferrerStat[]>(() => {
@@ -194,13 +220,40 @@ function NodeDirectTab({
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return stats.filter((s) =>
-      (!q || s.referrer.toLowerCase().includes(q)) && tagPredicate(s.referrer),
-    );
-  }, [stats, search, tagPredicate]);
+    let res = stats.filter((s) => {
+      if (q && !s.referrer.toLowerCase().includes(q)) return false;
+      if (!tagPredicate(s.referrer)) return false;
+      if (!isInRange(s.lastPaidAt, dateRange)) return false;
+      return true;
+    });
+    if (sort.key && sort.dir) {
+      const cmp = (() => {
+        switch (sort.key) {
+          case "referrer":    return compareBy<ReferrerStat>((s) => s.referrer.toLowerCase(), sort.dir);
+          case "buyersCount": return compareBy<ReferrerStat>((s) => s.buyersCount, sort.dir);
+          case "totalInflow": return compareBy<ReferrerStat>((s) => s.totalInflowUsdtRaw, sort.dir);
+          case "totalReward": return compareBy<ReferrerStat>((s) => s.totalDirectRewardRaw, sort.dir);
+          case "lastPaidAt":  return compareBy<ReferrerStat>((s) => s.lastPaidAt, sort.dir);
+          default: return () => 0;
+        }
+      })();
+      res = [...res].sort(cmp);
+    }
+    return res;
+  }, [stats, search, tagPredicate, dateRange, sort]);
 
   const totalInflow = filtered.reduce((acc, s) => acc + s.totalInflowUsdtRaw, 0n);
   const totalReward = filtered.reduce((acc, s) => acc + s.totalDirectRewardRaw, 0n);
+  const visiblePaged = filtered.slice(0, 200);
+  const visibleKeys = visiblePaged.map((s) => s.referrer);
+
+  const csvColumns: CsvColumn<ReferrerStat>[] = [
+    { header: "referrer", get: (s) => s.referrer },
+    { header: "buyers_count", get: (s) => s.buyersCount },
+    { header: "total_inflow_usdt_18", get: (s) => s.totalInflowUsdtRaw },
+    { header: "total_direct_reward_usdt_18", get: (s) => s.totalDirectRewardRaw },
+    { header: "last_paid_at", get: (s) => s.lastPaidAt ?? "" },
+  ];
 
   return (
     <>
@@ -232,36 +285,50 @@ function NodeDirectTab({
         <StatsCard title="推荐人数" value={filtered.length} subtitle="发出过奖励的地址" icon={Users} color="#34d399" />
       </div>
 
-      <div className="flex items-center gap-2 mb-3 max-w-md">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="搜推荐人地址 0x… "
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
+      <BulkToolbar
+        selection={sel}
+        rows={visiblePaged}
+        rowKey={(s) => s.referrer}
+        csvColumns={csvColumns}
+        csvFilename="rewards-node-direct"
+      />
 
-      <div className="mb-4">
+      <div className="rounded-2xl border border-border/60 bg-card/30 p-3 space-y-3 mb-4 surface-3d">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-1 min-w-[220px] max-w-md">
+            <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              placeholder="搜推荐人地址 0x… "
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <DateRangeFilter value={dateRange} onChange={setDateRange} label="最后入金" />
+        </div>
         <TagFilter selected={tagFilter} onChange={setTagFilter} />
       </div>
 
       {/* Desktop table */}
-      <div className="hidden lg:block overflow-x-auto rounded-2xl border border-border/60 bg-card/40">
+      <div className="hidden lg:block overflow-x-auto rounded-2xl border border-border/60 bg-card/40 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.4)]">
         <table className="w-full text-sm">
-          <thead className="bg-muted/30 text-[11px] uppercase tracking-wide text-muted-foreground">
+          <thead className="sticky top-0 z-10 bg-muted/40 backdrop-blur text-[11px] uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="text-left px-4 py-3">推荐人 + 标签</th>
-              <th className="text-right px-4 py-3">直推数</th>
-              <th className="text-right px-4 py-3">推广入金 USDT</th>
-              <th className="text-right px-4 py-3">奖励 USDT</th>
-              <th className="text-left px-4 py-3">最后入金</th>
+              <th className="text-center px-3 py-3 w-10"><SelectAllCell visibleKeys={visibleKeys} sel={sel} /></th>
+              <th className="text-left px-4 py-3"><SortHeader columnKey="referrer" current={sort} onChange={setSort}>推荐人 + 标签</SortHeader></th>
+              <th className="text-right px-4 py-3"><SortHeader columnKey="buyersCount" current={sort} onChange={setSort} align="right">直推数</SortHeader></th>
+              <th className="text-right px-4 py-3"><SortHeader columnKey="totalInflow" current={sort} onChange={setSort} align="right">推广入金 USDT</SortHeader></th>
+              <th className="text-right px-4 py-3"><SortHeader columnKey="totalReward" current={sort} onChange={setSort} align="right">奖励 USDT</SortHeader></th>
+              <th className="text-left px-4 py-3"><SortHeader columnKey="lastPaidAt" current={sort} onChange={setSort}>最后入金</SortHeader></th>
             </tr>
           </thead>
           <tbody>
-            {filtered.slice(0, 200).map((s) => (
-              <tr key={s.referrer} className="border-t border-border/40 hover:bg-muted/20 align-top">
+            {visiblePaged.map((s) => (
+              <tr key={s.referrer} className={`border-t border-border/40 align-top transition-colors ${
+                sel.isSelected(s.referrer) ? "bg-primary/[0.06]" : "hover:bg-muted/20"
+              }`}>
+                <td className="text-center px-3 py-2.5"><SelectCell k={s.referrer} sel={sel} /></td>
                 <td className="px-4 py-2.5 space-y-1">
                   <AddressButton addr={s.referrer} />
                   <TagChipsForAddress address={s.referrer} compact />
@@ -276,8 +343,8 @@ function NodeDirectTab({
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">暂无奖励记录</td></tr>
+            {visiblePaged.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">暂无奖励记录</td></tr>
             )}
           </tbody>
         </table>
@@ -290,12 +357,15 @@ function NodeDirectTab({
 
       {/* Mobile cards */}
       <div className="lg:hidden space-y-3">
-        {filtered.slice(0, 50).map((s) => (
+        {visiblePaged.slice(0, 50).map((s) => (
           <MobileDataCard
             key={s.referrer}
             header={
               <div className="flex flex-col gap-1.5">
-                <AddressButton addr={s.referrer} />
+                <div className="flex items-center gap-2">
+                  <SelectCell k={s.referrer} sel={sel} />
+                  <AddressButton addr={s.referrer} />
+                </div>
                 <TagChipsForAddress address={s.referrer} compact />
               </div>
             }
@@ -382,9 +452,13 @@ function VTeamTab({ rules }: { rules: any[] }) {
 
 /* ───────── 布道 ───────── */
 
+type EvangelistSortKey = "referrer" | "direct" | "team";
+
 function EvangelistTab({ referrerOf }: { referrerOf: Map<string, string> }) {
   const [search, setSearch] = useState("");
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+  const [sort, setSort] = useState<SortState<EvangelistSortKey>>({ key: "team", dir: "desc" });
+  const sel = useRowSelection();
   const tagPredicate = useTagAddressFilter(tagFilter);
 
   // Build referrer → direct downlines, then recursively walk to count team
@@ -418,37 +492,74 @@ function EvangelistTab({ referrerOf }: { referrerOf: Map<string, string> }) {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return stats.filter((s) =>
+    let res = stats.filter((s) =>
       (!q || s.referrer.toLowerCase().includes(q)) && tagPredicate(s.referrer),
     );
-  }, [stats, search, tagPredicate]);
+    if (sort.key && sort.dir) {
+      const cmp = (() => {
+        switch (sort.key) {
+          case "referrer": return compareBy<typeof res[number]>((s) => s.referrer.toLowerCase(), sort.dir);
+          case "direct":   return compareBy<typeof res[number]>((s) => s.direct, sort.dir);
+          case "team":     return compareBy<typeof res[number]>((s) => s.team, sort.dir);
+          default: return () => 0;
+        }
+      })();
+      res = [...res].sort(cmp);
+    }
+    return res;
+  }, [stats, search, tagPredicate, sort]);
+
+  const visiblePaged = filtered.slice(0, 200);
+  const visibleKeys = visiblePaged.map((s) => s.referrer);
+
+  const csvColumns: CsvColumn<typeof visiblePaged[number]>[] = [
+    { header: "referrer", get: (s) => s.referrer },
+    { header: "direct_count", get: (s) => s.direct },
+    { header: "team_recursive_count", get: (s) => s.team },
+  ];
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 max-w-md">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="搜推荐人地址 …"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
-      <TagFilter selected={tagFilter} onChange={setTagFilter} />
+      <BulkToolbar
+        selection={sel}
+        rows={visiblePaged}
+        rowKey={(s) => s.referrer}
+        csvColumns={csvColumns}
+        csvFilename="rewards-evangelist"
+      />
 
-      <div className="hidden lg:block overflow-x-auto rounded-2xl border border-border/60 bg-card/40">
+      <div className="rounded-2xl border border-border/60 bg-card/30 p-3 space-y-3 surface-3d">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-1 min-w-[220px] max-w-md">
+            <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              placeholder="搜推荐人地址 …"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+        <TagFilter selected={tagFilter} onChange={setTagFilter} />
+      </div>
+
+      <div className="hidden lg:block overflow-x-auto rounded-2xl border border-border/60 bg-card/40 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.4)]">
         <table className="w-full text-sm">
-          <thead className="bg-muted/30 text-[11px] uppercase tracking-wide text-muted-foreground">
+          <thead className="sticky top-0 z-10 bg-muted/40 backdrop-blur text-[11px] uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="text-left px-4 py-3">推荐人 + 标签</th>
-              <th className="text-right px-4 py-3">直推人数</th>
-              <th className="text-right px-4 py-3">团队人数（递归）</th>
+              <th className="text-center px-3 py-3 w-10"><SelectAllCell visibleKeys={visibleKeys} sel={sel} /></th>
+              <th className="text-left px-4 py-3"><SortHeader columnKey="referrer" current={sort} onChange={setSort}>推荐人 + 标签</SortHeader></th>
+              <th className="text-right px-4 py-3"><SortHeader columnKey="direct" current={sort} onChange={setSort} align="right">直推人数</SortHeader></th>
+              <th className="text-right px-4 py-3"><SortHeader columnKey="team" current={sort} onChange={setSort} align="right">团队人数（递归）</SortHeader></th>
             </tr>
           </thead>
           <tbody>
-            {filtered.slice(0, 200).map((s) => (
-              <tr key={s.referrer} className="border-t border-border/40 hover:bg-muted/20 align-top">
+            {visiblePaged.map((s) => (
+              <tr key={s.referrer} className={`border-t border-border/40 align-top transition-colors ${
+                sel.isSelected(s.referrer) ? "bg-primary/[0.06]" : "hover:bg-muted/20"
+              }`}>
+                <td className="text-center px-3 py-2.5"><SelectCell k={s.referrer} sel={sel} /></td>
                 <td className="px-4 py-2.5 space-y-1">
                   <AddressButton addr={s.referrer} />
                   <TagChipsForAddress address={s.referrer} compact />
@@ -457,20 +568,23 @@ function EvangelistTab({ referrerOf }: { referrerOf: Map<string, string> }) {
                 <td className="px-4 py-2.5 text-right tabular-nums text-amber-300 font-semibold">{s.team}</td>
               </tr>
             ))}
-            {filtered.length === 0 && (
-              <tr><td colSpan={3} className="px-4 py-12 text-center text-muted-foreground">暂无推荐数据</td></tr>
+            {visiblePaged.length === 0 && (
+              <tr><td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">暂无推荐数据</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       <div className="lg:hidden space-y-3">
-        {filtered.slice(0, 50).map((s) => (
+        {visiblePaged.slice(0, 50).map((s) => (
           <MobileDataCard
             key={s.referrer}
             header={
               <div className="flex flex-col gap-1.5">
-                <AddressButton addr={s.referrer} />
+                <div className="flex items-center gap-2">
+                  <SelectCell k={s.referrer} sel={sel} />
+                  <AddressButton addr={s.referrer} />
+                </div>
                 <TagChipsForAddress address={s.referrer} compact />
               </div>
             }
@@ -531,4 +645,18 @@ function Placeholder({
 function pctOf(n: bigint, d: bigint): string {
   if (d === 0n) return "0";
   return (Number((n * 10_000n) / d) / 100).toFixed(2);
+}
+
+/** Cheap pulse-bar skeleton — feels alive while a tab's data lands. */
+function SkeletonRows({ count, hint }: { count: number; hint: string }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" /> {hint}
+      </div>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="h-9 rounded-lg bg-muted/20 animate-pulse" />
+      ))}
+    </div>
+  );
 }

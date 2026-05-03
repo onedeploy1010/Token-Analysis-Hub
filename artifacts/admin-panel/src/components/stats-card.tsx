@@ -24,14 +24,23 @@ export function StatsCard({
   color = "#fbbf24",
 }: StatsCardProps) {
   return (
-    <div className="rounded-2xl p-3.5 lg:p-5 relative overflow-hidden border border-border/60 bg-card/40">
+    <div
+      className="rounded-2xl p-3.5 lg:p-5 relative overflow-hidden border bg-card/40 surface-3d transition-all hover:border-[color:var(--card-border)] hover:-translate-y-0.5"
+      style={{ borderColor: `${color}25` }}
+    >
       <div
         aria-hidden
-        className="absolute top-0 right-0 w-20 h-20 opacity-[0.08] pointer-events-none"
+        className="absolute top-0 right-0 w-24 h-24 opacity-[0.14] pointer-events-none"
         style={{
           background: `radial-gradient(circle, ${color}, transparent 70%)`,
-          filter: "blur(12px)",
+          filter: "blur(14px)",
         }}
+      />
+      {/* Bottom edge accent for added depth */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-px pointer-events-none opacity-50"
+        style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
       />
 
       <div className="relative flex items-start justify-between mb-2.5 lg:mb-3">

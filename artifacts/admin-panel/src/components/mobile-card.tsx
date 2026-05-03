@@ -41,7 +41,7 @@ function CardFieldRow({ label, value, mono }: CardField) {
 
 export function MobileDataCard({ header, fields, actions }: MobileDataCardProps) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+    <div className="rounded-2xl border border-border/60 bg-card/40 p-4 surface-3d active:scale-[0.99] transition-transform">
       <div className="mb-2.5 pb-2.5 border-b border-border/60">{header}</div>
       <div className="divide-y divide-border/40">
         {fields.map((f, i) => (

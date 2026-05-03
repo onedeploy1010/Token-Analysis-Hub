@@ -5,16 +5,18 @@ import { supabase, adminChainId, fmtUsdt18 } from "@/lib/supabase";
 import { AddressButton, TxHashLink } from "@/components/member-detail";
 import { TagChipsForAddress } from "@/components/tags/tag-chip";
 import { TagFilter, useTagAddressFilter } from "@/components/tags/tag-filter";
+import {
+  useRowSelection, SelectCell, SelectAllCell,
+  SortHeader, type SortState, compareBy,
+  DateRangeFilter, EMPTY_RANGE, isInRange, type DateRange,
+  BulkToolbar, type CsvColumn,
+} from "@/components/list-toolkit";
 import { Loader2, Search, ShoppingCart, Coins } from "lucide-react";
 
 /**
- * 订单管理 — two tabs:
- *   • 节点订单 (live) — every rune_purchases row, filterable by tier + tag
- *   • 质押订单 (TBD)  — placeholder until rune_stake_orders is wired
- *
- * Filters: tier (5 buttons), address search, tag intersection. Aggregates
- * (count + total USDT) recompute against the post-filter set so the
- * subtitle and KPI numbers reflect what's on screen.
+ * 订单管理 — 节点订单 (rune_purchases) tab is live with full toolkit
+ * (multi-select, sort, tag/date filters, bulk copy/CSV/tag). 质押订单
+ * tab waits on rune_stake_orders.
  */
 
 type Tab = "node" | "staking";
@@ -37,6 +39,8 @@ interface Purchase {
   blockNumber: number;
 }
 
+type SortKey = "user" | "nodeId" | "amount" | "paidAt";
+
 export default function OrdersPage() {
   const [tab, setTab] = useState<Tab>("node");
   const [rows, setRows] = useState<Purchase[] | null>(null);
@@ -44,11 +48,15 @@ export default function OrdersPage() {
   const [tierFilter, setTierFilter] = useState<number | "all">("all");
   const [search, setSearch] = useState("");
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange>(EMPTY_RANGE);
+  const [sort, setSort] = useState<SortState<SortKey>>({ key: "paidAt", dir: "desc" });
   const [page, setPage] = useState(0);
+  const sel = useRowSelection();
 
   const tagPredicate = useTagAddressFilter(tagFilter);
 
   useEffect(() => {
+    let active = true;
     void (async () => {
       const { data, error } = await supabase
         .from("rune_purchases")
@@ -56,28 +64,54 @@ export default function OrdersPage() {
         .eq("chain_id", adminChainId)
         .order("block_number", { ascending: false })
         .limit(2000);
+      if (!active) return;
       if (error) { setError(error.message); return; }
       setRows((data ?? []).map((r: any) => ({
         user: r.user, nodeId: r.node_id, amount: r.amount, paidAt: r.paid_at,
         txHash: r.tx_hash, blockNumber: r.block_number,
       })));
     })();
+    return () => { active = false; };
   }, []);
 
   const filtered = useMemo(() => {
     if (!rows) return [];
     const q = search.trim().toLowerCase();
-    return rows.filter((r) => {
+    let res = rows.filter((r) => {
       if (tierFilter !== "all" && r.nodeId !== tierFilter) return false;
       if (q && !r.user.toLowerCase().includes(q) && !r.txHash.toLowerCase().includes(q)) return false;
       if (!tagPredicate(r.user)) return false;
+      if (!isInRange(r.paidAt, dateRange)) return false;
       return true;
     });
-  }, [rows, tierFilter, search, tagPredicate]);
+    if (sort.key && sort.dir) {
+      const cmp = (() => {
+        switch (sort.key) {
+          case "user":   return compareBy<Purchase>((r) => r.user.toLowerCase(), sort.dir);
+          case "nodeId": return compareBy<Purchase>((r) => r.nodeId, sort.dir);
+          case "amount": return compareBy<Purchase>((r) => BigInt(r.amount), sort.dir);
+          case "paidAt": return compareBy<Purchase>((r) => r.paidAt, sort.dir);
+          default: return () => 0;
+        }
+      })();
+      res = [...res].sort(cmp);
+    }
+    return res;
+  }, [rows, tierFilter, search, tagPredicate, dateRange, sort]);
 
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const totalUsdtRaw = filtered.reduce((acc, r) => acc + BigInt(r.amount), 0n);
+  const visibleKeys = paged.map((r) => `${r.txHash}-${r.user}`);
+
+  const csvColumns: CsvColumn<Purchase>[] = [
+    { header: "address", get: (r) => r.user },
+    { header: "node_id", get: (r) => r.nodeId },
+    { header: "amount_usdt_18", get: (r) => r.amount },
+    { header: "paid_at", get: (r) => r.paidAt },
+    { header: "tx_hash", get: (r) => r.txHash },
+    { header: "block_number", get: (r) => r.blockNumber },
+  ];
 
   return (
     <PageShell
@@ -93,7 +127,7 @@ export default function OrdersPage() {
           <button
             key={v}
             onClick={() => setTab(v)}
-            className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-colors ${
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors ${
               tab === v ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
             }`}
           >
@@ -118,35 +152,44 @@ export default function OrdersPage() {
         </div>
       ) : (
         <>
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <div className="flex items-center gap-2 flex-1 min-w-[220px] max-w-md">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="搜地址 / tx hash"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-                className="flex-1 px-3 py-2 bg-input border border-border rounded-lg text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-card/40 p-0.5 text-xs">
-              <button
-                onClick={() => { setTierFilter("all"); setPage(0); }}
-                className={`px-3 py-1.5 rounded-md ${tierFilter === "all" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              >全部</button>
-              {TIERS.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => { setTierFilter(t.id); setPage(0); }}
-                  className={`px-3 py-1.5 rounded-md ${tierFilter === t.id ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                  style={tierFilter === t.id ? { color: t.color } : undefined}
-                >{t.id}</button>
-              ))}
-            </div>
-          </div>
+          <BulkToolbar
+            selection={sel}
+            rows={filtered}
+            rowKey={(r) => `${r.txHash}-${r.user}`}
+            csvColumns={csvColumns}
+            csvFilename="orders-node"
+            enableTag={false}
+          />
 
-          <div className="mb-4">
+          {/* Filter bar */}
+          <div className="rounded-2xl border border-border/60 bg-card/30 p-3 space-y-3 mb-4 surface-3d">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 flex-1 min-w-[220px] max-w-md">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  placeholder="搜地址 / tx hash"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+                  className="flex-1 px-3 py-2 bg-input border border-border rounded-lg text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-card/40 p-0.5 text-xs">
+                <button
+                  onClick={() => { setTierFilter("all"); setPage(0); }}
+                  className={`px-3 py-1.5 rounded-md ${tierFilter === "all" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                >全部</button>
+                {TIERS.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => { setTierFilter(t.id); setPage(0); }}
+                    className={`px-3 py-1.5 rounded-md ${tierFilter === t.id ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                    style={tierFilter === t.id ? { color: t.color } : undefined}
+                  >{t.id}</button>
+                ))}
+              </div>
+              <DateRangeFilter value={dateRange} onChange={(r) => { setDateRange(r); setPage(0); }} label="购买日期" />
+            </div>
             <TagFilter selected={tagFilter} onChange={(s) => { setTagFilter(s); setPage(0); }} />
           </div>
 
@@ -157,22 +200,27 @@ export default function OrdersPage() {
           ) : (
             <>
               {/* Desktop table */}
-              <div className="hidden lg:block overflow-x-auto rounded-2xl border border-border/60 bg-card/40">
+              <div className="hidden lg:block overflow-x-auto rounded-2xl border border-border/60 bg-card/40 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.4)]">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/30 text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <thead className="sticky top-0 z-10 bg-muted/40 backdrop-blur text-[11px] uppercase tracking-wide text-muted-foreground">
                     <tr>
-                      <th className="text-left px-4 py-3">买家地址 + 标签</th>
-                      <th className="text-left px-4 py-3">档位</th>
-                      <th className="text-right px-4 py-3">入金 USDT</th>
-                      <th className="text-left px-4 py-3">购买时间</th>
+                      <th className="text-center px-3 py-3 w-10"><SelectAllCell visibleKeys={visibleKeys} sel={sel} /></th>
+                      <th className="text-left px-4 py-3"><SortHeader columnKey="user" current={sort} onChange={setSort}>买家地址 + 标签</SortHeader></th>
+                      <th className="text-left px-4 py-3"><SortHeader columnKey="nodeId" current={sort} onChange={setSort}>档位</SortHeader></th>
+                      <th className="text-right px-4 py-3"><SortHeader columnKey="amount" current={sort} onChange={setSort} align="right">入金 USDT</SortHeader></th>
+                      <th className="text-left px-4 py-3"><SortHeader columnKey="paidAt" current={sort} onChange={setSort}>购买时间</SortHeader></th>
                       <th className="text-left px-4 py-3">tx hash</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paged.map((r) => {
                       const tier = TIERS.find((t) => t.id === r.nodeId);
+                      const k = `${r.txHash}-${r.user}`;
                       return (
-                        <tr key={r.txHash} className="border-t border-border/40 hover:bg-muted/20 align-top">
+                        <tr key={k} className={`border-t border-border/40 align-top transition-colors ${
+                          sel.isSelected(k) ? "bg-primary/[0.06]" : "hover:bg-muted/20"
+                        }`}>
+                          <td className="text-center px-3 py-2.5"><SelectCell k={k} sel={sel} /></td>
                           <td className="px-4 py-2.5 space-y-1">
                             <AddressButton addr={r.user} />
                             <TagChipsForAddress address={r.user} compact />
@@ -195,7 +243,7 @@ export default function OrdersPage() {
                       );
                     })}
                     {paged.length === 0 && (
-                      <tr><td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">无匹配订单</td></tr>
+                      <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">无匹配订单</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -205,13 +253,17 @@ export default function OrdersPage() {
               <div className="lg:hidden space-y-3">
                 {paged.map((r) => {
                   const tier = TIERS.find((t) => t.id === r.nodeId);
+                  const k = `${r.txHash}-${r.user}`;
                   return (
                     <MobileDataCard
-                      key={r.txHash}
+                      key={k}
                       header={
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center justify-between gap-2">
-                            <AddressButton addr={r.user} />
+                            <div className="flex items-center gap-2 min-w-0">
+                              <SelectCell k={k} sel={sel} />
+                              <AddressButton addr={r.user} />
+                            </div>
                             <span
                               className="text-xs px-2 py-0.5 rounded border shrink-0"
                               style={{
@@ -240,9 +292,9 @@ export default function OrdersPage() {
                   <span>第 {page + 1} / {totalPages} 页 · 共 {filtered.length} 条</span>
                   <div className="flex gap-2">
                     <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}
-                      className="px-3 py-1.5 rounded border border-border hover:bg-card disabled:opacity-40">上一页</button>
+                      className="px-3 py-1.5 rounded border border-border hover:bg-card disabled:opacity-40 min-h-[36px]">上一页</button>
                     <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-                      className="px-3 py-1.5 rounded border border-border hover:bg-card disabled:opacity-40">下一页</button>
+                      className="px-3 py-1.5 rounded border border-border hover:bg-card disabled:opacity-40 min-h-[36px]">下一页</button>
                   </div>
                 </div>
               )}

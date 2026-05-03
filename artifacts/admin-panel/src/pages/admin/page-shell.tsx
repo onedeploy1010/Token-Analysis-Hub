@@ -15,16 +15,28 @@ interface Props {
 export function PageShell({ title, subtitle, actions, children }: Props) {
   return (
     <div className="px-4 lg:px-8 py-4 lg:py-6 space-y-4 lg:space-y-6">
-      <header className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-lg lg:text-2xl font-bold text-foreground tracking-tight truncate">
+      <header className="relative flex items-start justify-between gap-3 flex-wrap pb-3 border-b border-border/40">
+        {/* Top accent line — subtle amber pulse so the chrome looks
+           intentional instead of empty. */}
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+        <div className="min-w-0 flex-1">
+          <h1
+            className="text-xl lg:text-3xl font-black tracking-tight truncate"
+            style={{
+              background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 30%, #fbbf24 70%, #d97706 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.45))",
+            }}
+          >
             {title}
           </h1>
           {subtitle && (
-            <p className="text-xs lg:text-sm text-muted-foreground mt-0.5">{subtitle}</p>
+            <p className="text-[11px] lg:text-xs text-muted-foreground mt-1 leading-relaxed">{subtitle}</p>
           )}
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
       </header>
       <section>{children}</section>
     </div>

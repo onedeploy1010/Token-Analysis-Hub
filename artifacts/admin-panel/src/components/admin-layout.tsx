@@ -53,22 +53,22 @@ function NavList({ location, onNavigate }: { location: string; onNavigate?: () =
             key={href}
             href={href}
             onClick={onNavigate}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${
+            className={`relative flex items-center gap-3 px-3 py-3 rounded-lg transition-all group min-h-[44px] ${
               active
-                ? "bg-sidebar-accent text-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
+                ? "bg-gradient-to-r from-amber-500/[0.18] via-amber-500/[0.10] to-transparent text-foreground border border-amber-500/30 shadow-[inset_0_1px_0_rgba(251,191,36,0.15)]"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-foreground border border-transparent"
             }`}
           >
             <Icon
-              className={`h-4 w-4 shrink-0 ${
+              className={`h-4 w-4 shrink-0 transition-colors ${
                 active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
               }`}
             />
             <div className="min-w-0">
-              <p className="text-sm font-medium leading-none truncate">{label}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{sub}</p>
+              <p className={`text-sm leading-none truncate ${active ? "font-bold" : "font-medium"}`}>{label}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 truncate">{sub}</p>
             </div>
-            {active && <div className="ml-auto w-1 h-4 rounded-full bg-primary shrink-0" />}
+            {active && <div className="ml-auto w-1 h-5 rounded-full bg-primary shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.7)]" />}
           </Link>
         );
       })}
