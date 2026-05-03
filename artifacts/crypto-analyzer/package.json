@@ -41,6 +41,7 @@
     "@replit/vite-plugin-cartographer": "catalog:",
     "@replit/vite-plugin-dev-banner": "catalog:",
     "@replit/vite-plugin-runtime-error-modal": "catalog:",
+    "@rune/api-client-react": "workspace:*",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-query": "catalog:",
@@ -48,7 +49,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "@rune/api-client-react": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "^1.1.1",
@@ -78,9 +78,12 @@
     "@supabase/supabase-js": "^2.48.0",
     "graphql": "^16.11.0",
     "graphql-request": "^7.2.0",
+    "i18next": "^26.0.8",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
+    "lightweight-charts": "^4.2.3",
     "react-countup": "^6.5.3",
+    "react-i18next": "^17.0.6",
     "thirdweb": "^5.90.0",
     "zustand": "^5.0.12"
   }

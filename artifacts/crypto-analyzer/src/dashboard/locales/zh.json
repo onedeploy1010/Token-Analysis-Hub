@@ -336,8 +336,8 @@
     "dydxVault": "dYdX 金库",
     "flexible": "灵活 · 无锁定",
     "daily": "日收益",
-    "pageTitle": "符库",
-    "pageSubtitle": "锁仓 · 销毁 · 底池沉淀",
+    "pageTitle": "Rune 池",
+    "pageSubtitle": "募集 → 上线 → 飞轮",
     "tabLock": "锁仓",
     "tabLockDesc": "锁仓 RUNE · 获得 veRUNE",
     "tabBurn": "销毁",
@@ -396,8 +396,8 @@
       "notReadyTitle": "即将开放",
       "notReadyDesc": "EMBER 销毁质押将在协议正式上线后开放。"
     },
-    "tabPool": "金库",
-    "tabPoolDesc": "底池沉淀 · 交易资金",
+    "tabPool": "Rune 池",
+    "tabPoolDesc": "募集 → 上线 → 飞轮",
     "lpPool": {
       "title": "底池沉淀",
       "subtitle": "节点入金 · 链上底池",

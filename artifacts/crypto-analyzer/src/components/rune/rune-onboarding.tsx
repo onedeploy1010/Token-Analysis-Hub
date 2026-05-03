@@ -91,16 +91,20 @@ export function RuneOnboarding() {
       return;
     }
 
-    // Bound (purchased OR not) — proceed to /dashboard. The dashboard
-    // itself shows the restricted view + persistent buy-node CTA when
-    // hasPurchased is false. Per 2026-04-29 user direction, we no longer
-    // hard-gate the dashboard on a purchase; the restricted view explains
-    // that referral commission requires owning a node.
-    if (isBound) {
+    // Bound (purchased OR not) — proceed to /app/profile, but ONLY when the
+    // user is currently sitting on an onboarding/landing surface. Otherwise
+    // this effect runs on every page mount and steals navigation away from
+    // any link the user just clicked (e.g. clicking 「查看分析」 on /app/vault
+    // would land on /projects/rune for one tick, then this effect would
+    // immediately punt them back to /app/profile). Restricting to landing
+    // pages preserves the post-bind redirect on first connect while letting
+    // bound users freely navigate content pages afterwards.
+    const ONBOARDING_PATHS = new Set(["/", "/recruit", "/dashboard"]);
+    if (isBound && ONBOARDING_PATHS.has(location)) {
       navigate("/app/profile");
       return;
     }
-  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate]);
+  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate, location]);
 
   return (
     <>

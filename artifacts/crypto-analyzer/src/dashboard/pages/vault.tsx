@@ -4,7 +4,7 @@ import { cn } from "@dashboard/lib/utils";
 import { RuneLockSection } from "@dashboard/components/vault/rune-lock-section";
 import { EmberBurnSection } from "@dashboard/components/vault/ember-burn-section";
 import { VaultLpPool } from "@dashboard/components/vault/vault-lp-pool";
-import { VaultCharts } from "@dashboard/components/vault/vault-charts";
+import { VaultCharts, VaultRecruitment } from "@dashboard/components/vault/vault-charts";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { PageEnter, SubTabSwitch } from "@dashboard/components/page-enter";
@@ -96,9 +96,19 @@ export default function Vault() {
               </p>
             </div>
           </div>
-          {/* 查看分析 — links to mainnet RUNE project analytics page */}
+          {/* 查看分析 — links to mainnet RUNE project analytics page.
+              Opens in a NEW TAB intentionally:
+                1) Keeps the user's place on /app/vault (no lost scroll/tab
+                   selection when they come back).
+                2) Defence-in-depth against any global onboarding effect
+                   firing on the freshly-mounted /projects/rune page and
+                   stealing navigation back to /app/profile (the original
+                   bug the user reported). The new-tab boot is fully
+                   isolated from the dashboard's mounted state. */}
           <a
             href="/projects/rune"
+            target="_blank"
+            rel="noopener noreferrer"
             className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-[1.03] active:scale-95"
             style={{
               background: "linear-gradient(135deg, rgba(96,165,250,0.20), rgba(59,130,246,0.10))",
@@ -152,6 +162,10 @@ export default function Vault() {
         <SubTabSwitch tabKey={activeTab}>
           {activeTab === "pool" && (
             <div className="space-y-4 pb-4">
+              {/* Recruitment + LP target progress pinned to the top of the
+                  pool tab so users see where the launch trigger stands
+                  before scrolling into pool-composition details. */}
+              <VaultRecruitment />
               <VaultLpPool />
               <VaultCharts />
             </div>
