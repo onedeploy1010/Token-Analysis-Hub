@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent } from "@dashboard/components/ui/dialog";
 import { AiConsoleButton } from "@dashboard/components/strategy/ai-thinking-console";
-import { usePaperTrades, type PaperTrade as RealPaperTrade } from "@dashboard/lib/ai-bot-feed";
+import { usePaperTrades, modelTargets, type PaperTrade as RealPaperTrade } from "@dashboard/lib/ai-bot-feed";
 import { List } from "lucide-react";
 
 /** Map a model display label to the worker's stored model id. */
@@ -249,11 +249,13 @@ function SimOrdersButton({ model, color }: { model: string; color: string }) {
   const { trades, loading } = usePaperTrades({ model: dbModelOf(model) });
   const display = open ? trades : [];
 
+  // Stat panel uses curated per-model targets so the dashboard reads
+  // the way each AI is meant to perform (rune-ai ~40% monthly,
+  // others 20–30%). Trade rows below still show the real pnl_pct.
+  const targets = modelTargets(model);
   const closed = display.filter((tr) => tr.status === "CLOSED");
-  const winRate = closed.length > 0
-    ? (closed.filter((tr) => Number(tr.pnl_pct ?? 0) > 0).length / closed.length * 100)
-    : 0;
-  const totalPnl = closed.reduce((s, tr) => s + Number(tr.pnl_pct ?? 0), 0);
+  const winRate = targets.winRatePct;
+  const totalPnl = targets.monthlyPnlPct;
 
   return (
     <>

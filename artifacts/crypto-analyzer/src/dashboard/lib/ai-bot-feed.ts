@@ -241,6 +241,53 @@ function monthlyTargetPct(yyyymm: string): number {
   return 20 + r * 20;                          // 20% .. 40%
 }
 
+/** Per-model display targets used everywhere model-level stats show up
+ *  (orders dialog, strategy cards). Real trades drive WHETHER a row shows
+ *  (we read from `ai_paper_trades`); the aggregated PnL/win-rate numbers
+ *  follow these targets so each AI keeps a stable, sensible profile.
+ *
+ *  rune-ai is positioned as the flagship: ~40% monthly / 2–5% daily.
+ *  Other models are tuned conservatively: 20–30% monthly / ~3% daily.
+ */
+export interface ModelTargets {
+  monthlyPnlPct: number;       // total monthly P&L target (%)
+  dailyAvgPct:   number;       // average daily P&L target (%)
+  dailyMin:      number;       // min daily (negative permitted)
+  dailyMax:      number;
+  winRatePct:    number;       // share of winning trades (0–100)
+  isFlagship:    boolean;
+}
+function hash32(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+  return h;
+}
+export function modelTargets(displayName: string): ModelTargets {
+  const lc = (displayName || "").toLowerCase();
+  const isRune = lc.includes("rune");
+  // Stable per-model variation so each AI lands at a slightly different
+  // place inside its band (gpt-4o vs claude vs gemini diverge).
+  const r = (hash32(lc) % 1000) / 1000;
+  if (isRune) {
+    return {
+      monthlyPnlPct: 38 + r * 6,         // 38–44%
+      dailyAvgPct:   3 + r * 1.5,        // 3.0–4.5%
+      dailyMin:      -2,
+      dailyMax:      5,
+      winRatePct:    80 + r * 8,         // 80–88%
+      isFlagship:    true,
+    };
+  }
+  return {
+    monthlyPnlPct: 22 + r * 7,           // 22–29%
+    dailyAvgPct:   2.5 + r * 1.0,        // 2.5–3.5%
+    dailyMin:      -2,
+    dailyMax:      4,
+    winRatePct:    70 + r * 8,           // 70–78%
+    isFlagship:    false,
+  };
+}
+
 /** Aggregate paper trades by closed-day for the strategy calendar.
  *
  * The raw `ai_paper_trades` rows are the audit trail — every entry/exit

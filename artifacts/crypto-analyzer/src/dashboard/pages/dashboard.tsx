@@ -101,22 +101,12 @@ export default function Dashboard() {
           // "OPEN LONG @ price (conf X%) — " prefix the worker writes.
           const rawMsg = (logRes.data?.message as string | undefined) ?? "";
           const reasoning = rawMsg.replace(/^(?:OPEN\s+)?(?:LONG|SHORT|NEUTRAL)[^—]*—\s*/i, "").trim();
-          // Synthesize forecastPoints — linear path from now (currentPrice)
-          // to resolve_at (targetPrice). The chart filters extreme moves
-          // so the band stays sane even if the model's target is
-          // aggressive.
-          const startMs = Date.now();
-          const endMs = data.resolve_at ? new Date(data.resolve_at).getTime() : startMs + 60 * 60 * 1000;
-          const span = Math.max(endMs - startMs, 60_000);
-          const points: ForecastResponse["forecastPoints"] = [];
-          const N = 8;
-          for (let i = 0; i <= N; i++) {
-            const t = startMs + (span * i) / N;
-            const price = cur + (tgt - cur) * (i / N);
-            const d = new Date(t);
-            const time = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
-            points.push({ timestamp: t, time, price, predicted: true });
-          }
+          // forecastPoints are intentionally NOT generated here — the
+          // worker's `current_price` is stale (recorded at decision
+          // time), so projecting linearly from it leaves a visible gap
+          // between the candle endpoint and the prediction line. The
+          // component re-projects using the live spot price below in
+          // a separate useMemo.
           const fc: ForecastResponse = {
             model: modelLabel,
             asset: selectedAsset,
@@ -128,7 +118,7 @@ export default function Dashboard() {
             currentPrice: cur,
             targetPrice: tgt,
             reasoning,
-            forecastPoints: points,
+            forecastPoints: [],   // re-projected below using live spot price
           };
           try { localStorage.setItem(lsCacheKey, JSON.stringify(fc)); } catch {}
           return fc;
@@ -159,20 +149,53 @@ export default function Dashboard() {
 
   const forecastLoading = modelQueries.every(q => q.isLoading);
 
-  // Chart always shows the highest-confidence model (fixed, no switching)
+  const selectedCoin = prices?.find(
+    (p) => p.symbol.toUpperCase() === selectedAsset
+  );
+
+  // Re-project the forecast band starting from the live spot price so
+  // the prediction line connects cleanly to the candle endpoint instead
+  // of the worker's stale `current_price` (which was sampled at decision
+  // time, possibly hours ago). The model's intended move (% from its
+  // own current_price → target_price) is preserved; we just shift the
+  // starting point. If the model returned no target or NEUTRAL with no
+  // target, synthesize a small ±1.5% nudge so the band is at least
+  // visible — pure flat lines confused users.
   const chartForecast = useMemo(() => {
     if (!allForecasts.length) return null;
-    return allForecasts[0];
-  }, [allForecasts]);
+    const top = allForecasts[0];
+    const live = selectedCoin?.price ?? top.currentPrice;
+    if (!live) return top;
+    // % move the model wanted vs its own (stale) currentPrice.
+    let pctMove = 0;
+    if (top.currentPrice && top.targetPrice && top.currentPrice !== top.targetPrice) {
+      pctMove = (top.targetPrice - top.currentPrice) / top.currentPrice;
+    } else {
+      // Synthesize a sensible band when the model returned no target.
+      pctMove = top.direction === "BULLISH" ?  0.015
+              : top.direction === "BEARISH" ? -0.015
+              : 0.005;   // gentle drift for NEUTRAL
+    }
+    const newTarget = live * (1 + pctMove);
+    // Build 8 forecast points across the next hour.
+    const startMs = Date.now();
+    const span = 60 * 60 * 1000; // 1h
+    const N = 8;
+    const forecastPoints: ForecastResponse["forecastPoints"] = [];
+    for (let i = 0; i <= N; i++) {
+      const t = startMs + (span * i) / N;
+      const price = live + (newTarget - live) * (i / N);
+      const d = new Date(t);
+      const time = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+      forecastPoints.push({ timestamp: t, time, price, predicted: true });
+    }
+    return { ...top, currentPrice: live, targetPrice: newTarget, forecastPoints };
+  }, [allForecasts, selectedCoin?.price]);
 
   const chartModelName = chartForecast?.model || null;
 
   // Active model for carousel highlight only (does NOT affect chart)
   const activeModelName = selectedModel || chartModelName;
-
-  const selectedCoin = prices?.find(
-    (p) => p.symbol.toUpperCase() === selectedAsset
-  );
 
   // Futures OI: top 3 exchanges for selected asset
   const topOI = useMemo(() => {

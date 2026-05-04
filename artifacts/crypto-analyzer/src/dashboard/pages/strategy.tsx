@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { copyText } from "@dashboard/lib/copy";
-import { useDailyPnl } from "@dashboard/lib/ai-bot-feed";
+import { useDailyPnl, modelTargets } from "@dashboard/lib/ai-bot-feed";
 import { getCalendarDays as getCalendarDaysReal } from "@dashboard/components/strategy/strategy-header";
 import { Card, CardContent } from "@dashboard/components/ui/card";
 import { Button } from "@dashboard/components/ui/button";
@@ -70,9 +70,22 @@ const RISK_COLORS: Record<string, string> = {
   high: "text-red-400 border-red-500/25 bg-red-500/10",
 };
 
+/** Per-model display stats, curated to spec:
+ *    rune_ai → ~40% monthly P&L, daily 2–5%
+ *    others  → 20–30% monthly P&L, daily ~3%
+ *  Each model still gets a stable per-key variance so the cards aren't
+ *  identical. `totalTrades` + `openCount` use a hash-based shuffle to
+ *  match the original visual diversity. */
 function seededStats(key: string) {
+  const targets = modelTargets(key);
   const seed = key.charCodeAt(0) + key.charCodeAt(key.length - 1);
-  return { winRate: 54 + (seed % 28), totalTrades: 40 + (seed % 120), pnl: ((seed % 30) - 5) * 1.2, openCount: seed % 4, confidence: 55 + (seed % 35) };
+  return {
+    winRate: targets.winRatePct,
+    totalTrades: 60 + (seed % 80),
+    pnl: targets.monthlyPnlPct,
+    openCount: 1 + (seed % 4),
+    confidence: 55 + (seed % 35),
+  };
 }
 
 interface PaperTrade { id: string; asset: string; side: string; entry_price: number; pnl: number | null; strategy_type: string | null; status: string; opened_at: string; }
