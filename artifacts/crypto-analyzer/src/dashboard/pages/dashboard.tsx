@@ -71,18 +71,52 @@ export default function Dashboard() {
       return {
         queryKey: ["ai-prediction-row", dbAsset, selectedTimeframe, modelLabel, lang],
         queryFn: async (): Promise<ForecastResponse | null> => {
-          // Pull this model's most-recent prediction for this asset.
-          const { data, error } = await supabase
-            .from("ai_predictions")
-            .select("model, asset, timeframe, direction, current_price, target_price, confidence, predicted_at")
-            .eq("model", dbModel)
-            .eq("asset", dbAsset)
-            .order("predicted_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (error || !data) return null;
+          // 1. Most-recent prediction = direction + target.
+          // 2. Most-recent "result" log line = model's natural-language rationale.
+          // Run in parallel since they're independent rows.
+          const [predRes, logRes] = await Promise.all([
+            supabase
+              .from("ai_predictions")
+              .select("direction, current_price, target_price, confidence, predicted_at, resolve_at")
+              .eq("model", dbModel)
+              .eq("asset", dbAsset)
+              .order("predicted_at", { ascending: false })
+              .limit(1)
+              .maybeSingle(),
+            supabase
+              .from("ai_console_logs")
+              .select("message, ts")
+              .eq("model", dbModel)
+              .eq("asset", dbAsset)
+              .eq("level", "result")
+              .order("ts", { ascending: false })
+              .limit(1)
+              .maybeSingle(),
+          ]);
+          if (predRes.error || !predRes.data) return null;
+          const data = predRes.data;
           const cur = Number(data.current_price ?? 0);
           const tgt = Number(data.target_price ?? cur);
+          // Reasoning = model's natural-language line, stripped of the
+          // "OPEN LONG @ price (conf X%) — " prefix the worker writes.
+          const rawMsg = (logRes.data?.message as string | undefined) ?? "";
+          const reasoning = rawMsg.replace(/^(?:OPEN\s+)?(?:LONG|SHORT|NEUTRAL)[^—]*—\s*/i, "").trim();
+          // Synthesize forecastPoints — linear path from now (currentPrice)
+          // to resolve_at (targetPrice). The chart filters extreme moves
+          // so the band stays sane even if the model's target is
+          // aggressive.
+          const startMs = Date.now();
+          const endMs = data.resolve_at ? new Date(data.resolve_at).getTime() : startMs + 60 * 60 * 1000;
+          const span = Math.max(endMs - startMs, 60_000);
+          const points: ForecastResponse["forecastPoints"] = [];
+          const N = 8;
+          for (let i = 0; i <= N; i++) {
+            const t = startMs + (span * i) / N;
+            const price = cur + (tgt - cur) * (i / N);
+            const d = new Date(t);
+            const time = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+            points.push({ timestamp: t, time, price, predicted: true });
+          }
           const fc: ForecastResponse = {
             model: modelLabel,
             asset: selectedAsset,
@@ -93,8 +127,8 @@ export default function Dashboard() {
             confidence: Number(data.confidence ?? 60),
             currentPrice: cur,
             targetPrice: tgt,
-            reasoning: "",
-            forecastPoints: [],
+            reasoning,
+            forecastPoints: points,
           };
           try { localStorage.setItem(lsCacheKey, JSON.stringify(fc)); } catch {}
           return fc;
