@@ -85,8 +85,10 @@ export function AiThinkingConsole({ model, color, isVisible }: {
           </div>
         )}
         {ordered.map((log) => (
-          <div key={log.id} className={`flex gap-2 ${levelClass(log.level)}`} title={dateTime(log.ts)}>
-            <span className="text-muted-foreground/45 shrink-0">[{timeOnly(log.ts)}]</span>
+          <div key={log.id} className={`flex gap-2 ${levelClass(log.level)}`} title={`full timestamp: ${dateTime(log.ts)}`}>
+            <span className="text-muted-foreground/55 shrink-0 tabular-nums" title={dateTime(log.ts)}>
+              {dateTime(log.ts)}
+            </span>
             {log.asset && (
               <span className="text-amber-300/70 shrink-0">{log.asset}{log.timeframe ? `·${log.timeframe}` : ""}</span>
             )}

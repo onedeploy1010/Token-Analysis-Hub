@@ -58,6 +58,17 @@ export interface Prediction {
   confidence: number | null;
 }
 
+/**
+ * Realtime channel names must be unique per hook instance. Multiple
+ * components on the same page use the same hook (e.g. useDailyPnl is
+ * called by vault-calendar + trading-vault-banner + strategy.tsx),
+ * so a fixed channel name causes the second mount to receive an
+ * already-subscribed channel and throw "cannot add postgres_changes
+ * callbacks ... after subscribe()". A monotonic suffix avoids that.
+ */
+let _uid = 0;
+function uid(): string { return `${Date.now().toString(36)}-${(++_uid).toString(36)}`; }
+
 const LOG_CAP = 200;
 const TRADE_CAP = 200;
 const PREDICTION_CAP = 200;
@@ -84,7 +95,7 @@ export function useConsoleLogs(model?: string): { logs: ConsoleLog[]; loading: b
     })();
 
     const channel = supabase
-      .channel(`ai-console-logs${model ? `-${model}` : ""}`)
+      .channel(`ai-console-logs${model ? `-${model}` : ""}-${uid()}`)
       .on(
         "postgres_changes",
         {
@@ -131,7 +142,7 @@ export function usePaperTrades(opts: { model?: string; status?: "OPEN" | "CLOSED
     })();
 
     const channel = supabase
-      .channel(`ai-paper-trades${model ?? ""}${status ?? ""}`)
+      .channel(`ai-paper-trades-${model ?? "any"}-${status ?? "any"}-${uid()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "ai_paper_trades" },
@@ -179,7 +190,7 @@ export function usePredictions(model?: string): { predictions: Prediction[]; loa
     })();
 
     const channel = supabase
-      .channel(`ai-predictions${model ? `-${model}` : ""}`)
+      .channel(`ai-predictions${model ? `-${model}` : ""}-${uid()}`)
       .on(
         "postgres_changes",
         {
@@ -241,7 +252,7 @@ export function useDailyPnl(): { byDay: Map<string, { netPct: number; count: num
     })();
 
     const channel = supabase
-      .channel("ai-paper-trades-daily")
+      .channel(`ai-paper-trades-daily-${uid()}`)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "ai_paper_trades" },

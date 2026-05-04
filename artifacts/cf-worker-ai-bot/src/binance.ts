@@ -1,12 +1,14 @@
 import type { Candle, Asset, Timeframe, Indicators } from "./types";
 
 /**
- * Binance public spot REST client. No API key needed for klines / 24hr
- * ticker — these are free, rate-limited at 1200 req/min/IP which is
- * orders of magnitude more than we need (we hit ≤2 endpoints per asset
- * per tick).
+ * Binance public spot REST client. We use `data-api.binance.vision` —
+ * the official public-data mirror — instead of `api.binance.com` because
+ * Binance returns HTTP 451 ("Unavailable For Legal Reasons") to
+ * Cloudflare's worker IP ranges, which are flagged as US-region.
+ * The data-api endpoint serves the same klines + ticker + price
+ * payloads with no key required and no geo restriction.
  */
-const BASE = "https://api.binance.com/api/v3";
+const BASE = "https://data-api.binance.vision/api/v3";
 
 export async function fetchKlines(
   symbol: Asset,

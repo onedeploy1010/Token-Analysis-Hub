@@ -73,7 +73,16 @@ export default function Dashboard() {
           } catch {}
           return undefined;
         },
-        retry: 1,
+        // ai-forecast-multi edge function is upstream — when it 500s
+        // (typically OpenRouter key issue), don't retry-storm the browser
+        // console. One attempt, then fall back to the cached snapshot if
+        // any. The new ai_predictions table (ai-bot worker) is the real
+        // forecast source going forward; this query stays for the legacy
+        // dashboard chart only.
+        retry: 0,
+        // Suppress noisy console.error from React Query for this query —
+        // the upstream failure is logged separately.
+        meta: { silent: true },
       };
     }),
   });

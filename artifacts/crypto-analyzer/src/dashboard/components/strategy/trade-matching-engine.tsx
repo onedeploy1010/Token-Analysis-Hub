@@ -97,7 +97,7 @@ export function TradeMatchingEngine() {
                   background: i === 0 ? "rgba(212,168,50,0.04)" : "transparent",
                   animation: i === 0 ? "fadeSlideIn 0.3s ease-out" : undefined,
                 }}
-                title={fullStamp(sig.opened_at)}
+                title={`opened ${fullStamp(sig.opened_at)}${sig.closed_at ? ` · closed ${fullStamp(sig.closed_at)}` : ""}`}
               >
                 <span className={`inline-flex items-center gap-0.5 font-bold rounded text-[10px] px-1.5 py-0.5 shrink-0 ${
                   sig.side === "LONG" ? "text-emerald-400 bg-emerald-500/10" :
@@ -110,8 +110,11 @@ export function TradeMatchingEngine() {
                   {sig.side}
                 </span>
                 <span className="text-[11px] font-bold text-foreground/80 w-[70px] shrink-0">{sig.asset}</span>
+                <span className="text-[9px] text-muted-foreground/70 shrink-0 font-mono tabular-nums">
+                  {fullStamp(sig.opened_at)}
+                </span>
                 <span className="text-[9px] text-muted-foreground/55 flex-1 truncate">
-                  {sig.model} · {sig.leverage}x · {timeAgo(sig.opened_at)} ago
+                  {sig.model} · {sig.leverage}x
                 </span>
                 {sig.status === "CLOSED" && sig.pnl_pct != null ? (
                   <span className={`text-[10px] font-bold tabular-nums shrink-0 ${
