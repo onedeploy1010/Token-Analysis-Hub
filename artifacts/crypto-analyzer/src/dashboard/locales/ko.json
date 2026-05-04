@@ -1437,9 +1437,16 @@
     "riskLabel": "위험",
     "runeAi": "RUNE AI",
     "runeAiDesc": "전 자산에 대한 다중 모델 합의 + 딥러닝 메타 전략",
-    "simOrders": "거래 주문",
+    "simOrders": "주문",
     "livePredictions": "실시간 예측",
-    "predVerify": "예측 검증"
+    "predVerify": "예측 검증",
+    "win": "승률",
+    "pnl": "손익",
+    "total": "합계",
+    "noOrders": "주문 없음",
+    "opened": "진입",
+    "closed": "청산",
+    "statusOpen": "보유중"
   },
   "aiConsole": {
     "console": "콘솔",
@@ -1502,7 +1509,9 @@
     "momentumOsc": "모멘텀 오실레이터: 긍정적 다이버전스",
     "relVolume": "상대 거래량: {{val}}x 평균",
     "priceAction": "가격 행동: 고점·저점 상승 (3스윙)",
-    "momentumScore": "모멘텀 점수: {{score}}/100 — 진입 구간 활성"
+    "momentumScore": "모멘텀 점수: {{score}}/100 — 진입 구간 활성",
+    "errorRetry": "재시도 중…",
+    "neutralWait": "시그널 확인 대기"
   },
   "matchEngine": {
     "title": "거래 매칭 엔진",

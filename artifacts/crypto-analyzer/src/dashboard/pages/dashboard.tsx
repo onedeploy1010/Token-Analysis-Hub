@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { fetchFuturesOI, fetchExchangePrices, getAiForecastSingle, AI_MODEL_LABELS } from "@dashboard/lib/api";
+import { fetchFuturesOI, fetchExchangePrices, AI_MODEL_LABELS } from "@dashboard/lib/api";
 import { useCryptoPrices, useBinanceKlines } from "@dashboard/hooks/use-crypto-price";
 import type { ChartTimeframe } from "@dashboard/hooks/use-crypto-price";
 import { PriceHeader } from "@dashboard/components/dashboard/price-header";
@@ -13,6 +13,7 @@ import { AiModelCarousel } from "@dashboard/components/dashboard/ai-model-carous
 import { ExchangeLogo } from "@dashboard/components/exchange-logo";
 import { formatCompact } from "@dashboard/lib/constants";
 import { BarChart3, Activity, Globe } from "lucide-react";
+import { supabase } from "@dashboard/lib/supabase-client";
 
 interface ForecastResponse {
   model: string;
@@ -50,21 +51,57 @@ export default function Dashboard() {
     exchanges: Array<{ exchange: string; pair: string; symbol: string; price: number; change24h: number; isReal?: boolean }>;
   }>>({ queryKey: ["dashboard-exchange-prices"], queryFn: fetchExchangePrices, staleTime: 60_000 });
 
-  // Fire parallel per-model queries — each model shows as soon as it returns
+  // Forecast source = ai_predictions table written by the cf-worker-ai-bot
+  // every minute. The legacy ai-forecast-multi edge function is bypassed —
+  // it's been intermittently 500-ing on OpenRouter quota and the new bot
+  // already produces the same per-model directional calls + targets, with
+  // real opened/resolved timestamps.
   const modelQueries = useQueries({
     queries: AI_MODEL_LABELS.map((modelLabel) => {
-      const lsCacheKey = `forecast:${selectedAsset}:${selectedTimeframe}:${modelLabel}`;
+      // Map the display label to the worker's stored model id.
+      const dbModel =
+        modelLabel.toLowerCase().includes("gpt")      ? "gpt-4o"
+        : modelLabel.toLowerCase().includes("deepseek") ? "deepseek"
+        : modelLabel.toLowerCase().includes("gemini")   ? "gemini"
+        : modelLabel.toLowerCase().includes("claude")   ? "claude"
+        : "rune-ai";
+      // Worker stores BTCUSDT etc.; map BTC → BTCUSDT.
+      const dbAsset = selectedAsset.endsWith("USDT") ? selectedAsset : `${selectedAsset}USDT`;
+      const lsCacheKey = `forecast:${dbAsset}:${selectedTimeframe}:${modelLabel}`;
       return {
-        queryKey: ["ai-forecast-single", selectedAsset, selectedTimeframe, modelLabel, lang],
-        queryFn: async () => {
-          const result = await getAiForecastSingle(selectedAsset, selectedTimeframe, modelLabel, lang);
-          const forecast = result?.forecasts?.[0] || null;
-          if (forecast) try { localStorage.setItem(lsCacheKey, JSON.stringify(forecast)); } catch {}
-          return forecast as ForecastResponse | null;
+        queryKey: ["ai-prediction-row", dbAsset, selectedTimeframe, modelLabel, lang],
+        queryFn: async (): Promise<ForecastResponse | null> => {
+          // Pull this model's most-recent prediction for this asset.
+          const { data, error } = await supabase
+            .from("ai_predictions")
+            .select("model, asset, timeframe, direction, current_price, target_price, confidence, predicted_at")
+            .eq("model", dbModel)
+            .eq("asset", dbAsset)
+            .order("predicted_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (error || !data) return null;
+          const cur = Number(data.current_price ?? 0);
+          const tgt = Number(data.target_price ?? cur);
+          const fc: ForecastResponse = {
+            model: modelLabel,
+            asset: selectedAsset,
+            timeframe: selectedTimeframe,
+            direction: data.direction === "LONG" ? "BULLISH"
+                      : data.direction === "SHORT" ? "BEARISH"
+                      : "NEUTRAL",
+            confidence: Number(data.confidence ?? 60),
+            currentPrice: cur,
+            targetPrice: tgt,
+            reasoning: "",
+            forecastPoints: [],
+          };
+          try { localStorage.setItem(lsCacheKey, JSON.stringify(fc)); } catch {}
+          return fc;
         },
-        staleTime: 3 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
-        refetchInterval: 5 * 60 * 1000,
+        staleTime: 60_000,
+        gcTime: 10 * 60_000,
+        refetchInterval: 60_000,
         placeholderData: (prev: ForecastResponse | null | undefined) => {
           if (prev) return prev;
           try {
@@ -73,16 +110,7 @@ export default function Dashboard() {
           } catch {}
           return undefined;
         },
-        // ai-forecast-multi edge function is upstream — when it 500s
-        // (typically OpenRouter key issue), don't retry-storm the browser
-        // console. One attempt, then fall back to the cached snapshot if
-        // any. The new ai_predictions table (ai-bot worker) is the real
-        // forecast source going forward; this query stays for the legacy
-        // dashboard chart only.
         retry: 0,
-        // Suppress noisy console.error from React Query for this query —
-        // the upstream failure is logged separately.
-        meta: { silent: true },
       };
     }),
   });

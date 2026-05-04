@@ -1439,7 +1439,14 @@
     "runeAiDesc": "Мульти-модельный консенсус с мета-стратегией глубокого обучения",
     "simOrders": "Ордера",
     "livePredictions": "Прогнозы в реальном времени",
-    "predVerify": "Прогнозы"
+    "predVerify": "Прогнозы",
+    "win": "Прибыль",
+    "pnl": "PnL",
+    "total": "Всего",
+    "noOrders": "Нет ордеров",
+    "opened": "Открыт",
+    "closed": "Закрыт",
+    "statusOpen": "ОТКР"
   },
   "aiConsole": {
     "console": "Console",
@@ -1502,7 +1509,9 @@
     "relVolume": "Relative volume: {{val}}x average",
     "priceAction": "Price action: higher highs, higher lows (3 swings)",
     "momentumScore": "Momentum score: {{score}}/100 — entry zone active",
-    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH"
+    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH",
+    "errorRetry": "Повторная попытка...",
+    "neutralWait": "Ожидание сигнала"
   },
   "matchEngine": {
     "title": "Trade Matching Engine",

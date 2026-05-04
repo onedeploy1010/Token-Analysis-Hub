@@ -1439,7 +1439,14 @@
     "runeAiDesc": "Đồng thuận đa mô hình với chiến lược meta học sâu",
     "simOrders": "Lệnh giao dịch",
     "livePredictions": "Dự đoán trực tiếp",
-    "predVerify": "Xác minh dự đoán"
+    "predVerify": "Xác minh dự đoán",
+    "win": "Thắng",
+    "pnl": "PnL",
+    "total": "Tổng",
+    "noOrders": "Chưa có lệnh",
+    "opened": "Mở",
+    "closed": "Đóng",
+    "statusOpen": "MỞ"
   },
   "aiConsole": {
     "console": "Console",
@@ -1502,7 +1509,9 @@
     "relVolume": "Relative volume: {{val}}x average",
     "priceAction": "Price action: higher highs, higher lows (3 swings)",
     "momentumScore": "Momentum score: {{score}}/100 — entry zone active",
-    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH"
+    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH",
+    "errorRetry": "Đang thử lại...",
+    "neutralWait": "Đợi tín hiệu"
   },
   "matchEngine": {
     "title": "Trade Matching Engine",

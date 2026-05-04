@@ -1419,7 +1419,14 @@
     "runeAiDesc": "多模型共識 + 深度學習元策略，覆蓋全部資產",
     "simOrders": "交易訂單",
     "livePredictions": "即時預測",
-    "predVerify": "預測驗證"
+    "predVerify": "預測驗證",
+    "win": "勝率",
+    "pnl": "盈虧",
+    "total": "總數",
+    "noOrders": "暫無訂單",
+    "opened": "開倉",
+    "closed": "平倉",
+    "statusOpen": "持倉中"
   },
   "aiConsole": {
     "console": "控制台",
@@ -1482,7 +1489,9 @@
     "relVolume": "相對成交量: {{val}}x 平均值",
     "priceAction": "價格行為: 更高的高點和低點 (3個波段)",
     "momentumScore": "動量評分: {{score}}/100 — 入場區間活躍",
-    "consensusMomentum": "共識: 看多 | 置信度: {{conf}}% | 動量: 高"
+    "consensusMomentum": "共識: 看多 | 置信度: {{conf}}% | 動量: 高",
+    "errorRetry": "重試中…",
+    "neutralWait": "等待訊號確認"
   },
   "matchEngine": {
     "title": "交易撮合引擎",

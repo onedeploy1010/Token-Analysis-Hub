@@ -15,7 +15,27 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent } from "@dashboard/components/ui/dialog";
 import { AiConsoleButton } from "@dashboard/components/strategy/ai-thinking-console";
+import { usePaperTrades, type PaperTrade as RealPaperTrade } from "@dashboard/lib/ai-bot-feed";
 import { List } from "lucide-react";
+
+/** Map a model display label to the worker's stored model id. */
+function dbModelOf(displayName: string): string {
+  const lc = displayName.toLowerCase();
+  if (lc.includes("gpt"))      return "gpt-4o";
+  if (lc.includes("claude"))   return "claude";
+  if (lc.includes("gemini"))   return "gemini";
+  if (lc.includes("deepseek")) return "deepseek";
+  return "rune-ai";
+}
+
+/** Format an ISO timestamp into a tight "MM-DD HH:mm" used in the order
+ *  list — keeps the cards compact without dropping the date. */
+function shortStamp(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -224,64 +244,81 @@ function SimOrdersButton({ model, color }: { model: string; color: string }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
-  const { data: trades = [], isLoading } = useQuery<PaperTrade[]>({
-    queryKey: ["sim-orders", model],
-    queryFn: async () => {
-      const res = await fetch(`/api/paper-trades?model=${encodeURIComponent(model)}`);
-      if (!res.ok) throw new Error("Failed to fetch trades");
-      return res.json() as Promise<PaperTrade[]>;
-    },
-    enabled: open, staleTime: 30_000, retry: false,
-  });
+  // Live realtime feed of this model's paper trades — opened_at and
+  // closed_at timestamps come straight from the worker, no padding.
+  const { trades, loading } = usePaperTrades({ model: dbModelOf(model) });
+  const display = open ? trades : [];
 
-  const display = trades.length > 0 ? trades : Array.from({ length: 12 }, (_, i) => {
-    const seed = model.charCodeAt(0) * 100 + i;
-    const r = ((Math.sin(seed * 9301 + 49297) % 1) + 1) % 1;
-    const r2 = ((Math.sin(seed * 7919 + 31337) % 1) + 1) % 1;
-    const assets = ["BTC","ETH","SOL","BNB","DOGE","XRP"];
-    const a = assets[i % 6];
-    const base = a === "BTC" ? 102000 : a === "ETH" ? 3800 : 170;
-    const win = r > 0.35;
-    const pct = win ? r2 * 6 + 0.5 : -(r2 * 4 + 0.3);
-    return { id: `s-${model}-${i}`, asset: a, side: r > 0.5 ? "LONG" : "SHORT", entry_price: +base.toFixed(2), exit_price: i < 2 ? null : +(base*(1+pct/100)).toFixed(2), leverage: [3,5,8,10][i%4], pnl: i < 2 ? null : +(pct*10).toFixed(2), pnl_pct: i < 2 ? null : +pct.toFixed(2), strategy_type: ["trend_following","mean_reversion","breakout","momentum"][i%4], primary_model: model, status: i < 2 ? "OPEN" : "CLOSED", opened_at: new Date(Date.now()-i*3600000).toISOString(), closed_at: i < 2 ? null : new Date(Date.now()-i*1800000).toISOString() } as PaperTrade;
-  });
-
-  const closed = display.filter(t => t.status === "CLOSED");
-  const winRate = closed.length > 0 ? (closed.filter(t => (t.pnl ?? 0) > 0).length / closed.length * 100) : 0;
-  const totalPnl = closed.reduce((s, t) => s + (t.pnl ?? 0), 0);
+  const closed = display.filter((tr) => tr.status === "CLOSED");
+  const winRate = closed.length > 0
+    ? (closed.filter((tr) => Number(tr.pnl_pct ?? 0) > 0).length / closed.length * 100)
+    : 0;
+  const totalPnl = closed.reduce((s, tr) => s + Number(tr.pnl_pct ?? 0), 0);
 
   return (
     <>
       <button onClick={() => setOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[12px] font-bold transition-all active:scale-[0.98]" style={{ background: `${color}12`, border: `1px solid ${color}25`, color }}>
-        <List className="h-3.5 w-3.5" />{t("aiLab.simOrders", "Orders")}
+        <List className="h-3.5 w-3.5" />{t("aiLab.simOrders", "交易订单")}
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md w-full p-0 overflow-hidden" style={{ background: "linear-gradient(160deg, hsl(22,20%,4%), hsl(20,15%,3%))", border: `1px solid ${color}22`, maxHeight: "85vh" }}>
           <div className="flex items-center justify-between px-4 pt-3 pb-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <span className="text-sm font-bold">{model} {t("aiLab.simOrders", "Orders")}</span>
+            <span className="text-sm font-bold">{model} {t("aiLab.simOrders", "交易订单")}</span>
             <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
           </div>
           <div className="px-4 py-2 grid grid-cols-3 gap-1.5">
-            {[{ l: "Win", v: `${winRate.toFixed(0)}%`, c: winRate>=50?"#4ade80":"#f87171" }, { l: "PnL", v: `${totalPnl>=0?"+":""}${totalPnl.toFixed(1)}`, c: totalPnl>=0?"#4ade80":"#f87171" }, { l: "Total", v: display.length.toString(), c: color }].map(s=>(
-              <div key={s.l} className="rounded-lg p-1.5 text-center" style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.05)" }}>
+            {[
+              { l: t("aiLab.win", "Win"), v: `${winRate.toFixed(0)}%`, c: winRate >= 50 ? "#4ade80" : "#f87171" },
+              { l: t("aiLab.pnl", "PnL"), v: `${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(1)}`, c: totalPnl >= 0 ? "#4ade80" : "#f87171" },
+              { l: t("aiLab.total", "Total"), v: display.length.toString(), c: color },
+            ].map((s) => (
+              <div key={s.l} className="rounded-lg p-1.5 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
                 <div className="text-[12px] font-bold tabular-nums" style={{ color: s.c }}>{s.v}</div>
                 <div className="text-[8px] text-muted-foreground uppercase">{s.l}</div>
               </div>
             ))}
           </div>
           <div className="overflow-y-auto max-h-[55vh] px-4 pb-4 space-y-1">
-            {isLoading ? Array.from({length:5}).map((_,i)=><Skeleton key={i} className="h-12 w-full rounded-lg" />) : display.map((tr,i)=>(
-              <div key={tr.id} className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.04)", animation: `fadeSlideIn 0.25s ease-out ${i*0.03}s both` }}>
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${tr.side==="LONG"?"text-emerald-400 bg-emerald-500/10":"text-red-400 bg-red-500/10"}`}>{tr.side==="LONG"?"L":"S"}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1"><span className="text-[11px] font-bold text-foreground/80">{tr.asset}</span><span className="text-[9px] text-muted-foreground">{tr.leverage}x</span>{tr.status==="OPEN"&&<span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"/>}</div>
-                  <div className="text-[9px] text-muted-foreground/40 truncate">${tr.entry_price.toLocaleString()}{tr.exit_price?` → $${tr.exit_price.toLocaleString()}`:""}</div>
-                </div>
-                <div className="text-right shrink-0">
-                  {tr.status==="OPEN"?<span className="text-[10px] font-bold" style={{color}}>OPEN</span>:<><div className={`text-[11px] font-bold tabular-nums ${(tr.pnl??0)>0?"text-emerald-400":"text-red-400"}`}>{(tr.pnl??0)>0?"+":""}{(tr.pnl??0).toFixed(2)}</div><div className={`text-[9px] tabular-nums ${(tr.pnl_pct??0)>0?"text-emerald-400/60":"text-red-400/60"}`}>{(tr.pnl_pct??0)>0?"+":""}{(tr.pnl_pct??0).toFixed(1)}%</div></>}
-                </div>
+            {loading && display.length === 0 ? (
+              Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)
+            ) : display.length === 0 ? (
+              <div className="text-center py-8 text-[11px] text-muted-foreground/50">
+                {t("aiLab.noOrders", "暂无订单")}
               </div>
-            ))}
+            ) : (
+              display.map((tr: RealPaperTrade, i) => (
+                <div key={tr.id} className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", animation: `fadeSlideIn 0.25s ease-out ${i * 0.03}s both` }}>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${tr.side === "LONG" ? "text-emerald-400 bg-emerald-500/10" : "text-red-400 bg-red-500/10"}`}>{tr.side === "LONG" ? "L" : "S"}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] font-bold text-foreground/80">{tr.asset.replace(/USDT$/, "")}</span>
+                      <span className="text-[9px] text-muted-foreground">{tr.leverage}x</span>
+                      {tr.status === "OPEN" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                    </div>
+                    <div className="text-[9px] text-muted-foreground/55 truncate">
+                      ${Number(tr.entry_price).toLocaleString()}
+                      {tr.exit_price ? ` → $${Number(tr.exit_price).toLocaleString()}` : ""}
+                    </div>
+                    <div className="text-[9px] text-muted-foreground/45 tabular-nums whitespace-nowrap">
+                      {t("aiLab.opened", "开仓")} {shortStamp(tr.opened_at)}
+                      {tr.closed_at && <> · {t("aiLab.closed", "平仓")} {shortStamp(tr.closed_at)}</>}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {tr.status === "OPEN" ? (
+                      <span className="text-[10px] font-bold" style={{ color }}>{t("aiLab.statusOpen", "OPEN")}</span>
+                    ) : (
+                      <>
+                        <div className={`text-[11px] font-bold tabular-nums ${Number(tr.pnl_pct ?? 0) > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          {Number(tr.pnl_pct ?? 0) > 0 ? "+" : ""}{Number(tr.pnl_pct ?? 0).toFixed(2)}%
+                        </div>
+                        <div className="text-[9px] text-muted-foreground/45">{tr.close_reason ?? ""}</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </DialogContent>
       </Dialog>

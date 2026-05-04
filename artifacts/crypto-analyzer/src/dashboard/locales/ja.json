@@ -1437,9 +1437,16 @@
     "riskLabel": "リスク",
     "runeAi": "RUNE AI",
     "runeAiDesc": "全資産に対するマルチモデル合意 + ディープラーニングメタ戦略",
-    "simOrders": "取引注文",
+    "simOrders": "注文",
     "livePredictions": "ライブ予測",
-    "predVerify": "予測検証"
+    "predVerify": "予測検証",
+    "win": "勝率",
+    "pnl": "損益",
+    "total": "合計",
+    "noOrders": "注文なし",
+    "opened": "建玉",
+    "closed": "決済",
+    "statusOpen": "保有中"
   },
   "aiConsole": {
     "console": "コンソール",
@@ -1502,7 +1509,9 @@
     "relVolume": "相対出来高: {{val}}x 平均",
     "priceAction": "プライスアクション: 高値・安値切上げ (3スイング)",
     "momentumScore": "モメンタムスコア: {{score}}/100 — エントリーゾーン",
-    "consensusMomentum": "コンセンサス: 強気 | 信頼度: {{conf}}% | モメンタム: 高"
+    "consensusMomentum": "コンセンサス: 強気 | 信頼度: {{conf}}% | モメンタム: 高",
+    "errorRetry": "リトライ中…",
+    "neutralWait": "シグナル確認待ち"
   },
   "matchEngine": {
     "title": "取引マッチングエンジン",

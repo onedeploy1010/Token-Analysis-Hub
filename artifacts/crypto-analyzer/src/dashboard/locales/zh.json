@@ -1531,7 +1531,14 @@
     "runeAiDesc": "多模型共识 + 深度学习元策略，覆盖全部资产",
     "simOrders": "交易订单",
     "livePredictions": "实时预测",
-    "predVerify": "预测验证"
+    "predVerify": "预测验证",
+    "win": "胜率",
+    "pnl": "盈亏",
+    "total": "总数",
+    "noOrders": "暂无订单",
+    "opened": "开仓",
+    "closed": "平仓",
+    "statusOpen": "持仓中"
   },
   "aiConsole": {
     "console": "控制台",
@@ -1594,7 +1601,9 @@
     "relVolume": "相对成交量: {{val}}x 平均值",
     "priceAction": "价格行为: 更高的高点和低点 (3个波段)",
     "momentumScore": "动量评分: {{score}}/100 — 入场区间活跃",
-    "consensusMomentum": "共识: 看多 | 置信度: {{conf}}% | 动量: 高"
+    "consensusMomentum": "共识: 看多 | 置信度: {{conf}}% | 动量: 高",
+    "errorRetry": "重试中…",
+    "neutralWait": "等待信号确认"
   },
   "matchEngine": {
     "title": "交易撮合引擎",

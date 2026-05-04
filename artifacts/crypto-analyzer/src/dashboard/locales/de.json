@@ -1437,9 +1437,16 @@
     "riskLabel": "Risiko",
     "runeAi": "RUNE AI",
     "runeAiDesc": "Multi-Modell-Konsens mit Deep-Learning-Meta-Strategie",
-    "simOrders": "Orders",
+    "simOrders": "Aufträge",
     "livePredictions": "Live Prognosen",
-    "predVerify": "Prognosen"
+    "predVerify": "Prognosen",
+    "win": "Gew.",
+    "pnl": "GuV",
+    "total": "Gesamt",
+    "noOrders": "Keine Aufträge",
+    "opened": "Eröffnet",
+    "closed": "Geschlossen",
+    "statusOpen": "OFFEN"
   },
   "aiConsole": {
     "console": "Console",
@@ -1502,7 +1509,9 @@
     "relVolume": "Relative volume: {{val}}x average",
     "priceAction": "Price action: higher highs, higher lows (3 swings)",
     "momentumScore": "Momentum score: {{score}}/100 — entry zone active",
-    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH"
+    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH",
+    "errorRetry": "Erneuter Versuch...",
+    "neutralWait": "Warte auf Signal"
   },
   "matchEngine": {
     "title": "Trade Matching Engine",

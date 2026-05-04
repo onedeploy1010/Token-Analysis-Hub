@@ -1437,9 +1437,16 @@
     "riskLabel": "المخاطر",
     "runeAi": "RUNE AI",
     "runeAiDesc": "إجماع متعدد النماذج مع استراتيجية تعلم عميق",
-    "simOrders": "الأوامر",
+    "simOrders": "الطلبات",
     "livePredictions": "تنبؤات مباشرة",
-    "predVerify": "التنبؤات"
+    "predVerify": "التنبؤات",
+    "win": "ربح",
+    "pnl": "ر/خ",
+    "total": "المجموع",
+    "noOrders": "لا توجد طلبات",
+    "opened": "فُتح",
+    "closed": "أُغلق",
+    "statusOpen": "مفتوحة"
   },
   "aiConsole": {
     "console": "Console",
@@ -1502,7 +1509,9 @@
     "relVolume": "Relative volume: {{val}}x average",
     "priceAction": "Price action: higher highs, higher lows (3 swings)",
     "momentumScore": "Momentum score: {{score}}/100 — entry zone active",
-    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH"
+    "consensusMomentum": "Consensus: BULLISH | Confidence: {{conf}}% | Momentum: HIGH",
+    "errorRetry": "إعادة المحاولة...",
+    "neutralWait": "بانتظار الإشارة"
   },
   "matchEngine": {
     "title": "Trade Matching Engine",
