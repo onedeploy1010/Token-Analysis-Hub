@@ -1,0 +1,20 @@
+{
+  "name": "@rune/cf-worker-ai-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev":           "wrangler dev",
+    "deploy:test":   "wrangler deploy --env testnet",
+    "deploy:main":   "wrangler deploy --env mainnet",
+    "tail:test":     "wrangler tail --env testnet",
+    "tail:main":     "wrangler tail --env mainnet",
+    "tick:test":     "curl -s https://rune-ai-bot-testnet.runeapi.workers.dev/tick | jq",
+    "tick:main":     "curl -s https://rune-ai-bot-mainnet.runeapi.workers.dev/tick | jq"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240924.0",
+    "wrangler": "^3.78.0",
+    "typescript": "^5.4.0"
+  }
+}

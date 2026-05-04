@@ -1,0 +1,33 @@
+# RUNE AI bot — Cloudflare Worker that ticks every 60s, prices via Binance
+# public REST, inference via OpenRouter, persists to Supabase. Two
+# environments: testnet (chain 97 / Supabase tqex…) + mainnet (chain 56 /
+# Supabase mefj…).
+#
+# Deploy:
+#   wrangler deploy --env testnet
+#   wrangler deploy --env mainnet
+#
+# Set secrets *per env* before first deploy:
+#   wrangler secret put SUPABASE_SERVICE_ROLE_KEY --env testnet
+#   wrangler secret put OPENROUTER_API_KEY        --env testnet
+#   (same for --env mainnet)
+
+name = "rune-ai-bot"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+
+[env.testnet]
+name = "rune-ai-bot-testnet"
+[env.testnet.vars]
+SUPABASE_URL = "https://tqexhkajljyecsacmyyy.supabase.co"
+RUNE_CHAIN = "bsc_testnet"
+[env.testnet.triggers]
+crons = ["*/1 * * * *"]   # every minute
+
+[env.mainnet]
+name = "rune-ai-bot-mainnet"
+[env.mainnet.vars]
+SUPABASE_URL = "https://mefjuecwawmjfmeofnck.supabase.co"
+RUNE_CHAIN = "bsc_mainnet"
+[env.mainnet.triggers]
+crons = ["*/1 * * * *"]

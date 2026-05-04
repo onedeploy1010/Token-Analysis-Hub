@@ -21,12 +21,21 @@ function useHourlyValue(min: number, max: number, salt: number) {
   return value;
 }
 
-export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
+/** Real-data backstop. When `realByDay` has an entry for "YYYY-MM-DD",
+ *  the seeded mock value for that day is replaced with the real one
+ *  written by the AI bot worker (sum of closed pnl_pct that day). */
+export type RealPnlMap = Map<string, { netPct: number; count: number }>;
+
+export function getCalendarDays(
+  calendarMonth: Date,
+  timeSeed = 0,
+  realByDay?: RealPnlMap,
+) {
   const year = calendarMonth.getFullYear();
   const month = calendarMonth.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const days: { day: number; pnl: number }[] = [];
+  const days: { day: number; pnl: number; real?: boolean; trades?: number }[] = [];
   for (let i = 0; i < firstDay; i++) days.push({ day: 0, pnl: 0 });
 
   const now = new Date();
@@ -37,6 +46,7 @@ export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
     for (let d = 1; d <= daysInMonth; d++) days.push({ day: d, pnl: 0 });
     return days;
   }
+  const ymd = (d: number) => `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
   // Per-month seed (deterministic across re-renders so the calendar values
   // for any historical month are stable for every viewer).
@@ -94,6 +104,12 @@ export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
     const rawTotal = rawPnls.reduce((s, v) => s + v, 0);
     const scale = rawTotal > 0 ? targetMonthly / rawTotal : 1;
     for (let d = 1; d <= daysInMonth; d++) {
+      // Real bot data, when present, supersedes the seeded mock.
+      const real = realByDay?.get(ymd(d));
+      if (real) {
+        days.push({ day: d, pnl: Math.round(real.netPct * 100) / 100, real: true, trades: real.count });
+        continue;
+      }
       // Clamp scaled win to [0, 4]% and loss to [-2, 0]% so per-day
       // values stay in the spec range even after target-monthly scaling.
       let scaled = rawPnls[d - 1] * scale;
@@ -103,6 +119,11 @@ export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
     }
   } else {
     for (let d = 1; d <= daysInMonth; d++) {
+      const real = realByDay?.get(ymd(d));
+      if (real) {
+        days.push({ day: d, pnl: Math.round(real.netPct * 100) / 100, real: true, trades: real.count });
+        continue;
+      }
       days.push({ day: d, pnl: Math.round(rawPnls[d - 1] * 100) / 100 });
     }
   }
@@ -114,14 +135,14 @@ export function getCalendarDays(calendarMonth: Date, timeSeed = 0) {
  * "Monthly Return" KPI, so on May 1 it shows April's final number,
  * not May 1's running total.
  */
-export function getLastMonthMonthlyReturn(timeSeed = 0): number {
+export function getLastMonthMonthlyReturn(timeSeed = 0, realByDay?: RealPnlMap): number {
   const now = new Date();
   const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const days = getCalendarDays(lastMonth, timeSeed);
+  const days = getCalendarDays(lastMonth, timeSeed, realByDay);
   return days.reduce((s, c) => s + (c.pnl || 0), 0);
 }
 
-function getCumulativeStats(timeSeed = 0) {
+function getCumulativeStats(timeSeed = 0, realByDay?: RealPnlMap) {
   const now = new Date();
   const dataStart = new Date(now.getFullYear(), now.getMonth() - 9, 1);
   let totalPnl = 0;
@@ -129,7 +150,7 @@ function getCumulativeStats(timeSeed = 0) {
   let losses = 0;
   for (let m = 0; m < 9; m++) {
     const mDate = new Date(dataStart.getFullYear(), dataStart.getMonth() + m, 1);
-    const days = getCalendarDays(mDate, timeSeed);
+    const days = getCalendarDays(mDate, timeSeed, realByDay);
     for (const cell of days) {
       if (cell.day === 0 || cell.pnl === 0) continue;
       totalPnl += cell.pnl;

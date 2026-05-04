@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { VaultCalendar } from "./vault-calendar";
 import { getLastMonthMonthlyReturn } from "./strategy-header";
 import { usePoolStatsRune } from "@dashboard/lib/data-rune";
+import { useDailyPnl } from "@dashboard/lib/ai-bot-feed";
 
 /* ── Stable rate display.
  *  Picks a value within [min, max] from a deterministic 12h epoch hash so
@@ -89,10 +90,11 @@ export function TradingVaultBanner() {
     return `$${v.toFixed(2)}`;
   };
 
-  // Last completed month's actual P&L total (sourced from the same
-  // deterministic generator that drives the daily-P&L calendar below,
-  // so the banner number always equals the calendar's last-month sum).
-  const lastMonthPct = getLastMonthMonthlyReturn();
+  // Last completed month's actual P&L total — real bot-closed PnL when
+  // available (from ai_paper_trades), seeded mock as backstop. Always
+  // matches the calendar below since both call into the same function.
+  const { byDay: realByDay } = useDailyPnl();
+  const lastMonthPct = getLastMonthMonthlyReturn(0, realByDay);
 
   const STATS = [
     {

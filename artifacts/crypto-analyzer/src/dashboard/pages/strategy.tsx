@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { copyText } from "@dashboard/lib/copy";
+import { useDailyPnl } from "@dashboard/lib/ai-bot-feed";
+import { getCalendarDays as getCalendarDaysReal } from "@dashboard/components/strategy/strategy-header";
 import { Card, CardContent } from "@dashboard/components/ui/card";
 import { Button } from "@dashboard/components/ui/button";
 import { Badge } from "@dashboard/components/ui/badge";
@@ -362,78 +364,11 @@ export default function StrategyPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const getCalendarDays = () => {
-    const year = calendarMonth.getFullYear();
-    const month = calendarMonth.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const days: { day: number; pnl: number }[] = [];
-    for (let i = 0; i < firstDay; i++) days.push({ day: 0, pnl: 0 });
-
-    const now = new Date();
-    const dataStartDate = new Date(now.getFullYear(), now.getMonth() - 9, 1);
-    const isHistorical = new Date(year, month, 1) >= dataStartDate && new Date(year, month, 1) <= now;
-
-    if (!isHistorical) {
-      for (let d = 1; d <= daysInMonth; d++) days.push({ day: d, pnl: 0 });
-      return days;
-    }
-
-    const monthSeed = year * 100 + (month + 1);
-    const monthRng = ((Math.sin(monthSeed * 4729 + 17389) % 1) + 1) % 1;
-    const targetMonthly = 28 + monthRng * 17;
-
-    const microSeed = Math.floor(now.getTime() / 30000) + refreshTick;
-
-    const rawPnls: number[] = [];
-    for (let d = 1; d <= daysInMonth; d++) {
-      const date = new Date(year, month, d);
-      if (date > now) { rawPnls.push(0); continue; }
-
-      const isToday = date.toDateString() === now.toDateString();
-      const daysAgo = Math.floor((now.getTime() - date.getTime()) / 86400000);
-
-      const timeFactor = daysAgo <= 5 ? microSeed * (d + 3) : 0;
-      const seed = year * 10000 + (month + 1) * 100 + d + timeFactor;
-      const rng = ((Math.sin(seed * 9301 + 49297) % 1) + 1) % 1;
-      const rng2 = ((Math.sin(seed * 7919 + 31337) % 1) + 1) % 1;
-      const rng3 = ((Math.sin(seed * 6271 + 15731) % 1) + 1) % 1;
-
-      const winThreshold = daysAgo > 7 ? 0.30 : 0.25 + (rng3 * 0.1);
-      const isWin = rng > winThreshold;
-
-      let pnl: number;
-      if (isWin) {
-        pnl = 0.8 + rng2 * 2.4;
-        if (daysAgo <= 3) pnl *= (0.9 + rng3 * 0.4);
-      } else {
-        pnl = -(0.3 + rng3 * 1.7);
-        if (daysAgo <= 3) pnl *= (0.8 + rng2 * 0.3);
-      }
-
-      const dow = date.getDay();
-      if (dow === 0 || dow === 6) pnl *= 0.4;
-
-      if (isToday) {
-        const hourProgress = (now.getHours() * 60 + now.getMinutes()) / 1440;
-        const jitter = ((Math.sin(microSeed * 1337) % 1) + 1) % 1;
-        pnl *= (0.3 + hourProgress * 0.7) * (0.85 + jitter * 0.3);
-      }
-
-      rawPnls.push(pnl);
-    }
-
-    const rawTotal = rawPnls.reduce((s, v) => s + v, 0);
-    const scale = rawTotal > 0 ? targetMonthly / rawTotal : 1;
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const scaled = rawPnls[d - 1] * scale;
-      days.push({ day: d, pnl: Math.round(scaled * 100) / 100 });
-    }
-    return days;
-  };
-
-  const calendarDays = getCalendarDays();
+  // Real bot PnL by day from ai_paper_trades; seeded mock fills only the
+  // days the bot hasn't yet covered. The shared `getCalendarDaysReal`
+  // also drives the vault calendar + banner so the numbers match.
+  const { byDay: realByDayCal } = useDailyPnl();
+  const calendarDays = getCalendarDaysReal(calendarMonth, refreshTick, realByDayCal);
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const calendarLabel = `${monthNames[calendarMonth.getMonth()]} ${calendarMonth.getFullYear()}`;
 

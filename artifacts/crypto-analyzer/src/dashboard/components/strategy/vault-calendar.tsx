@@ -3,22 +3,7 @@ import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { Button } from "@dashboard/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { getCalendarDays } from "./strategy-header";
-
-function getCumulativeStats(timeSeed = 0) {
-  const now = new Date();
-  const dataStart = new Date(now.getFullYear(), now.getMonth() - 9, 1);
-  let totalPnl = 0; let wins = 0; let losses = 0;
-  for (let m = 0; m < 9; m++) {
-    const mDate = new Date(dataStart.getFullYear(), dataStart.getMonth() + m, 1);
-    const days = getCalendarDays(mDate, timeSeed);
-    for (const cell of days) {
-      if (cell.day === 0 || cell.pnl === 0) continue;
-      totalPnl += cell.pnl;
-      if (cell.pnl > 0) wins++; else losses++;
-    }
-  }
-  return { totalPnl, wins, losses };
-}
+import { useDailyPnl } from "@dashboard/lib/ai-bot-feed";
 
 export function VaultCalendar() {
   const { t, i18n } = useTranslation();
@@ -31,8 +16,11 @@ export function VaultCalendar() {
     return () => clearInterval(timer);
   }, []);
 
-  const calendarDays = getCalendarDays(calendarMonth, timeSeed);
-  const stats = getCumulativeStats(timeSeed);
+  // Real PnL from ai_paper_trades — closes within the last 60d are merged
+  // into the calendar so any day with bot activity shows the genuine
+  // aggregate; days without a real entry fall back to the seeded mock.
+  const { byDay: realByDay } = useDailyPnl();
+  const calendarDays = getCalendarDays(calendarMonth, timeSeed, realByDay);
 
   // Localized month + weekday labels via Intl — falls back to en when the
   // active i18n.language isn't a BCP-47 the runtime knows.

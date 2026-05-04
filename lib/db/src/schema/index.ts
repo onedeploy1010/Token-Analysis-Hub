@@ -7,3 +7,4 @@ export * from "./rune-indexer-state";
 export * from "./rune-members";
 export * from "./system-config";
 export * from "./admin-member-tags";
+export * from "./ai-bot";
