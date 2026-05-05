@@ -1710,25 +1710,19 @@ function BenefitCell({
   );
 }
 
+// The referral-link card was deleted from this tab on 2026-05-05. The
+// profile page (`src/dashboard/pages/profile.tsx`) is now the single
+// owner of that UI, with the Huawei-safe copy/share path in
+// `dashboard/lib/copy.ts`. Keeping a second copy here meant duplicate
+// functionality AND a broken Huawei flow (the old card used the bare
+// `navigator.clipboard.writeText` which silent-fails on EMUI/Petal).
+//
+// Upline / "bound to" info still belongs here so the recruit page
+// shows who the connected wallet is bound under.
 export function OverviewTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { referrer, isBound, isRoot } = useReferrerOf(address);
   const { nodeId } = useUserPurchase(address);
-
-  const referralUrl = buildReferralUrl(address);
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
-
-  async function copyLink() {
-    try {
-      await navigator.clipboard.writeText(referralUrl);
-      setCopied(true);
-      toast({ title: t("mr.dash.ref.copiedToast"), description: t("mr.dash.ref.copiedDesc") });
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      toast({ title: t("mr.dash.ref.copyFail"), description: t("mr.dash.ref.copyFailDesc"), variant: "destructive" });
-    }
-  }
 
   // Overview is deliberately lean: the connected wallet's sharing tools
   // on top, followed by a quick look at their node benefits. Headcount /
@@ -1737,65 +1731,34 @@ export function OverviewTab({ address }: { address: string }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.02, ease: EASE }}>
-          <Card className="surface-3d relative overflow-hidden bg-gradient-to-br from-slate-600/80 to-slate-700/88 border-amber-500/60">
-            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-amber-500/40 via-amber-600/20 to-transparent blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_55%)] pointer-events-none" />
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/55 to-transparent pointer-events-none" />
-            <CardHeader className="pb-3 border-b border-amber-500/20 relative z-10">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <LinkIcon className="h-4 w-4 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]" />
-                {t("mr.dash.ref.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-5 space-y-3 relative z-10">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {t("mr.dash.ref.desc")}
-              </p>
-              <div className="flex gap-2">
-                <div className="flex-1 rounded-lg border border-amber-500/15 bg-black/40 px-3 py-2 text-[11px] font-mono text-foreground/85 truncate shadow-[inset_0_1px_0_rgba(255,255,255,0.04),inset_0_-1px_0_rgba(0,0,0,0.4)]">
-                  {referralUrl}
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={copyLink}
-                  className={`gap-1.5 shrink-0 border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-400/60 hover:text-amber-200 transition-all ${copied ? "animate-copy-pop" : ""}`}
-                >
-                  {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? t("mr.dash.ref.copied") : t("mr.dash.ref.copy")}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
-                <div className="text-xs text-muted-foreground">
-                  <span className="opacity-60 uppercase text-[11px] tracking-widest block mb-0.5">{t("mr.dash.ref.upstream")}</span>
-                  {isRoot ? (
-                    <span className="text-amber-300 font-semibold drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">ROOT</span>
-                  ) : isBound && referrer ? (
-                    <a
-                      href={`${runeChain.blockExplorers?.[0]?.url ?? "https://bscscan.com"}/address/${referrer}`}
-                      target="_blank" rel="noreferrer"
-                      className="font-mono text-foreground hover:text-amber-400 inline-flex items-center gap-1 transition-colors"
-                    >
-                      {short(referrer)} <ExternalLink className="h-3 w-3 opacity-60" />
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground">{t("mr.dash.ref.notBound")}</span>
-                  )}
-                </div>
-                {navigator.share && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-1.5 hover:bg-amber-500/10 hover:text-amber-200"
-                    onClick={() => navigator.share({ title: t("mr.dash.ref.shareTitle"), url: referralUrl }).catch(() => {})}
-                  >
-                    <Share2 className="h-3.5 w-3.5" /> {t("mr.dash.ref.share")}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Compact "bound to" pill — replaces the deleted referral card.
+            Just shows who the connected wallet is bound under, since
+            that information is still useful here even though the
+            copy/share UI now lives on the profile page. */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: EASE }}
+          className="rounded-xl border border-amber-500/20 bg-black/30 px-4 py-3 flex items-center justify-between gap-3"
+        >
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {t("mr.dash.ref.upstream")}
+          </span>
+          <span className="text-xs">
+            {isRoot ? (
+              <span className="text-amber-300 font-semibold">ROOT</span>
+            ) : isBound && referrer ? (
+              <a
+                href={`${runeChain.blockExplorers?.[0]?.url ?? "https://bscscan.com"}/address/${referrer}`}
+                target="_blank" rel="noreferrer"
+                className="font-mono text-foreground hover:text-amber-400 inline-flex items-center gap-1 transition-colors"
+              >
+                {short(referrer)} <ExternalLink className="h-3 w-3 opacity-60" />
+              </a>
+            ) : (
+              <span className="text-muted-foreground">{t("mr.dash.ref.notBound")}</span>
+            )}
+          </span>
         </motion.div>
 
         {/* Restricted (bound but not purchased) — explains the commission

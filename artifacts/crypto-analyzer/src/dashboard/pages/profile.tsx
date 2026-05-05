@@ -3,7 +3,7 @@ import { Skeleton } from "@dashboard/components/ui/skeleton";
 import { PageEnter, PageEnterStagger, PageEnterItem } from "@dashboard/components/page-enter";
 import { useActiveAccount } from "thirdweb/react";
 import {
-  Copy, ChevronRight, Bell, Settings, History, GitBranch, Server, Share2,
+  Copy, Check, ChevronRight, Bell, Settings, History, GitBranch, Server, Share2,
   ArrowLeftRight, User, Vault, Lock, Flame, TrendingUp, Coins, Wallet, Gift,
 } from "lucide-react";
 import { useToast } from "@dashboard/hooks/use-toast";
@@ -155,13 +155,17 @@ export default function ProfilePage() {
   // be built the same way. `buildReferralUrl` is the canonical helper.
   const referralLink = useMemo(() => buildReferralUrl(walletAddr), [walletAddr]);
 
-  // Copy: exec runs synchronously inside the click handler so Huawei's
-  // gesture guard accepts the write. The async fallback only runs if
-  // exec failed. Toast reflects the real result, never a misleading
-  // success.
+  // Inline button feedback — shows a green check + "Copied" label inside
+  // the button itself for 1.5s after a successful copy. This is the
+  // primary feedback channel because toast notifications get hidden by
+  // the Huawei system overlay or by status-bar masking. Toast still
+  // fires as a secondary signal for users on devices where it works.
+  const [copied, setCopied] = useState(false);
   const copyToClipboard = async (text: string) => {
     const ok = await copyText(text);
     if (ok) {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
       toast({ title: t("common.copied", "Copied"), description: t("common.copiedDesc", "Copied to clipboard") });
     } else {
       toast({
@@ -457,10 +461,22 @@ export default function ProfilePage() {
                 </div>
                 <button
                   onClick={() => copyToClipboard(referralLink)}
-                  className="shrink-0 px-3 py-2.5 rounded-xl ring-1 ring-border/50 bg-muted/20 hover:ring-primary/40 transition-all active:scale-95"
+                  className={`shrink-0 px-3 py-2.5 rounded-xl ring-1 transition-all active:scale-95 inline-flex items-center gap-1 ${
+                    copied
+                      ? "ring-emerald-500/60 bg-emerald-500/15 text-emerald-300"
+                      : "ring-border/50 bg-muted/20 hover:ring-primary/40 text-muted-foreground"
+                  }`}
                   data-testid="button-copy-referral"
+                  aria-live="polite"
                 >
-                  <Copy className="h-4 w-4 text-muted-foreground" />
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      <span className="text-[11px] font-bold">{t("common.copied", "Copied")}</span>
+                    </>
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </button>
                 <button
                   onClick={shareReferralLink}
