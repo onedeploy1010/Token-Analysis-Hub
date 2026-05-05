@@ -1259,17 +1259,17 @@ const GENESIS_SUPER_NODE_ID: NodeId = 201; // 超级节点 · 符魂 · L4
    (`fundraising.total`) and each tier's seat counts / remaining seats, so
    `totalRaised = Σ (seats − seatsRemaining) × investment`.
 
-   Stage 1 (TLP ≥ 2.8M, unlocks 10%) is wired directly to fundraise
+   Stage 1 (TLP ≥ 2.8M, unlocks 20%) is wired directly to fundraise
    completion — the initial TLP seeded at launch is exactly 2.8M when the
    8M raise fills. Stages 2–4 depend on post-launch market TLP growth
    which isn't sourced yet, so we mark them "awaiting market" after
-   launch and "locked" before it.
+   launch and "locked" before it. Spec 2026-05-05: 20/30/30/20 split.
 ──────────────────────────────────────────────────────────────────────────── */
 const POOL_STAGES = [
-  { pct: 10, tlpM: 2.8,  driver: "fundraise" as const },
-  { pct: 20, tlpM: 7,    driver: "market"    as const },
+  { pct: 20, tlpM: 2.8,  driver: "fundraise" as const },
+  { pct: 30, tlpM: 7,    driver: "market"    as const },
   { pct: 30, tlpM: 17.5, driver: "market"    as const },
-  { pct: 40, tlpM: 35,   driver: "market"    as const },
+  { pct: 20, tlpM: 35,   driver: "market"    as const },
 ];
 
 function PoolProgressCard({ ownedNodeId }: { ownedNodeId: number | undefined }) {
