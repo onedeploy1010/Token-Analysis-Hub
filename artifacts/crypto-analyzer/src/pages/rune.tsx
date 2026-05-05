@@ -1405,10 +1405,10 @@ export default function Rune() {
           trading-driven daily dividend per tier, weight allocation. */}
       {v2Tab === "node" && (() => {
         const stagesUnlock = [
-          { idx: 0, label: isEn ? "Stage 1 · Launch (10%)" : "阶段 1 · 启动 (10%)",   release: 0.10 },
-          { idx: 1, label: isEn ? "Stage 2 · TLP 700万 (20%)" : "阶段 2 · TLP 700万 (20%)", release: 0.20 },
+          { idx: 0, label: isEn ? "Stage 1 · Launch (20%)" : "阶段 1 · 启动 (20%)",   release: 0.20 },
+          { idx: 1, label: isEn ? "Stage 2 · TLP 700万 (30%)" : "阶段 2 · TLP 700万 (30%)", release: 0.30 },
           { idx: 2, label: isEn ? "Stage 3 · TLP 1750万 (30%)" : "阶段 3 · TLP 1750万 (30%)", release: 0.30 },
-          { idx: 3, label: isEn ? "Stage 4 · TLP 3500万 (40%)" : "阶段 4 · TLP 3500万 (40%)", release: 0.40 },
+          { idx: 3, label: isEn ? "Stage 4 · TLP 3500万 (20%)" : "阶段 4 · TLP 3500万 (20%)", release: 0.20 },
         ];
         const stages4 = [
           { idx: 0, tlp: 280,  qep: 360,  trp: 160,  tvl: 800 },
@@ -1440,7 +1440,7 @@ export default function Rune() {
                   {isEn ? "Mother-Token Airdrop · 4-Stage Release Per Tier" : "节点空投 · 4 阶段释放表"}
                 </CardTitle>
                 <p className="text-[11px] text-muted-foreground/80 mt-1">
-                  {isEn ? "Per `节点招募计划.md` §权益2: tokens unlock at TLP milestones (10/20/30/40%)." : "节点招募计划.md §权益2：按 TLP 里程碑解锁释放（10/20/30/40%）。"}
+                  {isEn ? "Per `节点招募计划.md` §权益2: tokens unlock at TLP milestones (20/30/30/20%)." : "节点招募计划.md §权益2：按 TLP 里程碑解锁释放（20/30/30/20%）。"}
                 </p>
               </CardHeader>
               <CardContent>

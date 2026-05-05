@@ -1,6 +1,20 @@
-# Cloudflare Pages — SPA fallback, but exclude /api/* so a mis-pointed
-# frontend doesn't silently receive index.html (HTTP 200) in place of a
-# proper 404. Without this, axios treats the SPA shell as a JSON body
-# and every page breaks with "s?.filter is not a function" downstream.
-/api/*    /api/:splat    404
-/*        /index.html    200
+# Cloudflare Pages — SPA fallback.
+#
+# /api/*       — return real 404 instead of the SPA shell so a
+#                mis-pointed frontend doesn't silently receive
+#                index.html (HTTP 200) in place of a proper 404.
+#                Without this, axios treats the SPA shell as JSON
+#                and every page breaks with "s?.filter is not a function".
+# /assets/*    — same: return real 404 for missing hashed chunks
+#                instead of falling back to index.html. The previous
+#                catch-all caused stale browsers (with an older
+#                index.html cached) to request a chunk hash that no
+#                longer exists, receive HTML, and refuse to execute
+#                it as a module ("Expected a JS module but got
+#                text/html"). A real 404 lets the browser bubble
+#                the error up to the dynamic-import call site so
+#                we can prompt the user to reload.
+# /*           — every other route falls through to the SPA shell.
+/api/*        /api/:splat       404
+/assets/*     /assets/:splat    404
+/*            /index.html       200

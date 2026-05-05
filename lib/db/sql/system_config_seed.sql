@@ -138,11 +138,11 @@ INSERT INTO system_config(namespace, key, value, description) VALUES
 ]', '5 档节点 — 价格 / 名额 / 直推率 / 空投 RUNE / 分红权重'),
 
 ('rune', 'airdrop_unlock_stages', '[
-  { "stage": 1, "poolThresholdUsdt": 2800000,  "releasePct": 10, "note": "底池 280 万（初始）" },
-  { "stage": 2, "poolThresholdUsdt": 7000000,  "releasePct": 20, "note": "底池 700 万" },
+  { "stage": 1, "poolThresholdUsdt": 2800000,  "releasePct": 20, "note": "底池 280 万（初始）" },
+  { "stage": 2, "poolThresholdUsdt": 7000000,  "releasePct": 30, "note": "底池 700 万" },
   { "stage": 3, "poolThresholdUsdt": 17500000, "releasePct": 30, "note": "底池 1,750 万" },
-  { "stage": 4, "poolThresholdUsdt": 35000000, "releasePct": 40, "note": "底池 3,500 万 或 满 180 天" }
-]', '节点空投 RUNE 4 阶段解锁'),
+  { "stage": 4, "poolThresholdUsdt": 35000000, "releasePct": 20, "note": "底池 3,500 万 或 满 180 天" }
+]', '节点空投 RUNE 4 阶段解锁 (20/30/30/20)'),
 
 -- ── 七、推广 V 级 ───────────────────────────────────────────────────
 ('rune', 'v_level_rules', '[

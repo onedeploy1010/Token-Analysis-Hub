@@ -859,14 +859,14 @@ function BenefitRow({
    is the single place to sync.
 ──────────────────────────────────────────────────────────────────────────── */
 
-/** Airdrop release — 4 stages, back-loaded per the 2026 spec: 10/20/30/40
- *  unlocks gated on TLP + team-stake thresholds (final stage also has a
- *  180-day time fallback). Total = 100%. */
+/** Airdrop release — 4 stages, mid-loaded per the 2026 spec:
+ *  20 / 30 / 30 / 20. Unlocks gated on TLP + team-stake thresholds
+ *  (final stage also has a 180-day time fallback). Total = 100%. */
 const AIRDROP_BATCHES = [
-  { pct: 10, priceAt: 0.028, titleKey: "mr.dash.benefits.ad.b1", trig: "mr.dash.benefits.ad.b1Trig" },
-  { pct: 20, priceAt: 0.070, titleKey: "mr.dash.benefits.ad.b2", trig: "mr.dash.benefits.ad.b2Trig" },
+  { pct: 20, priceAt: 0.028, titleKey: "mr.dash.benefits.ad.b1", trig: "mr.dash.benefits.ad.b1Trig" },
+  { pct: 30, priceAt: 0.070, titleKey: "mr.dash.benefits.ad.b2", trig: "mr.dash.benefits.ad.b2Trig" },
   { pct: 30, priceAt: 0.175, titleKey: "mr.dash.benefits.ad.b3", trig: "mr.dash.benefits.ad.b3Trig" },
-  { pct: 40, priceAt: 0.350, titleKey: "mr.dash.benefits.ad.b4", trig: "mr.dash.benefits.ad.b4Trig" },
+  { pct: 20, priceAt: 0.350, titleKey: "mr.dash.benefits.ad.b4", trig: "mr.dash.benefits.ad.b4Trig" },
 ] as const;
 
 /** Per-tier airdrop allocation.
