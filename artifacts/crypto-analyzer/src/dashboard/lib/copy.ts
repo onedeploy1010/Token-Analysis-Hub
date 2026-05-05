@@ -1,42 +1,79 @@
 /**
- * Robust clipboard copy that works on Huawei browsers, iOS Safari, Android WebView, etc.
- * Tries multiple methods in sequence until one succeeds.
+ * Robust clipboard copy that works on Huawei (EMUI / Petal / HMS WebView),
+ * iOS Safari, Android WebView, and modern desktop browsers.
+ *
+ * Critical detail: an `async` function body up to the first `await`
+ * runs synchronously, in the same tick as the caller. We exploit that
+ * by running the synchronous `document.execCommand("copy")` path FIRST
+ * — before any await — so it stays inside the user-gesture window that
+ * Huawei's clipboard guard requires. Only if exec genuinely returns
+ * false do we await the modern `navigator.clipboard.writeText` API.
+ *
+ * Why the original ordering didn't work on Huawei:
+ *   1. `navigator.clipboard.writeText` was tried first — it returns a
+ *      Promise that resolves on Huawei but doesn't actually write,
+ *      so try/catch couldn't detect the failure.
+ *   2. By the time the catch fell through to execCommand, the user-
+ *      gesture context had expired (because we'd already awaited),
+ *      and execCommand also refused to write.
+ *   3. The toast still said "Copied" because we never checked the
+ *      return value.
  */
 export async function copyText(text: string): Promise<boolean> {
-  // Method 1: Modern Clipboard API
-  try {
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-      await navigator.clipboard.writeText(text);
-      return true;
+  // ─── Method 1 — synchronous execCommand (Huawei-safe) ───
+  // Runs BEFORE any await so we keep the user-gesture context.
+  if (tryExecCommand(text)) {
+    // Also kick the modern API as a backup so the OS-level shared
+    // clipboard (Android multi-app paste, etc.) gets the value too.
+    // Don't await — we already succeeded.
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(text).catch(() => {});
     }
-  } catch {
-    // Clipboard API failed, try fallback
+    return true;
   }
 
-  // Method 2: textarea + execCommand (widest compatibility)
+  // ─── Method 2 — async Clipboard API fallback ───
+  // For browsers that disable execCommand entirely (some strict
+  // iframes, Chromium feature flags). The user-gesture window may
+  // already be lost by the time this runs, but most modern browsers
+  // honour the call inside a click handler regardless.
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fall through
+    }
+  }
+  return false;
+}
+
+/** Hidden textarea + execCommand — synchronous path that works on
+ *  Huawei. The textarea must be in the DOM, focusable, and selected. */
+function tryExecCommand(text: string): boolean {
+  if (typeof document === "undefined") return false;
+  let ta: HTMLTextAreaElement | null = null;
   try {
-    const ta = document.createElement("textarea");
+    ta = document.createElement("textarea");
     ta.value = text;
-    // Prevent zoom on iOS
-    ta.style.fontSize = "16px";
-    // Move off-screen but keep visible (some browsers need it visible)
+    ta.setAttribute("readonly", "");
+    ta.setAttribute("aria-hidden", "true");
+    ta.style.fontSize = "16px";          // avoid iOS auto-zoom
     ta.style.position = "fixed";
     ta.style.top = "0";
     ta.style.left = "0";
     ta.style.width = "1px";
     ta.style.height = "1px";
     ta.style.padding = "0";
-    ta.style.border = "none";
-    ta.style.outline = "none";
-    ta.style.boxShadow = "none";
-    ta.style.background = "transparent";
+    ta.style.border = "0";
+    ta.style.outline = "0";
     ta.style.opacity = "0";
-    ta.setAttribute("readonly", "");
+    ta.style.pointerEvents = "none";
     document.body.appendChild(ta);
 
-    // iOS Safari needs special handling
     const isIOS = /ipad|iphone|ipod/i.test(navigator.userAgent);
     if (isIOS) {
+      ta.contentEditable = "true";
       const range = document.createRange();
       range.selectNodeContents(ta);
       const sel = window.getSelection();
@@ -51,31 +88,10 @@ export async function copyText(text: string): Promise<boolean> {
       ta.setSelectionRange(0, text.length);
     }
 
-    const ok = document.execCommand("copy");
-    document.body.removeChild(ta);
-    if (ok) return true;
+    return document.execCommand("copy");
   } catch {
-    // execCommand failed too
+    return false;
+  } finally {
+    if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
   }
-
-  // Method 3: input element fallback (some Android WebViews prefer input over textarea)
-  try {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = text;
-    input.style.position = "fixed";
-    input.style.opacity = "0";
-    input.setAttribute("readonly", "");
-    document.body.appendChild(input);
-    input.focus();
-    input.select();
-    input.setSelectionRange(0, text.length);
-    const ok = document.execCommand("copy");
-    document.body.removeChild(input);
-    if (ok) return true;
-  } catch {
-    // All methods failed
-  }
-
-  return false;
 }

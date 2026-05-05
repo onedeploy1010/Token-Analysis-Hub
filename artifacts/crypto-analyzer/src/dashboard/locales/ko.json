@@ -62,7 +62,9 @@
     "to": "~",
     "saving": "저장 중...",
     "saved": "저장됨",
-    "select": "선택"
+    "select": "선택",
+    "copyFailed": "복사 실패",
+    "copyFailedDesc": "링크를 길게 눌러 직접 복사하세요"
   },
   "nav": {
     "home": "홈",

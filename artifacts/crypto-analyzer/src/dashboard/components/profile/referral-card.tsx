@@ -49,9 +49,19 @@ export function ReferralCard({ refCode }: ReferralCardProps) {
     enabled: !!walletAddr,
   });
 
-  const copyToClipboard = async (text: string) => {
-    await copyText(text);
-    toast({ title: t("common.copied"), description: t("common.copiedDesc") });
+  // Sync to preserve user-gesture context for Huawei browsers (see
+  // dashboard/lib/copy.ts). Toast reflects actual success/failure.
+  const copyToClipboard = (text: string) => {
+    const ok = copyText(text);
+    if (ok) {
+      toast({ title: t("common.copied"), description: t("common.copiedDesc") });
+    } else {
+      toast({
+        title: t("common.copyFailed", "Copy failed"),
+        description: t("common.copyFailedDesc", "Long-press to select & copy manually."),
+        variant: "destructive",
+      });
+    }
   };
 
   const referralLink = refCode ? `${window.location.origin}/r/${refCode}/${refCode}` : "--";

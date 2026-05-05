@@ -62,7 +62,9 @@
     "to": "até",
     "saving": "Salvando...",
     "saved": "Salvo",
-    "select": "Selecionar"
+    "select": "Selecionar",
+    "copyFailed": "Falha ao copiar",
+    "copyFailedDesc": "Toque e segure o link para copiá-lo manualmente."
   },
   "nav": {
     "home": "Início",

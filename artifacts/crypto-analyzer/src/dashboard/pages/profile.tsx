@@ -155,17 +155,52 @@ export default function ProfilePage() {
   // be built the same way. `buildReferralUrl` is the canonical helper.
   const referralLink = useMemo(() => buildReferralUrl(walletAddr), [walletAddr]);
 
+  // Copy: exec runs synchronously inside the click handler so Huawei's
+  // gesture guard accepts the write. The async fallback only runs if
+  // exec failed. Toast reflects the real result, never a misleading
+  // success.
   const copyToClipboard = async (text: string) => {
-    await copyText(text);
-    toast({ title: t("common.copied", "Copied"), description: t("common.copiedDesc", "Copied to clipboard") });
-  };
-  const shareReferralLink = () => {
-    if (!referralLink) return;
-    if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: "RUNE PROTOCOL", text: t("profile.inviteFriendsDesc", "Invite friends to RUNE PROTOCOL"), url: referralLink }).catch(() => {});
+    const ok = await copyText(text);
+    if (ok) {
+      toast({ title: t("common.copied", "Copied"), description: t("common.copiedDesc", "Copied to clipboard") });
     } else {
-      copyToClipboard(referralLink);
+      toast({
+        title: t("common.copyFailed", "Copy failed"),
+        description: t("common.copyFailedDesc", "Long-press the link above to select & copy manually."),
+        variant: "destructive",
+      });
     }
+  };
+  // Share: navigator.share exists on Huawei browsers but frequently
+  // silent-fails (resolves with no system sheet shown). Strategy:
+  //   1. canShare() probe — Huawei often returns false here, letting
+  //      us skip the broken path entirely.
+  //   2. Catch real errors. AbortError = user dismissed the sheet;
+  //      everything else (NotAllowedError / DataError) means share
+  //      never happened, so we fall back to copy + toast.
+  const shareReferralLink = async () => {
+    if (!referralLink) return;
+    const data = {
+      title: "RUNE PROTOCOL",
+      text: t("profile.inviteFriendsDesc", "Invite friends to RUNE PROTOCOL"),
+      url: referralLink,
+    };
+    const canUseShare =
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function" &&
+      (typeof navigator.canShare !== "function" || navigator.canShare(data));
+    if (canUseShare) {
+      try {
+        await navigator.share(data);
+        return; // OS sheet handled it.
+      } catch (err) {
+        // User dismissed — don't fall back, don't toast.
+        if ((err as { name?: string })?.name === "AbortError") return;
+        // Any other error → the share never actually happened, fall
+        // through to copy.
+      }
+    }
+    await copyToClipboard(referralLink);
   };
 
   const shortAddr = walletAddr ? `${walletAddr.slice(0, 6)}...${walletAddr.slice(-4)}` : "";
@@ -405,7 +440,19 @@ export default function ProfilePage() {
                 {t("profile.inviteFriends", "Invite Link")}
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0 rounded-xl px-3 py-2.5 font-mono text-[11px] text-foreground/80 truncate ring-1 ring-border/40 bg-muted/15">
+                <div
+                  className="flex-1 min-w-0 rounded-xl px-3 py-2.5 font-mono text-[11px] text-foreground/80 truncate ring-1 ring-border/40 bg-muted/15 select-all cursor-text"
+                  // Long-press selectable on Huawei / Android browsers
+                  // where the JS-driven copy may silently fail. Tapping
+                  // the field selects everything so the user can use
+                  // the OS-level copy menu as a manual escape hatch.
+                  onClick={(e) => {
+                    const r = document.createRange();
+                    r.selectNodeContents(e.currentTarget);
+                    const s = window.getSelection();
+                    if (s) { s.removeAllRanges(); s.addRange(r); }
+                  }}
+                >
                   {referralLink}
                 </div>
                 <button

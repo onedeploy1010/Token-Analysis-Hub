@@ -62,7 +62,9 @@
     "to": "to",
     "saving": "Saving...",
     "saved": "Saved",
-    "select": "Select"
+    "select": "Select",
+    "copyFailed": "Copy failed",
+    "copyFailedDesc": "Long-press the link above to select & copy manually."
   },
   "nav": {
     "home": "HALL",

@@ -62,7 +62,9 @@
     "to": "至",
     "saving": "儲存中...",
     "saved": "已儲存",
-    "select": "選擇"
+    "select": "選擇",
+    "copyFailed": "複製失敗",
+    "copyFailedDesc": "長按連結手動選取複製"
   },
   "nav": {
     "home": "首頁",

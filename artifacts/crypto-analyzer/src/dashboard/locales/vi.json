@@ -62,7 +62,9 @@
     "to": "đến",
     "saving": "Đang lưu...",
     "saved": "Đã lưu",
-    "select": "Chọn"
+    "select": "Chọn",
+    "copyFailed": "Sao chép thất bại",
+    "copyFailedDesc": "Nhấn giữ liên kết để sao chép thủ công."
   },
   "nav": {
     "home": "Trang chủ",

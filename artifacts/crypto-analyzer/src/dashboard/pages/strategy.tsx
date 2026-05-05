@@ -878,11 +878,14 @@ export default function StrategyPage() {
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={async () => {
-                    if (walletAddr) {
-                      await copyText(walletAddr);
-                      toast({ title: t("common.copied"), description: t("common.copiedDesc") });
-                    }
+                  onClick={() => {
+                    if (!walletAddr) return;
+                    const ok = copyText(walletAddr);
+                    toast(
+                      ok
+                        ? { title: t("common.copied"), description: t("common.copiedDesc") }
+                        : { title: t("common.copyFailed", "Copy failed"), description: t("common.copyFailedDesc", "Long-press to select manually."), variant: "destructive" }
+                    );
                   }}
                   data-testid="button-copy-address"
                 >

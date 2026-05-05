@@ -62,7 +62,9 @@
     "to": "à",
     "saving": "Enregistrement...",
     "saved": "Enregistré",
-    "select": "Sélectionner"
+    "select": "Sélectionner",
+    "copyFailed": "Échec de la copie",
+    "copyFailedDesc": "Appuyez longuement sur le lien pour le copier manuellement."
   },
   "nav": {
     "home": "Accueil",
