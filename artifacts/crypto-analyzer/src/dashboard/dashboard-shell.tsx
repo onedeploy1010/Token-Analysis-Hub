@@ -120,7 +120,12 @@ function ShellHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/90 backdrop-blur-md shadow-sm">
       <div className="container flex h-[72px] items-center justify-between mx-auto pl-2 pr-2 md:pr-6 gap-4 md:gap-8">
-        <Link href="/" className="flex items-center gap-2 group min-w-0 shrink md:shrink-0 cursor-pointer">
+        {/* Plain <a> (not wouter <Link>) so clicking the logo escapes
+            the dashboard's `base="/app"` router and lands on the public
+            mainnet site root (rune-ai.io/), where the recruit + node
+            purchase flow lives. wouter Link with href="/" would resolve
+            to "/app" and trap users inside the dashboard shell. */}
+        <a href="/" className="flex items-center gap-2 group min-w-0 shrink md:shrink-0 cursor-pointer">
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -130,7 +135,7 @@ function ShellHeader() {
             <span className="inline-flex md:hidden"><AnimatedRuneLogo size={36} /></span>
           </motion.div>
           <WordmarkRune />
-        </Link>
+        </a>
 
         {/* Desktop: full-size wallet button + language toggle */}
         <div className="hidden md:flex items-center h-[72px] gap-3 ml-auto">
