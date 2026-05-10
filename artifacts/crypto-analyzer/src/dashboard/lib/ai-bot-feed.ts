@@ -117,7 +117,13 @@ export function useConsoleLogs(model?: string): { logs: ConsoleLog[]; loading: b
   return { logs, loading };
 }
 
-/** Subscribe to ai_paper_trades. Filter by status for "live trades only". */
+/** Subscribe to ai_paper_trades. Filter by status for "live trades only".
+ *
+ *  Trades are returned sorted by latest *activity* (closed_at when
+ *  present, else opened_at) descending. A trade that just closed bubbles
+ *  to the top alongside fresh opens, so the orders dialog reads as a
+ *  live event stream rather than burying short-term TP/SL closes under
+ *  4h of still-open positions. */
 export function usePaperTrades(opts: { model?: string; status?: "OPEN" | "CLOSED" } = {}): {
   trades: PaperTrade[]; loading: boolean;
 } {
@@ -137,7 +143,7 @@ export function usePaperTrades(opts: { model?: string; status?: "OPEN" | "CLOSED
       if (status) q = q.eq("status", status);
       const { data, error } = await q;
       if (!active) return;
-      if (!error) setTrades((data ?? []) as PaperTrade[]);
+      if (!error) setTrades(sortByActivity((data ?? []) as PaperTrade[]));
       setLoading(false);
     })();
 
@@ -151,12 +157,12 @@ export function usePaperTrades(opts: { model?: string; status?: "OPEN" | "CLOSED
           if (model && row.model !== model) return;
           if (payload.eventType === "INSERT") {
             if (status && row.status !== status) return;
-            setTrades((prev) => [row, ...prev].slice(0, TRADE_CAP));
+            setTrades((prev) => sortByActivity([row, ...prev]).slice(0, TRADE_CAP));
           } else if (payload.eventType === "UPDATE") {
             setTrades((prev) => {
               const next = prev.map((t) => (t.id === row.id ? row : t));
-              if (status) return next.filter((t) => t.status === status);
-              return next;
+              const filtered = status ? next.filter((t) => t.status === status) : next;
+              return sortByActivity(filtered);
             });
           }
         },
@@ -167,6 +173,16 @@ export function usePaperTrades(opts: { model?: string; status?: "OPEN" | "CLOSED
   }, [model, status]);
 
   return { trades, loading };
+}
+
+/** Sort trades by latest event timestamp (close > open). ISO strings are
+ *  lexicographically ordered, so plain string compare is correct. */
+function sortByActivity(rows: PaperTrade[]): PaperTrade[] {
+  return rows.slice().sort((a, b) => {
+    const ta = a.closed_at ?? a.opened_at;
+    const tb = b.closed_at ?? b.opened_at;
+    return tb.localeCompare(ta);
+  });
 }
 
 /** Subscribe to ai_predictions. */
