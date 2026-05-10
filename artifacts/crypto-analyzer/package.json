@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite --config vite.config.ts --host 0.0.0.0",
     "build": "vite build --config vite.config.ts",
+    "build:mainnet": "BASE_PATH=/ PORT=8080 vite build --config vite.config.ts",
+    "build:testnet": "VITE_RUNE_CHAIN=bsc_testnet VITE_API_BASE_URL=https://runeapi-server-production.up.railway.app BASE_PATH=/ PORT=8080 vite build --config vite.config.ts",
+    "deploy:mainnet": "pnpm run build:mainnet && wrangler pages deploy dist/public --project-name rune-ai-preview --branch main --commit-dirty=true",
+    "deploy:testnet": "pnpm run build:testnet && wrangler pages deploy dist/public --project-name rune-testnet --branch testnet --commit-dirty=true",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
