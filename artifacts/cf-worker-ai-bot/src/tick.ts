@@ -98,9 +98,9 @@ async function resolveOpenTrades(env: Env): Promise<Array<{
     byAsset.set(t.asset, arr);
   }
   const closed: Array<{ id: number; model: string; asset: string; pnlPct: number; reason: string }> = [];
-  const TIMEOUT_MS = 4 * 60 * 60 * 1000; // 4 hours
-  const TP_PCT = 2.5;
-  const SL_PCT = 1.5;
+  const TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours
+  const TP_PCT = 0.6;
+  const SL_PCT = 0.4;
   const nowMs = Date.now();
 
   for (const [asset, trades] of byAsset) {
