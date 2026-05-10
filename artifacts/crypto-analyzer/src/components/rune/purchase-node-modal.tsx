@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Button } from "@/components/ui/button";
 import { Loader2, ShieldCheck, ArrowRight, CheckCircle2, AlertCircle, Users, Percent, LayoutGrid } from "lucide-react";
 import { useSendTransaction, useActiveAccount } from "thirdweb/react";
-import { prepareContractCall } from "thirdweb";
+import { prepareContractCall, waitForReceipt } from "thirdweb";
 import { maxUint256 } from "thirdweb/utils";
 import { nodePresellContract, usdtContract, NODE_META, NODE_IDS, type NodeId } from "@/lib/thirdweb/contracts";
 import { readUsdtAllowance } from "@/hooks/rune/use-usdt";
@@ -59,11 +59,16 @@ export function PurchaseNodeModal({ open, initialNodeId, onClose, onPurchased, o
       setStep("approving");
       const allowance = await readUsdtAllowance(account.address);
       if (allowance < cfg.payAmount) {
-        await sendTx(prepareContractCall({
+        const approveResult = await sendTx(prepareContractCall({
           contract: usdtContract,
           method: "function approve(address,uint256)",
           params: [nodePresellContract.address as `0x${string}`, maxUint256],
         }));
+        await waitForReceipt({
+          client: usdtContract.client,
+          chain: usdtContract.chain,
+          transactionHash: approveResult.transactionHash,
+        });
       }
       setStep("buying");
       await sendTx(prepareContractCall({
