@@ -64,7 +64,8 @@
     "saved": "已保存",
     "select": "选择",
     "copyFailed": "复制失败",
-    "copyFailedDesc": "长按链接手动选择复制"
+    "copyFailedDesc": "长按链接手动选择复制",
+    "back": "返回"
   },
   "nav": {
     "home": "HALL",
@@ -1251,7 +1252,35 @@
     "nodeReferralReward": "节点推广奖励",
     "nodeReferralSub": "5-15% 按等级",
     "nodeAirdrop": "节点空投",
-    "nodeAirdropSub": "底池 TVL 4 阶段解锁"
+    "nodeAirdropSub": "底池 TVL 4 阶段解锁",
+    "referralOverview": "概览",
+    "referralRewards": "奖励",
+    "nodeOverview": "概览",
+    "earningsSource": "直推佣金（链上）+ 节点收益（预估）· USDT",
+    "directCommission": "直推",
+    "teamVolume": "团队",
+    "nodeYield": "节点",
+    "nodeTier": "节点",
+    "noNode": "未持有",
+    "myNodes": "我的节点",
+    "invested": "投资",
+    "noNodeYet": "尚未购买节点",
+    "team": "团队",
+    "nodeRewards": {
+      "title": "奖励",
+      "empty": "尚未购买节点",
+      "totalNodes": "总节点数",
+      "invested": "投资额",
+      "dailyEst": "日预估",
+      "tierBreakdown": "分档明细",
+      "perDay": "每日",
+      "depositTimeline": "入金时间线",
+      "cumulative": "累计",
+      "disclaimer": "日化收益基于档位费率预估；上线后将开始实际结算。",
+      "commissionReceived": "直推佣金",
+      "directRate": "直推费率",
+      "directPurchases": "购买的下线"
+    }
   },
   "market": {
     "marketAnalysis": "市场分析",
@@ -1540,7 +1569,9 @@
     "noOrders": "暂无订单",
     "opened": "开仓",
     "closed": "平仓",
-    "statusOpen": "持仓中"
+    "statusOpen": "持仓中",
+    "lastOpened": "最后开仓 {{rel}}",
+    "cadenceHint": "（每 5 分钟轮询此模型）"
   },
   "aiConsole": {
     "console": "控制台",
@@ -1620,5 +1651,47 @@
     "long": "做多",
     "short": "做空",
     "statsLine": "{{strong}} 强信号 · {{long}} 做多 · {{short}} 做空"
+  },
+  "nodes": {
+    "tier": {
+      "pageTitle": "推广等级 & 奖励说明",
+      "directRewardFixed": "直推收益（固定）",
+      "directRewardFixedDesc": "每笔直推节点奖励固定 5%",
+      "teamRewardRange": "团队收益区间",
+      "teamRewardRangeDesc": "V1 至 V9 按等级递增",
+      "qualifyPrefix": "达到对应 V 级需同时满足：",
+      "holdingReq": "持仓要求",
+      "qualifyComma": "、",
+      "teamPerformance": "团队业绩",
+      "qualifyAnd": " 及 ",
+      "directReferrals": "直推布道人数",
+      "qualifySuffix": "。平级收益从 V3 起生效。",
+      "teamRewardLabel": "团队奖励",
+      "peopleCount": "{{count}}人",
+      "sameRank1": "平级1%",
+      "sameRank5": "平级5%",
+      "specialUpperDividend": "上级沉淀分红",
+      "specialPeerDividendDao": "同级沉淀5%+DAO权",
+      "footerNote": "※ 平级收益 1%（V3 及以上）· 数据来源：RUNE+ 模型制度",
+      "holding1k": "1,000U",
+      "holding2k": "2,000U",
+      "holding3k": "3,000U",
+      "holding4k": "4,000U",
+      "holding5k": "5,000U",
+      "holding10k": "10,000U",
+      "holding20k": "20,000U",
+      "team20k": "2万U",
+      "team50k": "5万U",
+      "team300k": "30万U",
+      "team1m": "100万U",
+      "team3m": "300万U",
+      "team7m": "700万U",
+      "team20m": "2,000万U",
+      "team50m": "5,000万U",
+      "team90m": "9,000万U"
+    },
+    "rewards": {
+      "usdtGross": "USDT · 总额"
+    }
   }
 }

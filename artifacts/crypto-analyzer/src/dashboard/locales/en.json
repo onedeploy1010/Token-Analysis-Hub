@@ -64,7 +64,8 @@
     "saved": "Saved",
     "select": "Select",
     "copyFailed": "Copy failed",
-    "copyFailedDesc": "Long-press the link above to select & copy manually."
+    "copyFailedDesc": "Long-press the link above to select & copy manually.",
+    "back": "Back"
   },
   "nav": {
     "home": "HALL",
@@ -1237,7 +1238,49 @@
     "nodeReferralReward": "Node Referral",
     "nodeReferralSub": "5-15% per tier",
     "nodeAirdrop": "Node Airdrop",
-    "nodeAirdropSub": "4-stage unlock by pool TVL"
+    "nodeAirdropSub": "4-stage unlock by pool TVL",
+    "balance": "Balance",
+    "swapQuota": "Swap Quota",
+    "price": "Price",
+    "youSell": "You sell",
+    "youPay": "You pay",
+    "youGet": "You get",
+    "rate": "Rate",
+    "fee": "Fee",
+    "exceedsQuota": "Exceeds swap quota — must keep at least 50% MA balance",
+    "exceedsQuotaShort": "Exceeds quota",
+    "connectWallet": "Connect Wallet",
+    "enterAmount": "Enter amount",
+    "buy": "Buy",
+    "flashSwap": "Flash Swap",
+    "referralOverview": "Overview",
+    "referralRewards": "Rewards",
+    "nodeOverview": "Overview",
+    "earningsSource": "Direct commission (on-chain) + node yield (estimated) · USDT",
+    "directCommission": "Direct",
+    "teamVolume": "Team",
+    "nodeYield": "Node",
+    "nodeTier": "Node",
+    "noNode": "None",
+    "myNodes": "My Nodes",
+    "invested": "Invested",
+    "noNodeYet": "No nodes yet",
+    "team": "Team",
+    "nodeRewards": {
+      "title": "Rewards",
+      "empty": "No nodes purchased yet",
+      "totalNodes": "Total Nodes",
+      "invested": "Invested",
+      "dailyEst": "Daily Est.",
+      "tierBreakdown": "Tier Breakdown",
+      "perDay": "per day",
+      "depositTimeline": "Deposit Timeline",
+      "cumulative": "Cumulative",
+      "disclaimer": "Daily yields are projections based on tier rates; actual settlement begins after listing.",
+      "commissionReceived": "Direct Commission",
+      "directRate": "direct rate",
+      "directPurchases": "purchasing downlines"
+    }
   },
   "market": {
     "marketAnalysis": "Market Analysis",
@@ -1526,7 +1569,9 @@
     "noOrders": "No orders yet",
     "opened": "Opened",
     "closed": "Closed",
-    "statusOpen": "OPEN"
+    "statusOpen": "OPEN",
+    "lastOpened": "Last open {{rel}}",
+    "cadenceHint": "(polls this model every 5 min)"
   },
   "aiConsole": {
     "console": "Console",
@@ -1606,5 +1651,47 @@
     "long": "long",
     "short": "short",
     "statsLine": "{{strong}} strong · {{long}} long · {{short}} short"
+  },
+  "nodes": {
+    "tier": {
+      "pageTitle": "Tier & Reward Guide",
+      "directRewardFixed": "Direct Reward (Fixed)",
+      "directRewardFixedDesc": "Each direct node referral pays a fixed 5%",
+      "teamRewardRange": "Team Reward Range",
+      "teamRewardRangeDesc": "V1 to V9 scales up by tier",
+      "qualifyPrefix": "Reaching a V tier requires all of: ",
+      "holdingReq": "Holding",
+      "qualifyComma": ", ",
+      "teamPerformance": "Team Performance",
+      "qualifyAnd": " and ",
+      "directReferrals": "Direct Referrals",
+      "qualifySuffix": ". Peer rewards take effect from V3.",
+      "teamRewardLabel": "Team Reward",
+      "peopleCount": "{{count}} people",
+      "sameRank1": "Peer 1%",
+      "sameRank5": "Peer 5%",
+      "specialUpperDividend": "Upper Sediment Dividend",
+      "specialPeerDividendDao": "Peer Sediment 5% + DAO Rights",
+      "footerNote": "* Peer reward 1% (V3 and above) · Source: RUNE+ economic model",
+      "holding1k": "1,000U",
+      "holding2k": "2,000U",
+      "holding3k": "3,000U",
+      "holding4k": "4,000U",
+      "holding5k": "5,000U",
+      "holding10k": "10,000U",
+      "holding20k": "20,000U",
+      "team20k": "20K U",
+      "team50k": "50K U",
+      "team300k": "300K U",
+      "team1m": "1M U",
+      "team3m": "3M U",
+      "team7m": "7M U",
+      "team20m": "20M U",
+      "team50m": "50M U",
+      "team90m": "90M U"
+    },
+    "rewards": {
+      "usdtGross": "USDT · gross"
+    }
   }
 }
