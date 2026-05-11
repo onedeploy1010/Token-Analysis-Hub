@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import i18n from "@dashboard/lib/i18n";
+import { useLanguage, type Language } from "@/contexts/language-context";
 
 const LANGUAGES = [
   { code: "en", label: "English" },
@@ -16,14 +17,33 @@ const LANGUAGES = [
   { code: "vi", label: "Tiếng Việt" },
 ];
 
+// Map dashboard switcher codes (12) to the custom i18n system's supported
+// Language codes (9). Codes that the custom system does not yet support
+// (fr/de/ar/pt) fall back to "en" so the rest of the UI stays consistent.
+const customLangMap: Record<string, Language> = {
+  en: "en", zh: "zh", "zh-TW": "zh-TW", ja: "ja", ko: "ko",
+  vi: "vi", es: "es", ru: "ru",
+  fr: "en", de: "en", ar: "en", pt: "en",
+};
+
 export default function LangSwitcher() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("en");
   const ref = useRef<HTMLDivElement>(null);
+  const { setLanguage } = useLanguage();
 
   useEffect(() => {
     const saved = localStorage.getItem("taiclaw-lang") || i18n.language || "en";
     setCurrent(saved);
+    // Align the custom i18n system to whatever the dashboard switcher
+    // persisted on a previous visit. The custom context defaults to "zh"
+    // on first load — without this push, sections wired to useLanguage()
+    // stay in Chinese even if the user previously picked, say, English.
+    const mapped = customLangMap[saved];
+    if (mapped) setLanguage(mapped);
+    // setLanguage is stable (memoised in LanguageProvider); intentionally
+    // run once on mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -38,6 +58,8 @@ export default function LangSwitcher() {
   const select = (code: string) => {
     setCurrent(code);
     i18n.changeLanguage(code);
+    const mapped = customLangMap[code] ?? "en";
+    setLanguage(mapped);
     localStorage.setItem("taiclaw-lang", code);
     setOpen(false);
   };
