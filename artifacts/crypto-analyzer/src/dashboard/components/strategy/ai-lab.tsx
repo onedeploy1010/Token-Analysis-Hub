@@ -37,6 +37,30 @@ function shortStamp(iso: string | null): string {
   return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/** Locale-aware "5m ago / 2h ago / 3d ago" via the platform's RelativeTimeFormat.
+ *  Used to surface freshness of the latest paper trade so the user can tell at a
+ *  glance whether the bot is still ticking on this model (cron rotates 5 models,
+ *  so a single model produces ~one trade attempt every 5 minutes). */
+function relTime(iso: string, lang: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const min = Math.round(ms / 60000);
+  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
+  if (min < 1) return rtf.format(0, "minute");
+  if (min < 60) return rtf.format(-min, "minute");
+  const hr = Math.round(min / 60);
+  if (hr < 24) return rtf.format(-hr, "hour");
+  return rtf.format(-Math.round(hr / 24), "day");
+}
+
+/** Color-code freshness: emerald (<10m) → yellow (<60m) → red (older). */
+function freshTone(iso: string | null): string {
+  if (!iso) return "text-muted-foreground/40";
+  const min = (Date.now() - new Date(iso).getTime()) / 60000;
+  if (min < 10) return "text-emerald-400";
+  if (min < 60) return "text-yellow-400";
+  return "text-red-400";
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface AccuracyRow {
@@ -241,13 +265,16 @@ interface PaperTrade {
 }
 
 function SimOrdersButton({ model, color }: { model: string; color: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
 
   // Live realtime feed of this model's paper trades — opened_at and
   // closed_at timestamps come straight from the worker, no padding.
   const { trades, loading } = usePaperTrades({ model: dbModelOf(model) });
   const display = open ? trades : [];
+  const lastOpenedAt = trades[0]?.opened_at ?? null;
+  const lastOpenedRel = lastOpenedAt ? relTime(lastOpenedAt, i18n.language) : null;
+  const lastTone = freshTone(lastOpenedAt);
 
   // Stat panel uses curated per-model targets so the dashboard reads
   // the way each AI is meant to perform (rune-ai ~40% monthly,
@@ -259,8 +286,13 @@ function SimOrdersButton({ model, color }: { model: string; color: string }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[12px] font-bold transition-all active:scale-[0.98]" style={{ background: `${color}12`, border: `1px solid ${color}25`, color }}>
-        <List className="h-3.5 w-3.5" />{t("aiLab.simOrders", "交易订单")}
+      <button onClick={() => setOpen(true)} className="w-full flex flex-col items-center justify-center gap-0.5 rounded-xl py-2 text-[12px] font-bold transition-all active:scale-[0.98]" style={{ background: `${color}12`, border: `1px solid ${color}25`, color }}>
+        <span className="flex items-center gap-2"><List className="h-3.5 w-3.5" />{t("aiLab.simOrders", "交易订单")}</span>
+        {lastOpenedRel && (
+          <span className={`text-[9px] font-normal ${lastTone}`}>
+            {t("aiLab.lastOpened", { rel: lastOpenedRel })}
+          </span>
+        )}
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md w-full p-0 overflow-hidden" style={{ background: "linear-gradient(160deg, hsl(22,20%,4%), hsl(20,15%,3%))", border: `1px solid ${color}22`, maxHeight: "85vh" }}>
@@ -268,6 +300,12 @@ function SimOrdersButton({ model, color }: { model: string; color: string }) {
             <span className="text-sm font-bold">{model} {t("aiLab.simOrders", "交易订单")}</span>
             <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
           </div>
+          {lastOpenedRel && (
+            <div className="px-4 pt-2 flex items-baseline gap-2 text-[11px]">
+              <span className={`font-bold ${lastTone}`}>{t("aiLab.lastOpened", { rel: lastOpenedRel })}</span>
+              <span className="text-muted-foreground/45 text-[10px]">{t("aiLab.cadenceHint")}</span>
+            </div>
+          )}
           <div className="px-4 py-2 grid grid-cols-3 gap-1.5">
             {[
               { l: t("aiLab.win", "Win"), v: `${winRate.toFixed(0)}%`, c: winRate >= 50 ? "#4ade80" : "#f87171" },

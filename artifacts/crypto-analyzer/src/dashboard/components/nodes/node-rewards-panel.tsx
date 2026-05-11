@@ -209,7 +209,7 @@ export function NodeRewardsPanel() {
             <div className="text-[15px] font-black text-blue-200 tabular-nums">
               {fmtUsdt(teamCommissionUsdt)}
             </div>
-            <div className="text-[9px] text-muted-foreground mt-0.5">USDT · gross</div>
+            <div className="text-[9px] text-muted-foreground mt-0.5">{t("nodes.rewards.usdtGross", "USDT · gross")}</div>
           </div>
         </CardContent>
       </Card>
