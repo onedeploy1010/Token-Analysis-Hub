@@ -341,6 +341,8 @@ const ja: Dict = {
   "mr.rune.table.seats": "席数",
   "mr.rune.table.selected": "選択済み",
     "mr.dash.hub": "パーソナルハブ",
+  "mr.dash.buyNode.cta": "ノードを取得",
+  "mr.dash.buyNode.sub": "すべての特典と報酬を解放",
   "mr.dash.title": "ダッシュボード",
   "mr.dash.tab.overview": "概要",
   "mr.dash.tab.team": "チーム",

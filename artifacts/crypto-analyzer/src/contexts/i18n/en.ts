@@ -341,6 +341,8 @@ const en: Dict = {
   "mr.rune.table.seats": "Seats",
   "mr.rune.table.selected": "Selected",
     "mr.dash.hub": "Personal Hub",
+  "mr.dash.buyNode.cta": "Get Your Node",
+  "mr.dash.buyNode.sub": "Unlock all benefits & rewards",
   "mr.dash.title": "Dashboard",
   "mr.dash.tab.overview": "Overview",
   "mr.dash.tab.team": "Team",

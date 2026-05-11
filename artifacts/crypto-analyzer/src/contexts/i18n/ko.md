@@ -341,8 +341,6 @@ const ko: Dict = {
   "mr.rune.table.seats": "좌석",
   "mr.rune.table.selected": "선택됨",
     "mr.dash.hub": "개인 센터",
-  "mr.dash.buyNode.cta": "노드 구매하기",
-  "mr.dash.buyNode.sub": "모든 혜택과 보상 잠금 해제",
   "mr.dash.title": "대시보드",
   "mr.dash.tab.overview": "개요",
   "mr.dash.tab.rewards": "보상",

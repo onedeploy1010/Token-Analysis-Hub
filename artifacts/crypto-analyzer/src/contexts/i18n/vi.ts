@@ -341,6 +341,8 @@ const vi: Dict = {
   "mr.rune.table.seats": "Ghế",
   "mr.rune.table.selected": "Đã chọn",
     "mr.dash.hub": "Trang cá nhân",
+  "mr.dash.buyNode.cta": "Mua nút ngay",
+  "mr.dash.buyNode.sub": "Mở khóa toàn bộ quyền lợi & phần thưởng",
   "mr.dash.title": "Bảng điều khiển",
   "mr.dash.tab.overview": "Tổng quan",
   "mr.dash.tab.rewards": "Thưởng",
