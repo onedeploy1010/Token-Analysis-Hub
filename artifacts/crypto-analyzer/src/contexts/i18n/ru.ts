@@ -341,6 +341,8 @@ const ru: Dict = {
   "mr.rune.table.seats": "Места",
   "mr.rune.table.selected": "Выбрано",
     "mr.dash.hub": "Личный кабинет",
+  "mr.dash.buyNode.cta": "Купить узел",
+  "mr.dash.buyNode.sub": "Откройте все привилегии и награды",
   "mr.dash.title": "Кабинет",
   "mr.dash.tab.overview": "Обзор",
   "mr.dash.tab.team": "Команда",

@@ -341,6 +341,8 @@ const zh: Dict = {
   "mr.rune.table.seats": "席位",
   "mr.rune.table.selected": "已选",
     "mr.dash.hub": "个人中心",
+  "mr.dash.buyNode.cta": "立即成为节点",
+  "mr.dash.buyNode.sub": "解锁全部权益与奖励",
   "mr.dash.title": "仪表盘",
   "mr.dash.tab.overview": "总览",
   "mr.dash.tab.team": "团队",

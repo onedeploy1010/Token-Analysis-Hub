@@ -1722,7 +1722,7 @@ function BenefitCell({
 export function OverviewTab({ address }: { address: string }) {
   const { t } = useLanguage();
   const { referrer, isBound, isRoot } = useReferrerOf(address);
-  const { nodeId } = useUserPurchase(address);
+  const { nodeId, hasPurchased, isLoading: purchaseLoading } = useUserPurchase(address);
 
   // Overview is deliberately lean: the connected wallet's sharing tools
   // on top, followed by a quick look at their node benefits. Headcount /
@@ -1761,13 +1761,44 @@ export function OverviewTab({ address }: { address: string }) {
           </span>
         </motion.div>
 
-        {/* Restricted (bound but not purchased) — explains the commission
-            rule per 2026-04-29 user direction: bind only ≠ commission.
-            User must own a node to receive direct-referral payouts when
-            their downline buys. */}
-        {/* Per user 2026-04-29: dashboard no longer locks bound users.
-            Everyone bound sees the same cards. The no-node-reminder
-            dialog (page-level) carries the commission-eligibility note. */}
+        {/* Buy-node CTA — only for wallets without a node yet. Wired to
+            the global emitOpenPurchase signal so the existing modal +
+            approve-then-buy flow handles everything. Hidden during the
+            on-chain read so the button doesn't flash for owners. */}
+        {!purchaseLoading && !hasPurchased && (
+          <motion.button
+            type="button"
+            onClick={() => emitOpenPurchase()}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: EASE, delay: 0.05 }}
+            whileTap={{ scale: 0.985 }}
+            className="group relative w-full overflow-hidden rounded-2xl py-3.5 px-4 sm:px-5 flex items-center gap-3 text-left text-white shadow-[0_12px_30px_-12px_rgba(251,191,36,0.55)] active:shadow-[0_6px_18px_-10px_rgba(251,191,36,0.45)] transition-shadow"
+            style={{
+              background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)",
+              border: "1px solid rgba(251,191,36,0.45)",
+            }}
+            data-testid="button-buy-node-cta"
+          >
+            <span
+              aria-hidden
+              className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_60%)] pointer-events-none"
+            />
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+              <Sparkles className="h-5 w-5 drop-shadow" />
+            </span>
+            <span className="relative flex-1 min-w-0">
+              <span className="block text-[15px] sm:text-base font-bold leading-tight">
+                {t("mr.dash.buyNode.cta")}
+              </span>
+              <span className="block text-[11px] sm:text-[12px] text-white/85 leading-snug mt-0.5">
+                {t("mr.dash.buyNode.sub")}
+              </span>
+            </span>
+            <ChevronRight className="relative h-5 w-5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+          </motion.button>
+        )}
+
         <PoolProgressCard ownedNodeId={nodeId} />
         <GenesisEarningsPanel address={address} ownedNodeId={nodeId} />
         <BenefitsSection ownedNodeId={nodeId} />

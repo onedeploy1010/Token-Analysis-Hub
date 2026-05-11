@@ -341,6 +341,8 @@ const th: Dict = {
   "mr.rune.table.seats": "ที่นั่ง",
   "mr.rune.table.selected": "เลือกแล้ว",
     "mr.dash.hub": "ศูนย์ส่วนตัว",
+  "mr.dash.buyNode.cta": "ซื้อโหนดเลย",
+  "mr.dash.buyNode.sub": "ปลดล็อกสิทธิประโยชน์และรางวัลทั้งหมด",
   "mr.dash.title": "แดชบอร์ด",
   "mr.dash.tab.overview": "ภาพรวม",
   "mr.dash.tab.rewards": "รางวัล",

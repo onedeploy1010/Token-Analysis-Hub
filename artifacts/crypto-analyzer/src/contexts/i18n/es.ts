@@ -341,6 +341,8 @@ const es: Dict = {
   "mr.rune.table.seats": "Plazas",
   "mr.rune.table.selected": "Seleccionado",
     "mr.dash.hub": "Centro personal",
+  "mr.dash.buyNode.cta": "Obtén tu nodo",
+  "mr.dash.buyNode.sub": "Desbloquea todos los beneficios y recompensas",
   "mr.dash.title": "Panel",
   "mr.dash.tab.overview": "Resumen",
   "mr.dash.tab.team": "Equipo",
