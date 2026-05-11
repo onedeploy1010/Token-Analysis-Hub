@@ -6,6 +6,8 @@ import ko from "./ko";
 import ja from "./ja";
 import th from "./th";
 import vi from "./vi";
+import es from "./es";
+import ru from "./ru";
 
 export type { Dict, Language };
 
@@ -17,6 +19,8 @@ export const dictionaries: Record<Language, Dict> = {
   ja,
   th,
   vi,
+  es,
+  ru,
 };
 
-export { en, zh, zhTW, ko, ja, th, vi };
+export { en, zh, zhTW, ko, ja, th, vi, es, ru };
