@@ -367,5 +367,21 @@ export async function customFetch<T = unknown>(
     throw new ApiError(response, errorData, requestInfo);
   }
 
+  // Guard against SPA fallback / CDN error pages slipping past as 200 OK.
+  // Without this, an unconfigured baseUrl on a CF Pages SPA returns
+  // index.html for /api/*, customFetch happily returned it as a string,
+  // and consumers blew up on .filter / .map of HTML. Reject it as an error
+  // unless the caller explicitly asked for text or blob.
+  if (responseType !== "text" && responseType !== "blob") {
+    const ctype = response.headers.get("content-type") ?? "";
+    if (/^text\/html\b/i.test(ctype)) {
+      throw new ApiError(
+        response,
+        { message: "Expected JSON, got text/html — likely SPA fallback or CDN error page. Check VITE_API_BASE_URL." } as never,
+        requestInfo,
+      );
+    }
+  }
+
   return (await parseSuccessBody(response, responseType, requestInfo)) as T;
 }
