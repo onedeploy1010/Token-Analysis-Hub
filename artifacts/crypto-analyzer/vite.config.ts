@@ -57,7 +57,6 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
-      "@shared": path.resolve(import.meta.dirname, "src/b18-shared"),
       // TAICLAW dashboard — copied to src/dashboard/. Imports written with
       // `@dashboard/*` resolve here so they don't collide with the existing
       // mainnet `@/*` namespace.
