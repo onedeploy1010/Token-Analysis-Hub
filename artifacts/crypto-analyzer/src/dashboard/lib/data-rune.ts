@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAccount } from "thirdweb/react";
+import { runeChain } from "../../lib/thirdweb/chains";
 import { supabase, w } from "./supabase-client";
 
 /**
@@ -69,13 +70,14 @@ export function useNodeMembershipsRune() {
   const account = useActiveAccount();
   const address = account?.address;
   return useQuery<NodeMembershipRune[]>({
-    queryKey: ["rune", "purchases", w(address)],
+    queryKey: ["rune", "purchases", runeChain.id, w(address)],
     enabled: !!address,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rune_purchases")
         .select("user, node_id, amount, paid_at, tx_hash")
         .eq("user", w(address))
+        .eq("chain_id", runeChain.id)
         .order("paid_at", { ascending: false });
       if (error) throw error;
       return (data ?? []).map((row): NodeMembershipRune => ({
@@ -125,11 +127,11 @@ export interface PoolStatsRune {
 
 export function usePoolStatsRune() {
   return useQuery<PoolStatsRune>({
-    queryKey: ["rune", "pool-stats"],
+    queryKey: ["rune", "pool-stats", runeChain.id],
     queryFn: async () => {
       const [purchasesRes, membersRes] = await Promise.all([
-        supabase.from("rune_purchases").select("node_id"),
-        supabase.from("rune_members").select("*", { count: "exact", head: true }),
+        supabase.from("rune_purchases").select("node_id").eq("chain_id", runeChain.id),
+        supabase.from("rune_members").select("*", { count: "exact", head: true }).eq("chain_id", runeChain.id),
       ]);
       const rows = purchasesRes.data ?? [];
       const tiers: PoolStatsRune["tiers"] = {};
@@ -163,11 +165,11 @@ export function usePoolStatsRune() {
  *  is one row per node sold. */
 export function useGlobalStatsRune() {
   return useQuery<{ totalMembers: number; activeMembers: number; totalNodes: number }>({
-    queryKey: ["rune", "global-stats"],
+    queryKey: ["rune", "global-stats", runeChain.id],
     queryFn: async () => {
       const [members, purchases] = await Promise.all([
-        supabase.from("rune_members").select("*", { count: "exact", head: true }),
-        supabase.from("rune_purchases").select("*", { count: "exact", head: true }),
+        supabase.from("rune_members").select("*", { count: "exact", head: true }).eq("chain_id", runeChain.id),
+        supabase.from("rune_purchases").select("*", { count: "exact", head: true }).eq("chain_id", runeChain.id),
       ]);
       return {
         totalMembers: members.count ?? 0,
@@ -192,13 +194,14 @@ export function useDownlineRune() {
   const account = useActiveAccount();
   const address = account?.address;
   return useQuery<DownlineRow[]>({
-    queryKey: ["rune", "downline", w(address)],
+    queryKey: ["rune", "downline", runeChain.id, w(address)],
     enabled: !!address,
     queryFn: async () => {
       const { data: refs, error: refErr } = await supabase
         .from("rune_referrers")
         .select("user, bound_at")
         .eq("referrer", w(address))
+        .eq("chain_id", runeChain.id)
         .order("bound_at", { ascending: false });
       if (refErr) throw refErr;
       const downlineUsers = (refs ?? []).map((r) => r.user);
@@ -207,6 +210,7 @@ export function useDownlineRune() {
       const { data: purchases, error: purErr } = await supabase
         .from("rune_purchases")
         .select("user, node_id")
+        .eq("chain_id", runeChain.id)
         .in("user", downlineUsers);
       if (purErr) throw purErr;
       const purchaseMap = new Map<string, number>(
