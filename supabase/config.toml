@@ -1,0 +1,8 @@
+project_id = "rune"
+
+# QuickNode Streams cannot send a Supabase JWT. The gateway would 401 it
+# before our function runs, after which QuickNode auto-stops the Stream
+# (3 retries → halt). Auth is enforced inside the function via HMAC
+# (`x-qn-signature`) or a token header against QUICKNODE_WEBHOOK_SECRET.
+[functions.quicknode-stream-webhook]
+verify_jwt = false
