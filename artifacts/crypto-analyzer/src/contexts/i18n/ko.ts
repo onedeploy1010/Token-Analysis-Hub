@@ -233,6 +233,7 @@ const ko: Dict = {
   "mr.home.hero.desc": "고수익 DeFi 프로젝트를 발견하고 분석하고 수익을 시뮬레이션하세요. 기관 자본을 위한 실시간 APY 추적 및 파생상품 분석.",
   "mr.home.hero.btn.explore": "탐색",
   "mr.home.hero.btn.simulators": "시뮬레이터",
+  "mr.home.hero.btn.dashboard": "대시보드 열기",
   "mr.section.market": "시장 개요",
   "mr.section.trending": "인기 기회",
   "mr.section.trending.sub": "24시간 최고 수익 변동",

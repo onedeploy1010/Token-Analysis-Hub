@@ -233,6 +233,7 @@ const ja: Dict = {
   "mr.home.hero.desc": "高収益DeFiプロジェクトを発見・分析し、リターンをシミュレート。機関資本向けのリアルタイムAPY追跡とデリバティブ分析。",
   "mr.home.hero.btn.explore": "探索",
   "mr.home.hero.btn.simulators": "シミュレーター",
+  "mr.home.hero.btn.dashboard": "ダッシュボードへ",
   "mr.section.market": "市場概観",
   "mr.section.trending": "注目の機会",
   "mr.section.trending.sub": "24時間最高収益変動",
