@@ -233,6 +233,7 @@ const zhTW: Dict = {
   "mr.home.hero.desc": "發現、分析並模擬高收益 DeFi 項目回報。即時年化追蹤、風險評估與智能衍生品分析。",
   "mr.home.hero.btn.explore": "探索項目",
   "mr.home.hero.btn.simulators": "啟動模擬器",
+  "mr.home.hero.btn.dashboard": "進入儀表板",
   "mr.section.market": "市場概覽",
   "mr.section.trending": "熱門機會",
   "mr.section.trending.sub": "24小時最高收益變動",

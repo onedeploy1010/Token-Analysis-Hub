@@ -233,6 +233,7 @@ const zh: Dict = {
   "mr.home.hero.desc": "发现、分析并模拟高收益 DeFi 项目回报。专为机构资本打造的实时年化追踪、风险评估与智能衍生品分析体系。",
   "mr.home.hero.btn.explore": "探索项目",
   "mr.home.hero.btn.simulators": "启动模拟器",
+  "mr.home.hero.btn.dashboard": "进入仪表盘",
   "mr.section.market": "市场概览",
   "mr.section.trending": "热门机会",
   "mr.section.trending.sub": "24小时最高收益变动",

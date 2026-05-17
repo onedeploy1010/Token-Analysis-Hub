@@ -233,6 +233,7 @@ const en: Dict = {
   "mr.home.hero.desc": "Discover, analyze, and simulate returns for high-yield DeFi projects. Real-time APY tracking, risk scoring, and derivative analytics built for institutional capital.",
   "mr.home.hero.btn.explore": "Explore",
   "mr.home.hero.btn.simulators": "Simulators",
+  "mr.home.hero.btn.dashboard": "Open Dashboard",
   "mr.section.market": "Market Overview",
   "mr.section.trending": "Trending Opportunities",
   "mr.section.trending.sub": "Highest yield changes in 24h",

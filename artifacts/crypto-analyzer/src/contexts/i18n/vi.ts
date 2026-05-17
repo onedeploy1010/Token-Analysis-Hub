@@ -233,6 +233,7 @@ const vi: Dict = {
   "mr.home.hero.desc": "Khám phá, phân tích và mô phỏng lợi nhuận từ các dự án DeFi lợi suất cao. Xây dựng cho nhà đầu tư tổ chức.",
   "mr.home.hero.btn.explore": "Khám phá",
   "mr.home.hero.btn.simulators": "Mô phỏng",
+  "mr.home.hero.btn.dashboard": "Mở bảng điều khiển",
   "mr.section.market": "Tổng quan thị trường",
   "mr.section.trending": "Cơ hội nổi bật",
   "mr.section.trending.sub": "Biến động lợi suất cao nhất 24 giờ",

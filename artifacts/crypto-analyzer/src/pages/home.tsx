@@ -6,6 +6,7 @@ import { ArrowUpRight, ArrowUp, ArrowDown, TrendingUp, Minus } from "lucide-reac
 import { ProjectCard } from "@/components/shared/project-card";
 import { Link } from "wouter";
 import { motion, useInView } from "framer-motion";
+import { useActiveAccount } from "thirdweb/react";
 import type { Project } from "@rune/api-client-react";
 import { useLanguage } from "@/contexts/language-context";
 
@@ -137,6 +138,8 @@ export default function Home() {
   const { t, language } = useLanguage();
   const isEn = language === "en";
   const isZh = language === "zh" || language === "zh-TW";
+  const account = useActiveAccount();
+  const isConnected = !!account?.address;
 
   const { data: summary, isLoading: isSummaryLoading } = useGetProjectsSummary();
   const { data: allProjects, isLoading: isTrendingLoading } = useListProjects({ sortBy: "trending" });
@@ -305,9 +308,15 @@ export default function Home() {
             <Link href="/projects" className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-[0_0_24px_rgba(245,158,11,0.35)] transition-all hover:bg-primary/90 hover:shadow-[0_0_32px_rgba(245,158,11,0.55)] hover:-translate-y-0.5 active:translate-y-0">
               {t("mr.home.hero.btn.explore")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">EXPLORE</span>}
             </Link>
-            <Link href="/tools" className="inline-flex h-12 items-center justify-center rounded-md border border-border/60 bg-background/50 backdrop-blur px-8 text-sm font-medium shadow-sm transition-all hover:bg-card hover:border-primary/30 hover:-translate-y-0.5 active:translate-y-0">
-              {t("mr.home.hero.btn.simulators")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">SIMULATORS</span>}
-            </Link>
+            {isConnected ? (
+              <Link href="/app/profile" className="inline-flex h-12 items-center justify-center rounded-md border border-border/60 bg-background/50 backdrop-blur px-8 text-sm font-medium shadow-sm transition-all hover:bg-card hover:border-primary/30 hover:-translate-y-0.5 active:translate-y-0">
+                {t("mr.home.hero.btn.dashboard")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">DASHBOARD</span>}
+              </Link>
+            ) : (
+              <Link href="/tools" className="inline-flex h-12 items-center justify-center rounded-md border border-border/60 bg-background/50 backdrop-blur px-8 text-sm font-medium shadow-sm transition-all hover:bg-card hover:border-primary/30 hover:-translate-y-0.5 active:translate-y-0">
+                {t("mr.home.hero.btn.simulators")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">SIMULATORS</span>}
+              </Link>
+            )}
           </motion.div>
         </div>
       </motion.section>

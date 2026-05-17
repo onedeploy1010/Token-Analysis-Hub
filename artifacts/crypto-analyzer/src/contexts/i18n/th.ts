@@ -233,6 +233,7 @@ const th: Dict = {
   "mr.home.hero.desc": "ค้นพบ วิเคราะห์ และจำลองผลตอบแทนจากโครงการ DeFi ที่ให้ผลตอบแทนสูง สำหรับนักลงทุนสถาบัน",
   "mr.home.hero.btn.explore": "สำรวจ",
   "mr.home.hero.btn.simulators": "เครื่องจำลอง",
+  "mr.home.hero.btn.dashboard": "เปิดแดชบอร์ด",
   "mr.section.market": "ภาพรวมตลาด",
   "mr.section.trending": "โอกาสยอดนิยม",
   "mr.section.trending.sub": "การเปลี่ยนแปลงผลตอบแทนสูงสุดใน 24 ชั่วโมง",

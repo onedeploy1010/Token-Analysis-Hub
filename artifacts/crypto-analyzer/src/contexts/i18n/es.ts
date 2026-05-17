@@ -233,6 +233,7 @@ const es: Dict = {
   "mr.home.hero.desc": "Descubre, analiza y simula los retornos de proyectos DeFi de alto rendimiento. Seguimiento de APY en tiempo real, evaluación de riesgo y análisis de derivados pensados para capital institucional.",
   "mr.home.hero.btn.explore": "Explorar proyectos",
   "mr.home.hero.btn.simulators": "Abrir simuladores",
+  "mr.home.hero.btn.dashboard": "Ir al panel",
   "mr.section.market": "Visión del mercado",
   "mr.section.trending": "Oportunidades destacadas",
   "mr.section.trending.sub": "Mayor variación de rendimiento en 24 h",
