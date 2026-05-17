@@ -51,10 +51,16 @@ export function RuneOnboarding() {
   // `pointer-events: none` that requires a refresh to clear.
   const [bindDismissed, setBindDismissed] = useState(false);
   const [buyDismissed, setBuyDismissed] = useState(false);
+  // Post-bind landing-page redirect should fire ONCE per wallet session.
+  // Without this, clicking the header logo (→ "/") while connected bounces
+  // the user straight back to /app/profile — they can never reach the
+  // public site from inside the dashboard.
+  const [postBindRedirected, setPostBindRedirected] = useState(false);
 
   useEffect(() => {
     setBindDismissed(false);
     setBuyDismissed(false);
+    setPostBindRedirected(false);
   }, [address]);
 
   // When the wallet disconnects, kick the user out of the dashboard back
@@ -100,11 +106,12 @@ export function RuneOnboarding() {
     // pages preserves the post-bind redirect on first connect while letting
     // bound users freely navigate content pages afterwards.
     const ONBOARDING_PATHS = new Set(["/", "/recruit", "/dashboard"]);
-    if (isBound && ONBOARDING_PATHS.has(location)) {
+    if (isBound && !postBindRedirected && ONBOARDING_PATHS.has(location)) {
+      setPostBindRedirected(true);
       navigate("/app/profile");
       return;
     }
-  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate, location]);
+  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate, location, postBindRedirected]);
 
   return (
     <>
