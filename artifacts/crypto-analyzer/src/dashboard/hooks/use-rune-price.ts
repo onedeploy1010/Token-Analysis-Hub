@@ -11,7 +11,7 @@
  * Bitget-oracle wiring.
  */
 const RUNE_PRICE_USDT = 0.028;
-const FIRE_PRICE_USDT = 0.038;
+const EMBER_PRICE_USDT = 0.038;
 
 function fmtCompact(amount: number, lang?: string) {
   const isZh = (lang || (typeof window !== "undefined" ? localStorage.getItem("taiclaw-lang") : "en")) === "zh"
@@ -28,7 +28,7 @@ function fmtCompact(amount: number, lang?: string) {
 
 export function useRunePrice() {
   const price = RUNE_PRICE_USDT;
-  const emberPrice = FIRE_PRICE_USDT;
+  const emberPrice = EMBER_PRICE_USDT;
 
   const usdcToRune  = (usdc: number) => usdc / price;
   const usdcToEmber = (usdc: number) => usdc / emberPrice;

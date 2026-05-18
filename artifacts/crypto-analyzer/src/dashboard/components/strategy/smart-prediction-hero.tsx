@@ -12,9 +12,10 @@
  */
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Brain, Activity, Sparkles, ArrowRight, Lock, Crown, Radio, Zap } from "lucide-react";
+import { Brain, Sparkles, ArrowRight, Lock, Crown, Radio, Zap } from "lucide-react";
 import { useActiveAccount } from "thirdweb/react";
 import { useUserPurchase } from "@/hooks/rune/use-node-presell";
+import { emitOpenPurchase } from "@/lib/rune/purchase-signal";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,6 @@ import {
 import { Button } from "@dashboard/components/ui/button";
 
 const RUNE_PROTOCOL_URL = "https://www.rune-protocol.com/";
-const RECRUIT_PATH = "/recruit";
 
 export function SmartPredictionHero() {
   const { t } = useTranslation();
@@ -165,13 +165,15 @@ export function SmartPredictionHero() {
             })}
           </div>
 
-          {/* CTA row */}
-          <div className="flex flex-col sm:flex-row gap-2.5 md:gap-3 pt-1">
+          {/* Single CTA. Node-gating happens on click: holders open the
+              Polymarket product, non-holders get a dialog driving them
+              into the in-place purchase modal. */}
+          <div className="pt-1">
             <button
               type="button"
               onClick={handleEnter}
               disabled={isLoading}
-              className="group relative inline-flex h-11 md:h-12 items-center justify-center gap-2 rounded-lg px-5 md:px-7 text-[13px] md:text-sm font-bold text-black shadow-[0_0_24px_rgba(245,158,11,0.35)] transition-all hover:shadow-[0_0_32px_rgba(245,158,11,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-wait"
+              className="group relative inline-flex w-full sm:w-auto h-11 md:h-12 items-center justify-center gap-2 rounded-lg px-5 md:px-8 text-[13px] md:text-sm font-bold text-black shadow-[0_0_24px_rgba(245,158,11,0.35)] transition-all hover:shadow-[0_0_32px_rgba(245,158,11,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-wait"
               style={{
                 background: "linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)",
               }}
@@ -183,14 +185,6 @@ export function SmartPredictionHero() {
               <span>{t("strategy.smartPrediction.enterBtn", "Enter Smart Prediction")}</span>
               <ArrowRight className="h-3.5 w-3.5 md:h-4 md:w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <a
-              href={RECRUIT_PATH}
-              className="inline-flex h-11 md:h-12 items-center justify-center gap-2 rounded-lg border border-amber-500/35 bg-black/30 backdrop-blur px-5 md:px-7 text-[13px] md:text-sm font-semibold text-amber-200 transition-all hover:bg-amber-500/10 hover:border-amber-400/55 hover:-translate-y-0.5 active:translate-y-0"
-              data-testid="link-smart-prediction-recruit"
-            >
-              <Zap className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span>{t("strategy.smartPrediction.recruitBtn", "Get a Node")}</span>
-            </a>
           </div>
         </div>
       </section>
@@ -233,14 +227,20 @@ export function SmartPredictionHero() {
               {t("strategy.smartPrediction.gateCancel", "Later")}
             </Button>
             <Button
-              asChild
+              onClick={() => {
+                setGateOpen(false);
+                // Fire the in-place purchase modal instead of navigating to
+                // /recruit — RuneOnboarding's connected-user bounce sends
+                // /recruit straight back to /app/profile, which strands the
+                // user. The PurchaseNodeModal lives in App.tsx and listens
+                // on this signal regardless of the active surface.
+                emitOpenPurchase();
+              }}
               className="bg-gradient-to-r from-amber-500 to-yellow-600 border-amber-500/50 text-black font-bold"
               data-testid="button-smart-prediction-gate-recruit"
             >
-              <a href={RECRUIT_PATH}>
-                <Zap className="mr-1 h-4 w-4" />
-                {t("strategy.smartPrediction.gateConfirm", "Browse nodes")}
-              </a>
+              <Zap className="mr-1 h-4 w-4" />
+              {t("strategy.smartPrediction.gateConfirm", "Browse nodes")}
             </Button>
           </DialogFooter>
         </DialogContent>

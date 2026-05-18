@@ -20,7 +20,7 @@ import {
   USDT_ADDRESS,
   USDC_ADDRESS,
   RUNE_LOCK_CONTRACT_ADDRESS,
-  FIRE_BURN_CONTRACT_ADDRESS,
+  EMBER_BURN_CONTRACT_ADDRESS,
 } from "@dashboard/lib/contracts";
 import { VIP_PLANS } from "@dashboard/lib/data";
 
@@ -342,7 +342,7 @@ export function usePayment() {
   // ── FIRE Burn (pay USDT → contract buys & burns RUNE) ──
   const payEmberBurn = useCallback(
     async (amountUsd: number): Promise<string> => {
-      if (!FIRE_BURN_CONTRACT_ADDRESS) throw new Error("FIRE_BURN_CONTRACT not configured");
+      if (!EMBER_BURN_CONTRACT_ADDRESS) throw new Error("FIRE burn contract not configured");
       if (!client) throw new Error("Thirdweb client not ready");
       if (!account) throw new Error("Wallet not connected");
       setStatus("approving");
@@ -355,12 +355,12 @@ export function usePayment() {
         const approveTx = prepareContractCall({
           contract: usdtContract,
           method: "function approve(address spender, uint256 amount) returns (bool)",
-          params: [FIRE_BURN_CONTRACT_ADDRESS as `0x${string}`, maxUint],
+          params: [EMBER_BURN_CONTRACT_ADDRESS as `0x${string}`, maxUint],
         });
         const approveResult = await sendTransaction(approveTx);
         await waitForReceipt({ client, chain: BSC_CHAIN, transactionHash: approveResult.transactionHash });
         setStatus("paying");
-        const burnContract = getContract({ client, chain: BSC_CHAIN, address: FIRE_BURN_CONTRACT_ADDRESS as `0x${string}` });
+        const burnContract = getContract({ client, chain: BSC_CHAIN, address: EMBER_BURN_CONTRACT_ADDRESS as `0x${string}` });
         const tx = prepareContractCall({
           contract: burnContract,
           method: "function depositUSDT(uint256 amount) external",
