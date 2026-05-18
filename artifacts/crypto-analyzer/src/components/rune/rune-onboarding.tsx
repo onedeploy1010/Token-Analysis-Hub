@@ -52,16 +52,27 @@ export function RuneOnboarding() {
   const [bindDismissed, setBindDismissed] = useState(false);
   const [buyDismissed, setBuyDismissed] = useState(false);
   // Post-bind landing-page redirect should fire ONCE per wallet session.
-  // Without this, clicking the header logo (→ "/") while connected bounces
-  // the user straight back to /app/profile — they can never reach the
-  // public site from inside the dashboard.
-  const [postBindRedirected, setPostBindRedirected] = useState(false);
+  // sessionStorage-backed because the dashboard logo is a plain <a href="/">
+  // that does a full page reload to escape wouter's base="/app" router;
+  // React state alone resets across that reload and re-triggers the
+  // redirect, trapping the user on /app/profile.
+  const redirectKey = address ? `postBindRedirected:${address.toLowerCase()}` : null;
+  const [postBindRedirected, setPostBindRedirected] = useState<boolean>(() => {
+    if (typeof window === "undefined" || !redirectKey) return false;
+    return window.sessionStorage.getItem(redirectKey) === "1";
+  });
 
   useEffect(() => {
     setBindDismissed(false);
     setBuyDismissed(false);
-    setPostBindRedirected(false);
-  }, [address]);
+    if (typeof window === "undefined") {
+      setPostBindRedirected(false);
+      return;
+    }
+    setPostBindRedirected(
+      redirectKey ? window.sessionStorage.getItem(redirectKey) === "1" : false,
+    );
+  }, [address, redirectKey]);
 
   // When the wallet disconnects, kick the user out of the dashboard back
   // to the marketing home so the disconnected state isn't visible inside
@@ -108,10 +119,13 @@ export function RuneOnboarding() {
     const ONBOARDING_PATHS = new Set(["/", "/recruit", "/dashboard"]);
     if (isBound && !postBindRedirected && ONBOARDING_PATHS.has(location)) {
       setPostBindRedirected(true);
+      if (typeof window !== "undefined" && redirectKey) {
+        window.sessionStorage.setItem(redirectKey, "1");
+      }
       navigate("/app/profile");
       return;
     }
-  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate, location, postBindRedirected]);
+  }, [address, referrer, isBound, bindDismissed, hasPurchased, purchaseLoading, navigate, location, postBindRedirected, redirectKey]);
 
   return (
     <>
