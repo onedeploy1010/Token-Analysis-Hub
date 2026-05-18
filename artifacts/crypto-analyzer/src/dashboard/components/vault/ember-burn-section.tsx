@@ -13,7 +13,7 @@ import { useToast } from "@dashboard/hooks/use-toast";
 import { apiPost } from "@dashboard/lib/api";
 import { usePayment, getPaymentStatusLabel } from "@dashboard/hooks/use-payment";
 import { useRunePrice } from "@dashboard/hooks/use-rune-price";
-import { FIRE_BURN_CONTRACT_ADDRESS } from "@dashboard/lib/contracts";
+import { EMBER_BURN_CONTRACT_ADDRESS } from "@dashboard/lib/contracts";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { cn } from "@dashboard/lib/utils";
@@ -60,7 +60,7 @@ export function EmberBurnSection() {
   const burnMutation = useMutation({
     mutationFn: async (data: { walletAddress: string; usdtAmount: number; runeAmount: number }) => {
       let txHash: string | undefined;
-      if (FIRE_BURN_CONTRACT_ADDRESS) {
+      if (EMBER_BURN_CONTRACT_ADDRESS) {
         try {
           txHash = await payment.payEmberBurn(data.usdtAmount);
         } catch (e: any) {
