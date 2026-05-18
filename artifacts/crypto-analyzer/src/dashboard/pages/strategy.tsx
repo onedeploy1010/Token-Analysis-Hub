@@ -29,14 +29,17 @@ import type { Strategy, StrategySubscription, Profile, HedgePosition, InsuranceP
 import { StrategyHeader } from "@dashboard/components/strategy/strategy-header";
 import { AiLab } from "@dashboard/components/strategy/ai-lab";
 import { CopyTradingFlow } from "@dashboard/components/strategy/copy-trading-flow";
-import { TradeMatchingEngine } from "@dashboard/components/strategy/trade-matching-engine";
+import { SmartPredictionHero } from "@dashboard/components/strategy/smart-prediction-hero";
 import { TradingVaultBanner } from "@dashboard/components/strategy/trading-vault-banner";
-type TabId = "strategies" | "ailab" | "signals";
+// Note: "prediction" replaces the old "signals" tab. TradeMatchingEngine
+// moved into AiLab so the signals surface stays available but the third
+// tab now hosts the Polymarket copy-trade product (node-gated).
+type TabId = "strategies" | "ailab" | "prediction";
 
 const TABS: { id: TabId; labelKey: string }[] = [
   { id: "strategies", labelKey: "strategy.strategyList" },
   { id: "ailab", labelKey: "strategy.aiLab" },
-  { id: "signals", labelKey: "matchEngine.title" },
+  { id: "prediction", labelKey: "strategy.smartPredictionTab" },
 ];
 
 import { EXCHANGES, HEDGE_CONFIG } from "@dashboard/lib/data";
@@ -449,10 +452,8 @@ export default function StrategyPage() {
           </div>
         )}
 
-        {activeTab === "signals" && (
-          <div style={{ animation: "fadeSlideIn 0.3s ease-out" }}>
-            <TradeMatchingEngine />
-          </div>
+        {activeTab === "prediction" && (
+          <SmartPredictionHero />
         )}
 
       </div>

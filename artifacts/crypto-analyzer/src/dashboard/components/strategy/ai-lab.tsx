@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent } from "@dashboard/components/ui/dialog";
 import { AiConsoleButton } from "@dashboard/components/strategy/ai-thinking-console";
+import { TradeMatchingEngine } from "@dashboard/components/strategy/trade-matching-engine";
 import { usePaperTrades, modelTargets, type PaperTrade as RealPaperTrade } from "@dashboard/lib/ai-bot-feed";
 import { List } from "lucide-react";
 
@@ -671,6 +672,12 @@ export function AiLab() {
           ))}
         </div>
       )}
+
+      {/* Trade Matching Engine — relocated from its own tab so the Smart
+          Prediction tab can host the Polymarket copy-trade hero. Lives at the
+          bottom of AI Lab where the model cards' "signals" context flows
+          naturally into the live matching feed. */}
+      <TradeMatchingEngine />
 
       {/* Detail Sheet */}
       {selected && selectedMeta && (
