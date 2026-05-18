@@ -6,7 +6,7 @@ import { ArrowUpRight, ArrowUp, ArrowDown, TrendingUp, Minus } from "lucide-reac
 import { ProjectCard } from "@/components/shared/project-card";
 import { Link } from "wouter";
 import { motion, useInView } from "framer-motion";
-import { useActiveAccount } from "thirdweb/react";
+import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
 import type { Project } from "@rune/api-client-react";
 import { useLanguage } from "@/contexts/language-context";
 
@@ -139,7 +139,13 @@ export default function Home() {
   const isEn = language === "en";
   const isZh = language === "zh" || language === "zh-TW";
   const account = useActiveAccount();
-  const isConnected = !!account?.address;
+  // thirdweb returns "unknown" / "connecting" during the auto-reconnect
+  // window after a hard reload. Gate the secondary CTA on a resolved
+  // status so the first paint doesn't flash the wrong button (and trap
+  // users on /tools when they were already a signed-in member).
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const isResolvingWallet = connectionStatus === "unknown" || connectionStatus === "connecting";
+  const isConnected = connectionStatus === "connected" && !!account?.address;
 
   const { data: summary, isLoading: isSummaryLoading } = useGetProjectsSummary();
   const { data: allProjects, isLoading: isTrendingLoading } = useListProjects({ sortBy: "trending" });
@@ -308,7 +314,11 @@ export default function Home() {
             <Link href="/projects" className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-[0_0_24px_rgba(245,158,11,0.35)] transition-all hover:bg-primary/90 hover:shadow-[0_0_32px_rgba(245,158,11,0.55)] hover:-translate-y-0.5 active:translate-y-0">
               {t("mr.home.hero.btn.explore")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">EXPLORE</span>}
             </Link>
-            {isConnected ? (
+            {isResolvingWallet ? (
+              // Skeleton placeholder: same h-12 + rounded shell so the hero's
+              // CTA row doesn't reflow once the wallet status resolves.
+              <span aria-hidden className="inline-flex h-12 w-40 items-center justify-center rounded-md border border-border/40 bg-background/30 backdrop-blur" />
+            ) : isConnected ? (
               <Link href="/app/profile" className="inline-flex h-12 items-center justify-center rounded-md border border-border/60 bg-background/50 backdrop-blur px-8 text-sm font-medium shadow-sm transition-all hover:bg-card hover:border-primary/30 hover:-translate-y-0.5 active:translate-y-0">
                 {t("mr.home.hero.btn.dashboard")}{!isEn && <span className="ml-1.5 opacity-60 text-xs">DASHBOARD</span>}
               </Link>
