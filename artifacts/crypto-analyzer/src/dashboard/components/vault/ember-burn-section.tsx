@@ -13,7 +13,7 @@ import { useToast } from "@dashboard/hooks/use-toast";
 import { apiPost } from "@dashboard/lib/api";
 import { usePayment, getPaymentStatusLabel } from "@dashboard/hooks/use-payment";
 import { useRunePrice } from "@dashboard/hooks/use-rune-price";
-import { EMBER_BURN_CONTRACT_ADDRESS } from "@dashboard/lib/contracts";
+import { FIRE_BURN_CONTRACT_ADDRESS } from "@dashboard/lib/contracts";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { cn } from "@dashboard/lib/utils";
@@ -60,7 +60,7 @@ export function EmberBurnSection() {
   const burnMutation = useMutation({
     mutationFn: async (data: { walletAddress: string; usdtAmount: number; runeAmount: number }) => {
       let txHash: string | undefined;
-      if (EMBER_BURN_CONTRACT_ADDRESS) {
+      if (FIRE_BURN_CONTRACT_ADDRESS) {
         try {
           txHash = await payment.payEmberBurn(data.usdtAmount);
         } catch (e: any) {
@@ -77,7 +77,7 @@ export function EmberBurnSection() {
       });
     },
     onSuccess: () => {
-      toast({ title: t("vault.burn.success", "Burned!"), description: t("vault.burn.successDesc", "Daily EMBER yield has started.") });
+      toast({ title: t("vault.burn.success", "Burned!"), description: t("vault.burn.successDesc", "Daily FIRE yield has started.") });
       queryClient.invalidateQueries({ queryKey: ["/api/ember-burn", wallet] });
       queryClient.invalidateQueries({ queryKey: ["/api/ember-burn/stats", wallet] });
       setOpen(false);
@@ -98,7 +98,7 @@ export function EmberBurnSection() {
   const handleBurn = () => {
     toast({
       title: t("vault.burnNotReadyTitle", "Coming soon"),
-      description: t("vault.burnNotReadyDesc", "EMBER burn-staking will open after the protocol launch."),
+      description: t("vault.burnNotReadyDesc", "FIRE burn-staking will open after the protocol launch."),
     });
   };
 
@@ -112,9 +112,9 @@ export function EmberBurnSection() {
   const payLabel = payment.status !== "idle" ? getPaymentStatusLabel(payment.status) : t("vault.burn.confirmBtn", "Confirm Burn");
 
   const benefits = [
-    { icon: Coins,    color: "rgb(251,191,36)",  lk: "vault.burn.benefitRevenue",  ld: "AI Revenue Share",     dk: "vault.burn.benefitRevenueDesc",  dd: "Monthly AI quant profits by EMBER weight" },
-    { icon: Trophy,   color: "rgb(167,243,208)", lk: "vault.burn.benefitIdo",      ld: "Exclusive IDO Access", dk: "vault.burn.benefitIdoDesc",      dd: "Monthly launches, avg 50x. EMBER holders only" },
-    { icon: Sparkles, color: "rgb(196,181,253)", lk: "vault.burn.benefitScarcity", ld: "Protocol Scarcity",    dk: "vault.burn.benefitScarcityDesc", dd: "Hard cap 1.31M EMBER. External projects compete" },
+    { icon: Coins,    color: "rgb(251,191,36)",  lk: "vault.burn.benefitRevenue",  ld: "AI Revenue Share",     dk: "vault.burn.benefitRevenueDesc",  dd: "Monthly AI quant profits by FIRE weight" },
+    { icon: Trophy,   color: "rgb(167,243,208)", lk: "vault.burn.benefitIdo",      ld: "Exclusive IDO Access", dk: "vault.burn.benefitIdoDesc",      dd: "Monthly launches, avg 50x. FIRE holders only" },
+    { icon: Sparkles, color: "rgb(196,181,253)", lk: "vault.burn.benefitScarcity", ld: "Protocol Scarcity",    dk: "vault.burn.benefitScarcityDesc", dd: "Hard cap 1.31M FIRE. External projects compete" },
   ];
 
   return (
@@ -124,7 +124,7 @@ export function EmberBurnSection() {
         <div className="h-5 w-5 rounded-md flex items-center justify-center" style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)" }}>
           <Flame className="h-3 w-3 text-red-400" />
         </div>
-        <h3 className="text-sm font-bold">{t("vault.burn.sectionTitle", "Burn RUNE · Permanent EMBER Yield")}</h3>
+        <h3 className="text-sm font-bold">{t("vault.burn.sectionTitle", "Burn RUNE · Permanent FIRE Yield")}</h3>
         <Badge className="text-[9px] border-0 ml-auto" style={{ background: "rgba(239,68,68,0.12)", color: "rgb(248,113,113)" }}>
           {t("vault.burn.badge", "Permanent Deflation")}
         </Badge>
@@ -146,7 +146,7 @@ export function EmberBurnSection() {
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-muted-foreground uppercase mb-0.5">{isZh ? "每日EMBER" : "Daily EMBER"}</div>
+              <div className="text-[9px] text-muted-foreground uppercase mb-0.5">{isZh ? "每日FIRE" : "Daily FIRE"}</div>
               <div className="text-sm font-bold tabular-nums text-orange-400">
                 {Number(stats?.dailyEmber || 0).toFixed(4)}
               </div>
@@ -167,7 +167,7 @@ export function EmberBurnSection() {
 
       {/* Benefits — collapsible */}
       <CollapsibleInfoCard
-        title={t("vault.burn.benefitsTitle", "EMBER Staking Benefits")}
+        title={t("vault.burn.benefitsTitle", "FIRE Staking Benefits")}
         accent="red"
         icon={Sparkles}
       >
@@ -224,7 +224,7 @@ export function EmberBurnSection() {
         style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.85), rgba(220,38,38,0.85))", color: "#fff" }}
         onClick={() => { setOpen(true); setConfirmed(false); }} data-testid="button-ember-burn-open">
         <Flame className="mr-2 h-4 w-4" />
-        {t("vault.burn.burnButton", "Pay USDT · Burn RUNE → EMBER Yield")}
+        {t("vault.burn.burnButton", "Pay USDT · Burn RUNE → FIRE Yield")}
       </Button>
 
       {/* Dialog */}
@@ -233,10 +233,10 @@ export function EmberBurnSection() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-400">
               <Flame className="h-4 w-4" />
-              {t("vault.burn.confirmTitle", "Burn RUNE for EMBER")}
+              {t("vault.burn.confirmTitle", "Burn RUNE for FIRE")}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              {t("vault.burn.confirmDesc", "Pay USDT → buy RUNE at market price → burn permanently for daily EMBER yield")}
+              {t("vault.burn.confirmDesc", "Pay USDT → buy RUNE at market price → burn permanently for daily FIRE yield")}
             </DialogDescription>
           </DialogHeader>
 
@@ -264,7 +264,7 @@ export function EmberBurnSection() {
                 <div className="border-t border-border/30 pt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]">
                   <div className="flex justify-between"><span className="text-muted-foreground">{t("vault.burn.currentTier", "Tier")}</span><span className="font-semibold" style={{ color: tier.best ? "rgb(248,113,113)" : undefined }}>{t(tier.tierKey, tier.tierDefault)}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">{t("vault.burn.dailyRateLabel", "Rate")}</span><span className="font-bold text-orange-400">{tier.rateLabel}/day</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t("vault.burn.dailyYield", "Daily EMBER")}</span><span className="font-semibold text-orange-300">{dailyEmber.toFixed(4)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("vault.burn.dailyYield", "Daily FIRE")}</span><span className="font-semibold text-orange-300">{dailyEmber.toFixed(4)}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">{t("vault.burn.yearlyYield", "Annual Est.")}</span><span className="font-semibold text-orange-300">{yearlyEmber.toFixed(0)}</span></div>
                 </div>
                 {runeEquiv < 5000 && (
@@ -280,7 +280,7 @@ export function EmberBurnSection() {
                 <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
                 <div className="text-red-300 space-y-0.5">
                   <div className="font-semibold">{t("vault.burn.irreversible", "⚠️ Irreversible Action")}</div>
-                  <div>{t("vault.burn.irreversibleDesc", "RUNE is permanently removed from circulation. Principal cannot be returned. You receive perpetual daily EMBER yield.")}</div>
+                  <div>{t("vault.burn.irreversibleDesc", "RUNE is permanently removed from circulation. Principal cannot be returned. You receive perpetual daily FIRE yield.")}</div>
                 </div>
               </div>
               <label className="flex items-center gap-2 cursor-pointer">

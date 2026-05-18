@@ -85,7 +85,7 @@ export default function ProfileVaultPage() {
       apiPost("/api/ember-burn/claim", { walletAddress: wallet, positionId }),
     onSuccess: (_, positionId) => {
       queryClient.invalidateQueries({ queryKey: ["/api/ember-burn", wallet] });
-      toast({ title: isZh ? "领取成功" : "Claimed!", description: isZh ? "EMBER 已领取" : "EMBER claimed successfully." });
+      toast({ title: isZh ? "领取成功" : "Claimed!", description: isZh ? "FIRE 已领取" : "FIRE claimed successfully." });
     },
     onError: () => toast({ title: isZh ? "领取失败" : "Claim failed", variant: "destructive" }),
   });
@@ -93,7 +93,7 @@ export default function ProfileVaultPage() {
   const TABS: Array<{ key: PosTab; icon: React.ElementType; labelZh: string; labelEn: string; accent: string; count: number }> = [
     { key: "lock",  icon: Lock,     labelZh: "锁仓RUNE",  labelEn: "Lock RUNE",  accent: "rgba(212,168,50,0.9)", count: lockPositions.filter(p => p.status === "ACTIVE").length },
     { key: "burn",  icon: Flame,    labelZh: "销毁RUNE",  labelEn: "Burn RUNE",  accent: "rgba(239,68,68,0.9)",  count: burnPositions.filter(p => p.status === "ACTIVE").length },
-    { key: "ember", icon: Sparkles, labelZh: "锁仓EMBER", labelEn: "Lock EMBER", accent: "rgba(251,146,60,0.9)", count: 0 },
+    { key: "ember", icon: Sparkles, labelZh: "锁仓FIRE", labelEn: "Lock FIRE", accent: "rgba(251,146,60,0.9)", count: 0 },
   ];
 
   const activeTabData = TABS.find(t => t.key === activeTab)!;
@@ -116,7 +116,7 @@ export default function ProfileVaultPage() {
             {isZh ? "我的金库仓位" : "My Vault Positions"}
           </h2>
           <p className="text-[10px] text-muted-foreground">
-            {isZh ? "锁仓 · 销毁 · EMBER锁仓" : "Lock · Burn · EMBER Lock"}
+            {isZh ? "锁仓 · 销毁 · FIRE锁仓" : "Lock · Burn · FIRE Lock"}
           </p>
         </div>
       </div>
@@ -268,7 +268,7 @@ export default function ProfileVaultPage() {
               accent="rgba(239,68,68,0.9)"
               titleZh="暂无销毁记录"
               titleEn="No burn positions"
-              descZh="前往金库销毁RUNE获得每日EMBER"
+              descZh="前往金库销毁RUNE获得每日FIRE"
               descEn="Go to Vault → Burn to create positions"
               isZh={isZh}
               onAction={() => navigate("/vault")}
@@ -314,7 +314,7 @@ export default function ProfileVaultPage() {
 
                   <div className="grid grid-cols-3 gap-1.5">
                     <StatChip
-                      label={isZh ? "每日EMBER" : "Daily"}
+                      label={isZh ? "每日FIRE" : "Daily"}
                       value={dailyEmber.toFixed(2)}
                       accent="rgba(239,68,68,0.7)"
                     />
@@ -346,7 +346,7 @@ export default function ProfileVaultPage() {
                   >
                     {claimMutation.isPending
                       ? (isZh ? "领取中..." : "Claiming...")
-                      : (isZh ? `领取 ${pending.toFixed(2)} EMBER` : `Claim ${pending.toFixed(2)} EMBER`)}
+                      : (isZh ? `领取 ${pending.toFixed(2)} FIRE` : `Claim ${pending.toFixed(2)} FIRE`)}
                   </Button>
                 </div>
               );
@@ -355,7 +355,7 @@ export default function ProfileVaultPage() {
         </div>
       )}
 
-      {/* ─── LOCK EMBER (Coming Soon) ─── */}
+      {/* ─── LOCK FIRE (Coming Soon) ─── */}
       {activeTab === "ember" && (
         <div className="px-4 lg:px-6 pt-4">
           <div
@@ -371,12 +371,12 @@ export default function ProfileVaultPage() {
             </div>
             <div>
               <div className="text-sm font-bold mb-1" style={{ color: "rgba(251,146,60,0.9)" }}>
-                {isZh ? "锁仓EMBER" : "EMBER Lock"}
+                {isZh ? "锁仓FIRE" : "FIRE Lock"}
               </div>
               <div className="text-[11px] text-muted-foreground max-w-[240px] leading-relaxed">
                 {isZh
-                  ? "将EMBER销毁收益锁仓，获得更高权益加成与协议分红。合约部署后开放。"
-                  : "Lock your daily EMBER yield for enhanced protocol benefits and revenue share. Available after contract deployment."}
+                  ? "将FIRE销毁收益锁仓，获得更高权益加成与协议分红。合约部署后开放。"
+                  : "Lock your daily FIRE yield for enhanced protocol benefits and revenue share. Available after contract deployment."}
               </div>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
@@ -389,7 +389,7 @@ export default function ProfileVaultPage() {
             <div className="mt-2 space-y-2 w-full max-w-[260px]">
               {[
                 { zh: "协议分红 · 更高比例", en: "Higher protocol revenue share" },
-                { zh: "veEMBER 治理权重", en: "veEMBER governance weight" },
+                { zh: "veFIRE 治理权重", en: "veFIRE governance weight" },
                 { zh: "IDO白名单加成", en: "IDO whitelist boost" },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-[10px] text-muted-foreground">

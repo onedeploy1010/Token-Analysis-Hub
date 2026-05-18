@@ -159,7 +159,7 @@ export const runeLockPositions = pgTable("rune_lock_positions", {
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`NOW()`),
 });
 
-// ── EMBER Burn Positions ──────────────────────────────────
+// ── FIRE Burn Positions (table name keeps legacy ember_ prefix) ──────
 export const emberBurnPositions = pgTable("ember_burn_positions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("user_id").notNull().references(() => profiles.id),

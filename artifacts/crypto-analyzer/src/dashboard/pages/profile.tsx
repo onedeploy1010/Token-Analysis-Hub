@@ -82,7 +82,7 @@ function AnimUsdt({ value }: { value: number }) {
 /**
  * Profile main page. All earnings figures are USDT — RUNE token isn't
  * listed yet, so the only on-chain currency flowing today is USDT (paid
- * to direct referrers when a downline buys a node). RUNE/EMBER columns
+ * to direct referrers when a downline buys a node). RUNE/FIRE columns
  * stay as pre-launch placeholders until the lock + burn contracts ship.
  *
  * Data sources (each KPI footnoted in the UI):
@@ -290,7 +290,7 @@ export default function ProfilePage() {
                     {t("profile.totalEarnings", "Total Earnings")}
                   </span>
                   <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 ring-1 ring-emerald-500/45 text-emerald-300">USDT</span>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-500/20 ring-1 ring-orange-500/45 text-orange-300">EMBER</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-500/20 ring-1 ring-orange-500/45 text-orange-300">FIRE</span>
                 </div>
                 <div
                   className="num-shimmer text-[30px] leading-none font-black tabular-nums tracking-tight"
@@ -315,7 +315,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="grid grid-cols-2 gap-2 mt-3">
-              {/* 质押收益（USDT + EMBER） */}
+              {/* 质押收益（USDT + FIRE） */}
               <div
                 className="rounded-2xl px-3 py-3 ring-1 ring-emerald-400/35 transition-all duration-300 hover:ring-emerald-400/65 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(34,197,94,0.45)]"
                 style={{
@@ -333,10 +333,10 @@ export default function ProfilePage() {
                   </span>
                 </div>
                 <div className="text-[16px] font-black text-emerald-200 tabular-nums leading-tight">$0.00</div>
-                <div className="text-[10px] text-emerald-300/70 mt-0.5">+ 0 EMBER</div>
-                <div className="text-[9px] text-emerald-300/55 mt-0.5">USDT 65% / EMBER 35%</div>
+                <div className="text-[10px] text-emerald-300/70 mt-0.5">+ 0 FIRE</div>
+                <div className="text-[9px] text-emerald-300/55 mt-0.5">USDT 65% / FIRE 35%</div>
               </div>
-              {/* 推广收益（V-level EMBER） */}
+              {/* 推广收益（V-level FIRE） */}
               <div
                 className="rounded-2xl px-3 py-3 ring-1 ring-orange-400/40 transition-all duration-300 hover:ring-orange-400/70 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-6px_rgba(251,146,60,0.45)]"
                 style={{
@@ -353,9 +353,9 @@ export default function ProfilePage() {
                     V-level
                   </span>
                 </div>
-                <div className="text-[16px] font-black text-orange-200 tabular-nums leading-tight">0 EMBER</div>
+                <div className="text-[16px] font-black text-orange-200 tabular-nums leading-tight">0 FIRE</div>
                 <div className="text-[10px] text-orange-300/70 mt-0.5">{t("profile.directRate", "Direct")} 5% · {t("profile.teamRate", "Team")} 4-29%</div>
-                <div className="text-[9px] text-orange-300/55 mt-0.5">USD-valued EMBER</div>
+                <div className="text-[9px] text-orange-300/55 mt-0.5">USD-valued FIRE</div>
               </div>
             </div>
           </div>

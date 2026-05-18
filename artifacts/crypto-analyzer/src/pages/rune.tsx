@@ -420,7 +420,7 @@ export default function Rune() {
   // sitting on a flat protocol baseline.
   // Drivers (per 核心机制.md §贰 + 资金流向 §二):
   //   - protocol 0.1%/day baseline burn
-  //   - IDO² locks EMBER → 100% burned (scales with activity → IDO count)
+  //   - IDO² locks FIRE → 100% burned (scales with activity → IDO count)
   //   - C2C sell-tax 3% sub burn (scales with activity)
   // Aggregate effective daily sub-burn = base × (1 + activity factor),
   // where the factor is bounded so it doesn't run away at extreme inputs.
@@ -1242,7 +1242,7 @@ export default function Rune() {
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2 flex-wrap">
             <TrendingUp className="h-4 w-4 text-amber-400 shrink-0" />
-            <span className="break-keep">{isEn ? "Dynamic RUNE + EMBER Price Simulation" : "动态母币 + 子币价格模拟"}</span>
+            <span className="break-keep">{isEn ? "Dynamic RUNE + FIRE Price Simulation" : "动态母币 + 子币价格模拟"}</span>
             <span className="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/30 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase shrink-0">{isEn ? "Estimated" : "预估"}</span>
           </CardTitle>
           <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
@@ -1304,7 +1304,7 @@ export default function Rune() {
                   <p className="text-[10px] text-muted-foreground/60 mt-0.5 num">
                     {simTokenView === "mother"
                       ? `LP ${fmt((data?.lpRune ?? 0) / 1e6, 1)}M`
-                      : (isEn ? "EMBER price" : "EMBER 价格")}
+                      : (isEn ? "FIRE price" : "FIRE 价格")}
                   </p>
                 </div>
               );
@@ -1325,7 +1325,7 @@ export default function Rune() {
                       : "text-muted-foreground/60 hover:text-primary/80"
                   }`}
                 >
-                  {s === "mother" ? (isEn ? "RUNE" : "母币") : (isEn ? "EMBER" : "子币")}
+                  {s === "mother" ? (isEn ? "RUNE" : "母币") : (isEn ? "FIRE" : "子币")}
                 </button>
               ))}
             </div>
@@ -1347,7 +1347,7 @@ export default function Rune() {
                 <Tooltip {...tooltipStyle}
                   formatter={(v: number) => [
                     `$${v.toFixed(v < 1 ? 4 : 2)}`,
-                    simTokenView === "mother" ? (isEn ? "RUNE Price" : "RUNE 价格") : (isEn ? "EMBER Price" : "EMBER 子币价格"),
+                    simTokenView === "mother" ? (isEn ? "RUNE Price" : "RUNE 价格") : (isEn ? "FIRE Price" : "FIRE 子币价格"),
                   ]}
                   labelFormatter={(d: number) => isEn ? `Day ${d}` : `第 ${d} 天`}
                   animationDuration={180} />

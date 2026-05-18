@@ -108,10 +108,10 @@ export function RuneLockSection() {
   const payLabel = payment.status !== "idle" ? getPaymentStatusLabel(payment.status) : t("vault.lock.confirmBtn", "Confirm & Pay");
 
   const benefits = [
-    { icon: Vote,       color: "rgba(168,85,247,0.8)", lk: "vault.lock.benefitVoting",   ld: "Epoch Voting",        dk: "vault.lock.benefitVotingDesc",   dd: "Direct EMBER emissions every 14 days" },
+    { icon: Vote,       color: "rgba(168,85,247,0.8)", lk: "vault.lock.benefitVoting",   ld: "Epoch Voting",        dk: "vault.lock.benefitVotingDesc",   dd: "Direct FIRE emissions every 14 days" },
     { icon: TrendingUp, color: "rgba(34,197,94,0.8)",  lk: "vault.lock.benefitDividend", ld: "AI Revenue Share",    dk: "vault.lock.benefitDividendDesc", dd: "Monthly USDT dividends weighted by veRUNE" },
     { icon: Star,       color: "rgba(212,168,50,0.9)", lk: "vault.lock.benefitIdo",      ld: "IDO Launch Access",   dk: "vault.lock.benefitIdoDesc",      dd: "Monthly projects, avg 50x returns" },
-    { icon: Zap,        color: "rgba(59,130,246,0.8)", lk: "vault.lock.benefitForge",    ld: "Forge Fee Dividends", dk: "vault.lock.benefitForgeDesc",    dd: "External protocols compete for EMBER flow" },
+    { icon: Zap,        color: "rgba(59,130,246,0.8)", lk: "vault.lock.benefitForge",    ld: "Forge Fee Dividends", dk: "vault.lock.benefitForgeDesc",    dd: "External protocols compete for FIRE flow" },
   ];
 
   return (

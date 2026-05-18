@@ -1,9 +1,9 @@
 /**
- * RUNE + EMBER price hook. Pre-launch, both tokens are not listed yet —
+ * RUNE + FIRE price hook. Pre-launch, both tokens are not listed yet —
  * we hard-code the published target prices the protocol uses for accounting:
  *
  *   RUNE  = $0.028  (LP launch ratio: 2.8M USDT : 100M RUNE)
- *   EMBER = $0.038  (initial daily-burn reward valuation)
+ *   FIRE = $0.038  (initial daily-burn reward valuation)
  *
  * Once the tokens are listed, swap the constants for an oracle/DB read
  * (the API surface here matches what the prior `useMaPrice` exposed so
@@ -11,7 +11,7 @@
  * Bitget-oracle wiring.
  */
 const RUNE_PRICE_USDT = 0.028;
-const EMBER_PRICE_USDT = 0.038;
+const FIRE_PRICE_USDT = 0.038;
 
 function fmtCompact(amount: number, lang?: string) {
   const isZh = (lang || (typeof window !== "undefined" ? localStorage.getItem("taiclaw-lang") : "en")) === "zh"
@@ -28,15 +28,15 @@ function fmtCompact(amount: number, lang?: string) {
 
 export function useRunePrice() {
   const price = RUNE_PRICE_USDT;
-  const emberPrice = EMBER_PRICE_USDT;
+  const emberPrice = FIRE_PRICE_USDT;
 
   const usdcToRune  = (usdc: number) => usdc / price;
   const usdcToEmber = (usdc: number) => usdc / emberPrice;
 
   const formatRune        = (usdc: number) => `${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usdcToRune(usdc))} RUNE`;
-  const formatEmber       = (usdc: number) => `${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usdcToEmber(usdc))} EMBER`;
+  const formatEmber       = (usdc: number) => `${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usdcToEmber(usdc))} FIRE`;
   const formatCompactRune  = (usdc: number) => `${fmtCompact(usdcToRune(usdc))} RUNE`;
-  const formatCompactEmber = (usdc: number) => `${fmtCompact(usdcToEmber(usdc))} EMBER`;
+  const formatCompactEmber = (usdc: number) => `${fmtCompact(usdcToEmber(usdc))} FIRE`;
 
   return {
     price,
@@ -47,7 +47,7 @@ export function useRunePrice() {
     usdcToRune,
     formatRune,
     formatCompactRune,
-    // ── EMBER helpers
+    // ── FIRE helpers
     usdcToEmber,
     formatEmber,
     formatCompactEmber,
